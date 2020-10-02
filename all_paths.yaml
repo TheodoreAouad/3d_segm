@@ -1,0 +1,35 @@
+atlas:
+  aurane:
+    path_voxel: '/media/theodore/HDD1/Spondi/SpondiDetect/data/atlases/aurane/3Daurane.nii'
+    path_sacrum: '/media/theodore/HDD1/Spondi/SpondiDetect/data/atlases/aurane/3Daurane-sacrum.nii'
+    path_iliaque: '/media/theodore/HDD1/Spondi/SpondiDetect/data/atlases/aurane/3Daurane-iliaque.nii'
+    path_dicom_0: '/media/theodore/HDD1/Spondi/SpondiDetect/data/irm_aurane/images/pat00000/st000000/se000006/mr000000'
+    path_dicom_1: '/media/theodore/HDD1/Spondi/SpondiDetect/data/irm_aurane/images/pat00000/st000000/se000006/mr000001'
+
+  clementina:
+    path_voxel: '/media/theodore/HDD1/Spondi/SpondiDetect/data/atlases/3Dspaceclementina.nii'
+    path_sacrum: '/media/theodore/HDD1/Spondi/SpondiDetect/data/atlases/clementina/3Dspaceclementina_sacrum.nii'
+    path_iliaque: '/media/theodore/HDD1/Spondi/SpondiDetect/data/atlases/clementina/3Dspaceclementina_iliaque.nii'
+    path_dicom_0: '/media/theodore/HDD1/Spondi/SpondiDetect/data/irm_Clementina/images/pat00000/st000000/se000006/mr000000'
+    path_dicom_1: '/media/theodore/HDD1/Spondi/SpondiDetect/data/irm_Clementina/images/pat00000/st000000/se000006/mr000001'
+  
+  hoang:
+    path_voxel: '/media/theodore/HDD1/Spondi/SpondiDetect/data/atlases/hoANG/3Dhoang.nii'
+    path_sacrum: '/media/theodore/HDD1/Spondi/SpondiDetect/data/atlases/hoANG/3Dhoang-sacrum.nii'
+    path_iliaque: '/media/theodore/HDD1/Spondi/SpondiDetect/data/atlases/hoANG/3Dhoang-iliaque.nii'
+    path_dicom_0: '/media/theodore/HDD1/Spondi/SpondiDetect/data/irm_hoang/images/pat00000/st000000/se000006/mr000000'
+    path_dicom_1: '/media/theodore/HDD1/Spondi/SpondiDetect/data/irm_hoang/images/pat00000/st000000/se000006/mr000001'
+
+  martin:
+    path_voxel: '/media/theodore/HDD1/Spondi/SpondiDetect/data/atlases/martin/3dmartin.nii'
+    path_sacrum: '/media/theodore/HDD1/Spondi/SpondiDetect/data/atlases/martin/3dmartinsacrum.nii'
+    path_iliaque: '/media/theodore/HDD1/Spondi/SpondiDetect/data/atlases/martin/3dmartinILIAQUE.nii'
+    path_dicom_0: '/media/theodore/HDD1/Spondi/SpondiDetect/data/irm_martin/images/pat00000/st000000/se000007/mr000000'
+    path_dicom_1: '/media/theodore/HDD1/Spondi/SpondiDetect/data/irm_martin/images/pat00000/st000000/se000007/mr000001'
+
+  tanya:
+    path_voxel: '/media/theodore/HDD1/Spondi/SpondiDetect/data/atlases/3Dspacetatyana.nii'
+    path_sacrum: '/media/theodore/HDD1/Spondi/SpondiDetect/data/atlases/tatyana-mask-sacrum.nii.nii'
+    path_iliaque: '/media/theodore/HDD1/Spondi/SpondiDetect/data/atlases/tanya/tatyana-mask-iliiaques.nii'
+    path_dicom_0: '/media/theodore/HDD1/Spondi/SpondiDetect/data/irm_Tanya/images/pat00000/st000000/se000006/mr000000'
+    path_dicom_1: '/media/theodore/HDD1/Spondi/SpondiDetect/data/irm_Tanya/images/pat00000/st000000/se000006/mr000001'
