@@ -33,3 +33,7 @@ atlas:
     path_iliaque: '/media/theodore/HDD1/Spondi/SpondiDetect/data/atlases/tanya/tatyana-mask-iliiaques.nii'
     path_dicom_0: '/media/theodore/HDD1/Spondi/SpondiDetect/data/irm_Tanya/images/pat00000/st000000/se000006/mr000000'
     path_dicom_1: '/media/theodore/HDD1/Spondi/SpondiDetect/data/irm_Tanya/images/pat00000/st000000/se000006/mr000001'
+
+
+atlas_dicoms: '/media/theodore/HDD1/These/projets/3d_segm/data/atlas/dicoms'
+atlas_nibs: '/media/theodore/HDD1/These/projets/3d_segm/data/atlas/nibs'
