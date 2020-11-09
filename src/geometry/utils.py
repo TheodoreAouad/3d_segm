@@ -126,3 +126,17 @@ def deg(theta):
 
 def rad(theta):
     return (theta * 2*np.pi / 360) % (2*np.pi)
+
+
+def get_mean_nonzero(ar):
+    xs = np.where(ar != 0)[0]
+    return (xs.max() + xs.min()) / 2
+
+
+def get_barycenter_nonzero_3d(ar):
+    res = np.zeros(3)
+    res[0] = get_mean_nonzero(ar.sum(1).sum(1))
+    res[1] = get_mean_nonzero(ar.sum(0).sum(1))
+    res[2] = get_mean_nonzero(ar.sum(0).sum(0))
+    
+    return res

@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import ndimage
-
+from skimage.morphology import dilation, erosion, disk
 
 def ceil_(x):
     return np.int(np.ceil(x))
@@ -110,3 +110,18 @@ def grad_img(img, mode='constant'):
     sy = ndimage.sobel(img, axis=1, mode=mode)
 
     return np.hypot(sx, sy)
+
+
+def grad_morp(img, selem=disk(1)):
+    """
+    Gives the morphological gradient of an image.
+
+    Args:
+        img (ndarray): image to give gradient of. Shape depends on dimension.
+        selem (ndarray, optional): Local region. See dilation or erosion. Defaults to disk(1).
+
+    Returns:
+        ndarray: same shape as img.
+    """
+    return dilation(img, selem=selem) - erosion(img, selem=selem)
+
