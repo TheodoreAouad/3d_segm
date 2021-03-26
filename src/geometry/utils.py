@@ -140,3 +140,14 @@ def get_barycenter_nonzero_3d(ar):
     res[2] = get_mean_nonzero(ar.sum(0).sum(0))
     
     return res
+
+
+def spheric_coord(r: float, theta: float, phi: float):
+    assert r > 0
+    assert 0 <= phi <= np.pi
+
+    return np.array([
+        r * np.sin(phi) * np.cos(theta),
+        r * np.sin(phi) * np.sin(theta),
+        r * np.cos(phi)
+    ])

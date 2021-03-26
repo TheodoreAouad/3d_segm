@@ -1,13 +1,9 @@
+from os.path import join
+
 import numpy as np
-from scipy import ndimage
-from skimage.morphology import dilation, erosion, disk
+import nibabel as nib
 
-def ceil_(x):
-    return np.int(np.ceil(x))
-
-
-def floor_(x):
-    return np.int(np.floor(x))
+from all_paths import all_paths
 
 
 def get_order_from_name(filename: str):
@@ -52,76 +48,21 @@ def get_volume_from_mri(mri, axis_to_stack=0):
     return np.stack(volume, axis_to_stack)
 
 
-def center_and_crop(img, mask, size, fill_background=0):
-    """
-    Center and crop an img around the mask.
 
-    Args:
-        img (ndarray): shape (W, L)
-        mask (ndarray): shape (W, L). Array of 0, 1 and 2.
-        size (tuple): Size of the region.
-
-    Returns:
-        ndarray: the img cropped around the mask of size size.
-    """
-    assert set(np.unique(mask)).issubset(set([0, 1, 2])), 'mask must have for values only 0, 1, 2. Values: {}'.format(np.unique(mask))
-    x, y = np.where(mask != 0)
-
-    if type(size) == int:
-        size = (size, size)
-    if len(x) == 0:
-        x, y = (img.shape[0] - 1)/2, (img.shape[1] - 1)/2
-    else:
-        x = x.mean()
-        y = y.mean()
-
-    sx = (size[0] - 1) / 2
-    sy = (size[1] - 1) / 2
-
-    res = np.zeros(size) + fill_background
-
-    res_x0 = max(ceil_(sx) - ceil_(x), 0)
-    res_x1 = ceil_(sx) + min(floor_(sx) + 1, floor_(img.shape[0] - x))
-    res_y0 = max(ceil_(sy) - ceil_(y), 0)
-    res_y1 = ceil_(sy) + min(floor_(sy) + 1, floor_(img.shape[1] - y))
+def get_nib_atlas(parent=all_paths["atlas_nibs"], patient="hoang"):
+    return nib.load(join(parent, patient, f"3D{patient}-sacrum.nii"))
 
 
-    res[res_x0:res_x1, res_y0:res_y1] = img[
-        max(ceil_(x) - ceil_(sx), 0): ceil_(x) + floor_(sx) + 1,
-        max(ceil_(y) - ceil_(sy), 0): ceil_(y) + floor_(sy) + 1,
-    ]
+def get_segm_atlas(parent=all_paths["atlas_nibs"], patient="hoang"):
+    sacrum = nib.load(join(parent, patient, f"3D{patient}-sacrum.nii")).get_fdata()
+    iliaque = nib.load(join(parent, patient, f"3D{patient}-iliaque.nii")).get_fdata()
 
-    return res
+    sacrum[iliaque.astype(bool)] = 2
 
-
-
-def grad_img(img, mode='constant'):
-    """
-    Gives the sobel gradient of an image.
-
-    Args:
-        img (ndarray): shape (W, L)
-        mode (str, optional): See ndimage.sobel. Defaults to 'constant'.
-
-    Returns:
-        ndarray: shape (W, L).
-    """
-    sx = ndimage.sobel(img, axis=0, mode=mode)
-    sy = ndimage.sobel(img, axis=1, mode=mode)
-
-    return np.hypot(sx, sy)
+    return sacrum
 
 
-def grad_morp(img, selem=disk(1)):
-    """
-    Gives the morphological gradient of an image.
+#     return  nib.load(join(parent, patient, f"3D{patient}-sacrum.nii"))
 
-    Args:
-        img (ndarray): image to give gradient of. Shape depends on dimension.
-        selem (ndarray, optional): Local region. See dilation or erosion. Defaults to disk(1).
-
-    Returns:
-        ndarray: same shape as img.
-    """
-    return dilation(img, selem=selem) - erosion(img, selem=selem)
-
+def get_vol_atlas(parent=all_paths["atlas_nibs"], patient="hoang"):
+    return nib.load(join(parent, patient, f"3D{patient}.nii")).get_fdata()
