@@ -20,10 +20,25 @@ def get_path_patient(
     *args,
     **kwargs
 ):
+    """
+    Return a path string for a patient
+
+    Args:
+        patient: (str): write your description
+        parent_path: (str): write your description
+        all_paths: (str): write your description
+        st: (str): write your description
+        seq: (todo): write your description
+    """
     return join(parent_path, 'irm_{}'.format(patient), st, seq)
 
 
 def get_mri_atlas(*args, **kwargs):
+    """
+    Get all the mrized mrized mrized mri.
+
+    Args:
+    """
     mri_path = get_path_patient(*args, **kwargs)
     all_paths_imgs = glob.glob(join(mri_path, 'mr0*'), recursive=False)
 

@@ -8,6 +8,15 @@ from matplotlib import cm
 
 
 def plot_img_mask_on_ax(ax, img, mask, alpha=.7):
+    """
+    Plot an image on ants
+
+    Args:
+        ax: (todo): write your description
+        img: (array): write your description
+        mask: (array): write your description
+        alpha: (float): write your description
+    """
 
     masked = np.ma.masked_where(mask == 0, mask)
     ax.imshow(img, cmap='gray')
@@ -17,6 +26,14 @@ def plot_img_mask_on_ax(ax, img, mask, alpha=.7):
 
 
 def save_figs(figs, path, filename=''):
+    """
+    Save all figures to disk.
+
+    Args:
+        figs: (todo): write your description
+        path: (str): write your description
+        filename: (str): write your description
+    """
 
     pathlib.Path(path).mkdir(parents=True, exist_ok=True)
     all_imgs = [int(img.split('--')[-1][:-4]) for img in os.listdir(path) if ('.png' in img) and (filename in img)]
@@ -64,6 +81,14 @@ def plot_rectangle_on_ax(ax, P, **kwargs):
 
 
 def create_pillow_array_mask(rows, masks=[], pixels_sep=20):
+    """
+    Create a mask mask.
+
+    Args:
+        rows: (str): write your description
+        masks: (str): write your description
+        pixels_sep: (str): write your description
+    """
 
     dim0_rows = [max([ar.shape[0] for ar in row if ar is not None]) for row in rows]
     dim0 = sum(dim0_rows)
@@ -105,6 +130,21 @@ def create_pillow_array_mask(rows, masks=[], pixels_sep=20):
 
 
 def create_pillow_image(rows, masks=[], cmap_img=cm.gray, cmap_mask=cm.jet, alpha=.5, enhance=None, **kwargs):
+    """
+    Creates an image that image.
+
+    Args:
+        rows: (str): write your description
+        masks: (todo): write your description
+        cmap_img: (todo): write your description
+        cm: (todo): write your description
+        gray: (todo): write your description
+        cmap_mask: (todo): write your description
+        cm: (todo): write your description
+        jet: (todo): write your description
+        alpha: (float): write your description
+        enhance: (todo): write your description
+    """
     big_ar, big_mask = create_pillow_array_mask(rows, masks, **kwargs)
 
     pil_ar = array_to_pil(big_ar, mask=big_mask==-1, cmap=cmap_img)
@@ -122,6 +162,16 @@ def create_pillow_image(rows, masks=[], cmap_img=cm.gray, cmap_mask=cm.jet, alph
 
 
 def array_to_pil(ar, mask=None, cmap=cm.gray,):
+    """
+    Convert a pil image to a pil image.
+
+    Args:
+        ar: (array): write your description
+        mask: (array): write your description
+        cmap: (str): write your description
+        cm: (array): write your description
+        gray: (array): write your description
+    """
     ar = (ar - ar.min()) / (ar.max() - ar.min())
     if mask is not None:
         ar = np.ma.masked_where(mask, ar)
