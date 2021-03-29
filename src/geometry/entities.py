@@ -1,3 +1,5 @@
+from typing import Optional, List, Tuple, Union
+
 import numpy as np
 
 from src.geometry.utils import get_rotation_matrix, get_pos_point_on_segment
@@ -5,18 +7,18 @@ from src.geometry.utils import get_rotation_matrix, get_pos_point_on_segment
 
 class Line:
 
-    def __init__(self, vecdir, intersept):
+    def __init__(self, vecdir: np.ndarray, intersept: np.ndarray):
 
         self.vecdir = vecdir / np.linalg.norm(vecdir)
         self.intersept = intersept
 
-    def is_inside(self, u):
+    def is_inside(self, u: np.ndarray):
         return (np.cross(self.vecdir - self.intersept, u) == 0).all()
 
-    def get_coords(self, t):
+    def get_coords(self, t: float):
         return self.vecdir * t + self.intersept
 
-    def plot_on_ax(self, ax, t1, t2, c='r', **kwargs):
+    def plot_on_ax(self, ax, t1: float, t2: float, c: str = 'r', **kwargs):
 
         x1 = self.get_coords(t1)
         x2 = self.get_coords(t2)
@@ -25,7 +27,13 @@ class Line:
 
 class Plane:
 
-    def __init__(self, vecn, intersept=None, point=None, vecs=[]):
+    def __init__(
+            self,
+            vecn: np.ndarray,
+            intersept: Optional[np.ndarray] = None,
+            point: Optional[np.ndarray] = None,
+            vecs: List = [],
+    ):
         """
         <vecn . x > = intersept, for all x in plane
         Args:
@@ -44,7 +52,7 @@ class Plane:
     def __repr__(self):
         return 'Plane equation: {}x + {}y + {}z = {}'.format(*np.round(self.vecn, 3), np.round(self.intersept, 3))
 
-    def is_inside(self, u):
+    def is_inside(self, u: np.ndarray):
         if not isinstance(u, Line):
             return u @ self.vecn == self.intersept
 
@@ -53,13 +61,13 @@ class Plane:
         return u.intersept @ self.vecn == 0
 
 
-    def is_line_orthogonal(self, line):
+    def is_line_orthogonal(self, line: Line):
         return (np.cross(self.vecn, line.vecdir) == 0).all()
 
-    def is_line_parallel(self, line):
+    def is_line_parallel(self, line: Line):
         return self.vecn @ line.vecdir == 0
 
-    def intersept_line(self, line):
+    def intersept_line(self, line: Line):
         """
         Returns the coordinates of the intersection of the line with the plane
 
@@ -75,12 +83,12 @@ class Plane:
         # print(t, self.intersept, line.intersept, self.vecn, line.vecdir)
         return line.get_coords(t)
 
-    def sample(self, ns, size):
+    def sample(self, ns: Union[int, Tuple], size: Tuple):
         """
-        Samples a grid of points contained in the hyerplane.
+        Samples a grid of points contained in the hyperplane.
 
         Args:
-            ns (int): Number of points per dimension. The total number of points
+            ns (tuple): Number of points per dimension. The total number of points
                      will be n0 x n1.
             size (tuple): (width, length). Size of the rectangle of samples.
 
@@ -104,7 +112,7 @@ class Plane:
 
         return samples, X[X == X], Y[Y == Y]
 
-    def sample_with_center(self, n, size, center):
+    def sample_with_center(self, n: Union[int, Tuple], size: Tuple, center: np.ndarray):
         """
         Samples plane centered on center.
 
@@ -124,7 +132,7 @@ class Plane:
         return samples, X, Y
 
 
-    def sample_between_coords(self, n, coords):
+    def sample_between_coords(self, n: Union[int, Tuple], coords: np.ndarray):
         """
         Samples plane between the coordinates coords.
 
@@ -135,7 +143,7 @@ class Plane:
                               The 4 points must be given in a "circle" way (e.g. ABCD is a parallelogramme, not crossed)
 
         Returns:
-            (ndarrray, ndarray, ndarray): samples (3, n x n),
+            (ndarray, ndarray, ndarray): samples (3, n x n),
                                         x coordinate (n x n), y coordinate (n x n)
         """
 
@@ -151,13 +159,14 @@ class Plane:
 
         return self.sample_with_center(n, size, center)
 
-    def plot_on_ax(self, ax, size, center, c='blue', **kwargs):
+    def plot_on_ax(self, ax, size: Tuple, center: np.ndarray, c: str = 'blue', **kwargs):
         """
         Plots the plane on an ax.
         Args:
             ax (mpl_toolkits.mplot3d.axes3d.Axes3D): Ax on which to plot the plane
             size (tuple): (width, length). Size of the rectangle of samples.
             center (ndarray): center of the sampling
+            c (str): color of the plot
 
         Returns:
             (ndarray, ndarray, ndarray): samples (3, n x n),
@@ -169,9 +178,9 @@ class Plane:
 
         for i in range(4):
             ax.plot(
-                [samples[0, i], samples[0, (i+1)%4]],
-                [samples[1, i], samples[1, (i+1)%4]],
-                [samples[2, i], samples[2, (i+1)%4]],
+                [samples[0, i], samples[0, (i+1) % 4]],
+                [samples[1, i], samples[1, (i+1) % 4]],
+                [samples[2, i], samples[2, (i+1) % 4]],
                 c=c, **kwargs)
 
         return samples, X, Y
@@ -179,12 +188,12 @@ class Plane:
 
 class Cube:
 
-    def __init__(self, planes_inf, planes_sup,):
+    def __init__(self, planes_inf: List[Plane], planes_sup: List[Plane],):
 
         self.planes_inf = planes_inf
         self.planes_sup = planes_sup
 
-    def is_inside(self, u, error=1e-6):
+    def is_inside(self, u: np.ndarray, error: float = 1e-6):
 
         for plane in self.planes_inf:
             if plane.vecn @ u < plane.intersept - error:
@@ -194,7 +203,8 @@ class Cube:
                 return False
         return True
 
-    def intersept_line(self, line):
+    def intersept_line(self, line: Line):
+        x1, x2 = None, None
         for plane in self.planes_sup:
             if plane.is_line_parallel(line):
                 print('paral')
@@ -219,7 +229,7 @@ class Cube:
 
 class StraightCube(Cube):
 
-    def __init__(self, size=(1, 1, 1), norms=(1, 1, 1), displacement=np.zeros(3)):
+    def __init__(self, size: Tuple = (1, 1, 1), norms: Tuple = (1, 1, 1), displacement: np.ndarray = np.zeros(3)):
         super().__init__([], [])
         self.dim = len(size)
         assert self.dim == 3
@@ -244,15 +254,15 @@ class StraightCube(Cube):
         return self.size / 2 + self.displacement
 
 
-    def faces(self, idx):
+    def faces(self, idx: int):
         return self.planes_inf[2 - idx], self.planes_sup[2 - idx]
 
-    def get_face_center(self, idx):
+    def get_face_center(self, idx: int):
         idx = idx % 3
         center = (self.basis[(idx+2)%self.dim]*self.size[(idx+2) % self.dim] + self.basis[(idx+1) % self.dim]*self.size[(idx+1) % self.dim]) / 2
         return center
 
-    def get_face_size(self, idx):
+    def get_face_size(self, idx: int):
         idx = idx % 3
         if idx == 0:
             return self.size[1], self.size[2]
@@ -261,7 +271,7 @@ class StraightCube(Cube):
         if idx == 2:
             return self.size[0], self.size[1]
 
-    def intersept_line(self, line):
+    def intersept_line(self, line: Line):
         for i in range(len(self.size)):
             plane1, plane2 = self.faces(i)
             if plane1.is_line_parallel(line):
@@ -274,7 +284,7 @@ class StraightCube(Cube):
                 return x1, x2
 
 
-    def sample_centered_plane(self, n, size, plane):
+    def sample_centered_plane(self, n: Union[Tuple, int], size: Tuple, plane: Plane):
         """
         Args:
             n ([type]): [description]
@@ -291,7 +301,13 @@ class StraightCube(Cube):
         return samples, Xs, Ys
 
 
-    def sample_position_plane(self, position, n, plane, size=None):
+    def sample_position_plane(
+        self,
+        position: float,
+        n: Union[Tuple, int],
+        plane: Plane,
+        size: Optional[Union[Tuple, np.ndarray]] = None,
+    ):
 
         if size is None:
             size = np.sqrt(self.size[1]**2 + self.size[2]**2) + np.zeros(2)
@@ -307,12 +323,12 @@ class StraightCube(Cube):
         return samples, Xs, Ys, SliceLocation
 
 
-    def get_pixelspacing_direction(self, vecdir):
+    def get_pixelspacing_direction(self, vecdir: np.ndarray):
         vecn = vecdir / np.linalg.norm(vecdir)
         return np.linalg.norm(vecn * self.norms)
 
 
-    def sample_cube(self, n):
+    def sample_cube(self, n: Union[Tuple, int]):
         samples = []
         for i in range(len(self.size)):
             face1, face2 = self.faces(i)
@@ -325,7 +341,7 @@ class StraightCube(Cube):
         return np.concatenate(samples, axis=1)
 
 
-    def plot_on_ax(self, ax, c='blue', **kwargs):
+    def plot_on_ax(self, ax, c: str = 'blue', **kwargs):
         for i in range(len(self.size)):
             face1, face2 = self.faces(i)
             size = self.get_face_size(i)
@@ -334,7 +350,15 @@ class StraightCube(Cube):
             face2.plot_on_ax(ax, size, center + face2.vecn*self.size[i], c=c, **kwargs)
 
 
-    def plot_centered_plane(self, ax, plane, color_cube='blue', color_plane='red', size=None, **kwargs):
+    def plot_centered_plane(
+        self,
+        ax,
+        plane: Plane,
+        color_cube: str = 'blue',
+        color_plane: str = 'red',
+        size: Optional[Union[Tuple, np.ndarray]] = None,
+        **kwargs,
+    ):
 
         if size is None:
             size = np.sqrt(self.size[1]**2 + self.size[2]**2) + np.zeros(2)
@@ -343,7 +367,15 @@ class StraightCube(Cube):
         self.plot_on_ax(ax, c=color_cube)
 
 
-    def plot_plane_pos_on_ax(self, ax, position, plane, color_cube='blue', color_plane='red', size=None):
+    def plot_plane_pos_on_ax(
+        self,
+        ax,
+        position: float,
+        plane: Plane,
+        color_cube: str = 'blue',
+        color_plane: str = 'red',
+        size: Optional[Union[np.ndarray, Tuple]] = None
+    ):
 
         if size is None:
             size = np.sqrt(self.size[1]**2 + self.size[2]**2) + np.zeros(2)
@@ -354,7 +386,7 @@ class StraightCube(Cube):
         self.plot_on_ax(ax, c=color_cube)
 
 
-    def get_indexs_oriented_on_cube(self, v, Xs, Ys, Zs):
+    def get_indexs_oriented_on_cube(self, v: np.ndarray, Xs: np.ndarray, Ys: np.ndarray, Zs: np.ndarray):
         """
         Get the position of the point v initially expressed in the basis Xs, Ys, Zs,
         in the basis of the cube. Arrays of shape (2,3) can also be expressed as iteratives
@@ -385,7 +417,7 @@ class StraightCube(Cube):
         return np.stack([i, j, k], 0)
 
 
-    def get_pos_plane(self, plane):
+    def get_pos_plane(self, plane: Plane):
         """
         Get the position of the plane relatively to the center of the cube.
         If the center of the plane is on the cube, the relative position is either 1
