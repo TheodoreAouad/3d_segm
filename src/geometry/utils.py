@@ -1,21 +1,23 @@
+from typing import List, Union, Tuple, Optional
+
 import numpy as np
 
 
-def get_e2(e1):
+def get_e2(e1: np.ndarray):
     """
     Gives a vector of norm 1 orthogonal to e1.
     """
     return np.array([e1[2], e1[2], -(e1[0]+e1[1])]) / np.sqrt(2*e1[2]**2 + (e1[0] + e1[1])**2)
 
 
-def get_e3(e1, e2):
+def get_e3(e1: np.ndarray, e2: np.ndarray):
     """
     Gives the vector of norm 1 orthogonal to e1 and e2 to make a positive orthonormal basis
     """
     return np.cross(e1, e2)
 
 
-def get_on_basis(v1):
+def get_on_basis(v1: np.ndarray):
     """
     Returns 3 vectors of orthogonal basis given v1, where the first vector has the same orentation as v1
     """
@@ -24,7 +26,7 @@ def get_on_basis(v1):
     return e1, e2, get_e3(e1, e2)
 
 
-def get_rotation_matrix(vs):
+def get_rotation_matrix(vs: Union[List, Tuple, np.ndarray]):
     """
     Get a rotation matrix.
     """
@@ -48,7 +50,15 @@ def get_rotation_matrix(vs):
     return np.vstack((e1, e2, e3)).T
 
 
-def sample_plane_according_to_vector(n, vs, position, width, length, height, edge_size=None):
+def sample_plane_according_to_vector(
+        n: int,
+        vs: np.ndarray,
+        position: float,
+        width: int,
+        length: int,
+        height: int,
+        edge_size: Optional[float] = None
+):
     """
     Sample uniformly n 3D points along the plane of normal vector v. The plane is centered around the width and height.
     The position according to axis z is given. This function's purpose is to preceed the intersection of the plane and
@@ -56,7 +66,7 @@ def sample_plane_according_to_vector(n, vs, position, width, length, height, edg
 
     Args:
         n (int): number of samples for each coordinate
-        v (ndarray): 3d vector. Normal vector to the plane.
+        vs (ndarray): 3d vector. Normal vector to the plane.
         position (float): position according to z-axis (last dimension of the cuboid image)
         width (int): width of the targeted image
         length (int): length of the targeted image
@@ -68,7 +78,7 @@ def sample_plane_according_to_vector(n, vs, position, width, length, height, edg
         x-indexes of the samples. size (n**2): y-indexes of the samples.
     """
     if edge_size is None:
-        edge_size = np.sqrt(length**2 + height**2) *1.5
+        edge_size = np.sqrt(length**2 + height**2) * 1.5
 
     R = get_rotation_matrix(vs)
     # samples = np.random.rand(2, n) * np.sqrt(3) * np.array([[width], [length]])
@@ -80,7 +90,7 @@ def sample_plane_according_to_vector(n, vs, position, width, length, height, edg
     hor_correction = np.array([
         [width // 2 - samples[0].mean()],
         [length // 2 - samples[1].mean()],
-        [height // 2- samples[2].mean()]])
+        [height // 2 - samples[2].mean()]])
     normal_vec = R[:, -1][:, np.newaxis]
 
     samples += (hor_correction + normal_vec * position)
@@ -88,7 +98,7 @@ def sample_plane_according_to_vector(n, vs, position, width, length, height, edg
 
 
 
-def get_pos_point_on_segment(x, u1, u2):
+def get_pos_point_on_segment(x: np.ndarray, u1: np.ndarray, u2: np.ndarray):
     """
     Gets the position t of point x on the segment [u1, u2] such that
     x = u1 + t * (u2 - u1)
@@ -120,20 +130,20 @@ def get_pos_point_on_segment(x, u1, u2):
     return (Xs - u1) @ (u2 - u1) / ((u2 - u1) @ (u2 - u1))
 
 
-def deg(theta):
+def deg(theta: float):
     return theta * 360/(2*np.pi)
 
 
-def rad(theta):
+def rad(theta: float):
     return (theta * 2*np.pi / 360) % (2*np.pi)
 
 
-def get_mean_nonzero(ar):
+def get_mean_nonzero(ar: np.ndarray):
     xs = np.where(ar != 0)[0]
     return (xs.max() + xs.min()) / 2
 
 
-def get_barycenter_nonzero_3d(ar):
+def get_barycenter_nonzero_3d(ar: np.ndarray):
     res = np.zeros(3)
     res[0] = get_mean_nonzero(ar.sum(1).sum(1))
     res[1] = get_mean_nonzero(ar.sum(0).sum(1))
