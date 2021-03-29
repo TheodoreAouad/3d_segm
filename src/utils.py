@@ -1,5 +1,5 @@
 import pathlib
-from typing import Tuple
+from typing import Tuple, Optional
 
 import numpy as np
 import nibabel as nib
@@ -7,20 +7,20 @@ from scipy import ndimage
 from skimage.morphology import disk, dilation, erosion
 
 
-def convert_to_nii(ar, affine):
+def convert_to_nii(ar: np.ndarray, affine: np.ndarray):
     return nib.Nifti1Image(ar, affine)
 
 
-def save_as_nii(path, ar, affine, type=None):
-    if type is not None:
-        ar = ar.astype(type)
+def save_as_nii(path: str, ar: np.ndarray, affine: np.ndarray, dtype: Optional[type] = None):
+    if dtype is not None:
+        ar = ar.astype(dtype)
     nib_ar = convert_to_nii(ar, affine)
     pathlib.Path(path).parent.mkdir(exist_ok=True, parents=True)
     nib.save(nib_ar, path)
     return path
 
 
-def apply_crop(ar, crop_xs, crop_ys, crop_zs=0):
+def apply_crop(ar: np.ndarray, crop_xs: Tuple, crop_ys: Tuple, crop_zs: Optional[Tuple] = None):
     if len(ar.shape) == 2:
         return ar[crop_xs[0]:crop_xs[1], crop_ys[0]:crop_ys[1]]
 
@@ -28,7 +28,8 @@ def apply_crop(ar, crop_xs, crop_ys, crop_zs=0):
         return ar[crop_xs[0]:crop_xs[1], crop_ys[0]:crop_ys[1], crop_zs[0]:crop_zs[1]]
 
 
-def reverse_crop(croped_ar, size, crop_xs, crop_ys, crop_zs=0, fill_value=0):
+def reverse_crop(croped_ar: np.ndarray, size: Tuple, crop_xs: Tuple, crop_ys: Tuple, crop_zs: Optional[Tuple] = None,
+                 fill_value: float = 0):
     ar = np.zeros(size) + fill_value
     if len(size) == 2:
         ar[crop_xs[0]:crop_xs[1], crop_ys[0]:crop_ys[1]] = croped_ar
@@ -39,7 +40,7 @@ def reverse_crop(croped_ar, size, crop_xs, crop_ys, crop_zs=0, fill_value=0):
     return ar.astype(croped_ar.dtype)
 
 
-def grad_morp(img, selem=disk(1)):
+def grad_morp(img: np.ndarray, selem: np.ndarray = disk(1)):
     """
     Gives the morphological gradient of an image.
 
@@ -53,7 +54,7 @@ def grad_morp(img, selem=disk(1)):
     return dilation(img, selem=selem) - erosion(img, selem=selem)
 
 
-def grad_img(img, mode='constant'):
+def grad_img(img: np.ndarray, mode: str = 'constant'):
     """
     Gives the sobel gradient of an image.
 
@@ -113,15 +114,15 @@ def center_and_crop(img: np.ndarray, mask: np.ndarray, size: Tuple, fill_backgro
     return res
 
 
-def floor_(x):
+def floor_(x: float):
     return np.int(np.floor(x))
 
 
-def ceil_(x):
+def ceil_(x: float):
     return np.int(np.ceil(x))
 
 
-def uniform_sampling(all_slices, n_slices, dtype=int):
+def uniform_sampling(all_slices: np.ndarray, n_slices: int, dtype: type = int):
     if n_slices > 2:
         return np.linspace(all_slices.min(), all_slices.max(), n_slices).astype(dtype)
 
