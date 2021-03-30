@@ -8,10 +8,34 @@ from skimage.morphology import disk, dilation, erosion
 
 
 def convert_to_nii(ar: np.ndarray, affine: np.ndarray):
+    """
+    Convert nii array to nii.
+
+    Args:
+        ar: (todo): write your description
+        np: (todo): write your description
+        ndarray: (array): write your description
+        affine: (array): write your description
+        np: (todo): write your description
+        ndarray: (array): write your description
+    """
     return nib.Nifti1Image(ar, affine)
 
 
 def save_as_nii(path: str, ar: np.ndarray, affine: np.ndarray, dtype: Optional[type] = None):
+    """
+    Save an nii array as a nii.
+
+    Args:
+        path: (str): write your description
+        ar: (array): write your description
+        np: (todo): write your description
+        ndarray: (array): write your description
+        affine: (array): write your description
+        np: (todo): write your description
+        ndarray: (array): write your description
+        dtype: (todo): write your description
+    """
     if dtype is not None:
         ar = ar.astype(dtype)
     nib_ar = convert_to_nii(ar, affine)
@@ -21,6 +45,17 @@ def save_as_nii(path: str, ar: np.ndarray, affine: np.ndarray, dtype: Optional[t
 
 
 def apply_crop(ar: np.ndarray, crop_xs: Tuple, crop_ys: Tuple, crop_zs: Optional[Tuple] = None):
+    """
+    Apply a new image.
+
+    Args:
+        ar: (array): write your description
+        np: (todo): write your description
+        ndarray: (array): write your description
+        crop_xs: (todo): write your description
+        crop_ys: (todo): write your description
+        crop_zs: (todo): write your description
+    """
     if len(ar.shape) == 2:
         return ar[crop_xs[0]:crop_xs[1], crop_ys[0]:crop_ys[1]]
 
@@ -30,6 +65,19 @@ def apply_crop(ar: np.ndarray, crop_xs: Tuple, crop_ys: Tuple, crop_zs: Optional
 
 def reverse_crop(croped_ar: np.ndarray, size: Tuple, crop_xs: Tuple, crop_ys: Tuple, crop_zs: Optional[Tuple] = None,
                  fill_value: float = 0):
+    """
+    Crop an image.
+
+    Args:
+        croped_ar: (todo): write your description
+        np: (todo): write your description
+        ndarray: (array): write your description
+        size: (int): write your description
+        crop_xs: (todo): write your description
+        crop_ys: (todo): write your description
+        crop_zs: (todo): write your description
+        fill_value: (todo): write your description
+    """
     ar = np.zeros(size) + fill_value
     if len(size) == 2:
         ar[crop_xs[0]:crop_xs[1], crop_ys[0]:crop_ys[1]] = croped_ar
@@ -115,14 +163,36 @@ def center_and_crop(img: np.ndarray, mask: np.ndarray, size: Tuple, fill_backgro
 
 
 def floor_(x: float):
+    """
+    Convert an integer as an integer.
+
+    Args:
+        x: (todo): write your description
+    """
     return np.int(np.floor(x))
 
 
 def ceil_(x: float):
+    """
+    Ceilil. numpy.
+
+    Args:
+        x: (todo): write your description
+    """
     return np.int(np.ceil(x))
 
 
 def uniform_sampling(all_slices: np.ndarray, n_slices: int, dtype: type = int):
+    """
+    Return a uniform sampling of all slices.
+
+    Args:
+        all_slices: (array): write your description
+        np: (todo): write your description
+        ndarray: (array): write your description
+        n_slices: (int): write your description
+        dtype: (todo): write your description
+    """
     if n_slices > 2:
         return np.linspace(all_slices.min(), all_slices.max(), n_slices).astype(dtype)
 

@@ -4,6 +4,13 @@ from src.geometry.entities import StraightCube, Plane
 
 
 def diag_sampling_annot(true_seg, vecns):
+    """
+    Calculate the covariance matrix.
+
+    Args:
+        true_seg: (todo): write your description
+        vecns: (todo): write your description
+    """
     markers = np.zeros(true_seg.shape)
     annots = np.zeros_like(true_seg)
     cov = np.zeros_like(true_seg).astype(np.uint8)
