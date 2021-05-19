@@ -1,7 +1,7 @@
 import numpy as np
 import skimage.morphology as morp
 
-import src.utils
+import sampling.src.utils
 
 
 def get_markers_nd(segl, label_slices, selem, ):
@@ -26,5 +26,5 @@ def get_markers_3d(segl, label_slices, margin=.05):
 
 def apply_watershed(img, segl, label_slices, margin=.02):
     markers = get_markers_nd(segl, label_slices, margin)
-    grad_img = np.abs(src.utils.grad_img(img))
+    grad_img = np.abs(sampling.src.utils.grad_img(img))
     return morp.watershed(grad_img, markers)

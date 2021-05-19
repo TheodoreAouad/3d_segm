@@ -13,16 +13,16 @@ from mpl_toolkits.mplot3d import Axes3D
 import all_paths as ap
 
 reload(ap)
-import src.utils as u
-import src.data_manager.utils as du
-import src.data_manager.get_data as gd
-import src.plotter as p
-import src.animer as an
-import src.metrics as m
-import src.geometry.entities as e
-import src.geometry.utils as gu
-import src.watershed as ws
-import src.diag_sampling as ds
+import sampling.src.utils as u
+import sampling.src.data_manager.utils as du
+import sampling.src.data_manager.get_data as gd
+import sampling.src.plotter as p
+import sampling.src.animer as an
+import sampling.src.metrics as m
+import sampling.src.geometry.entities as e
+import sampling.src.geometry.utils as gu
+import sampling.src.watershed as ws
+import sampling.src.diag_sampling as ds
 
 
 def reload_modules():

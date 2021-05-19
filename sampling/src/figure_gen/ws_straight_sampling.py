@@ -1,28 +1,25 @@
 import random
 from importlib import reload
 from time import time
-from os.path import join
 
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import nibabel as nib
 import skimage.morphology as morp
 import skimage.segmentation as sksegm
 from tqdm import tqdm
 
 import all_paths as ap
-import src.utils
-from src.utils import uniform_sampling
+from sampling.src.utils import uniform_sampling
 
 reload(ap)
-import src.utils as u
-import src.data_manager.utils as du
-import src.data_manager.get_data as gd
-import src.plotter as p
-import src.animer as an
-import src.metrics as m
-import src.watershed as ws
+import sampling.src.utils as u
+import sampling.src.data_manager.utils as du
+import sampling.src.data_manager.get_data as gd
+import sampling.src.plotter as p
+import sampling.src.animer as an
+import sampling.src.metrics as m
+import sampling.src.watershed as ws
 
 
 def reload_modules():

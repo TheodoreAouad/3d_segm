@@ -4,7 +4,7 @@ import vpython as visual
 import numpy as np
 import skimage.morphology as morp
 
-from src.geometry.utils import get_barycenter_nonzero_3d
+from sampling.src.geometry.utils import get_barycenter_nonzero_3d
 
 segm = np.load('./true_seg.npy') == 2
 # segm = np.load('./test_segm.npy')

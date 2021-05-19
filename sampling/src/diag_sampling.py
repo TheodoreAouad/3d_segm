@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.geometry.entities import StraightCube, Plane
+from sampling.src.geometry.entities import StraightCube, Plane
 
 
 def diag_sampling_annot(true_seg, vecns):

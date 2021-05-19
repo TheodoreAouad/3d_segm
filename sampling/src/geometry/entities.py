@@ -2,7 +2,7 @@ from typing import Optional, List, Tuple, Union
 
 import numpy as np
 
-from src.geometry.utils import get_rotation_matrix, get_pos_point_on_segment
+from sampling.src.geometry.utils import get_rotation_matrix, get_pos_point_on_segment
 
 
 class Line:

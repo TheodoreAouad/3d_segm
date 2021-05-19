@@ -15,11 +15,11 @@ from tqdm import tqdm
 import all_paths as ap
 
 reload(ap)
-import src.utils as u
-import src.data_manager.utils as du
-import src.metrics as m
-import src.geometry.utils as gu
-import src.diag_sampling as ds
+import sampling.src.utils as u
+import sampling.src.data_manager.utils as du
+import sampling.src.metrics as m
+import sampling.src.geometry.utils as gu
+import sampling.src.diag_sampling as ds
 
 
 print('Done.')
