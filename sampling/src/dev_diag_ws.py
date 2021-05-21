@@ -13,7 +13,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import all_paths as ap
 
 reload(ap)
-import sampling.src.utils as u
+import general.utils as u
 import sampling.src.data_manager.utils as du
 import sampling.src.data_manager.get_data as gd
 import sampling.src.plotter as p
