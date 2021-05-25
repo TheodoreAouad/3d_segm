@@ -11,8 +11,8 @@ def array_erosion(ar, selem, device="cpu"):
 
     return (conv_fn(
         format_for_conv(ar, device=device), format_for_conv(selem, device=device),
-        padding=1,
-    ) == selem.sum()).squeeze().to("cpu").numpy()
+        padding=selem.shape[0] // 2,
+    ) == selem.sum()).squeeze().to("cpu").int().numpy()
 
 
 def array_dilation(ar, selem, device="cpu"):
@@ -20,5 +20,5 @@ def array_dilation(ar, selem, device="cpu"):
 
     return (conv_fn(
         format_for_conv(ar, device=device), format_for_conv(selem, device=device),
-        padding=1,
-    ) > 0).squeeze().to("cpu").numpy()
+        padding=selem.shape[0] // 2,
+    ) > 0).squeeze().to("cpu").int().numpy()
