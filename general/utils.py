@@ -133,3 +133,23 @@ def uniform_sampling(all_slices: np.ndarray, n_slices: int, dtype: type = int):
         (all_slices.min()*.67 + all_slices.max()*.33),
         (all_slices.min()*.33 + all_slices.max()*.67),
     ]).astype(dtype)
+
+
+
+def get_arrangements(n):
+    """
+    Get arrangements of n elements.
+    Examples:
+        if n = 3, returns
+        [(0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0)]
+    """
+    def f(A, S):
+        cur_set = set(A).difference(S)
+        if len(cur_set) == 0:
+            return [S]
+        res = []
+        for i in cur_set:
+            res += f(A, S + [i])
+        return res
+
+    return f(range(n), [])
