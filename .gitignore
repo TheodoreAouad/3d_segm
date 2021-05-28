@@ -4,5 +4,4 @@ venv
 **__pycache__**
 **ipynb_checkpoints**
 segmentations/
-dev.py
 .idea/

@@ -22,8 +22,8 @@ reload_modules()
 
 # %%
 
-path_segm = os.path.abspath("/home/safran/theodore/datasets/CT-ORG/labels and README/labels-1.nii.gz")
-path_img = os.path.abspath("/home/safran/theodore/datasets/CT-ORG/volumes 0-49/volume-1.nii.gz")
+path_segm = os.path.abspath("/hdd/datasets/CT-ORG/raw/labels_and_README/labels-1.nii.gz")
+path_img = os.path.abspath("/hdd/datasets/CT-ORG/raw/volumes_0_49/volume-1.nii.gz")
 
 seg3n = nib.load(path_segm)
 img3n = nib.load(path_img)

@@ -1,10 +1,10 @@
 import pathlib
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 
 import numpy as np
 import nibabel as nib
 from scipy import ndimage
-from skimage.morphology import disk, dilation, erosion
+from skimage.morphology import disk, dilation, erosion, label
 
 
 def convert_to_nii(ar: np.ndarray, affine: np.ndarray):
@@ -135,8 +135,7 @@ def uniform_sampling(all_slices: np.ndarray, n_slices: int, dtype: type = int):
     ]).astype(dtype)
 
 
-
-def get_arrangements(n):
+def get_arrangements(n: int) -> List[List]:
     """
     Get arrangements of n elements.
     Examples:
@@ -153,3 +152,47 @@ def get_arrangements(n):
         return res
 
     return f(range(n), [])
+
+
+def get_most_important_labels(labels: np.ndarray, weights: np.ndarray, scope: int = 1, return_weights: bool = False) -> np.ndarray:
+    """Returns the most weighted elements in labels.
+
+    Args:
+        labels (ndarray): array of elements
+        weights (ndarray): array of weights for each elements
+        scope (int, optional): number of labels to return. Defaults to 1.
+        return_weights (bool, optional): If True, returns weights. Defaults to False.
+
+    Returns:
+        ndarray: shape (scope,). Labels with biggest weight.
+    """
+    labels_sorted = labels[weights.argsort()][::-1]
+    if return_weights:
+        weights_sorted = weights[weights.argsort()][::-1]
+        return labels_sorted[:scope], weights_sorted[:scope]
+    return labels_sorted[:scope]
+
+
+def get_most_important_regions(regions: np.ndarray, weights: np.ndarray = 1, scope: int = 1, background: float = 0) -> np.ndarray:
+    """Returns a mask containing only the biggest regions. The mask is labelled.
+    The number of regions is the scope.
+
+    Args:
+        regions (ndarray): Mask of regions. Either 0 and 1, or already labeled.
+        weights (ndarray, optional): weights to give to each label. Defaults to 1.
+        scope (int, optional): number of regions. Defaults to 1.
+        background (int, optional): pixels that are not part of the most important
+                                    regions. Defaults to 0.
+
+    Returns:
+        ndarray: same shape as regions. Array like regions but with the less
+                important regions being put to background.
+    """
+    if len(np.unique(regions)) == 2:
+        regions = label(regions)
+    labels, count = np.unique(regions, return_counts=True)
+    count[labels == background] = 0
+    weighted = count * weights
+    biggest_labels = get_most_important_labels(labels, weighted, scope=scope)
+    regions[~np.isin(regions, biggest_labels)] = background
+    return regions

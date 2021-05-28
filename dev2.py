@@ -1,6 +1,8 @@
 # %% Morp Registration
 from importlib import reload
+import os
 
+import nibabel as nib
 import cv2
 from time import time
 import numpy as np
@@ -9,8 +11,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import skimage.morphology as morp
+import skimage.measure as meas
 from scipy.ndimage import rotate
 from scipy.spatial import procrustes
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 import general.utils as u
 import general.array_morphology as am
@@ -180,8 +185,36 @@ show_point_cloud(X1, X2, proc2)
 
 # %%
 
+path_segm = os.path.abspath("/hdd/datasets/CT-ORG/raw/labels_and_README/labels-4.nii.gz")
+
+seg3n = nib.load(path_segm)
+
+seg3 = np.round(seg3n.get_fdata()) == 2
+
+# %%
+reload_modules()
+t1 = time()
+reg3 = (u.get_most_important_regions(seg3) > 0).astype(int)
+print(time() - t1)
+
+# %%
 
 t1 = time()
-all = get_arrangements(6)
+verts, faces, normals, values = meas.marching_cubes(reg3)
 print(time() - t1)
-len(all)
+print(len(verts))
+
+# %%
+plt.close()
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_trisurf(*verts.T)
+fig.show()
+
+# %%
+u.save_as_nii(
+    "segmentations/CT_ORG/labels-4-opened.nii.gz",
+    reg3,
+    seg3n.affine,
+    dtype=np.uint8
+)
