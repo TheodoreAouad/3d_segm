@@ -1,10 +1,13 @@
 import pathlib
 from typing import Tuple, Optional, List
+from time import time
 
 import numpy as np
 import nibabel as nib
 from scipy import ndimage
 from skimage.morphology import disk, dilation, erosion, label
+from skimage.transform import warp
+
 
 
 def convert_to_nii(ar: np.ndarray, affine: np.ndarray):
@@ -196,3 +199,57 @@ def get_most_important_regions(regions: np.ndarray, weights: np.ndarray = 1, sco
     biggest_labels = get_most_important_labels(labels, weighted, scope=scope)
     regions[~np.isin(regions, biggest_labels)] = background
     return regions
+
+
+def apply_transform(
+    ar,
+    T,
+    center='mid',
+    order=1,
+    do_scipy_func=True,
+    show_time=False,
+    **kwargs
+):
+    """
+    Apply a transformation array T to each element of array ar. Returns
+    ar[T(i)] for indexes i.
+
+    Args:
+        ar (ndarray): array to transform
+        T (ndarray): square array of shape len(ar.shape) + 1
+        order (int, optional): Interpolation order of B-spline. See skimage.transform.warp for more details.
+                               Defaults to 1 for linear interpolation.
+        show_time (bool, optional): Show computation time. Defaults to False.
+
+    Returns:
+        ndarray: same shape as ar. ar[T(i)] for all indexes i, interpolated.
+    """
+    start = time()
+    if center == "mid":
+        center = np.array([(shp -1)/2 for shp in ar.shape])
+
+    if do_scipy_func:
+        rot_matrix = T[:-1, :-1]
+        trans_matrix = T[:-1, -1]
+        if type(center) in [int, float]:
+            center = np.zeros_like(trans_matrix) + center
+        offset = trans_matrix - rot_matrix @ center + center
+        res = ndimage.affine_transform(ar, rot_matrix, offset=offset, order=order, **kwargs)
+        if show_time:
+            print('Applying scipy transform:', time() - start)
+
+    else:
+        if type(center) == np.ndarray:
+            center = center[:, np.newaxis]
+        coords = np.meshgrid(*[np.arange(n) for n in ar.shape], indexing='ij')
+        samples = np.c_[[ar[ar==ar] for ar in coords]] - center
+        samples = np.vstack((samples, np.ones(samples.shape[1])))
+        new_indexs = (T @ samples)[:-1] + center
+        t1 = time()
+        if show_time:
+            print('Apply transform to indexes:', t1 - start)
+        res = warp(ar, new_indexs, order=order, **kwargs).reshape(*ar.shape)
+        t2 = time()
+        if show_time:
+            print('Apply warping:', t2-t1)
+    return res
