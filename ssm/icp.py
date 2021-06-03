@@ -6,7 +6,7 @@ import numpy as np
 from sklearn.neighbors import NearestNeighbors
 
 
-def best_fit_transform(A, B):
+def best_fit_transform(A, B, allow_reflection=False):
     '''
     Calculates the least-squares best-fit transform that maps corresponding points A to B in m spatial dimensions
     Input:
@@ -35,7 +35,7 @@ def best_fit_transform(A, B):
     R = np.dot(Vt.T, U.T)
 
     # special reflection case
-    if np.linalg.det(R) < 0:
+    if not allow_reflection and np.linalg.det(R) < 0:
         Vt[m-1, :] *= -1
         R = np.dot(Vt.T, U.T)
 
@@ -69,7 +69,7 @@ def nearest_neighbor(src, dst):
     return distances.ravel(), indices.ravel()
 
 
-def icp(A, B, n_points=None, init_pose=None, max_iterations=20, tolerance=0.001):
+def icp(A, B, n_points=None, allow_reflection=False, init_pose=None, max_iterations=20, tolerance=0.001):
     '''
     The Iterative Closest Point method: finds best-fit transform that maps points A on to points B
     Input:
@@ -119,7 +119,7 @@ def icp(A, B, n_points=None, init_pose=None, max_iterations=20, tolerance=0.001)
 
 
         # compute the transformation between the current source and nearest destination points
-        T, _, _ = best_fit_transform(small_src.T, small_dst[:, indices].T)
+        T, _, _ = best_fit_transform(small_src.T, small_dst[:, indices].T, allow_reflection=allow_reflection)
 
 
         # update the current source
@@ -132,6 +132,6 @@ def icp(A, B, n_points=None, init_pose=None, max_iterations=20, tolerance=0.001)
         prev_error = mean_error
 
     # calculate final transformation
-    T, _, _ = best_fit_transform(A, src[:m, :].T)
+    T, _, _ = best_fit_transform(A, src[:m, :].T, allow_reflection=allow_reflection)
 
     return T, distances, i

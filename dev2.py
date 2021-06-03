@@ -205,6 +205,10 @@ print(time() - t1)
 print(len(verts))
 
 # %%
+
+morp.remove_small_holes
+
+# %%
 plt.close()
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
