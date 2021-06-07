@@ -5,6 +5,8 @@ import random
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
 
+from .utils import get_norm_transform, transform_cloud
+
 
 def best_fit_transform(A, B, allow_reflection=False):
     '''
@@ -55,13 +57,11 @@ def nearest_neighbor(src, dst):
     Find the nearest (Euclidean) neighbor in dst for each point in src
     Input:
         src: Nxm array of points
-        dst: Nxm array of points
+        dst: Mxm array of points
     Output:
-        distances: Euclidean distances of the nearest neighbor
-        indices: dst indices of the nearest neighbor
+        distances (size Mx1): Euclidean distances of the nearest neighbor
+        indices (size Mx1): dst indices of the nearest neighbor
     '''
-
-    assert src.shape == dst.shape
 
     neigh = NearestNeighbors(n_neighbors=1)
     neigh.fit(dst)
@@ -135,3 +135,41 @@ def icp(A, B, n_points=None, allow_reflection=False, init_pose=None, max_iterati
     T, _, _ = best_fit_transform(A, src[:m, :].T, allow_reflection=allow_reflection)
 
     return T, distances, i
+
+
+def register_icp(
+    ref_verts: np.ndarray,
+    src_verts: np.ndarray,
+    allow_reflection: bool = False,
+    init_pose=None,
+    max_iterations: int = 1000,
+    tolerance: float = 1e-5,
+) -> (np.ndarray, np.ndarray, np.ndarray):
+    """
+    Performs ICP registration onto ref_verts (Shape = T @ ref)
+    Args:
+        src_verts (np.ndarray): size (Mxd). Coint cloud to register onto
+        ref_verts (np.ndarray): size (Nxd). Coint cloud to register onto
+        allow_reflection (bool): if False, will remove reflections
+        init_pose (np.ndarray): initial transform
+        max_iterations (int): max number of iterations for ICP algorithm
+        tolerance (float): min accepted difference of tansform between two iterations of ICP to converge
+
+    Returns:
+        np.ndarray, np.ndarray, int: Transform of size (d+1) x (d+1).
+                                    errors of size (N). number of iterations to converge.
+    """
+    Tnorm_ref = get_norm_transform(ref_verts.mean(0), ref_verts.std(0))
+    nref_verts = transform_cloud(Tnorm_ref, ref_verts)
+
+    src_mean, src_std = src_verts.mean(0), src_verts.std(0)
+    nverts = (src_verts - src_mean) /src_std
+    Tnorm_inv = get_norm_transform(src_mean, src_std, invert=True)
+
+
+    T, errs, n_iters = icp(
+        nref_verts, nverts, allow_reflection=allow_reflection, init_pose=None, max_iterations=max_iterations, tolerance=tolerance
+    )
+    Tref = Tnorm_inv @ T @ Tnorm_ref
+
+    return Tref, errs, n_iters

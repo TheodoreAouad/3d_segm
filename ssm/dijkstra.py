@@ -41,10 +41,10 @@ def dijsktra(graph, initial_set):
         nodes.remove(min_node)
         current_weight = visited[min_node]
 
-        for edge in graph.edges[min_node]:
-            weight = current_weight + graph.distances[(min_node, edge)]
-            if edge not in visited or weight < visited[edge]:
-                visited[edge] = weight
-                path[edge] = min_node
+        for dest_node in graph.edges[min_node]:
+            weight = current_weight + graph.distances[(min_node, dest_node)]
+            if dest_node not in visited or weight < visited[dest_node]:
+                visited[dest_node] = weight
+                path[dest_node] = min_node
 
     return visited, path

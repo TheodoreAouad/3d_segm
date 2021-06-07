@@ -7,14 +7,14 @@ import sys
 # Load data
 
 def plot_mesh(
-    vertexes,
-    faces,
+    vertexes=None,
+    faces=None,
     color_vertexes=None,
     color_faces=None,
     title='',
     points=[],
     size_point=20,
-    point_color=[0,1,0,1],
+    point_color=[0, 1, 0, 1],
 ):
     """
     Plot the interactive pyqtgraph for a mesh.
@@ -36,14 +36,15 @@ def plot_mesh(
     w.show()
     w.setWindowTitle(title)
 
-    mesh = gl.GLMeshItem(
-        vertexes=vertexes,
-        faces=faces,
-        faceColors=color_faces,
-        vertexColors=color_vertexes,
-    )
+    if vertexes is not None and faces is not None:
+        mesh = gl.GLMeshItem(
+            vertexes=vertexes,
+            faces=faces,
+            faceColors=color_faces,
+            vertexColors=color_vertexes,
+        )
 
-    w.addItem(mesh)
+        w.addItem(mesh)
 
     for coords in points:
         mesh = gl.MeshData.sphere(size_point, size_point)
