@@ -1,6 +1,9 @@
 import warnings
+from typing import List
 
 import numpy as np
+from scipy.linalg import orthogonal_procrustes
+
 
 from .utils import get_norm_transform, transform_cloud
 from .icp import register_icp, nearest_neighbor
@@ -18,6 +21,7 @@ class Shape:
         normals: np.ndarray = None,
         values: np.ndarray = None,
         reference: "Shape" = None,
+        sample: np.ndarray = None,
     ):
         self.label = label
         self.volume = volume
@@ -26,20 +30,21 @@ class Shape:
         self.normals = normals
         self.values = values
         self.reference = reference
+        self.sample = sample
 
         self.Tref: np.ndarray = None
-        self.sample: np.ndarray = None
         self.dist_to_sample: np.ndarray = None
+        self.Tprocrustes: np.ndarray = None
 
     @property
     def Tnorm(self) -> np.ndarray:
         assert self.vertexes is not None
-        return get_norm_transform(self.vertexes_mean, self.vertexes_std)
+        return get_norm_transform(self.vertexes_mean, self.centered_norm)
 
     @property
     def Tnorm_inv(self) -> np.ndarray:
         assert self.vertexes is not None
-        return get_norm_transform(self.vertexes_mean, self.vertexes_std, invert=True)
+        return get_norm_transform(self.vertexes_mean, self.centered_norm, invert=True)
 
     # TODO: do not compute multiple times the mean if called multiple times
     @property
@@ -50,6 +55,10 @@ class Shape:
     @property
     def vertexes_std(self) -> np.ndarray:
         return self.vertexes.std(0)
+
+    @property
+    def centered_norm(self) -> float:
+        return np.linalg.norm(self.vertexes - self.vertexes_mean)
 
     def register_icp_to_reference(
         self,
@@ -82,8 +91,8 @@ class Shape:
 
         return self.Tref, errs, n_iters
 
-    def align_samples(self, reference: "Shape" = None) -> (np.ndarray, np.ndarray):
-        """ Creates samples alignes with reference's samples.
+    def match_samples(self, reference: "Shape" = None) -> (np.ndarray, np.ndarray):
+        """ Creates samples matches with reference's samples.
         """
         if reference is None:
             reference = self.reference
@@ -144,21 +153,72 @@ class Shape:
         ax.legend()
         return ax
 
-    def plot_compare_point_cloud(self, ax, **kwargs):
+    def plot_compare_point_cloud(self, ax, show_sampling=False, **kwargs):
         Tref_vert = transform_cloud(self.Tref, self.reference.vertexes)
         ax.scatter(*Tref_vert.T, label='ref', **kwargs)
         ax.scatter(*self.vertexes.T, label='shape', **kwargs)
+
+        if show_sampling:
+            Tsampling = transform_cloud(self.Tref, self.reference.sample)
+            self.plot_link_samples(ax, Tsampling, self.sample)
+
         ax.legend()
         return ax
 
     def plot_compare_samples(self, ax, **kwargs):
         Tsampling = transform_cloud(self.Tref, self.reference.sample)
-        ax.scatter(*Tsampling.T, label='ref', **kwargs)
-        ax.scatter(*self.sample.T, label='shape', **kwargs)
+        ax.scatter(*Tsampling.T, label='ref', c='g', **kwargs)
+        ax.scatter(*self.sample.T, label='shape', c='r', **kwargs)
 
-        for s1, s2 in zip(Tsampling, self.sample):
-            toplot = [[s1[i], s2[i]] for i in range(3)]
-            ax.plot(*toplot)
+        # for s1, s2 in zip(Tsampling, self.sample):
+        #     toplot = [[s1[i], s2[i]] for i in range(3)]
+        #     ax.plot(*toplot)
+        self.plot_link_samples(ax, Tsampling, self.sample)
 
         ax.legend()
         return ax
+
+    @staticmethod
+    def plot_link_samples(ax, samples1, samples2, **kwargs):
+        for s1, s2 in zip(samples1, samples2):
+            toplot = [[s1[i], s2[i]] for i in range(3)]
+            ax.plot(*toplot, **kwargs)
+        return ax
+
+    def apply_procrustes(self, reference):
+        pass
+
+    def align_samples(self, reference: "Shape" = None) -> np.ndarray:
+        """ Given a reference sample, align the shape sample using procrustes anaysis.
+        """
+        if reference is None:
+            reference = self.reference
+        nsample = transform_cloud(self.Tnorm, self.sample)
+        ref_nsample = transform_cloud(reference.Tnorm, reference.sample)
+        R, scale = orthogonal_procrustes(nsample, ref_nsample)
+
+        T = np.zeros((4, 4))
+        T[:3, :3] = R * scale
+        T[-1, -1] = 1
+        T_to_ref = reference.Tnorm_inv @ T
+
+        sample_on_ref = transform_cloud(T_to_ref, nsample)
+
+        return sample_on_ref
+
+
+
+class SSM:
+
+    def __init__(self, shapes: List[Shape] = None, reference: Shape = None):
+        self.shapes = shapes
+        self.reference = reference
+
+        self.pcas: List[Shape] = None
+
+    def compute_pca(self):
+        pass
+
+    @property
+    def all_samples(self) -> np.ndarray:
+        return np.stack([shape.sample for shape in self.shapes], axis=-1)
