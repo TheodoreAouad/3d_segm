@@ -11,10 +11,14 @@ from tqdm import tqdm
 
 import ssm.dijkstra as dij
 
+
+N_POINTS = 50
+PATH_SEGM = os.path.abspath("/hdd/datasets/CT-ORG/raw/labels_and_README/labels-11.nii.gz")
+
+
 # Load data
 print('loading image...')
-path_segm = os.path.abspath("/hdd/datasets/CT-ORG/raw/labels_and_README/labels-11.nii.gz")
-seg1n = nib.load(path_segm)
+seg1n = nib.load(PATH_SEGM)
 seg1 = np.round(seg1n.get_fdata()) == 2
 reg1 = (u.get_most_important_regions(seg1) > 0).astype(int)
 verts1, faces1, normals1, values1 = meas.marching_cubes(reg1, step_size=3)
@@ -31,11 +35,10 @@ for tri in faces1:
             gmesh.add_edge(tri[i], tri[j], value)
             gmesh.add_edge(tri[j], tri[i], value)
 
-n_points = 50
 cur_point = 0
 
 all_points = []
-for _ in tqdm(range(n_points)):
+for _ in tqdm(range(N_POINTS)):
     all_points.append(cur_point)
     visited, path = dij.dijsktra(gmesh, initial_set=all_points)
     ar_dist = np.zeros(len(gmesh.nodes))

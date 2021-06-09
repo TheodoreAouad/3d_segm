@@ -1,8 +1,9 @@
 import warnings
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 from scipy.linalg import orthogonal_procrustes
+from sklearn.decomposition import PCA
 
 
 from .utils import get_norm_transform, transform_cloud
@@ -214,11 +215,26 @@ class SSM:
         self.shapes = shapes
         self.reference = reference
 
-        self.pcas: List[Shape] = None
+        self.pca = None
+        self.pca_basis: List[Shape] = None
 
     def compute_pca(self):
-        pass
+        self.pca = PCA(n_components=len(self.shapes))
+        self.pca.fit(self.all_samples.reshape(len(self), -1))
 
     @property
     def all_samples(self) -> np.ndarray:
-        return np.stack([shape.sample for shape in self.shapes], axis=-1)
+        return np.stack([shape.sample for shape in self.shapes], axis=0)
+
+    def __len__(self):
+        return len(self.shapes)
+
+    def get_component(self, idx: int) -> np.ndarray:
+        return self.pca.components_[idx].reshape(*self.size)
+
+    def in_pca_basis(self, coords: np.ndarray) -> np.ndarray:
+        return (coords @ self.pca.components_[:len(coords)]).reshape(*self.size)
+
+    @property
+    def size(self) -> Tuple:
+        return self.shapes[0].sample.shape
