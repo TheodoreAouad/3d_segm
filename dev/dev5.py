@@ -52,4 +52,3 @@ color_vertices = np.stack(
 
 verts1 = verts1 - verts1.mean(0)
 plot_mesh(verts1, faces1, color_vertices, points=verts1[all_points])
-
