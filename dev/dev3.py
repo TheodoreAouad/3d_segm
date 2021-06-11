@@ -1,92 +1,63 @@
-from pyqtgraph.Qt import QtCore, QtGui
-import pyqtgraph.opengl as gl
+## TEST REGISTRATION
+
 import numpy as np
-import itertools
+import matplotlib.pyplot as plt
+from scipy.linalg import orthogonal_procrustes
 
-import os
-import nibabel as nib
-import general.utils as u
-import skimage.measure as meas
-from tqdm import tqdm
+import ssm.utils as su
 
-import ssm.dijkstra as dij
+rec1 = np.concatenate((
+    np.hstack(
+        (np.ones((50, 1)), np.linspace(1, 2, 50)[:, np.newaxis]),
+    ),
+    np.hstack(
+        (np.linspace(1, 2, 50)[:, np.newaxis], np.ones((50, 1))),
+    ),
+    np.hstack(
+        (1 + np.ones((50, 1)), np.linspace(1, 2, 50)[:, np.newaxis]),
+    ),
+    np.hstack(
+        (np.linspace(1, 2, 50)[:, np.newaxis], 1 + np.ones((50, 1))),
+    ),
+))
+rec1 -= rec1.mean(0)
 
+def rot_matrix(theta):
+    return np.array([
+        [np.cos(theta), -np.sin(theta)],
+        [np.sin(theta), np.cos(theta)]
+    ])
 
-N_POINTS = 50
-PATH_SEGM = os.path.abspath("/hdd/datasets/CT-ORG/raw/labels_and_README/labels-11.nii.gz")
+T = np.eye(3)
+R = rot_matrix(np.pi / 4)
+scale_ini = 3
+T[:2, :2] = R / scale_ini
+# T[:-1, -1] = np.array([3, 3])
 
+rec2 = su.transform_cloud(T, rec1)
 
-# Load data
-print('loading image...')
-seg1n = nib.load(PATH_SEGM)
-seg1 = np.round(seg1n.get_fdata()) == 2
-reg1 = (u.get_most_important_regions(seg1) > 0).astype(int)
-verts1, faces1, normals1, values1 = meas.marching_cubes(reg1, step_size=3)
-print('Done...')
+U, S, Vt = np.linalg.svd(rec1.T @ rec2)
+Ropt = Vt.T @ U.T
+scale = S.sum() / (np.linalg.norm(rec1) ** 2)
 
-# compute distances
-gmesh = dij.Graph()
-for tri in faces1:
-    for i in range(2):
-        for j in range(i + 1, 3):
-            gmesh.add_node(tri[i])
-            gmesh.add_node(tri[j])
-            value = np.linalg.norm(verts1[tri[i]] - verts1[tri[j]])
-            gmesh.add_edge(tri[i], tri[j], value)
-            gmesh.add_edge(tri[j], tri[i], value)
+Ropt_scipy, scale_scipy = orthogonal_procrustes(rec1, rec2)
 
-cur_point = 0
+print(scale_scipy)
 
-all_points = []
-for _ in tqdm(range(N_POINTS)):
-    all_points.append(cur_point)
-    visited, path = dij.dijsktra(gmesh, initial_set=all_points)
-    ar_dist = np.zeros(len(gmesh.nodes))
-    for key, value in visited.items():
-        ar_dist[key] = value
-    cur_point = ar_dist.argmax()
+fig = plt.figure(figsize=(21, 7))
+ax = fig.add_subplot(131)
+ax.scatter(*rec1.T)
+ax.scatter(*rec2.T)
+ax.axis('equal')
 
-colors_faces = (ar_dist[faces1].mean(1) - ar_dist[faces1].min()) / (ar_dist[faces1].max() - ar_dist[faces1].min())
-colors_faces = np.stack(
-    (colors_faces, np.zeros_like(colors_faces), 1 - colors_faces, np.ones_like(colors_faces)), axis=-1
-)
-color_vertices = (ar_dist - ar_dist.min()) / (ar_dist.max() - ar_dist.min())
-color_vertices = np.stack(
-    (color_vertices, np.zeros_like(color_vertices), 1 - color_vertices, np.ones_like(color_vertices)), axis=-1
-)
+ax = fig.add_subplot(132)
+ax.scatter(*((Ropt * scale) @ rec1.T))
+ax.scatter(*rec2.T)
+ax.axis('equal')
 
-app = QtGui.QApplication.instance()
-if app is None:
-    app = QtGui.QApplication([])
-w = gl.GLViewWidget()
-w.show()
-w.setWindowTitle('A cube')
+ax = fig.add_subplot(133)
+ax.scatter(*((Ropt_scipy * scale_scipy) @ rec1.T))
+ax.scatter(*rec2.T)
+ax.axis('equal')
 
-verts1_mean = verts1.mean(0)
-
-cube = gl.GLMeshItem(
-    vertexes=verts1 - verts1_mean,
-    faces=faces1,
-    # faceColors=colors_faces,
-    vertexColors=color_vertices,
-)
-
-w.addItem(cube)
-
-for point in all_points:
-    coords = verts1[point]
-    mesh = gl.MeshData.sphere(20, 20)
-    colors = np.array([[0, 1, 0, 1] for _ in range(len(mesh.vertexes()))])
-    sphere = gl.GLMeshItem(
-        vertexes=mesh.vertexes() + coords - verts1_mean,
-        faces=mesh.faces(),
-        # faceColors=colors_faces,
-        vertexColors=colors,
-    )
-    w.addItem(sphere)
-
-
-if __name__ == '__main__':
-    import sys
-    if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
-        QtGui.QApplication.instance().exec_()
+fig.show()

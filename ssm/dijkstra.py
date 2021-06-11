@@ -18,10 +18,12 @@ class Graph:
         self.distances[(from_node, to_node)] = distance
 
 
-def dijsktra(graph, initial_set):
+def dijkstra(graph, initial_set):
     visited = {}
+    closest = {}
     for initial in initial_set:
         visited[initial] = 0
+        closest[initial] = initial
     path = {}
 
     nodes = set(graph.nodes)
@@ -46,5 +48,6 @@ def dijsktra(graph, initial_set):
             if dest_node not in visited or weight < visited[dest_node]:
                 visited[dest_node] = weight
                 path[dest_node] = min_node
+                closest[dest_node] = closest[min_node]
 
-    return visited, path
+    return visited, path, closest

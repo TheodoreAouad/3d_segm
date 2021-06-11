@@ -29,14 +29,26 @@ def plot_mesh(
         point_color (array-like): len = 4: RGBA of the point
 
     """
-    app = QtGui.QApplication.instance()
-    if app is None:
-        app = QtGui.QApplication([])
-    w = gl.GLViewWidget()
-    w.show()
-    w.setWindowTitle(title)
+    plotter = PlotMesh(title="SSM")
+    plotter.add_mesh(vertexes, faces, color_faces=color_faces, color_vertexes=color_vertexes)
+    plotter.add_point_cloud(points, size_point=size_point, point_color=point_color)
+    plotter.show()
 
-    if vertexes is not None and faces is not None:
+
+class PlotMesh:
+
+    def __init__(self, title=''):
+        self.app = QtGui.QApplication.instance()
+        if self.app is None:
+            self.app = QtGui.QApplication([])
+        self.w = gl.GLViewWidget()
+        self.w.show()
+        self.w.setWindowTitle(title)
+
+        self.meshes = []
+        self.point_clouds = []
+
+    def add_mesh(self, vertexes, faces, color_faces=None, color_vertexes=None):
         mesh = gl.GLMeshItem(
             vertexes=vertexes,
             faces=faces,
@@ -44,17 +56,34 @@ def plot_mesh(
             vertexColors=color_vertexes,
         )
 
-        w.addItem(mesh)
+        self.w.addItem(mesh)
+        self.meshes.append(mesh)
 
-    for coords in points:
-        mesh = gl.MeshData.sphere(size_point, size_point)
-        colors = np.array([point_color for _ in range(len(mesh.vertexes()))])
-        sphere = gl.GLMeshItem(
-            vertexes=mesh.vertexes() + coords,
-            faces=mesh.faces(),
-            vertexColors=colors,
-        )
-        w.addItem(sphere)
+    def add_point_cloud(self, points, size_point=20, point_color=[0, 1, 0, 1]):
+        for coords in points:
+            mesh = gl.MeshData.sphere(size_point, size_point)
+            colors = np.array([point_color for _ in range(len(mesh.vertexes()))])
+            sphere = gl.GLMeshItem(
+                vertexes=mesh.vertexes() + coords,
+                faces=mesh.faces(),
+                vertexColors=colors,
+            )
+            self.w.addItem(sphere)
 
-    if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
-        QtGui.QApplication.instance().exec_()
+        self.point_clouds.append(points)
+
+    def show(self):
+        if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
+            QtGui.QApplication.instance().exec_()
+
+    def centroid_mesh(self, idx):
+        return self.meshes[idx].vertexes.mean(0)
+
+    def centroid_point_cloud(self, idx):
+        return self.point_clouds[idx].vertexes.mean(0)
+
+    def centroid_all_meshes(self, idx):
+        centroid = np.zeros((len(self.meshes), 3))
+        for idx in range(len(self.meshes)):
+            centroid[idx] = self.centroid_mesh(idx)
+        return centroid.mean(0)

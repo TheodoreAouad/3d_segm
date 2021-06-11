@@ -35,7 +35,7 @@ cur_point = 0
 all_points = []
 for _ in tqdm(range(n_points)):
     all_points.append(cur_point)
-    visited, path = dij.dijsktra(gmesh, initial_set=all_points)
+    visited, path = dij.dijkstra(gmesh, initial_set=all_points)
     ar_dist = np.zeros(len(gmesh.nodes))
     for key, value in visited.items():
         ar_dist[key] = value

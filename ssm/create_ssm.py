@@ -2,11 +2,11 @@ import os
 import random
 
 import numpy as np
-import tqdm as tqdm
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-from .utils import sort_by_regex
-from .shape import Shape
+from ssm.utils import sort_by_regex
+from ssm.shape import Shape
 
 mesh_dir = "/hdd/datasets/CT-ORG/meshes/labels/"
 step_size = 4
@@ -35,7 +35,7 @@ for idx in tqdm(range(len(iterator))):
     cur_shape = Shape(label=mesh_path, vertexes=verts)
     cur_shape.set_reference(ref_shape)
     _, errs, n_iters = cur_shape.register_icp_to_reference()
-    cur_shape.align_samples()
+    cur_shape.match_samples()
 
     all_shapes.append(cur_shape)
     all_errs.append(errs)
@@ -52,3 +52,4 @@ cur_shape.plot_compare_point_cloud(ax1)
 
 ax1 = fig.add_subplot(122, projection='3d')
 cur_shape.plot_compare_samples(ax1)
+fig.show()

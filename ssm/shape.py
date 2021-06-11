@@ -5,10 +5,9 @@ import numpy as np
 from scipy.linalg import orthogonal_procrustes
 from sklearn.decomposition import PCA
 
-
 from .utils import get_norm_transform, transform_cloud
 from .icp import register_icp, nearest_neighbor
-from .sample_mesh import dijkstra_sampling
+from .sample_mesh import dijkstra_sampling, dijkstra_mesh
 
 
 class Shape:
@@ -22,7 +21,6 @@ class Shape:
         normals: np.ndarray = None,
         values: np.ndarray = None,
         reference: "Shape" = None,
-        sample: np.ndarray = None,
     ):
         self.label = label
         self.volume = volume
@@ -31,8 +29,8 @@ class Shape:
         self.normals = normals
         self.values = values
         self.reference = reference
-        self.sample = sample
 
+        self.sample_idx = None
         self.Tref: np.ndarray = None
         self.dist_to_sample: np.ndarray = None
         self.Tprocrustes: np.ndarray = None
@@ -60,6 +58,10 @@ class Shape:
     @property
     def centered_norm(self) -> float:
         return np.linalg.norm(self.vertexes - self.vertexes_mean)
+
+    @property
+    def sample(self) -> np.ndarray:
+        return self.vertexes[self.sample_idx]
 
     def register_icp_to_reference(
         self,
@@ -107,7 +109,8 @@ class Shape:
             self.vertexes
         )
 
-        self.sample = self.vertexes[neigh_sampling]
+        # self.sample = self.vertexes[neigh_sampling]
+        self.sample_idx = neigh_sampling
         return self.sample
 
     def perform_sampling(self, n_points: int, sampling_fn: str = "dijkstra", verbose: bool = False) -> np.ndarray:
@@ -122,7 +125,7 @@ class Shape:
             np.ndarray: (n_points x d) matrix.
         """
         if sampling_fn == "dijkstra":
-            self.sample, self.dist_to_sample = dijkstra_sampling(self.vertexes, self.faces, n_points, verbose=verbose)
+            self.sample_idx, self.dist_to_sample = dijkstra_sampling(self.vertexes, self.faces, n_points, verbose=verbose)
         else:
             raise NotImplementedError
 
@@ -207,6 +210,9 @@ class Shape:
 
         return sample_on_ref
 
+    def dijkstra_to_sample(self):
+        self.dist_to_sample = dijkstra_mesh(self.vertexes, self.faces, self.sample_idx)
+        return self.dist_to_sample
 
 
 class SSM:
