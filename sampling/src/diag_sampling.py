@@ -4,6 +4,13 @@ from sampling.src.geometry.entities import StraightCube, Plane
 
 
 def diag_sampling_annot(true_seg, vecns):
+    """
+    Samples a segment of the input signal using a diagonal cube.
+
+    Args:
+        true_seg: write your description
+        vecns: write your description
+    """
     markers = np.zeros(true_seg.shape)
     annots = np.zeros_like(true_seg)
     cov = np.zeros_like(true_seg).astype(np.uint8)

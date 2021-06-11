@@ -7,6 +7,17 @@ from .dijkstra import Graph, dijkstra
 
 
 def create_mesh_graph(verts: np.ndarray, faces: np.ndarray) -> Graph:
+    """
+    Creates a mesh graph from a list of vertices and faces.
+
+    Args:
+        verts: write your description
+        np: write your description
+        ndarray: write your description
+        faces: write your description
+        np: write your description
+        ndarray: write your description
+    """
     gmesh = Graph()
     for tri in faces:
         for i in range(2):
@@ -20,6 +31,19 @@ def create_mesh_graph(verts: np.ndarray, faces: np.ndarray) -> Graph:
 
 
 def dijkstra_sampling(verts: np.ndarray, faces: np.ndarray, n_points: int, verbose=True) -> (np.ndarray, np.ndarray):
+    """
+    Performs the Dijkstra algorithm for sampling the input vertices and faces.
+
+    Args:
+        verts: write your description
+        np: write your description
+        ndarray: write your description
+        faces: write your description
+        np: write your description
+        ndarray: write your description
+        n_points: write your description
+        verbose: write your description
+    """
     gmesh = create_mesh_graph(verts, faces)
 
     all_points = []

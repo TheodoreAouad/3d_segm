@@ -3,10 +3,25 @@ import torch.nn.functional as F
 
 
 def format_for_conv(ar, device):
+    """
+    Format ar as a numpy array for convolution.
+
+    Args:
+        ar: write your description
+        device: write your description
+    """
     return torch.tensor(ar).unsqueeze(0).unsqueeze(0).float().to(device)
 
 
 def array_erosion(ar, selem, device="cpu"):
+    """
+    Return True if the given array is a different size than the given array.
+
+    Args:
+        ar: write your description
+        selem: write your description
+        device: write your description
+    """
     conv_fn = {2: F.conv2d, 3: F.conv3d}[ar.ndim]
 
     return (conv_fn(
@@ -16,6 +31,14 @@ def array_erosion(ar, selem, device="cpu"):
 
 
 def array_dilation(ar, selem, device="cpu"):
+    """
+    Dilation of an array with a scalar element.
+
+    Args:
+        ar: write your description
+        selem: write your description
+        device: write your description
+    """
     conv_fn = {2: F.conv2d, 3: F.conv3d}[ar.ndim]
 
     return (conv_fn(

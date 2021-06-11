@@ -5,20 +5,49 @@ from collections import defaultdict
 
 class Graph:
     def __init__(self):
+        """
+        Initialize the graph.
+
+        Args:
+            self: write your description
+        """
         self.nodes = set()
         self.edges = defaultdict(set)
         self.distances = {}
 
     def add_node(self, value):
+        """
+        Add a node to the graph.
+
+        Args:
+            self: write your description
+            value: write your description
+        """
         self.nodes.add(value)
 
     def add_edge(self, from_node, to_node, distance):
+        """
+        Add an edge between two nodes.
+
+        Args:
+            self: write your description
+            from_node: write your description
+            to_node: write your description
+            distance: write your description
+        """
         self.edges[from_node].add(to_node)
         self.edges[to_node].add(from_node)
         self.distances[(from_node, to_node)] = distance
 
 
 def dijkstra(graph, initial_set):
+    """
+    Dijkstra s algorithm for finding shortest paths.
+
+    Args:
+        graph: write your description
+        initial_set: write your description
+    """
     visited = {}
     closest = {}
     for initial in initial_set:

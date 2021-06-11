@@ -8,6 +8,11 @@ class TestArrayErosion:
 
     @staticmethod
     def test_array_erosion_2d_rod():
+        """
+        Tests the erosion of a 2D array using 2D rod.
+
+        Args:
+        """
         seg2 = np.zeros((100, 100))
         seg2[47:53, 20:80] = 1
 
@@ -20,6 +25,11 @@ class TestArrayErosion:
 
     @staticmethod
     def test_array_erosion_2d_random():
+        """
+        Tests the erosion of a 2D array using a random 2D segment.
+
+        Args:
+        """
         seg2 = np.zeros((100, 100))
         seg2[1:-1, 1:-1] = np.random.randint(0, 2, size=(98, 98))
 
@@ -32,6 +42,11 @@ class TestArrayErosion:
 
     @staticmethod
     def test_array_erosion_3d_random():
+        """
+        Tests the erosion of a 3D array using a random draw.
+
+        Args:
+        """
         seg3 = np.zeros((100, 100, 100))
         seg3[1:-1, 1:-1, 1:-1] = np.random.randint(0, 2, size=(98, 98, 98))
 
@@ -47,6 +62,11 @@ class TestArrayDilation:
 
     @staticmethod
     def test_array_dilation_2d_rod():
+        """
+        Test the dilation of 2D rod segments.
+
+        Args:
+        """
         seg2 = np.zeros((100, 100))
         seg2[47:53, 20:80] = 1
 
@@ -59,6 +79,11 @@ class TestArrayDilation:
 
     @staticmethod
     def test_array_dilation_2d_random():
+        """
+        Test array dilation with 2D random numbers.
+
+        Args:
+        """
         seg2 = np.zeros((100, 100))
         seg2[1:-1, 1:-1] = np.random.randint(0, 2, size=(98, 98))
 
@@ -71,6 +96,11 @@ class TestArrayDilation:
 
     @staticmethod
     def test_array_dilation_3d_random():
+        """
+        Test array dilation with 3D random numbers.
+
+        Args:
+        """
         seg3 = np.zeros((100, 100, 100))
         seg3[1:-1, 1:-1, 1:-1] = np.random.randint(0, 2, size=(98, 98, 98))
 

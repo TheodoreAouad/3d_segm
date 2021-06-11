@@ -4,6 +4,12 @@ import yaml
 
 
 def load_yaml(path,):
+    """
+    Load a YAML file.
+
+    Args:
+        path: write your description
+    """
 
     loader = yaml.SafeLoader
     loader.add_implicit_resolver(

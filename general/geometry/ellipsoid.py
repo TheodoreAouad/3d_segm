@@ -2,7 +2,21 @@ import numpy as np
 
 
 def get_ellipse_fn(center, matrix, radius):
+    """
+    Returns a function that returns the angular distances between the ellipse and the specified center and
+
+    Args:
+        center: write your description
+        matrix: write your description
+        radius: write your description
+    """
     def fn(*x):
+        """
+        Function to calculate the center and radius of a sphere.
+
+        Args:
+            x: write your description
+        """
         W, L, H = x[0].shape
         Z = np.zeros_like(x[0])
         for i in range(W):
@@ -16,6 +30,16 @@ def get_ellipse_fn(center, matrix, radius):
 
 
 def get_ellipsoid_points(center, matrix, radius, shape=(40, 40, 40), eps=1e-1):
+    """
+    Get points in ellipse centered at center with radius eps.
+
+    Args:
+        center: write your description
+        matrix: write your description
+        radius: write your description
+        shape: write your description
+        eps: write your description
+    """
 
     XX, YY, ZZ = np.meshgrid(np.arange(shape[0]), np.arange(shape[1]), np.arange(shape[2]))
     fn_ellipse = get_ellipse_fn(center, matrix, radius)

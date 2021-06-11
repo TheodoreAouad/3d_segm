@@ -39,4 +39,11 @@ def transform_cloud(T: np.ndarray, mat: np.ndarray) -> np.ndarray:
 
 
 def sort_by_regex(lis, regex=r'labels-(\d+)'):
+    """
+    Sort list by regex.
+
+    Args:
+        lis: write your description
+        regex: write your description
+    """
     return sorted(lis, key=lambda x: int(re.findall(regex, x)[0]))

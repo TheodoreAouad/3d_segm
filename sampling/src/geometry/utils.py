@@ -131,19 +131,47 @@ def get_pos_point_on_segment(x: np.ndarray, u1: np.ndarray, u2: np.ndarray):
 
 
 def deg(theta: float):
+    """
+    Convert angle in degrees to degrees.
+
+    Args:
+        theta: write your description
+    """
     return theta * 360/(2*np.pi)
 
 
 def rad(theta: float):
+    """
+    Convert angle in degrees to radians.
+
+    Args:
+        theta: write your description
+    """
     return (theta * 2*np.pi / 360) % (2*np.pi)
 
 
 def get_mean_nonzero(ar: np.ndarray):
+    """
+    Get the mean of the non - zero values in an array.
+
+    Args:
+        ar: write your description
+        np: write your description
+        ndarray: write your description
+    """
     xs = np.where(ar != 0)[0]
     return (xs.max() + xs.min()) / 2
 
 
 def get_barycenter_nonzero_3d(ar: np.ndarray):
+    """
+    Calculate the barycenter of the nonzeros in 3d
+
+    Args:
+        ar: write your description
+        np: write your description
+        ndarray: write your description
+    """
     res = np.zeros(3)
     res[0] = get_mean_nonzero(ar.sum(1).sum(1))
     res[1] = get_mean_nonzero(ar.sum(0).sum(1))
@@ -153,6 +181,14 @@ def get_barycenter_nonzero_3d(ar: np.ndarray):
 
 
 def spheric_coord(r: float, theta: float, phi: float):
+    """
+    Return the spheric coordinates of a spheric curve.
+
+    Args:
+        r: write your description
+        theta: write your description
+        phi: write your description
+    """
     assert r > 0
     assert 0 <= phi <= np.pi
 

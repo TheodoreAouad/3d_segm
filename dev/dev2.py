@@ -9,6 +9,11 @@ import ssm.shape as sh
 import ssm.pyqtgraph_mesh as pm
 
 def reload_modules():
+    """
+    Reload all modules
+
+    Args:
+    """
     for modl in [pm]:
         reload(pm)
 
