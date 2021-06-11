@@ -23,6 +23,12 @@ rec1 = np.concatenate((
 rec1 -= rec1.mean(0)
 
 def rot_matrix(theta):
+    """
+    Rotation matrix around the z - axis
+
+    Args:
+        theta: write your description
+    """
     return np.array([
         [np.cos(theta), -np.sin(theta)],
         [np.sin(theta), np.cos(theta)]

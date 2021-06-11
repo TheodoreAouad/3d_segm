@@ -15,6 +15,11 @@ import general.utils as u
 import general.array_morphology as am
 
 def reload_modules():
+    """
+    Reload all modules
+
+    Args:
+    """
     for modl in [u, am]:
         reload(modl)
 
@@ -34,6 +39,12 @@ seg3 = np.round(seg3n.get_fdata())
 t1 = time()
 
 def horizontal_bar(size):
+    """
+    Create a horizontal bar plot.
+
+    Args:
+        size: write your description
+    """
     selem = np.zeros((3, size, 3))
     selem[1, :, 1] = 1
     return selem

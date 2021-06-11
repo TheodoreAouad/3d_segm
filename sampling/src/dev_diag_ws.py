@@ -26,6 +26,11 @@ import sampling.src.diag_sampling as ds
 
 
 def reload_modules():
+    """
+    Reloads all modules.
+
+    Args:
+    """
     for mudl in [p, an, u, du, gd, m, ws, e, gu, ds]:
         reload(mudl)
 

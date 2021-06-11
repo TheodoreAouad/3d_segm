@@ -11,10 +11,34 @@ from skimage.transform import warp
 
 
 def convert_to_nii(ar: np.ndarray, affine: np.ndarray):
+    """
+    Convert the input array and affine to a NIfti1Image object.
+
+    Args:
+        ar: write your description
+        np: write your description
+        ndarray: write your description
+        affine: write your description
+        np: write your description
+        ndarray: write your description
+    """
     return nib.Nifti1Image(ar, affine)
 
 
 def save_as_nii(path: str, ar: np.ndarray, affine: np.ndarray, dtype: Optional[type] = None):
+    """
+    Saves the given AR and affine to a NNI file.
+
+    Args:
+        path: write your description
+        ar: write your description
+        np: write your description
+        ndarray: write your description
+        affine: write your description
+        np: write your description
+        ndarray: write your description
+        dtype: write your description
+    """
     if dtype is not None:
         ar = ar.astype(dtype)
     nib_ar = convert_to_nii(ar, affine)
@@ -24,6 +48,17 @@ def save_as_nii(path: str, ar: np.ndarray, affine: np.ndarray, dtype: Optional[t
 
 
 def apply_crop(ar: np.ndarray, crop_xs: Tuple, crop_ys: Tuple, crop_zs: Optional[Tuple] = None):
+    """
+    Apply crop to an array array.
+
+    Args:
+        ar: write your description
+        np: write your description
+        ndarray: write your description
+        crop_xs: write your description
+        crop_ys: write your description
+        crop_zs: write your description
+    """
     if len(ar.shape) == 2:
         return ar[crop_xs[0]:crop_xs[1], crop_ys[0]:crop_ys[1]]
 
@@ -33,6 +68,19 @@ def apply_crop(ar: np.ndarray, crop_xs: Tuple, crop_ys: Tuple, crop_zs: Optional
 
 def reverse_crop(croped_ar: np.ndarray, size: Tuple, crop_xs: Tuple, crop_ys: Tuple, crop_zs: Optional[Tuple] = None,
                  fill_value: float = 0):
+    """
+    Reverse crop of an array.
+
+    Args:
+        croped_ar: write your description
+        np: write your description
+        ndarray: write your description
+        size: write your description
+        crop_xs: write your description
+        crop_ys: write your description
+        crop_zs: write your description
+        fill_value: write your description
+    """
     ar = np.zeros(size) + fill_value
     if len(size) == 2:
         ar[crop_xs[0]:crop_xs[1], crop_ys[0]:crop_ys[1]] = croped_ar
@@ -118,14 +166,36 @@ def center_and_crop(img: np.ndarray, mask: np.ndarray, size: Tuple, fill_backgro
 
 
 def floor_(x: float):
+    """
+    Round a float to the nearest integer.
+
+    Args:
+        x: write your description
+    """
     return np.int(np.floor(x))
 
 
 def ceil_(x: float):
+    """
+    Round a float to an integer.
+
+    Args:
+        x: write your description
+    """
     return np.int(np.ceil(x))
 
 
 def uniform_sampling(all_slices: np.ndarray, n_slices: int, dtype: type = int):
+    """
+    Sample uniformly from a list of slices.
+
+    Args:
+        all_slices: write your description
+        np: write your description
+        ndarray: write your description
+        n_slices: write your description
+        dtype: write your description
+    """
     if n_slices > 2:
         return np.linspace(all_slices.min(), all_slices.max(), n_slices).astype(dtype)
 
@@ -146,6 +216,13 @@ def get_arrangements(n: int) -> List[List]:
         [(0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0)]
     """
     def f(A, S):
+        """
+        Recursively find all elements in S that are not in A.
+
+        Args:
+            A: write your description
+            S: write your description
+        """
         cur_set = set(A).difference(S)
         if len(cur_set) == 0:
             return [S]
