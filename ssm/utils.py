@@ -40,3 +40,14 @@ def transform_cloud(T: np.ndarray, mat: np.ndarray) -> np.ndarray:
 
 def sort_by_regex(lis, regex=r'labels-(\d+)'):
     return sorted(lis, key=lambda x: int(re.findall(regex, x)[0]))
+
+
+def random_color_generator(size: int, alpha: float = 1, RGB: bool = False) -> np.ndarray:
+    colors = np.ones((size, 4)) * alpha
+    if RGB:
+        colors[:, :-1] = np.random.rand(size, 3)
+    else:
+        grey_values = np.random.rand(size, 1)
+        colors[:, :-1] = np.concatenate([grey_values for _ in range(3)], axis=1)
+    # colors[:, :-1] /= colors[:, :-1].sum(1)
+    return colors

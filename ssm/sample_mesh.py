@@ -19,7 +19,10 @@ def create_mesh_graph(verts: np.ndarray, faces: np.ndarray) -> Graph:
     return gmesh
 
 
-def dijkstra_sampling(verts: np.ndarray, faces: np.ndarray, n_points: int, verbose=True) -> (np.ndarray, np.ndarray):
+def dijkstra_sampling(
+    verts: np.ndarray, faces: np.ndarray, n_points: int, verbose=True
+) -> (np.ndarray, np.ndarray, np.ndarray):
+
     gmesh = create_mesh_graph(verts, faces)
 
     all_points = []
@@ -32,11 +35,15 @@ def dijkstra_sampling(verts: np.ndarray, faces: np.ndarray, n_points: int, verbo
         all_points.append(cur_point)
         visited, path, closest = dijkstra(gmesh, initial_set=all_points)
         ar_dist = np.zeros(len(gmesh.nodes))
-        for key, value in visited.items():
-            ar_dist[key] = value
+        for node, dist in visited.items():
+            ar_dist[node] = dist
         cur_point = ar_dist.argmax()
 
-    return all_points, ar_dist
+    ar_clos = np.zeros(len(gmesh.nodes))
+    for node, origin in closest.items():
+        ar_clos[node] = origin
+
+    return all_points, ar_dist, ar_clos
 
 
 def dijkstra_mesh(verts: np.ndarray, faces: np.ndarray, initial_set: List[int]) -> np.ndarray:
@@ -56,4 +63,9 @@ def dijkstra_mesh(verts: np.ndarray, faces: np.ndarray, initial_set: List[int]) 
     for key, value in visited.items():
         ar_dist[key] = value
 
-    return ar_dist
+    ar_clos = np.zeros(len(gmesh.nodes))
+    for node, origin in closest.items():
+        ar_clos[node] = origin
+
+
+    return ar_dist, ar_clos

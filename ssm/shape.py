@@ -2,12 +2,13 @@ import warnings
 from typing import List, Tuple
 
 import numpy as np
+import networkx as nx
 from scipy.linalg import orthogonal_procrustes
 from sklearn.decomposition import PCA
 
 from .utils import get_norm_transform, transform_cloud
 from .icp import register_icp, nearest_neighbor
-from .sample_mesh import dijkstra_sampling, dijkstra_mesh
+from .sample_mesh import dijkstra_sampling, dijkstra_mesh, create_mesh_graph
 
 
 class Shape:
@@ -33,7 +34,9 @@ class Shape:
         self.sample_idx = None
         self.Tref: np.ndarray = None
         self.dist_to_sample: np.ndarray = None
+        self.closest_sample_point: np.ndarray = None
         self.Tprocrustes: np.ndarray = None
+        self.faces_sample: np.ndarray = None
 
     @property
     def Tnorm(self) -> np.ndarray:
@@ -125,11 +128,11 @@ class Shape:
             np.ndarray: (n_points x d) matrix.
         """
         if sampling_fn == "dijkstra":
-            self.sample_idx, self.dist_to_sample = dijkstra_sampling(self.vertexes, self.faces, n_points, verbose=verbose)
+            self.sample_idx, self.dist_to_sample, self.closest_sample_point = dijkstra_sampling(self.vertexes, self.faces, n_points, verbose=verbose)
         else:
             raise NotImplementedError
 
-        return self.sample, self.dist_to_sample
+        return self.sample, self.dist_to_sample, self.closest_sample_point
 
     def set_reference(self, reference: "Shape"):
         self.reference = reference
@@ -210,9 +213,29 @@ class Shape:
 
         return sample_on_ref
 
-    def dijkstra_to_sample(self):
-        self.dist_to_sample = dijkstra_mesh(self.vertexes, self.faces, self.sample_idx)
-        return self.dist_to_sample
+    def dijkstra_to_sample(self) -> (np.ndarray, np.ndarray):
+        self.dist_to_sample, self.closest_sample_point = dijkstra_mesh(self.vertexes, self.faces, self.sample_idx)
+        return self.dist_to_sample, self.closest_sample_point
+
+    def compute_sample_faces(self) -> np.ndarray:
+        gsample = nx.Graph()
+        sample_order = {self.sample_idx[k]: k for k in range(len(self.sample_idx))}
+
+        gmesh = create_mesh_graph(self.vertexes, self.faces)
+        visited_edges = set()
+        for node1 in gmesh.nodes:
+            for node2 in gmesh.edges[node1]:
+                if (node2, node1) in visited_edges:
+                    continue
+                visited_edges.add((node1, node2))
+                c1 = self.closest_sample_point[node1]
+                c2 = self.closest_sample_point[node2]
+                if c1 != c2:
+                    gsample.add_edge(sample_order[c1], sample_order[c2])
+
+        self.faces_sample = np.array([clique for clique in nx.enumerate_all_cliques(gsample) if len(clique) == 3])
+
+        return self.faces_sample
 
 
 class SSM:

@@ -48,13 +48,8 @@ class PlotMesh:
         self.meshes = []
         self.point_clouds = []
 
-    def add_mesh(self, vertexes, faces, color_faces=None, color_vertexes=None):
-        mesh = gl.GLMeshItem(
-            vertexes=vertexes,
-            faces=faces,
-            faceColors=color_faces,
-            vertexColors=color_vertexes,
-        )
+    def add_mesh(self, *args, **kwargs):
+        mesh = gl.GLMeshItem(*args, **kwargs)
 
         self.w.addItem(mesh)
         self.meshes.append(mesh)
