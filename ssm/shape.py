@@ -218,6 +218,8 @@ class Shape:
         return self.dist_to_sample, self.closest_sample_point
 
     def compute_sample_faces(self) -> np.ndarray:
+        """ Uses voronoi graph to connect edges. If two voronoi cells touch, the points are connected.
+        """
         gsample = nx.Graph()
         sample_order = {self.sample_idx[k]: k for k in range(len(self.sample_idx))}
 
