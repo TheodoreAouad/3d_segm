@@ -253,3 +253,16 @@ def apply_transform(
         if show_time:
             print('Apply warping:', t2-t1)
     return res
+
+
+def colormap_1d(colors: np.ndarray, colormap="br"):
+    if colormap == 'br':
+        return np.stack((colors, np.zeros_like(colors), 1 - colors), axis=-1)
+
+
+def constant_color(color: np.ndarray, size: int):
+    return np.stack([color for _ in range(size)], axis=0)
+
+
+def max_min_norm(ar: np.ndarray) -> np.ndarray:
+    return (ar - ar.min()) / (ar.max() - ar.min())
