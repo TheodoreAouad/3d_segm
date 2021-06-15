@@ -266,3 +266,7 @@ def constant_color(color: np.ndarray, size: int):
 
 def max_min_norm(ar: np.ndarray) -> np.ndarray:
     return (ar - ar.min()) / (ar.max() - ar.min())
+
+
+def uniform_sampling_bound(a, b):
+    return np.random.rand(*a.shape) * (b - a) + a

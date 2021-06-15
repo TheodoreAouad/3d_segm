@@ -6,6 +6,7 @@ import networkx as nx
 from scipy.linalg import orthogonal_procrustes
 from sklearn.decomposition import PCA
 
+from general.utils import uniform_sampling_bound
 from .utils import get_norm_transform, transform_cloud
 from .icp import register_icp, nearest_neighbor
 from .sample_mesh import dijkstra_sampling, dijkstra_mesh, create_mesh_graph
@@ -269,3 +270,11 @@ class SSM:
     @property
     def size(self) -> Tuple:
         return self.shapes[0].sample.shape
+
+    def random_sampling_pca(self, n_pca=None):
+        if n_pca is None:
+            n_pca = len(self.pca.explained_variance_)
+        ub = np.sqrt(3) * self.pca.explained_variance_[:n_pca]
+        b = uniform_sampling_bound(-ub, ub)
+        b /= b.sum()
+        return self.in_pca_basis(b), b
