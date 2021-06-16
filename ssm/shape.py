@@ -256,7 +256,10 @@ class SSM:
 
     @property
     def all_samples(self) -> np.ndarray:
-        return np.stack([shape.sample for shape in self.shapes], axis=0)
+        return np.stack(
+            [transform_cloud(np.linalg.inv(shape.Tref), shape.sample) for shape in self.shapes],
+            axis=0
+        )
 
     def __len__(self):
         return len(self.shapes)

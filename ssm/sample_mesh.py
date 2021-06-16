@@ -28,14 +28,22 @@ def dijkstra_sampling(
     all_points = []
     cur_point = 0
 
+    dists, path, closest = None, None, None
+
     iterator = range(n_points)
     if verbose:
         iterator = tqdm(iterator)
     for _ in tqdm(iterator):
         all_points.append(cur_point)
-        visited, path, closest = dijkstra(gmesh, initial_set=all_points)
+        dists, path, closest = dijkstra(
+            gmesh,
+            initial_set=[cur_point],
+            initial_dist=dists,
+            initial_closest=closest,
+            initial_path=path,
+        )
         ar_dist = np.zeros(len(gmesh.nodes))
-        for node, dist in visited.items():
+        for node, dist in dists.items():
             ar_dist[node] = dist
         cur_point = ar_dist.argmax()
 
@@ -58,9 +66,9 @@ def dijkstra_mesh(verts: np.ndarray, faces: np.ndarray, initial_set: List[int]) 
         np.ndarray: size (N,), distance of each vertex to initial_set
     """
     gmesh = create_mesh_graph(verts, faces)
-    visited, path, closest = dijkstra(gmesh, initial_set=initial_set)
+    dists, path, closest = dijkstra(gmesh, initial_set=initial_set)
     ar_dist = np.zeros(len(gmesh.nodes))
-    for key, value in visited.items():
+    for key, value in dists.items():
         ar_dist[key] = value
 
     ar_clos = np.zeros(len(gmesh.nodes))
