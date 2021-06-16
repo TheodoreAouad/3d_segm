@@ -252,7 +252,10 @@ class SSM:
 
     def compute_pca(self):
         self.pca = PCA(n_components=len(self.shapes))
-        self.pca.fit(self.all_samples.reshape(len(self), -1))
+        all_samples = self.all_samples.reshape(len(self), -1)
+        self.all_samples_mean = all_samples.mean(0)
+        # self.pca.fit(self.all_samples.reshape(len(self), -1))
+        self.pca.fit(all_samples - self.all_samples_mean)
 
     @property
     def all_samples(self) -> np.ndarray:
@@ -265,19 +268,23 @@ class SSM:
         return len(self.shapes)
 
     def get_component(self, idx: int) -> np.ndarray:
-        return self.pca.components_[idx].reshape(*self.size)
+        return (self.pca.components_[idx] + self.all_samples_mean).reshape(*self.size)
 
     def in_pca_basis(self, coords: np.ndarray) -> np.ndarray:
-        return (coords @ self.pca.components_[:len(coords)]).reshape(*self.size)
+        return (coords @ self.pca.components_[:len(coords)] + self.all_samples_mean).reshape(*self.size)
 
     @property
     def size(self) -> Tuple:
         return self.shapes[0].sample.shape
 
-    def random_sampling_pca(self, n_pca=None):
+    def random_sampling_pca(self, n_pca=None, lb=None, ub=None):
         if n_pca is None:
             n_pca = len(self.pca.explained_variance_)
-        ub = np.sqrt(3) * self.pca.explained_variance_[:n_pca]
-        b = uniform_sampling_bound(-ub, ub)
+
+        if ub is None:
+            ub = np.sqrt(3) * self.pca.explained_variance_
+        if lb is None:
+            lb = - np.sqrt(3) * self.pca.explained_variance_
+        b = uniform_sampling_bound(lb[:n_pca], ub[:n_pca])
         b /= b.sum()
         return self.in_pca_basis(b), b
