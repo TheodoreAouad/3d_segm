@@ -64,6 +64,11 @@ class Shape:
         return np.linalg.norm(self.vertexes - self.vertexes_mean)
 
     @property
+    def Rotref(self) -> np.ndarray:
+        assert self.Tref is not None
+        return self.Tref[:3, :3] * np.sqrt(3) / np.linalg.norm(self.Tref[:3, :3])
+
+    @property
     def sample(self) -> np.ndarray:
         return self.vertexes[self.sample_idx]
 
@@ -264,11 +269,21 @@ class SSM:
             axis=0
         )
 
+    @property
+    def all_sample_normals(self) -> np.ndarray:
+        """ Applies the inverse rotation reference to the normals of the shapes.
+        If R @ ref.T -> Shape.T, then ref @ R.T -> Shape, then Shape @ R -> ref
+        """
+        return np.stack(
+            [shape.normals[shape.sample_idx] @ shape.Rotref for shape in self.shapes],
+            axis=0
+        )
+
     def __len__(self):
         return len(self.shapes)
 
     def get_component(self, idx: int) -> np.ndarray:
-        return (self.pca.components_[idx] + self.all_samples_mean).reshape(*self.size)
+        return (self.pca.components_[idx] * 3 * np.sqrt(self.pca.explained_variance_[idx]) + self.all_samples_mean).reshape(*self.size)
 
     def in_pca_basis(self, coords: np.ndarray) -> np.ndarray:
         return (coords @ self.pca.components_[:len(coords)] + self.all_samples_mean).reshape(*self.size)
@@ -282,9 +297,9 @@ class SSM:
             n_pca = len(self.pca.explained_variance_)
 
         if ub is None:
-            ub = np.sqrt(3) * self.pca.explained_variance_
+            ub = 3 * np.sqrt(self.pca.explained_variance_)
         if lb is None:
-            lb = - np.sqrt(3) * self.pca.explained_variance_
+            lb = -3 * np.sqrt(self.pca.explained_variance_)
         b = uniform_sampling_bound(lb[:n_pca], ub[:n_pca])
-        b /= b.sum()
+        # b /= b.sum()
         return self.in_pca_basis(b), b

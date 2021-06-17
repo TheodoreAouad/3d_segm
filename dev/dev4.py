@@ -144,3 +144,6 @@ plotter.add_point_cloud(shape_to_plots[0].sample + translation)
 
 
 plotter.show()
+
+
+
