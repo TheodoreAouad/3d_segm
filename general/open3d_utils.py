@@ -1,4 +1,5 @@
 import open3d as o3d
+from open3d.web_visualizer import draw
 
 
 def numpy_to_o3d_pcd(points: "np.ndarray", **kwargs) -> o3d.geometry.PointCloud:
@@ -24,3 +25,9 @@ def numpy_to_o3d_mesh(**kwargs) -> o3d.geometry.TriangleMesh:
             type_fn = o3d.utility.Vector3dVector
         setattr(msh, attr, type_fn(value))
     return msh
+
+
+def plot_mesh(vertices: "np.ndarray", triangles: "np.ndarray", **kwargs) -> None:
+    msh = numpy_to_o3d_mesh(vertices=vertices, triangles=triangles, **kwargs)
+    msh.compute_vertex_normals()
+    draw(msh)

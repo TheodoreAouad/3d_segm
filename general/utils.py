@@ -265,6 +265,8 @@ def constant_color(color: np.ndarray, size: int):
 
 
 def max_min_norm(ar: np.ndarray) -> np.ndarray:
+    ar = ar + 0
+    ar[ar == np.infty] = ar[ar != np.infty].max()
     return (ar - ar.min()) / (ar.max() - ar.min())
 
 

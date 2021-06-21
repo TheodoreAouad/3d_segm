@@ -9,6 +9,7 @@ from sklearn.decomposition import PCA
 from general.utils import uniform_sampling_bound
 from .utils import get_norm_transform, transform_cloud
 from .icp import register_icp, nearest_neighbor
+from .hungarian_icp import perfect_matching, register_icp_hungarian
 from .sample_mesh import dijkstra_sampling, dijkstra_mesh, create_mesh_graph
 
 
@@ -72,6 +73,43 @@ class Shape:
     def sample(self) -> np.ndarray:
         return self.vertexes[self.sample_idx]
 
+    def register_sample_to_reference(
+        self,
+        reference: "Shape" = None,
+        allow_reflection: bool = False,
+        init_pose=None,
+        max_iterations: int = 1000,
+        tolerance: float = 1e-5,
+        matching_method: str = "nearest",
+    ) -> (np.ndarray, np.ndarray, np.ndarray):
+        """
+        Performs ICP registration onto ref_verts (Shape = T @ ref)
+        Args:
+            reference (Shape): Shape to register to.
+            allow_reflection (bool): if False, will remove reflections
+            max_iterations (int): max number of iterations for ICP algorithm
+            init_pose (np.ndarray): initial transform
+            tolerance (float): min accepted difference of tansform between two iterations of ICP to converge
+
+        Returns:
+            np.ndarray, np.ndarray, int: Transform of size (d+1) x (d+1).
+                                        errors of size (N). number of iterations to converge.
+        """
+        if reference is None:
+            reference = self.reference
+        if self.sample_idx is None:
+            warnings.warn("No sample found. Performing sampling.")
+            self.perform_sampling(len(self.reference.sample_idx))
+
+        T, indices, errs, n_iters = register_icp_hungarian(
+            reference.sample, self.sample,
+            allow_reflection=allow_reflection, init_pose=init_pose, max_iterations=max_iterations, tolerance=tolerance,)
+        self.Tref = T
+        self.sample_idx = self.sample_idx[indices]
+
+        return self.Tref, self.sample_idx, errs, n_iters
+
+
     def register_icp_to_reference(
         self,
         reference: "Shape" = None,
@@ -79,6 +117,7 @@ class Shape:
         init_pose=None,
         max_iterations: int = 1000,
         tolerance: float = 1e-5,
+        matching_method: str = "nearest",
     ) -> (np.ndarray, np.ndarray, np.ndarray):
         """
         Performs ICP registration onto ref_verts (Shape = T @ ref)
@@ -96,14 +135,15 @@ class Shape:
         if reference is None:
             reference = self.reference
 
-        T, errs, n_iters = register_icp(
+        T, indices, errs, n_iters = register_icp(
             reference.vertexes, self.vertexes,
             allow_reflection=allow_reflection, init_pose=init_pose, max_iterations=max_iterations, tolerance=tolerance,)
         self.Tref = T
+        # self.sample_idx = indices
 
-        return self.Tref, errs, n_iters
+        return self.Tref, indices, errs, n_iters
 
-    def match_samples(self, reference: "Shape" = None) -> (np.ndarray, np.ndarray):
+    def match_samples(self, reference: "Shape" = None, matching_method: str = "nearest") -> (np.ndarray, np.ndarray):
         """ Creates samples matches with reference's samples.
         """
         if reference is None:
@@ -113,13 +153,24 @@ class Shape:
             warnings.warn("No registration already done. Performing ICP registration with default parameters...")
             self.register_icp_to_reference(reference)
 
-        _, neigh_sampling = nearest_neighbor(
-            transform_cloud(self.Tref, reference.sample),
-            self.vertexes
-        )
+        if matching_method == "nearest":
+            _, neigh_sampling = nearest_neighbor(
+                transform_cloud(self.Tref, reference.sample),
+                self.vertexes
+            )
+            self.sample_idx = np.array(neigh_sampling)
+
+        elif matching_method in ["hungarian", "perfect", "perfect_matching"]:
+            if self.sample_idx is None:
+                warnings.warn("No sample found. Performing sampling.")
+                self.perform_sampling(len(self.reference.sample_idx))
+            neigh_sampling = perfect_matching(
+                transform_cloud(self.Tref, reference.sample),
+                self.sample
+            )
+            self.sample_idx = self.sample_idx[neigh_sampling]
 
         # self.sample = self.vertexes[neigh_sampling]
-        self.sample_idx = neigh_sampling
         return self.sample
 
     def perform_sampling(self, n_points: int, sampling_fn: str = "dijkstra", verbose: bool = False) -> np.ndarray:
@@ -138,6 +189,7 @@ class Shape:
         else:
             raise NotImplementedError
 
+        self.sample_idx = np.array(self.sample_idx)
         return self.sample, self.dist_to_sample, self.closest_sample_point
 
     def set_reference(self, reference: "Shape"):

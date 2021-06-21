@@ -33,7 +33,7 @@ def dijkstra_sampling(
     iterator = range(n_points)
     if verbose:
         iterator = tqdm(iterator)
-    for _ in tqdm(iterator):
+    for _ in iterator:
         all_points.append(cur_point)
         dists, path, closest = dijkstra(
             gmesh,

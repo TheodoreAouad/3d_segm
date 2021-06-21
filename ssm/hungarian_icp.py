@@ -1,32 +1,44 @@
-''' Taken from https://github.com/ClayFlannigan/icp/blob/master/icp.py
-'''
+from typing import List
 import random
 
+import networkx as nx
 import numpy as np
-from sklearn.neighbors import NearestNeighbors
 
 from .utils import get_norm_transform, transform_cloud
 from .best_fit_transform import best_fit_transform
 
 
-def nearest_neighbor(src, dst):
-    '''
-    Find the nearest (Euclidean) neighbor in dst for each point in src
-    Input:
-        src: Nxm array of points
-        dst: Mxm array of points
-    Output:
-        distances (size Mx1): Euclidean distances of the nearest neighbor
-        indices (size Mx1): dst indices of the nearest neighbor
-    '''
-
-    neigh = NearestNeighbors(n_neighbors=1)
-    neigh.fit(dst)
-    distances, indices = neigh.kneighbors(src, return_distance=True)
-    return distances.ravel(), indices.ravel()
+def create_bipartite_graph(sample1: np.ndarray, sample2: np.ndarray) -> nx.Graph:
+    gbi = nx.Graph()
+    for ref_idx in range(len(sample1)):
+        ref_point = sample1[ref_idx]
+        weights = np.sqrt(((ref_point - sample2)**2).sum(1))
+        gbi.add_weighted_edges_from([
+            (("shp1", ref_idx), ("shp2", cur_idx), weights[cur_idx]) for cur_idx in range(len(weights))
+        ])
+    return gbi
 
 
-def icp(A, B, n_points=None, allow_reflection=False, init_pose=None, max_iterations=20, tolerance=0.001):
+def perfect_matching(sample1: np.ndarray, sample2: np.ndarray) -> List[int]:
+    """ Outputs a 1 to 1 matching from sample1 to sample2.
+
+    Args:
+        sample1 (np.ndarray): shape N points x d dims
+        sample2 (np.ndarray): shape N points x d dims
+
+    Returns:
+        list: len N: matching is sample2[output] <=> sample1
+    """
+
+    gbi = create_bipartite_graph(sample1, sample2)
+    matching = nx.algorithms.bipartite.minimum_weight_full_matching(
+        gbi, top_nodes=[("shp1", idx) for idx in range(len(sample1))]
+    )
+
+    return [matching[('shp1', i)][1] for i in range(len(sample1))]
+
+
+def hungarian_icp(A, B, n_points=None, allow_reflection=False, init_pose=None, max_iterations=20, tolerance=0.001, verbose=False):
     '''
     The Iterative Closest Point method: finds best-fit transform that maps points A on to points B
     Input:
@@ -41,8 +53,6 @@ def icp(A, B, n_points=None, allow_reflection=False, init_pose=None, max_iterati
         distances: Euclidean distances (errors) of the nearest neighbor
         i: number of iterations to converge
     '''
-
-    # assert A.shape == B.shape
 
     # get number of dimensions
     m = A.shape[1]
@@ -72,7 +82,7 @@ def icp(A, B, n_points=None, allow_reflection=False, init_pose=None, max_iterati
         small_src = src[:m, src_points]
         small_dst = dst[:m, dst_points]
 
-        distances, indices = nearest_neighbor(small_src.T, small_dst.T)
+        indices = perfect_matching(small_src.T, small_dst.T)
 
 
         # compute the transformation between the current source and nearest destination points
@@ -82,11 +92,16 @@ def icp(A, B, n_points=None, allow_reflection=False, init_pose=None, max_iterati
         # update the current source
         src = np.dot(T, src)
 
+        distances = np.sqrt(np.sum((src[:m, src_points] - dst[:m, dst_points]) ** 2, axis=0))
+
         # check error
         mean_error = np.mean(distances)
         if np.abs(prev_error - mean_error) < tolerance:
             break
         prev_error = mean_error
+
+        if verbose:
+            print(i, prev_error)
 
     # calculate final transformation
     T, _, _ = best_fit_transform(A, src[:m, :].T, allow_reflection=allow_reflection)
@@ -94,7 +109,8 @@ def icp(A, B, n_points=None, allow_reflection=False, init_pose=None, max_iterati
     return T, indices, distances, i
 
 
-def register_icp(
+
+def register_icp_hungarian(
     ref_verts: np.ndarray,
     src_verts: np.ndarray,
     allow_reflection: bool = False,
@@ -126,7 +142,7 @@ def register_icp(
     Tnorm_inv = get_norm_transform(src_mean, src_centered_norm, invert=True)
 
 
-    T, indices, errs, n_iters = icp(
+    T, indices, errs, n_iters = hungarian_icp(
         nref_verts, nverts, allow_reflection=allow_reflection, init_pose=None, max_iterations=max_iterations, tolerance=tolerance
     )
     Tref = Tnorm_inv @ T @ Tnorm_ref
