@@ -1,12 +1,14 @@
 import warnings
 from typing import List, Tuple
+from os.path import join, exists
 
 import numpy as np
 import networkx as nx
 from scipy.linalg import orthogonal_procrustes
 from sklearn.decomposition import PCA
 
-from general.utils import uniform_sampling_bound
+from general.utils import uniform_sampling_bound, max_min_norm, colormap_1d
+from general.open3d_utils import numpy_to_o3d_mesh, numpy_to_o3d_pcd
 from .utils import get_norm_transform, transform_cloud
 from .icp import register_icp, nearest_neighbor
 from .hungarian_icp import perfect_matching, register_icp_hungarian
@@ -24,6 +26,8 @@ class Shape:
         normals: np.ndarray = None,
         values: np.ndarray = None,
         reference: "Shape" = None,
+        origin_path: str = None,
+        **kwargs
     ):
         self.label = label
         self.volume = volume
@@ -32,6 +36,7 @@ class Shape:
         self.normals = normals
         self.values = values
         self.reference = reference
+        self.origin_path = origin_path
 
         self.sample_idx = None
         self.Tref: np.ndarray = None
@@ -39,6 +44,37 @@ class Shape:
         self.closest_sample_point: np.ndarray = None
         self.Tprocrustes: np.ndarray = None
         self.faces_sample: np.ndarray = None
+
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+    @property
+    def vertices(self) -> np.ndarray:
+        return self.vertexes
+
+    @property
+    def triangles(self) -> np.ndarray:
+        return self.faces
+
+    @staticmethod
+    def load_from_path(path: str, label: str = None, ext: str = '.npy', **kwargs) -> "Shape":
+        """ Create a Shape from a directory.
+
+        The function will look for 'volume', 'vertexes', 'faces', 'normals', 'values'
+        in the directory, with the appropriate extension, and load them.
+
+        Other initialization args can also be given as kwargs, and has priority on the files
+        (e.g. if vertexes are given in kwargs, the file vertexes.npy will not be read).
+        """
+        init_args = dict(
+            **{"label": label, 'origin_path': path},
+            **kwargs
+        )
+        for arg in set(['volume', 'vertexes', 'faces', 'normals', 'values']).difference(kwargs.keys()):
+            path_arg = join(path, f'{arg}{ext}')
+            if exists(path_arg):
+                init_args[arg] = np.load(path_arg)
+        return Shape(**init_args)
 
     @property
     def Tnorm(self) -> np.ndarray:
@@ -143,7 +179,7 @@ class Shape:
 
         return self.Tref, indices, errs, n_iters
 
-    def match_samples(self, reference: "Shape" = None, matching_method: str = "nearest") -> (np.ndarray, np.ndarray):
+    def match_samples(self, reference: "Shape" = None, matching_method: str = "perfect") -> (np.ndarray, np.ndarray):
         """ Creates samples matches with reference's samples.
         """
         if reference is None:
@@ -297,6 +333,70 @@ class Shape:
 
         return self.faces_sample
 
+    def o3d_mesh(self, vertex_colors="dist_to_sample") -> "open3d.cpu.pybind.geometry.TriangleMesh":
+
+        kwargs = {'vertices': self.vertexes, 'triangles': self.faces}
+        if vertex_colors == 'dist_to_sample' and self.dist_to_sample is not None:
+            kwargs['vertex_colors'] = colormap_1d(max_min_norm(self.dist_to_sample))
+
+        cur_mesh = numpy_to_o3d_mesh(**kwargs)
+        cur_mesh.compute_vertex_normals()
+
+        return cur_mesh
+
+    def o3d_ref_mesh_transformed(self, vertex_colors="dist_to_sample") -> "open3d.cpu.pybind.geometry.TriangleMesh":
+        kwargs = {
+            'vertices': transform_cloud(self.Tref, self.reference.vertexes),
+            'triangles': self.reference.faces,
+        }
+        if vertex_colors == 'dist_to_sample' and self.dist_to_sample is not None:
+            kwargs['vertex_colors'] = colormap_1d(max_min_norm(self.reference.dist_to_sample))
+
+        ref_mesh = numpy_to_o3d_mesh(**kwargs)
+        ref_mesh.compute_vertex_normals()
+
+        return ref_mesh
+
+    def o3d_pcd(self, point_color='g', only_sample=True, **kwargs) -> "open3d.cpu.pybind.geometry.PointCloud":
+        to_plot = self.vertexes
+        if only_sample and self.sample_idx is not None:
+            to_plot = self.sample
+
+        cur_pcd = numpy_to_o3d_pcd(to_plot, **kwargs)
+
+        if point_color is not None:
+            if isinstance(point_color, str):
+                if point_color in ['r', 'red']:
+                    point_color = [1, 0, 0]
+                elif point_color in ['g', 'green']:
+                    point_color = [0, 1, 0]
+                elif point_color in ['b', 'blue']:
+                    point_color = [0, 0, 1]
+            cur_pcd.paint_uniform_color(point_color)
+
+        return cur_pcd
+
+    def o3d_ref_pcd_transformed(self, point_color='g', only_sample=True, **kwargs) -> "open3d.cpu.pybind.geometry.PointCloud":
+        assert self.Tref is not None
+        to_plot = transform_cloud(self.Tref, self.reference.vertexes)
+        if only_sample and self.sample_idx is not None:
+            to_plot = transform_cloud(self.Tref, self.reference.sample)
+
+        cur_pcd = numpy_to_o3d_pcd(to_plot, **kwargs)
+
+        if point_color is not None:
+            if isinstance(point_color, str):
+                if point_color in ['r', 'red']:
+                    point_color = [1, 0, 0]
+                elif point_color in ['g', 'green']:
+                    point_color = [0, 1, 0]
+                elif point_color in ['b', 'blue']:
+                    point_color = [0, 0, 1]
+            cur_pcd.paint_uniform_color(point_color)
+
+        return cur_pcd
+
+
 
 class SSM:
 
@@ -344,14 +444,14 @@ class SSM:
     def size(self) -> Tuple:
         return self.shapes[0].sample.shape
 
-    def random_sampling_pca(self, n_pca=None, lb=None, ub=None):
+    def random_sampling_pca(self, scalar=3, n_pca=None, lb=None, ub=None):
         if n_pca is None:
             n_pca = len(self.pca.explained_variance_)
 
         if ub is None:
-            ub = 3 * np.sqrt(self.pca.explained_variance_)
+            ub = scalar * np.sqrt(self.pca.explained_variance_)
         if lb is None:
-            lb = -3 * np.sqrt(self.pca.explained_variance_)
+            lb = -scalar * np.sqrt(self.pca.explained_variance_)
         b = uniform_sampling_bound(lb[:n_pca], ub[:n_pca])
         # b /= b.sum()
         return self.in_pca_basis(b), b
