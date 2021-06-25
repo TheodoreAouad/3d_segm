@@ -1,5 +1,8 @@
+from typing import Union, List
+
 import open3d as o3d
 from open3d.web_visualizer import draw
+import numpy as np
 
 
 def numpy_to_o3d_pcd(points: "np.ndarray", **kwargs) -> o3d.geometry.PointCloud:
@@ -10,6 +13,22 @@ def numpy_to_o3d_pcd(points: "np.ndarray", **kwargs) -> o3d.geometry.PointCloud:
         setattr(pcd, attr, type_fn(value))
 
     return pcd
+
+
+def get_o3d_pcd_colored(points: "np.ndarray", color: Union[List, str] = 'g', **kwargs):
+    cur_pcd = numpy_to_o3d_pcd(points, **kwargs)
+
+    if color is not None:
+        if isinstance(color, str):
+            if color in ['r', 'red']:
+                color = [1, 0, 0]
+            elif color in ['g', 'green']:
+                color = [0, 1, 0]
+            elif color in ['b', 'blue']:
+                color = [0, 0, 1]
+        cur_pcd.paint_uniform_color(color)
+
+    return cur_pcd
 
 
 def numpy_to_o3d_mesh(**kwargs) -> o3d.geometry.TriangleMesh:
@@ -29,5 +48,19 @@ def numpy_to_o3d_mesh(**kwargs) -> o3d.geometry.TriangleMesh:
 
 def plot_mesh(vertices: "np.ndarray", triangles: "np.ndarray", **kwargs) -> None:
     msh = numpy_to_o3d_mesh(vertices=vertices, triangles=triangles, **kwargs)
+    # msh.compute_triangle_normals()
     msh.compute_vertex_normals()
     draw(msh)
+
+
+def ball_pivoting_mesh(pcd: o3d.geometry.PointCloud, scalar: float = 3) -> o3d.geometry.TriangleMesh:
+    distances = pcd.compute_nearest_neighbor_distance()
+    avg_dist = np.mean(distances)
+    radius = scalar * avg_dist
+    if not pcd.has_normals():
+        pcd.estimate_normals()
+
+    bpa_mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(
+        pcd, o3d.utility.DoubleVector([radius, radius]))
+    bpa_mesh.compute_vertex_normals()
+    return bpa_mesh

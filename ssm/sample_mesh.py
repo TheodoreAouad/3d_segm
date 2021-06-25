@@ -20,10 +20,11 @@ def create_mesh_graph(verts: np.ndarray, faces: np.ndarray) -> Graph:
 
 
 def dijkstra_sampling(
-    verts: np.ndarray, faces: np.ndarray, n_points: int, verbose=True
+    n_points: int, gmesh: Graph = None, verts: np.ndarray = None, faces: np.ndarray = None, verbose=True
 ) -> (np.ndarray, np.ndarray, np.ndarray):
 
-    gmesh = create_mesh_graph(verts, faces)
+    if gmesh is None:
+        gmesh = create_mesh_graph(verts, faces)
 
     all_points = []
     cur_point = 0

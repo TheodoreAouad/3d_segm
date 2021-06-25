@@ -1,6 +1,7 @@
 import warnings
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from os.path import join, exists
+import random
 
 import numpy as np
 import networkx as nx
@@ -8,8 +9,8 @@ from scipy.linalg import orthogonal_procrustes
 from sklearn.decomposition import PCA
 
 from general.utils import uniform_sampling_bound, max_min_norm, colormap_1d
-from general.open3d_utils import numpy_to_o3d_mesh, numpy_to_o3d_pcd
-from .utils import get_norm_transform, transform_cloud
+from general.open3d_utils import numpy_to_o3d_mesh, get_o3d_pcd_colored
+from .utils import get_norm_transform, transform_cloud, is_outlier_1d, array_wo_idx
 from .icp import register_icp, nearest_neighbor
 from .hungarian_icp import perfect_matching, register_icp_hungarian
 from .sample_mesh import dijkstra_sampling, dijkstra_mesh, create_mesh_graph
@@ -70,7 +71,7 @@ class Shape:
             **{"label": label, 'origin_path': path},
             **kwargs
         )
-        for arg in set(['volume', 'vertexes', 'faces', 'normals', 'values']).difference(kwargs.keys()):
+        for arg in {'volume', 'vertexes', 'faces', 'normals', 'values'}.difference(kwargs.keys()):
             path_arg = join(path, f'{arg}{ext}')
             if exists(path_arg):
                 init_args[arg] = np.load(path_arg)
@@ -116,7 +117,6 @@ class Shape:
         init_pose=None,
         max_iterations: int = 1000,
         tolerance: float = 1e-5,
-        matching_method: str = "nearest",
     ) -> (np.ndarray, np.ndarray, np.ndarray):
         """
         Performs ICP registration onto ref_verts (Shape = T @ ref)
@@ -145,7 +145,6 @@ class Shape:
 
         return self.Tref, self.sample_idx, errs, n_iters
 
-
     def register_icp_to_reference(
         self,
         reference: "Shape" = None,
@@ -153,7 +152,6 @@ class Shape:
         init_pose=None,
         max_iterations: int = 1000,
         tolerance: float = 1e-5,
-        matching_method: str = "nearest",
     ) -> (np.ndarray, np.ndarray, np.ndarray):
         """
         Performs ICP registration onto ref_verts (Shape = T @ ref)
@@ -221,7 +219,12 @@ class Shape:
             np.ndarray: (n_points x d) matrix.
         """
         if sampling_fn == "dijkstra":
-            self.sample_idx, self.dist_to_sample, self.closest_sample_point = dijkstra_sampling(self.vertexes, self.faces, n_points, verbose=verbose)
+            self.sample_idx, self.dist_to_sample, self.closest_sample_point = dijkstra_sampling(
+                verts=self.vertexes,
+                faces=self.faces,
+                n_points=n_points,
+                verbose=verbose,
+            )
         else:
             raise NotImplementedError
 
@@ -314,6 +317,7 @@ class Shape:
     def compute_sample_faces(self) -> np.ndarray:
         """ Uses voronoi graph to connect edges. If two voronoi cells touch, the points are connected.
         """
+        assert self.sample_idx is not None
         gsample = nx.Graph()
         sample_order = {self.sample_idx[k]: k for k in range(len(self.sample_idx))}
 
@@ -362,19 +366,7 @@ class Shape:
         if only_sample and self.sample_idx is not None:
             to_plot = self.sample
 
-        cur_pcd = numpy_to_o3d_pcd(to_plot, **kwargs)
-
-        if point_color is not None:
-            if isinstance(point_color, str):
-                if point_color in ['r', 'red']:
-                    point_color = [1, 0, 0]
-                elif point_color in ['g', 'green']:
-                    point_color = [0, 1, 0]
-                elif point_color in ['b', 'blue']:
-                    point_color = [0, 0, 1]
-            cur_pcd.paint_uniform_color(point_color)
-
-        return cur_pcd
+        return get_o3d_pcd_colored(to_plot, point_color, **kwargs)
 
     def o3d_ref_pcd_transformed(self, point_color='g', only_sample=True, **kwargs) -> "open3d.cpu.pybind.geometry.PointCloud":
         assert self.Tref is not None
@@ -382,20 +374,19 @@ class Shape:
         if only_sample and self.sample_idx is not None:
             to_plot = transform_cloud(self.Tref, self.reference.sample)
 
-        cur_pcd = numpy_to_o3d_pcd(to_plot, **kwargs)
+        return get_o3d_pcd_colored(to_plot, point_color, **kwargs)
 
-        if point_color is not None:
-            if isinstance(point_color, str):
-                if point_color in ['r', 'red']:
-                    point_color = [1, 0, 0]
-                elif point_color in ['g', 'green']:
-                    point_color = [0, 1, 0]
-                elif point_color in ['b', 'blue']:
-                    point_color = [0, 0, 1]
-            cur_pcd.paint_uniform_color(point_color)
-
-        return cur_pcd
-
+    def create_mesh_from_sample_faces(self, points: np.ndarray, **kwargs) -> "open3d.cpu.pybind.geometry.TriangleMesh":
+        if self.faces_sample is None:
+            warnings.warn("Faces sample not yet computed. Is computed.")
+            self.compute_sample_faces()
+        mesh = numpy_to_o3d_mesh(
+            vertices=points,
+            triangles=self.faces_sample,
+            **kwargs
+        )
+        mesh.compute_vertex_normals()
+        return mesh
 
 
 class SSM:
@@ -404,15 +395,30 @@ class SSM:
         self.shapes = shapes
         self.reference = reference
 
-        self.pca = None
+        self.pca: PCA = None
         self.pca_basis: List[Shape] = None
+        self.all_samples_mean: np.ndarray = None
+        self.inliers: np.ndarray = None  # opposed to outliers
 
-    def compute_pca(self):
-        self.pca = PCA(n_components=len(self.shapes))
-        all_samples = self.all_samples.reshape(len(self), -1)
-        self.all_samples_mean = all_samples.mean(0)
-        # self.pca.fit(self.all_samples.reshape(len(self), -1))
-        self.pca.fit(all_samples - self.all_samples_mean)
+    @staticmethod
+    def detect_outliers_sample(shape, **kwargs):
+        all_samples = shape.all_samples.reshape(len(shape), -1)
+        diff_mean = np.zeros(len(shape))
+
+        for idx in range(len(shape)):
+            diff_mean[idx] = np.abs(all_samples[idx] - array_wo_idx(all_samples, idx).mean()).mean()
+
+        return ~is_outlier_1d(diff_mean, **kwargs)
+
+    def compute_pca(self, remove_outliers=True, **outlier_removal_args):
+        if remove_outliers:
+            self.inliers = SSM.detect_outliers_sample(self, **outlier_removal_args)
+        else:
+            self.inliers = np.ones(len(self)).astype(bool)
+        all_samples_inline = self.all_samples.reshape(len(self), -1)[self.inliers]
+        self.pca = PCA(n_components=min(len(all_samples_inline), np.prod(self.size)))
+        self.all_samples_mean = all_samples_inline.mean(0)
+        self.pca.fit(all_samples_inline - self.all_samples_mean)
 
     @property
     def all_samples(self) -> np.ndarray:
@@ -435,7 +441,8 @@ class SSM:
         return len(self.shapes)
 
     def get_component(self, idx: int) -> np.ndarray:
-        return (self.pca.components_[idx] * 3 * np.sqrt(self.pca.explained_variance_[idx]) + self.all_samples_mean).reshape(*self.size)
+        return (self.pca.components_[idx] * 3 * np.sqrt(self.pca.explained_variance_[idx]) +
+                self.all_samples_mean).reshape(*self.size)
 
     def in_pca_basis(self, coords: np.ndarray) -> np.ndarray:
         return (coords @ self.pca.components_[:len(coords)] + self.all_samples_mean).reshape(*self.size)
@@ -444,7 +451,19 @@ class SSM:
     def size(self) -> Tuple:
         return self.shapes[0].sample.shape
 
-    def random_sampling_pca(self, scalar=3, n_pca=None, lb=None, ub=None):
+    def random_pca_features(self, scalar: float = 3, n_pca: int = None,
+            lb: np.ndarray = None, ub: np.ndarray = None) -> np.ndarray:
+        """
+        Returns a random generated shape from the principal components.
+        Args:
+            scalar (float): how to multiply the eigenvalue for the generation
+            n_pca (int): number of principal components to take
+            lb (np.ndarray): shape (n_pca). Lower bound for sampling.
+            ub (np.ndarray): shape (n_pca). Upper bound for sampling.
+
+        Returns:
+            np.ndarray: shape (n_pca. feature vector.
+        """
         if n_pca is None:
             n_pca = len(self.pca.explained_variance_)
 
@@ -452,6 +471,40 @@ class SSM:
             ub = scalar * np.sqrt(self.pca.explained_variance_)
         if lb is None:
             lb = -scalar * np.sqrt(self.pca.explained_variance_)
-        b = uniform_sampling_bound(lb[:n_pca], ub[:n_pca])
-        # b /= b.sum()
-        return self.in_pca_basis(b), b
+        return uniform_sampling_bound(lb[:n_pca], ub[:n_pca])
+
+    def random_sampling_pca(self, **random_kwargs):
+        """
+        Returns a random generated shape from the principal components.
+        Args:
+            see random_pca_features args
+        Returns:
+            (np.ndarray, np.ndarray): shape (N_points, 3), shape (n_pca). The generated point cloud and the feature
+                                      vector.
+        """
+        features = self.random_pca_features(**random_kwargs)
+        return self.in_pca_basis(features), features
+
+    def random_pcd_pca(self, point_color: str = 'g', kwargs_pcd: Dict = {}, **random_kwargs):
+        features = self.random_pca_features(**random_kwargs)
+        return self.in_pca_basis_pcd(features, point_color, **kwargs_pcd), features
+
+    def random_mesh_pca(self, point_color: str = 'g', shape_reference_faces: Shape = None, kwargs_mesh: Dict = {}, kwargs_pcd: Dict = {}, **random_kwargs):
+        features = self.random_pca_features(**random_kwargs)
+        return self.in_pca_basis_mesh(features, shape_reference_faces, point_color, kwargs_pcd=kwargs_pcd, **kwargs_mesh), features
+
+    def in_pca_basis_pcd(self, b: np.ndarray, point_color: str = 'g', **kwargs) -> "open3d.cpu.pybind.geometry.PointCloud":
+        return get_o3d_pcd_colored(self.in_pca_basis(b), point_color, **kwargs)
+
+    def in_pca_basis_mesh(
+        self,
+        b: np.ndarray,
+        shape_reference_faces: Shape = None,
+        point_color: str = 'g',
+        kwargs_pcd: Dict = {},
+        **kwargs
+    ) -> ("open3d.cpu.pybind.geometry.TriangleMesh", "open3d.cpu.pybind.geometry.PointCloud"):
+        pcd = self.in_pca_basis_pcd(b, point_color, **kwargs_pcd)
+        if shape_reference_faces is None:
+            shape_reference_faces = random.choice(self.shapes)
+        return shape_reference_faces.create_mesh_from_sample_faces(np.asarray(pcd.points)), pcd
