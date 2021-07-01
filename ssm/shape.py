@@ -19,16 +19,16 @@ from .sample_mesh import dijkstra_sampling, dijkstra_mesh, create_mesh_graph
 class Shape:
 
     def __init__(
-        self,
-        label: str = None,
-        volume: np.ndarray = None,
-        vertexes: np.ndarray = None,
-        faces: np.ndarray = None,
-        normals: np.ndarray = None,
-        values: np.ndarray = None,
-        reference: "Shape" = None,
-        origin_path: str = None,
-        **kwargs
+            self,
+            label: str = None,
+            volume: np.ndarray = None,
+            vertexes: np.ndarray = None,
+            faces: np.ndarray = None,
+            normals: np.ndarray = None,
+            values: np.ndarray = None,
+            reference: "Shape" = None,
+            origin_path: str = None,
+            **kwargs
     ):
         self.label = label
         self.volume = volume
@@ -111,12 +111,12 @@ class Shape:
         return self.vertexes[self.sample_idx]
 
     def register_sample_to_reference(
-        self,
-        reference: "Shape" = None,
-        allow_reflection: bool = False,
-        init_pose=None,
-        max_iterations: int = 1000,
-        tolerance: float = 1e-5,
+            self,
+            reference: "Shape" = None,
+            allow_reflection: bool = False,
+            init_pose=None,
+            max_iterations: int = 1000,
+            tolerance: float = 1e-5,
     ) -> (np.ndarray, np.ndarray, np.ndarray):
         """
         Performs ICP registration onto ref_verts (Shape = T @ ref)
@@ -139,19 +139,20 @@ class Shape:
 
         T, indices, errs, n_iters = register_icp_hungarian(
             reference.sample, self.sample,
-            allow_reflection=allow_reflection, init_pose=init_pose, max_iterations=max_iterations, tolerance=tolerance,)
+            allow_reflection=allow_reflection, init_pose=init_pose, max_iterations=max_iterations,
+            tolerance=tolerance, )
         self.Tref = T
         self.sample_idx = self.sample_idx[indices]
 
         return self.Tref, self.sample_idx, errs, n_iters
 
     def register_icp_to_reference(
-        self,
-        reference: "Shape" = None,
-        allow_reflection: bool = False,
-        init_pose=None,
-        max_iterations: int = 1000,
-        tolerance: float = 1e-5,
+            self,
+            reference: "Shape" = None,
+            allow_reflection: bool = False,
+            init_pose=None,
+            max_iterations: int = 1000,
+            tolerance: float = 1e-5,
     ) -> (np.ndarray, np.ndarray, np.ndarray):
         """
         Performs ICP registration onto ref_verts (Shape = T @ ref)
@@ -171,7 +172,8 @@ class Shape:
 
         T, indices, errs, n_iters = register_icp(
             reference.vertexes, self.vertexes,
-            allow_reflection=allow_reflection, init_pose=init_pose, max_iterations=max_iterations, tolerance=tolerance,)
+            allow_reflection=allow_reflection, init_pose=init_pose, max_iterations=max_iterations,
+            tolerance=tolerance, )
         self.Tref = T
         # self.sample_idx = indices
 
@@ -368,7 +370,8 @@ class Shape:
 
         return get_o3d_pcd_colored(to_plot, point_color, **kwargs)
 
-    def o3d_ref_pcd_transformed(self, point_color='g', only_sample=True, **kwargs) -> "open3d.cpu.pybind.geometry.PointCloud":
+    def o3d_ref_pcd_transformed(self, point_color='g', only_sample=True,
+                                **kwargs) -> "open3d.cpu.pybind.geometry.PointCloud":
         assert self.Tref is not None
         to_plot = transform_cloud(self.Tref, self.reference.vertexes)
         if only_sample and self.sample_idx is not None:
@@ -400,6 +403,11 @@ class SSM:
         self.all_samples_mean: np.ndarray = None
         self.inliers: np.ndarray = None  # opposed to outliers
 
+        # SVD Parameters: X = USVt
+        self.U_: np.ndarray = None
+        self.S_: np.ndarray = None
+        self.Vt_: np.ndarray = None
+
     @staticmethod
     def detect_outliers_sample(shape, **kwargs):
         all_samples = shape.all_samples.reshape(len(shape), -1)
@@ -418,7 +426,18 @@ class SSM:
         all_samples_inline = self.all_samples.reshape(len(self), -1)[self.inliers]
         self.pca = PCA(n_components=min(len(all_samples_inline), np.prod(self.size)))
         self.all_samples_mean = all_samples_inline.mean(0)
-        self.pca.fit(all_samples_inline - self.all_samples_mean)
+        X = all_samples_inline - self.all_samples_mean
+        self.pca.fit(X)
+
+        self.U_, self.S_, self.Vt_ = np.linalg.svd(X)
+
+    # TODO: compute once if does not change
+    @property
+    def pca_normals(self) -> np.ndarray:
+        pca_normals = (
+            self.U_.T @ (self.all_sample_normals.reshape(len(self), -1))[self.inliers]
+        ).reshape(self.inliers.sum(), *self.size)
+        return pca_normals / np.sqrt((pca_normals**2).sum(2))[..., np.newaxis]
 
     @property
     def all_samples(self) -> np.ndarray:
@@ -452,7 +471,7 @@ class SSM:
         return self.shapes[0].sample.shape
 
     def random_pca_features(self, scalar: float = 3, n_pca: int = None,
-            lb: np.ndarray = None, ub: np.ndarray = None) -> np.ndarray:
+                            lb: np.ndarray = None, ub: np.ndarray = None) -> np.ndarray:
         """
         Returns a random generated shape from the principal components.
         Args:
@@ -489,22 +508,25 @@ class SSM:
         features = self.random_pca_features(**random_kwargs)
         return self.in_pca_basis_pcd(features, point_color, **kwargs_pcd), features
 
-    def random_mesh_pca(self, point_color: str = 'g', shape_reference_faces: Shape = None, kwargs_mesh: Dict = {}, kwargs_pcd: Dict = {}, **random_kwargs):
+    def random_mesh_pca(self, point_color: str = 'g', shape_reference_faces: Shape = None, kwargs_mesh: Dict = {},
+                        kwargs_pcd: Dict = {}, **random_kwargs):
         features = self.random_pca_features(**random_kwargs)
-        return self.in_pca_basis_mesh(features, shape_reference_faces, point_color, kwargs_pcd=kwargs_pcd, **kwargs_mesh), features
+        return self.in_pca_basis_mesh(features, shape_reference_faces, point_color, kwargs_pcd=kwargs_pcd,
+                                      **kwargs_mesh), features
 
-    def in_pca_basis_pcd(self, b: np.ndarray, point_color: str = 'g', **kwargs) -> "open3d.cpu.pybind.geometry.PointCloud":
+    def in_pca_basis_pcd(self, b: np.ndarray, point_color: str = 'g',
+                         **kwargs) -> "open3d.cpu.pybind.geometry.PointCloud":
         return get_o3d_pcd_colored(self.in_pca_basis(b), point_color, **kwargs)
 
     def in_pca_basis_mesh(
-        self,
-        b: np.ndarray,
-        shape_reference_faces: Shape = None,
-        point_color: str = 'g',
-        kwargs_pcd: Dict = {},
-        **kwargs
+            self,
+            b: np.ndarray,
+            shape_reference_faces: Shape = None,
+            point_color: str = 'g',
+            kwargs_pcd: Dict = {},
+            **kwargs
     ) -> ("open3d.cpu.pybind.geometry.TriangleMesh", "open3d.cpu.pybind.geometry.PointCloud"):
         pcd = self.in_pca_basis_pcd(b, point_color, **kwargs_pcd)
         if shape_reference_faces is None:
             shape_reference_faces = random.choice(self.shapes)
-        return shape_reference_faces.create_mesh_from_sample_faces(np.asarray(pcd.points)), pcd
+        return shape_reference_faces.create_mesh_from_sample_faces(np.asarray(pcd.points), **kwargs), pcd
