@@ -8,7 +8,7 @@ import networkx as nx
 from scipy.linalg import orthogonal_procrustes
 from sklearn.decomposition import PCA
 
-from general.utils import uniform_sampling_bound, max_min_norm, colormap_1d
+from general.utils import uniform_sampling_bound, max_min_norm, colormap_1d, gaussian_sampling
 from general.open3d_utils import numpy_to_o3d_mesh, get_o3d_pcd_colored
 from .utils import get_norm_transform, transform_cloud, is_outlier_1d, array_wo_idx
 from .icp import register_icp, nearest_neighbor
@@ -470,8 +470,15 @@ class SSM:
     def size(self) -> Tuple:
         return self.shapes[0].sample.shape
 
-    def random_pca_features(self, scalar: float = 3, n_pca: int = None,
-                            lb: np.ndarray = None, ub: np.ndarray = None) -> np.ndarray:
+    def random_pca_features(
+            self,
+            sampling_mode: str = "uniform",
+            n_pca: int = None,
+            # lb: np.ndarray = None,
+            # ub: np.ndarray = None,
+            # scalar: float = 3,
+            **sampling_args
+    ) -> np.ndarray:
         """
         Returns a random generated shape from the principal components.
         Args:
@@ -486,11 +493,18 @@ class SSM:
         if n_pca is None:
             n_pca = len(self.pca.explained_variance_)
 
-        if ub is None:
-            ub = scalar * np.sqrt(self.pca.explained_variance_)
-        if lb is None:
-            lb = -scalar * np.sqrt(self.pca.explained_variance_)
-        return uniform_sampling_bound(lb[:n_pca], ub[:n_pca])
+        if sampling_mode == "uniform":
+            scalar = sampling_args.get("scalar", 2)
+            ub = sampling_args.get("ub", scalar * np.sqrt(self.pca.explained_variance_))
+            lb = sampling_args.get("lb", -scalar * np.sqrt(self.pca.explained_variance_))
+
+            return uniform_sampling_bound(lb[:n_pca], ub[:n_pca])
+
+        elif sampling_mode == "gaussian":
+            std = sampling_args.get("std", np.sqrt(self.pca.explained_variance_))
+            return gaussian_sampling(std[:n_pca])
+
+        raise ValueError("sampling_mode argument must be one of ['gaussian', 'uniform'].")
 
     def random_sampling_pca(self, **random_kwargs):
         """

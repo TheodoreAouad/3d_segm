@@ -255,12 +255,12 @@ def apply_transform(
     return res
 
 
-def colormap_1d(colors: np.ndarray, colormap="br"):
+def colormap_1d(colors: np.ndarray, colormap: str = "br") -> np.ndarray:
     if colormap == 'br':
         return np.stack((colors, np.zeros_like(colors), 1 - colors), axis=-1)
 
 
-def constant_color(color: np.ndarray, size: int):
+def constant_color(color: np.ndarray, size: int) -> np.ndarray:
     return np.stack([color for _ in range(size)], axis=0)
 
 
@@ -270,5 +270,9 @@ def max_min_norm(ar: np.ndarray) -> np.ndarray:
     return (ar - ar.min()) / (ar.max() - ar.min())
 
 
-def uniform_sampling_bound(a, b):
+def uniform_sampling_bound(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     return np.random.rand(*a.shape) * (b - a) + a
+
+
+def gaussian_sampling(std: np.ndarray) -> np.ndarray:
+    return np.random.randn(*std.shape) * std
