@@ -13,7 +13,7 @@ from general.open3d_utils import numpy_to_o3d_mesh, get_o3d_pcd_colored
 from .utils import get_norm_transform, transform_cloud, is_outlier_1d, array_wo_idx
 from .icp import register_icp, nearest_neighbor
 from .hungarian_icp import perfect_matching, register_icp_hungarian
-from .sample_mesh import dijkstra_sampling, dijkstra_mesh, create_mesh_graph
+from .sample_mesh import dijkstra_sampling, dijkstra_mesh, create_mesh_graph, Graph
 
 
 class Shape:
@@ -45,6 +45,8 @@ class Shape:
         self.closest_sample_point: np.ndarray = None
         self.Tprocrustes: np.ndarray = None
         self.faces_sample: np.ndarray = None
+        self.graph: Graph = None
+        self.normals_smooth: np.ndarray = None
 
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -339,9 +341,9 @@ class Shape:
 
         return self.faces_sample
 
-    def o3d_mesh(self, vertex_colors="dist_to_sample") -> "open3d.cpu.pybind.geometry.TriangleMesh":
+    def o3d_mesh(self, vertex_colors="dist_to_sample", **kwargs) -> "open3d.cpu.pybind.geometry.TriangleMesh":
 
-        kwargs = {'vertices': self.vertexes, 'triangles': self.faces}
+        kwargs.update({'vertices': self.vertexes, 'triangles': self.faces})
         if vertex_colors == 'dist_to_sample' and self.dist_to_sample is not None:
             kwargs['vertex_colors'] = colormap_1d(max_min_norm(self.dist_to_sample))
 
@@ -391,6 +393,21 @@ class Shape:
         mesh.compute_vertex_normals()
         return mesh
 
+    def create_graph(self):
+        self.graph = create_mesh_graph(self.vertexes, self.faces)
+        return self.graph
+
+    def compute_smooth_normals(self):
+        if self.graph is None:
+            warnings.warn("Mesh graph not computed. Computing it.")
+            self.create_graph()
+        mean_normals = np.zeros_like(self.normals)
+        for node in self.graph.nodes:
+            mean_normals[node] = self.normals[list(self.graph.edges[node])].mean(0)
+
+        self.normals_smooth = mean_normals / np.sqrt((mean_normals**2).sum(1))[:, np.newaxis]
+        return self.normals_smooth
+
 
 class SSM:
 
@@ -435,7 +452,7 @@ class SSM:
     @property
     def pca_normals(self) -> np.ndarray:
         pca_normals = (
-            self.U_.T @ (self.all_sample_normals.reshape(len(self), -1))[self.inliers]
+            self.U_.T @ (self.all_sample_normals_smooth.reshape(len(self), -1))[self.inliers]
         ).reshape(self.inliers.sum(), *self.size)
         return pca_normals / np.sqrt((pca_normals**2).sum(2))[..., np.newaxis]
 
@@ -453,6 +470,20 @@ class SSM:
         """
         return np.stack(
             [shape.normals[shape.sample_idx] @ shape.Rotref for shape in self.shapes],
+            axis=0
+        )
+
+    @property
+    def all_sample_normals_smooth(self) -> np.ndarray:
+        """ Applies the inverse rotation reference to the smoothed normals of the shapes.
+        If R @ ref.T -> Shape.T, then ref @ R.T -> Shape, then Shape @ R -> ref
+        """
+        for shape in self.shapes:
+            if shape.normals_smooth is None:
+                warnings.warn("A shape did not compute its smoothed normals yet. Computing it.")
+                shape.compute_smooth_normals()
+        return np.stack(
+            [shape.normals_smooth[shape.sample_idx] @ shape.Rotref for shape in self.shapes],
             axis=0
         )
 
@@ -544,3 +575,26 @@ class SSM:
         if shape_reference_faces is None:
             shape_reference_faces = random.choice(self.shapes)
         return shape_reference_faces.create_mesh_from_sample_faces(np.asarray(pcd.points), **kwargs), pcd
+
+    def get_shape_vertices_transformed(self, shape_idx: int) -> np.ndarray:
+        shape = self.shapes[shape_idx]
+        return transform_cloud(np.linalg.inv(shape.Tref), shape.vertexes)
+
+    def get_shape_mesh_transformed(self, shape_idx: int, **kwargs) -> "open3d.cpu.pybind.geometry.TriangleMesh":
+        mesh = numpy_to_o3d_mesh(
+            vertices=self.get_shape_vertices_transformed(shape_idx),
+            triangles=self.shapes[shape_idx].triangles,
+            **kwargs
+        )
+        mesh.compute_vertex_normals()
+        return mesh
+
+    def get_shape_pcd_transformed(self, shape_idx: int, point_color='g', **kwargs) -> "open3d.cpu.pybind.geometry.PointCloud":
+        return get_o3d_pcd_colored(
+            points=self.get_shape_vertices_transformed(shape_idx),
+            color=point_color,
+            **kwargs
+        )
+
+    def get_reference_mesh(self, **kwargs) -> "open3d.cpu.pybind.geometry.TriangleMesh":
+        return self.reference.o3d_mesh(**kwargs)
