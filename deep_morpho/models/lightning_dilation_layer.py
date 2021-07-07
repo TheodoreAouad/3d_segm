@@ -26,3 +26,13 @@ class LightningDilationLayer(NetLightning):
             observables=observables,
         )
         self.save_hyperparameters()
+
+    def obs_training_step(self, batch, batch_idx):
+        x, y = batch
+        predictions = self.forward(x).squeeze()
+
+        loss = self.loss
+        loss = loss(predictions, y)
+        self.log('loss/train_loss', loss)
+
+        return {'loss': loss}, predictions

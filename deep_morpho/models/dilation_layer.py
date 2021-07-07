@@ -22,10 +22,13 @@ class DilationLayer(nn.Module):
             out_channels=out_channels,
             kernel_size=kernel_size,
             bias=0,
+            padding=kernel_size[0]//2,
             *args,
             **kwargs
         )
 
     def forward(self, x: torch.Tensor):
-        output = self.conv._conv_forward(x, torch.sigmoid(self.conv.weight), self.conv.bias)
+        conv_weight = torch.sigmoid(self.conv.weight)
+        conv_weight = conv_weight / conv_weight.sum()
+        output = self.conv._conv_forward(x, conv_weight, self.conv.bias, )
         return output
