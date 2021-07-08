@@ -6,3 +6,4 @@ venv
 segmentations/
 .idea/
 **/lightning_logs
+**/results

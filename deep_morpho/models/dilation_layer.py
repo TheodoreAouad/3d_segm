@@ -3,6 +3,7 @@ from typing import Tuple
 import torch
 import torch.nn as nn
 
+from general.utils import max_min_norm
 
 class DilationLayer(nn.Module):
 
@@ -28,7 +29,17 @@ class DilationLayer(nn.Module):
         )
 
     def forward(self, x: torch.Tensor):
-        conv_weight = torch.sigmoid(self.conv.weight)
-        conv_weight = conv_weight / conv_weight.sum()
-        output = self.conv._conv_forward(x, conv_weight, self.conv.bias, )
+        # conv_weight = torch.sigmoid(self.P_ * self.conv.weight)
+        # conv_weight = conv_weight / conv_weight.sum()
+        output = self.conv._conv_forward(x, self._normalized_weight, self.conv.bias, )
         return output
+
+    @property
+    def _normalized_weight(self):
+        # conv_weight = torch.sigmoid(self.P_ * self.conv.weight)
+        conv_weight = max_min_norm(self.conv.weight)
+        return conv_weight / conv_weight.sum()
+
+    @property
+    def weight(self):
+        return self.conv.weight
