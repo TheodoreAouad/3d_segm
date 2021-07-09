@@ -19,4 +19,5 @@ class PlotParameters(Observable):
         trainer.logger.experiment.add_image("weights/Normalized", pl_module.model._normalized_weight[0], trainer.global_step)
         trainer.logger.experiment.add_image("weights/Raw", max_min_norm(pl_module.model.weight[0]), trainer.global_step)
         trainer.logger.experiment.add_image("weights/Sigmoid", torch.sigmoid(pl_module.model.weight[0]), trainer.global_step)
+        trainer.logger.experiment.add_scalar("weights/bias_", pl_module.model.bias, trainer.global_step)
         trainer.logger.experiment.add_scalar("params/P_", pl_module.model.P_, trainer.global_step)

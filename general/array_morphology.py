@@ -6,13 +6,17 @@ def format_for_conv(ar, device):
     return torch.tensor(ar).unsqueeze(0).unsqueeze(0).float().to(device)
 
 
-def array_erosion(ar, selem, device="cpu"):
+def array_erosion(ar, selem, device="cpu", return_numpy_array: bool = True):
     conv_fn = {2: F.conv2d, 3: F.conv3d}[ar.ndim]
 
-    return (conv_fn(
+    torch_array = (conv_fn(
         format_for_conv(ar, device=device), format_for_conv(selem, device=device),
         padding=selem.shape[0] // 2,
-    ) == selem.sum()).squeeze().to("cpu").int().numpy()
+    ) == selem.sum()).squeeze()
+
+    if return_numpy_array:
+        torch_array.to("cpu").int().numpy()
+    return torch_array
 
 
 def array_dilation(ar, selem, device="cpu", return_numpy_array: bool = True):

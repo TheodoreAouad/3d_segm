@@ -5,7 +5,7 @@ from torch.utils.data.dataset import Dataset
 from torch.utils.data.dataloader import DataLoader
 from skimage.morphology import disk
 from .generate_forms import random_multi_rect
-from general.array_morphology import array_dilation
+from general.array_morphology import array_dilation, array_erosion
 
 
 def get_loader(batch_size, n_inputs, size, n_rectangles, device='cpu', **kwargs):
@@ -25,6 +25,7 @@ class MultiRectDataset(Dataset):
             return_rects: bool = False,
             first_rect_args: Dict = {"centered": True},
             selem: "np.ndarray" = disk(3),
+            morp_operation: str = "dilation",
             device: str = "cpu",
             len_dataset: int = 1000,
     ):
@@ -36,6 +37,12 @@ class MultiRectDataset(Dataset):
         self.selem = selem
         self.device = device
         self.len_dataset = len_dataset
+        self.morp_operation = morp_operation
+
+        if morp_operation == 'dilation':
+            self.morp_fn = array_dilation
+        elif morp_operation == 'erosion':
+            self.morp_fn = array_erosion
 
     @property
     def random_gen_args(self):
@@ -43,7 +50,7 @@ class MultiRectDataset(Dataset):
 
     def __getitem__(self, idx):
         input_ = random_multi_rect(**self.random_gen_args)
-        target = array_dilation(input_, self.selem, device=self.device, return_numpy_array=False).float()
+        target = self.morp_fn(input_, self.selem, device=self.device, return_numpy_array=False).float()
         # input_ = format_for_conv(input_, device=self.device)
         input_ = torch.tensor(input_).unsqueeze(0).float().to(self.device)
 
