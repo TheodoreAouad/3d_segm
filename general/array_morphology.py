@@ -15,7 +15,7 @@ def array_erosion(ar, selem, device="cpu", return_numpy_array: bool = True):
     ) == selem.sum()).squeeze()
 
     if return_numpy_array:
-        torch_array.to("cpu").int().numpy()
+        return torch_array.to("cpu").int().numpy()
     return torch_array
 
 
