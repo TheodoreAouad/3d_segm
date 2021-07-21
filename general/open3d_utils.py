@@ -1,7 +1,7 @@
-from typing import Union, List
+from typing import Union, List, Callable
 
 import open3d as o3d
-from open3d.web_visualizer import draw
+# from open3d.web_visualizer import draw
 import numpy as np
 
 
@@ -46,11 +46,14 @@ def numpy_to_o3d_mesh(**kwargs) -> o3d.geometry.TriangleMesh:
     return msh
 
 
-def plot_mesh(vertices: "np.ndarray", triangles: "np.ndarray", **kwargs) -> None:
+def plot_mesh(vertices: "np.ndarray", triangles: "np.ndarray", draw_fn: Callable, **kwargs) -> None:
+    """ We give argument 'draw_fn' instead of the draw from open3d.web_visualizer because other it crashes.
+    In a Notebook, give the function open3d.web_visualizer.draw
+    """
     msh = numpy_to_o3d_mesh(vertices=vertices, triangles=triangles, **kwargs)
     # msh.compute_triangle_normals()
     msh.compute_vertex_normals()
-    draw(msh)
+    draw_fn(msh)
 
 
 def ball_pivoting_mesh(pcd: o3d.geometry.PointCloud, scalar: float = 3) -> o3d.geometry.TriangleMesh:

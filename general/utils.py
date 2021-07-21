@@ -276,3 +276,29 @@ def uniform_sampling_bound(a: np.ndarray, b: np.ndarray) -> np.ndarray:
 
 def gaussian_sampling(std: np.ndarray) -> np.ndarray:
     return np.random.randn(*std.shape) * std
+
+
+def read_obj_file(path: str) -> (np.ndarray, np.ndarray):
+    """ Reads obj file and returns vertices (not normalized) and faces.
+    """
+    
+    verts = []
+    faces = []
+    with open(path, "r") as f:
+#         lines = f.readlines()
+        lines = f.read().splitlines()
+    
+    for line in lines:
+        if len(line) == 0:
+            continue
+        if line[:2] == "v ":
+            verts.append(np.array([float(c) for c in line[2:].split(" ")]))
+        if line[0] == "f":
+            idxs = line[2:].split(" ")[:3]
+            final_idx = []
+            for idx in idxs:
+                idx1, idx2 = idx.split('//')
+                assert idx1 == idx2
+                final_idx.append(int(idx1))
+            faces.append(np.array(final_idx) - 1)
+    return np.array(verts), np.array(faces)

@@ -8,7 +8,7 @@ import skimage.measure as meas
 from ssm.read_iliac import get_iliac_segmentations
 
 CUR_IDX = 1
-STEP_SIZE = 2
+STEP_SIZE = 1
 only_new = True
 
 
@@ -25,6 +25,8 @@ all_segms = get_iliac_segmentations(
 
 for patient_id, segms in tqdm(all_segms.items()):
 
+    # if patient_id != 'patient_8':
+    #     continue
 
     for side, nib_seg in segms.items():
         dest = os.path.join(DEST_DIR, patient_id, side, f"step_size_{STEP_SIZE}")

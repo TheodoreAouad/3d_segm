@@ -8,7 +8,7 @@ import networkx as nx
 from scipy.linalg import orthogonal_procrustes
 from sklearn.decomposition import PCA
 
-from general.utils import uniform_sampling_bound, max_min_norm, colormap_1d, gaussian_sampling
+from general.utils import uniform_sampling_bound, max_min_norm, colormap_1d, gaussian_sampling, read_obj_file
 from general.open3d_utils import numpy_to_o3d_mesh, get_o3d_pcd_colored
 from .utils import get_norm_transform, transform_cloud, is_outlier_1d, array_wo_idx
 from .icp import register_icp, nearest_neighbor
@@ -60,7 +60,7 @@ class Shape:
         return self.faces
 
     @staticmethod
-    def load_from_path(path: str, label: str = None, ext: str = '.npy', **kwargs) -> "Shape":
+    def load_numpy_from_path(path: str, label: str = None, ext: str = '.npy', **kwargs) -> "Shape":
         """ Create a Shape from a directory.
 
         The function will look for 'volume', 'vertexes', 'faces', 'normals', 'values'
@@ -77,6 +77,19 @@ class Shape:
             path_arg = join(path, f'{arg}{ext}')
             if exists(path_arg):
                 init_args[arg] = np.load(path_arg)
+        return Shape(**init_args)
+
+
+    @staticmethod
+    def load_obj_from_path(path: str, label: str = None, **kwargs) -> "Shape":
+        """ Create a Shape from a .obj file.
+
+        Other initialization args can also be given as kwargs, and has priority on the files
+        (e.g. if vertexes are given in kwargs, the file vertexes.npy will not be read).
+        """
+        verts, faces = read_obj_file(path)
+        init_args = {"label": label, "origin_path": path, "vertexes": verts, "faces": faces}
+        init_args.update(kwargs)
         return Shape(**init_args)
 
     @property
@@ -235,6 +248,20 @@ class Shape:
         self.sample_idx = np.array(self.sample_idx)
         return self.sample, self.dist_to_sample, self.closest_sample_point
 
+    def set_sample_as_vertexes(self):
+        assert self.sample_idx is not None
+        assert self.faces_sample is not None
+        self.vertexes = self.vertexes[self.sample_idx]
+        self.faces = self.faces_sample
+        self.sample_idx = np.arange(len(self.vertexes))
+
+
+    def uniform_downsample(self, n_samples: int, verbose: bool = False) -> "Shape":
+        self.perform_sampling(n_samples, verbose=verbose)
+        self.compute_sample_faces()
+        self.set_sample_as_vertexes()
+        return self
+
     def set_reference(self, reference: "Shape"):
         self.reference = reference
         return self
@@ -341,14 +368,26 @@ class Shape:
 
         return self.faces_sample
 
-    def o3d_mesh(self, vertex_colors="dist_to_sample", **kwargs) -> "open3d.cpu.pybind.geometry.TriangleMesh":
+    def o3d_mesh_sample(self, vertex_colors="dist_to_sample", compute_normals=True, **kwargs) -> "open3d.cpu.pybind.geometry.TriangleMesh":
+        assert self.sample_idx is not None
+        assert self.faces_sample is not None
+        kwargs.update({'vertices': self.sample, 'triangles': self.faces_sample})
+
+        cur_mesh = numpy_to_o3d_mesh(**kwargs)
+        if compute_normals:
+            cur_mesh.compute_vertex_normals()
+
+        return cur_mesh
+
+    def o3d_mesh(self, vertex_colors="dist_to_sample", compute_normals=True, **kwargs) -> "open3d.cpu.pybind.geometry.TriangleMesh":
 
         kwargs.update({'vertices': self.vertexes, 'triangles': self.faces})
         if vertex_colors == 'dist_to_sample' and self.dist_to_sample is not None:
             kwargs['vertex_colors'] = colormap_1d(max_min_norm(self.dist_to_sample))
 
         cur_mesh = numpy_to_o3d_mesh(**kwargs)
-        cur_mesh.compute_vertex_normals()
+        if compute_normals:
+            cur_mesh.compute_vertex_normals()
 
         return cur_mesh
 

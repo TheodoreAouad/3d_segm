@@ -24,8 +24,8 @@ def get_sorted_dirs_by_regex(path_parent, regex):
 # for path_label in su.sort_by_regex(os.listdir(MESH_DIR), regex=r'patient_(\d+)'):
 for path_label in get_sorted_dirs_by_regex(MESH_DIR, regex=r'patient_(\d+)'):
     for side in os.listdir(join(MESH_DIR, path_label)):
-        for step_size in sorted(os.listdir(join(MESH_DIR, path_label, side))):
-            full_path = join(MESH_DIR, path_label, side, step_size)
+        for type_mesh in sorted(os.listdir(join(MESH_DIR, path_label, side))):
+            full_path = join(MESH_DIR, path_label, side, type_mesh)
             if not(os.path.isdir(full_path)):
                 continue
 
@@ -33,7 +33,7 @@ for path_label in get_sorted_dirs_by_regex(MESH_DIR, regex=r'patient_(\d+)'):
                 'id': [path_label],
                 'organ': [organ],
                 'side': [side],
-                'step_size': [int(re.findall(r"step_size_(\d+)", step_size)[0])],
+                'step_size': [int(re.findall(r"step_size_(\d+)", type_mesh)[0]) if "step_size" in type_mesh else np.nan],
                 'n_vertexes': [len(np.load(join(full_path, 'vertexes.npy')))],
                 'n_faces': [len(np.load(join(full_path, 'faces.npy')))],
                 'full_path': [full_path],
