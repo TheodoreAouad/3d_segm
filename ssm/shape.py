@@ -14,6 +14,7 @@ from .utils import get_norm_transform, transform_cloud, is_outlier_1d, array_wo_
 from .icp import register_icp, nearest_neighbor
 from .hungarian_icp import perfect_matching, register_icp_hungarian
 from .sample_mesh import dijkstra_sampling, dijkstra_mesh, create_mesh_graph, Graph
+from .nx_utils import get_n_cliques, get_nx_mesh
 
 
 class Shape:
@@ -69,6 +70,8 @@ class Shape:
         Other initialization args can also be given as kwargs, and has priority on the files
         (e.g. if vertexes are given in kwargs, the file vertexes.npy will not be read).
         """
+        if label is None:
+            label = path
         init_args = dict(
             **{"label": label, 'origin_path': path},
             **kwargs
@@ -87,6 +90,8 @@ class Shape:
         Other initialization args can also be given as kwargs, and has priority on the files
         (e.g. if vertexes are given in kwargs, the file vertexes.npy will not be read).
         """
+        if label is None:
+            label = path
         verts, faces = read_obj_file(path)
         init_args = {"label": label, "origin_path": path, "vertexes": verts, "faces": faces}
         init_args.update(kwargs)
@@ -125,6 +130,31 @@ class Shape:
     def sample(self) -> np.ndarray:
         return self.vertexes[self.sample_idx]
 
+    def get_nx_graph(self) -> nx.Graph:
+        return get_nx_mesh(self.faces)
+
+    def keep_largest_component(self):
+        """ Keeps only vertices and faces of largest component. Resets all 'sample-related' attributes.
+        """
+        graph = self.get_nx_graph()
+        largest_cc = max(nx.connected_components(graph), key=len)
+        if len(largest_cc) == len(graph):
+            return
+        graph = graph.subgraph(largest_cc)
+
+        new_verts_idxs = np.array(graph.nodes)
+        vert_to_idx = {new_verts_idxs[k]: k for k in range(len(new_verts_idxs))}
+
+        faces = get_n_cliques(graph, 3)
+        new_faces = np.zeros_like(faces)
+        for face_idx, face in enumerate(faces):  # TODO: find a way to numpify this??
+            new_faces[face_idx] = np.array([vert_to_idx[face[k]] for k in range(3)])
+
+        self.vertexes = self.vertexes[new_verts_idxs]
+        self.faces = new_faces
+        self.sample_idx = None  # TODO: adapt sample and sample faces
+        self.faces_sample = None
+
     def register_sample_to_reference(
             self,
             reference: "Shape" = None,
@@ -149,7 +179,7 @@ class Shape:
         if reference is None:
             reference = self.reference
         if self.sample_idx is None:
-            warnings.warn("No sample found. Performing sampling.")
+            warnings.warn("No sample found before registration. Performing sampling.")
             self.perform_sampling(len(self.reference.sample_idx))
 
         T, indices, errs, n_iters = register_icp_hungarian(
@@ -213,7 +243,7 @@ class Shape:
 
         elif matching_method in ["hungarian", "perfect", "perfect_matching"]:
             if self.sample_idx is None:
-                warnings.warn("No sample found. Performing sampling.")
+                warnings.warn("No sample found before matching samples. Performing sampling.")
                 self.perform_sampling(len(self.reference.sample_idx))
             neigh_sampling = perfect_matching(
                 transform_cloud(self.Tref, reference.sample),

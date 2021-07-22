@@ -21,41 +21,6 @@ class Graph:
         self.distances[(from_node, to_node)] = distance
 
 
-def dijkstra_old(graph, initial_set):
-    visited = {}
-    closest = {}
-    for initial in initial_set:
-        visited[initial] = 0
-        closest[initial] = initial
-    path = {}
-
-    nodes = set(graph.nodes)
-
-    while nodes:
-        min_node = None
-        for node in nodes:
-            if node in visited:
-                if min_node is None:
-                    min_node = node
-                elif visited[node] < visited[min_node]:
-                    min_node = node
-
-        if min_node is None:
-            break
-
-        nodes.remove(min_node)
-        current_weight = visited[min_node]
-
-        for dest_node in graph.edges[min_node]:
-            weight = current_weight + graph.distances[(min_node, dest_node)]
-            if dest_node not in visited or weight < visited[dest_node]:
-                visited[dest_node] = weight
-                path[dest_node] = min_node
-                closest[dest_node] = closest[min_node]
-
-    return visited, path, closest
-
-
 def dijkstra(
     graph: Graph,
     initial_set: Set,

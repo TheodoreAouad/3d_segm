@@ -224,3 +224,19 @@ print(x0s.max(), x1s.max(), x2s.max())
 print(y0s.min(), y1s.min(), y2s.min())
 print(y0s.max(), y1s.max(), y2s.max())
 
+
+
+gsample = nx.Graph()
+sample_order = {shape_6.sample_idx[k]: k for k in range(len(shape_6.sample_idx))}
+
+gmesh = create_mesh_graph(shape_6.vertexes, shape_6.faces)
+visited_edges = set()
+for node1 in gmesh.nodes:
+    for node2 in gmesh.edges[node1]:
+        if (node2, node1) in visited_edges:
+            continue
+        visited_edges.add((node1, node2))
+        c1 = shape_6.closest_sample_point[node1]
+        c2 = shape_6.closest_sample_point[node2]
+        if c1 != c2:
+            gsample.add_edge(sample_order[c1], sample_order[c2])
