@@ -9,7 +9,7 @@ from tqdm import tqdm
 from ssm.utils import sort_by_regex
 from ssm.shape import Shape
 
-N_SAMPLES = [1000, 2000]
+N_SAMPLES = [3000, 4000]
 only_new = True
 
 

@@ -17,6 +17,7 @@ class DilationLayer(nn.Module):
         weight_threshold_mode: str = "sigmoid",
         activation_P: float = 1,
         activation_threshold_mode: str = "sigmoid",
+        shared_weights: torch.tensor = None,
         *args,
         **kwargs
     ):
@@ -36,6 +37,8 @@ class DilationLayer(nn.Module):
             **kwargs
         )
 
+        self.shared_weights = shared_weights
+
         for to_threshold in ['weight', 'activation']:
             attr_mode = getattr(self, f'{to_threshold}_threshold_mode')
             attr_fn = f'{to_threshold}_threshold_fn'
@@ -43,7 +46,7 @@ class DilationLayer(nn.Module):
 
             if attr_mode == "sigmoid":
                 setattr(self, attr_P, nn.Parameter(torch.tensor([getattr(self, attr_P)]).float()))
-                setattr(self, attr_fn, lambda x: torch.sigmoid(getattr(self, attr_P) * x))
+                setattr(self, attr_fn, getattr(self, f"sigmoid_{to_threshold}"))
             elif attr_mode == "max_min":
                 setattr(self, attr_fn, max_min_norm)
         # if weight_threshold_mode == "sigmoid":
@@ -53,20 +56,32 @@ class DilationLayer(nn.Module):
         #     self.weight_threshold_fn = max_min_norm
 
     def forward(self, x: torch.Tensor):
-        output = self.conv._conv_forward(x, self._normalized_weight, self.conv.bias, )
+        output = self.conv._conv_forward(x, self._normalized_weight, self.bias, )
         output = self.activation_threshold_fn(output)
         return output
 
     @property
     def _normalized_weight(self):
-        conv_weight = self.weight_threshold_fn(self.conv.weight)
+        conv_weight = self.weight_threshold_fn(self.weight)
         # return conv_weight / conv_weight.sum()
         return conv_weight
 
     @property
     def weight(self):
+        if self.shared_weights is not None:
+            return self.shared_weights
         return self.conv.weight
+
+    @property
+    def weights(self):
+        return self.weight
 
     @property
     def bias(self):
         return self.conv.bias
+
+    def sigmoid_weight(self, x):
+        return torch.sigmoid(self.weight_P * x)
+
+    def sigmoid_activation(self, x):
+        return torch.sigmoid(self.activation_P * x)

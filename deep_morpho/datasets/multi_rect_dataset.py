@@ -43,6 +43,10 @@ class MultiRectDataset(Dataset):
             self.morp_fn = array_dilation
         elif morp_operation == 'erosion':
             self.morp_fn = array_erosion
+        elif morp_operation == 'opening':
+            self.morp_fn = lambda x, *args, **kwargs: array_dilation(
+                array_erosion(x, *args, **kwargs), *args, **kwargs
+            )
 
     @property
     def random_gen_args(self):
