@@ -13,7 +13,7 @@ class OpeningNet(nn.Module):
         self.share_weights = share_weights
         self.dilations1 = DilationLayer(**dilation_layer_args)
         if self.share_weights:
-            self.dilations2 = DilationLayer(shared_weights=self.dilations1.weights, **dilation_layer_args)
+            self.dilations2 = DilationLayer(shared_weights=self.dilations1.weights, shared_weight_P=self.dilations1.weight_P, **dilation_layer_args)
         else:
             self.dilations2 = DilationLayer(**dilation_layer_args)
 
