@@ -15,10 +15,11 @@ class DilationLayer(nn.Module):
         kernel_size: Tuple,
         weight_P: float = 1,
         weight_threshold_mode: str = "sigmoid",
-        activation_P: float = 1,
+        activation_P: float = 10,
         activation_threshold_mode: str = "sigmoid",
         shared_weights: torch.tensor = None,
         shared_weight_P: torch.tensor = None,
+        init_bias_value: float = -2,
         *args,
         **kwargs
     ):
@@ -37,6 +38,8 @@ class DilationLayer(nn.Module):
             *args,
             **kwargs
         )
+        with torch.no_grad():
+            self.conv.bias.fill_(init_bias_value)
 
         self.shared_weights = shared_weights
         self.shared_weight_P = shared_weight_P
@@ -60,7 +63,7 @@ class DilationLayer(nn.Module):
             self.weight_threshold_fn = max_min_norm
 
         if activation_threshold_mode == "sigmoid":
-            self.activation_P = nn.Parameter(torch.tensor([weight_P]).float())
+            self.activation_P = nn.Parameter(torch.tensor([activation_P]).float())
             self.activation_threshold_fn = self.sigmoid_activation
         elif activation_threshold_mode == 'max_min':
             self.activation_threshold_fn = max_min_norm

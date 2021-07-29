@@ -24,7 +24,7 @@ class WeightsHistogramDilation(Observable):
         if self.idx % self.freq == 0:
             trainer.logger.experiment.add_histogram("weights_hist/Normalized", pl_module.model._normalized_weight[0],
                                                 trainer.global_step)
-            trainer.logger.experiment.add_histogram("weights_hist/Raw", max_min_norm(pl_module.model.weight[0]), trainer.global_step)
+            trainer.logger.experiment.add_histogram("weights_hist/Raw", pl_module.model.weight[0], trainer.global_step)
         self.idx += 1
 
 
@@ -50,5 +50,5 @@ class WeightsHistogramMultipleDilations(Observable):
             for idx, model in enumerate(pl_module.model.dilations):
                 trainer.logger.experiment.add_histogram(f"weights_hist_{idx}/Normalized", model._normalized_weight[0],
                                                     trainer.global_step)
-                trainer.logger.experiment.add_histogram(f"weights_hist_{idx}/Raw", max_min_norm(model.weight[0]), trainer.global_step)
+                trainer.logger.experiment.add_histogram(f"weights_hist_{idx}/Raw", model.weight[0], trainer.global_step)
         self.idx += 1

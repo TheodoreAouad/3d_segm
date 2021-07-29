@@ -1,4 +1,5 @@
 from general.nn.observables import Observable
+from general.utils import max_min_norm
 
 
 class PlotParametersDilation(Observable):
@@ -21,7 +22,7 @@ class PlotParametersDilation(Observable):
         # weights = torch.stack(pl_module)
         if self.idx % self.freq_imgs == 0:
             trainer.logger.experiment.add_image("weights/Normalized", pl_module.model._normalized_weight[0], trainer.global_step)
-            trainer.logger.experiment.add_image("weights/Raw", pl_module.model.weight[0], trainer.global_step)
+            trainer.logger.experiment.add_image("weights/Raw", max_min_norm(pl_module.model.weight[0]), trainer.global_step)
         self.idx += 1
 
         trainer.logger.experiment.add_scalar("weights/bias_", pl_module.model.bias, trainer.global_step)
@@ -51,7 +52,7 @@ class PlotParametersMultipleDilations(Observable):
         if self.idx % self.freq_imgs == 0:
             for idx, model in enumerate(pl_module.model.dilations):
                 trainer.logger.experiment.add_image(f"weights_{idx}/Normalized", model._normalized_weight[0], trainer.global_step)
-                trainer.logger.experiment.add_image(f"weights_{idx}/Raw", model.weight[0], trainer.global_step)
+                trainer.logger.experiment.add_image(f"weights_{idx}/Raw", max_min_norm(model.weight[0]), trainer.global_step)
         self.idx += 1
 
         for idx, model in enumerate(pl_module.model.dilations):

@@ -103,8 +103,7 @@ class NetLightning(ObsLightningModule):
         x, y = batch
         predictions = self.forward(x)
 
-        loss = self.loss
-        loss = loss(predictions, y)
+        loss = self.loss(predictions, y)
         self.log('loss/train_loss', loss)
 
         return {'loss': loss}, predictions
@@ -113,8 +112,7 @@ class NetLightning(ObsLightningModule):
         x, y = batch
         predictions = self.forward(x)
 
-        loss = self.loss
-        loss = loss(predictions, y)
+        loss = self.loss(predictions, y)
         self.log('loss/val_loss', loss)
 
         return {'val_loss': loss}, predictions
@@ -123,8 +121,7 @@ class NetLightning(ObsLightningModule):
         x, y = batch
         predictions = self.forward(x)
 
-        loss = self.loss
-        loss = loss(predictions, y)
+        loss = self.loss(predictions, y)
         self.log('loss/test_loss', loss)
 
         return {'test_loss': loss}, predictions
