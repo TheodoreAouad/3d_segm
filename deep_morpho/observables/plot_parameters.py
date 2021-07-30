@@ -26,6 +26,7 @@ class PlotParametersDilation(Observable):
         self.idx += 1
 
         trainer.logger.experiment.add_scalar("weights/bias_", pl_module.model.bias, trainer.global_step)
+        trainer.logger.experiment.add_scalar("weights/sum_norm_weights", pl_module.model._normalized_weight.sum(), trainer.global_step)
         trainer.logger.experiment.add_scalar("params/weight_P", pl_module.model.weight_P, trainer.global_step)
         trainer.logger.experiment.add_scalar("params/activation_P", pl_module.model.activation_P, trainer.global_step)
 

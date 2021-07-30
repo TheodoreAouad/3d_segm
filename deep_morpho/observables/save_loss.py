@@ -18,6 +18,6 @@ class SaveLoss(Observable):
         dataloader_idx: int,
     ) -> None:
         """Called when the train batch ends."""
-        for key in outputs.keys():
-            if 'loss' in key:
-                pl_module.log(f'loss/train_{key}', outputs[key])
+        trainer.logger.experiment.add_scalars(
+            f"loss/train", {k: v for k, v in outputs.items() if 'loss' in k}, trainer.global_step
+        )

@@ -35,6 +35,7 @@ class LightningOpeningNet(NetLightning):
 
         self.do_thresh_penalization = do_thresh_penalization
         self.args_thresh_penalization = args_thresh_penalization
+        self.first_batch_pen = first_batch_pen
         if self.do_thresh_penalization:
             self.pen_fn = ThresholdPenalization(
                 dilation_layers=self.model.dilations, **self.args_thresh_penalization
@@ -53,9 +54,5 @@ class LightningOpeningNet(NetLightning):
         if self.do_thresh_penalization and batch_idx >= self.first_batch_pen:
             outputs['pen_loss'] = self.pen_fn()
             outputs['loss'] = loss_supervised + outputs['pen_loss']
-            self.log('loss/train_pen', outputs['pen_loss'])
-
-        self.log('loss/train_loss', outputs['loss'])
-        self.log('loss/train_supervised', outputs['loss_supervised'])
 
         return outputs, predictions

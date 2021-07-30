@@ -55,9 +55,5 @@ class LightningDilationLayer(NetLightning):
         if self.do_thresh_penalization and batch_idx >= self.first_batch_pen:
             outputs['pen_loss'] = self.pen_fn()
             outputs['loss'] = loss_supervised + outputs['pen_loss']
-            self.log('loss/train_pen', outputs['pen_loss'])
-
-        self.log('loss/train_loss', outputs['loss'])
-        self.log('loss/train_supervised', outputs['loss_supervised'])
 
         return outputs, predictions

@@ -24,19 +24,19 @@ n_inputs = 500_000
 random_gen_args={'size': (50, 50), 'n_shapes': 15, 'max_shape': (15, 15)}
 
 share_weights = True
-do_thresh_penalization = True
+do_thresh_penalization = False
 args_thresh_penalization = {
     'coef': .005,
     'degree': 4,
     'detach_weights': True,
 }
-first_batch_pen = 1000
+first_batch_pen = 1
 
 selem = np.zeros((5, 5))
-# selem[np.arange(5), 5 - np.arange(1, 6)] = 1
-# selem[np.arange(5), np.arange(5)] = 1
+selem[np.arange(5), 5 - np.arange(1, 6)] = 1
+selem[np.arange(5), np.arange(5)] = 1
 # selem[:, 2] = 1
-selem[2, :] = 1
+# selem[2, :] = 1
 # selem = disk(2)
 
 ####################
