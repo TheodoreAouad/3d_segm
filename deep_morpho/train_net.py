@@ -1,9 +1,9 @@
 import torch
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
-from skimage.morphology import disk
 from torch import nn
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 from deep_morpho.datasets.generate_forms2 import get_random_diskorect
@@ -11,124 +11,96 @@ from deep_morpho.datasets.multi_rect_dataset import get_loader
 from deep_morpho.models import LightningDilationLayer, LightningOpeningNet
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
+from general.utils import dict_cross
 from deep_morpho.metrics import dice
-
-## ARGS ############
-
-# morp_operation = 'Dilation'
-morp_operation = 'Erosion'
-# morp_operation = 'Opening'
-
-batch_size = 32
-n_inputs = 500_000
-random_gen_args={'size': (50, 50), 'n_shapes': 15, 'max_shape': (15, 15)}
-
-share_weights = True
-do_thresh_penalization = False
-args_thresh_penalization = {
-    'coef': .005,
-    'degree': 4,
-    'detach_weights': True,
-}
-first_batch_pen = 1
-
-selem = np.zeros((5, 5))
-selem[np.arange(5), 5 - np.arange(1, 6)] = 1
-selem[np.arange(5), np.arange(5)] = 1
-# selem[:, 2] = 1
-# selem[2, :] = 1
-# selem = disk(2)
-
-####################
+from deep_morpho.args import args as all_args
 
 
-
+all_args = dict_cross(all_args)
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(device)
 
-print(morp_operation, selem.sum())
+for args_idx, args in enumerate(all_args):
+    print('=============================')
+    print(f'Args nb {args_idx + 1}/{len(all_args)}')
+    print(args['morp_operation'], args['selem'].sum())
 
-dataloader = get_loader(
-    batch_size=batch_size,
-    n_inputs=n_inputs,
-#     random_gen_fn=gfo.random_multi_rect,
-#     random_gen_args={
-#         'size': (50, 50),
-#         'n_rectangles': 8,
-#         'max_shape': (10, 10),
-#     },
-    random_gen_fn=get_random_diskorect,
-    random_gen_args=random_gen_args,
-    device=device,
-    selem=selem,
-    morp_operation=morp_operation,
-)
-
-loss = nn.BCEWithLogitsLoss()
-optimizer = torch.optim.Adam
-
-if morp_operation.lower() != "opening":
-    observables = [
-        obs.SaveLoss(),
-        obs.PlotParametersDilation(100),
-        obs.PlotPreds(100),
-        obs.WeightsHistogramDilation(1000),
-        CalculateAndLogMetrics(
-            metrics={'dice': lambda y_true, y_pred: dice(y_true, y_pred, threshold=.5).mean()}, keep_preds_for_epoch=False)
-    ]
-
-    model = LightningDilationLayer(
-        model_args={
-            "in_channels": 1, "out_channels": 1, "kernel_size": (5, 5)
-        },
-        learning_rate=1e-2,
-        loss=loss,
-        optimizer=optimizer,
-        output_dir="deep_morpho/results",
-        observables=observables,
-        do_thresh_penalization=do_thresh_penalization,
-        args_thresh_penalization=args_thresh_penalization,
-        first_batch_pen=first_batch_pen,
-    )
-else:
-    observables = [
-        obs.SaveLoss(),
-        obs.PlotParametersMultipleDilations(1),
-        obs.PlotPreds(1),
-        obs.WeightsHistogramMultipleDilations(1),
-        CalculateAndLogMetrics(
-            metrics={'dice': lambda y_true, y_pred: dice(y_true, y_pred, threshold=.5).mean()}, keep_preds_for_epoch=False)
-    ]
-
-    model = LightningOpeningNet(
-        model_args={
-            "share_weights": share_weights, "in_channels": 1, "out_channels": 1, "kernel_size": (5, 5)
-        },
-        learning_rate=5e-2,
-        loss=loss,
-        optimizer=optimizer,
-        output_dir="deep_morpho/results",
-        observables=observables,
-        do_thresh_penalization=do_thresh_penalization,
-        args_thresh_penalization=args_thresh_penalization,
-        first_batch_pen=first_batch_pen,
+    dataloader = get_loader(
+        batch_size=args['batch_size'],
+        n_inputs=args['n_inputs'],
+        random_gen_fn=get_random_diskorect,
+        random_gen_args=args['random_gen_args'],
+        device=device,
+        selem=args['selem'],
+        morp_operation=args['morp_operation'],
     )
 
-model.to(device)
+    loss = nn.BCEWithLogitsLoss()
+    optimizer = torch.optim.Adam
 
-logger = TensorBoardLogger("deep_morpho/results", name=morp_operation)
-print(logger.log_dir)
+    observables = [
+        obs.SaveLoss(),
+        CalculateAndLogMetrics(
+            metrics={'dice': lambda y_true, y_pred: dice(y_true, y_pred, threshold=.5).mean()},
+            keep_preds_for_epoch=False,
+        ),
+        obs.PlotParametersDilation(freq=1),
+        obs.PlotWeightsDilation(freq=100),
+        obs.WeightsHistogramDilation(freq=100),
+        obs.PlotPreds(freq=100),
+    ]
 
-logger.experiment.add_graph(model, torch.ones(1, 1, 50, 50).to(device))
-logger.experiment.add_image("target_SE", selem[np.newaxis, :].astype(float))
+    xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
+    if args['morp_operation'].lower() != "opening":
+        model = LightningDilationLayer(
+            model_args={
+                "in_channels": 1, "out_channels": 1, "kernel_size": (5, 5), "activation_threshold_mode": args['activation_mode'],
+                "activation_P": args['activation_P']
+            },
+            learning_rate=args['learning_rate'],
+            loss=loss,
+            optimizer=optimizer,
+            output_dir="deep_morpho/results",
+            observables=observables,
+            do_thresh_penalization=args['do_thresh_penalization'],
+            args_thresh_penalization=args['args_thresh_penalization'],
+            first_batch_pen=args['first_batch_pen'],
+        )
+        ys = model.model.activation_threshold_fn(xs).detach()
+    else:
+        model = LightningOpeningNet(
+            model_args={
+                "share_weights": args['share_weights'], "in_channels": 1, "out_channels": 1, "kernel_size": (5, 5), "activation_threshold_mode": args['activation_mode'],
+                "activation_P": args['activation_P']
+            },
+            learning_rate=args['learning_rate'],
+            loss=loss,
+            optimizer=optimizer,
+            output_dir="deep_morpho/results",
+            observables=observables,
+            do_thresh_penalization=args['do_thresh_penalization'],
+            args_thresh_penalization=args['args_thresh_penalization'],
+            first_batch_pen=args['first_batch_pen'],
+        )
+        ys = model.model.dilations[0].activation_threshold_fn(xs).detach()
 
-trainer = Trainer(
-    max_epochs=1,
-    gpus=1 if torch.cuda.is_available() else 0,
-    logger=logger,
-    progress_bar_refresh_rate=10,
-    callbacks=observables.copy(),
-    log_every_n_steps=10,
-)
+    model.to(device)
 
-trainer.fit(model, dataloader)
+    logger = TensorBoardLogger("deep_morpho/results", name=args['morp_operation'])
+    print(logger.log_dir)
+
+    logger.experiment.add_graph(model, torch.ones(1, 1, 50, 50).to(device))
+    logger.experiment.add_image("target_SE", args['selem'][np.newaxis, :].astype(float))
+    fig, ax = plt.subplots(); ax.plot(xs, ys); ax.set_title(args['activation_mode'])
+    logger.experiment.add_figure("threshold_fn", fig)
+
+    trainer = Trainer(
+        max_epochs=1,
+        gpus=1 if torch.cuda.is_available() else 0,
+        logger=logger,
+        progress_bar_refresh_rate=10,
+        callbacks=observables.copy(),
+        log_every_n_steps=10,
+    )
+
+    trainer.fit(model, dataloader)

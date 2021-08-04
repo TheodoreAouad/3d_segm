@@ -1,13 +1,29 @@
 import pathlib
 from typing import Tuple, Optional, List
 from time import time
+from math import pi
 
+import torch
 import numpy as np
 import nibabel as nib
 from scipy import ndimage
 from skimage.morphology import disk, dilation, erosion, label
 from skimage.transform import warp
+from sklearn.model_selection import ParameterGrid
 
+
+def dict_cross(dic):
+    """
+    Does a cross product of all the values of the dict.
+
+    Args:
+        dic (dict): dict to unwrap
+
+    Returns:
+        list: list of the dict
+    """
+
+    return list(ParameterGrid(dic))
 
 
 def convert_to_nii(ar: np.ndarray, affine: np.ndarray):
@@ -270,6 +286,10 @@ def max_min_norm(ar: np.ndarray) -> np.ndarray:
     return (ar - ar.min()) / (ar.max() - ar.min())
 
 
+def arctan_threshold(x, P):
+    return 1/pi * torch.arctan(P * x) + 1/2
+
+
 def uniform_sampling_bound(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     return np.random.rand(*a.shape) * (b - a) + a
 
@@ -281,13 +301,13 @@ def gaussian_sampling(std: np.ndarray) -> np.ndarray:
 def read_obj_file(path: str) -> (np.ndarray, np.ndarray):
     """ Reads obj file and returns vertices (not normalized) and faces.
     """
-    
+
     verts = []
     faces = []
     with open(path, "r") as f:
 #         lines = f.readlines()
         lines = f.read().splitlines()
-    
+
     for line in lines:
         if len(line) == 0:
             continue
