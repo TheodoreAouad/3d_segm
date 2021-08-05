@@ -13,11 +13,16 @@ args['morp_operation'] = [
 
 args['batch_size'] = [32]
 args['n_inputs'] = [500_000]
-args['learning_rate'] = [1e-2]
+args['learning_rate'] = [1e-3]
 args['random_gen_args'] = [{'size': (50, 50), 'n_shapes': 15, 'max_shape': (15, 15)}]
 
 args['activation_P'] = [1]
-args['activation_mode'] = ['arctan', 'sigmoid']
+args['activation_mode'] = [
+    # 'arctan', 
+    # 'sigmoid',
+    'tanh',
+    'erf',
+]
 args['share_weights'] = [True]
 args['do_thresh_penalization'] = [False]
 args['args_thresh_penalization'] = [{

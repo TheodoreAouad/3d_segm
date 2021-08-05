@@ -1,10 +1,10 @@
 from typing import Tuple
-from math import pi
 
 import torch
 import torch.nn as nn
 
-from general.utils import max_min_norm, arctan_threshold
+from general.utils import max_min_norm
+from deep_morpho.threshold_fn import arctan_threshold, tanh_threshold, sigmoid_threshold, erf_threshold
 
 
 class DilationLayer(nn.Module):
@@ -63,11 +63,11 @@ class DilationLayer(nn.Module):
         # elif weight_threshold_mode == "max_min":
         #     self.weight_threshold_fn = max_min_norm
 
-        if self.weight_threshold_mode in ['sigmoid', 'arctan'] and shared_weight_P is None:
+        if self.weight_threshold_mode != "max_min" and shared_weight_P is None:
             self._weight_P = nn.Parameter(torch.tensor([weight_P]).float())
         self.weight_threshold_fn = getattr(self, f'{self.weight_threshold_mode}_weight')
 
-        if self.activation_threshold_mode in ['sigmoid', 'arctan']:
+        if self.activation_threshold_mode != "max_min":
             self.activation_P = nn.Parameter(torch.tensor([activation_P]).float())
         self.activation_threshold_fn = getattr(self, f'{self.activation_threshold_mode}_activation')
 
@@ -109,10 +109,10 @@ class DilationLayer(nn.Module):
         return self.conv.bias
 
     def sigmoid_weight(self, x):
-        return torch.sigmoid(self.weight_P * x)
+        return sigmoid_threshold(x, self.weight_P)
 
     def sigmoid_activation(self, x):
-        return torch.sigmoid(self.activation_P * x)
+        return sigmoid_threshold(x, self.activation_P)
 
     def arctan_weight(self, x):
         return arctan_threshold(x, self.weight_P)
@@ -125,3 +125,15 @@ class DilationLayer(nn.Module):
 
     def activation_max_min(self, x):
         return max_min_norm(x)
+
+    def tanh_weight(self, x):
+        return tanh_threshold(x, self.weight_P)
+
+    def tanh_activation(self, x):
+        return tanh_threshold(x, self.activation_P)
+
+    def erf_weight(self, x):
+        return erf_threshold(x, self.weight_P)
+
+    def erf_activation(self, x):
+        return erf_threshold(x, self.activation_P)

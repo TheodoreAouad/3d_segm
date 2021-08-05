@@ -1,9 +1,8 @@
 import pathlib
 from typing import Tuple, Optional, List
 from time import time
-from math import pi
 
-import torch
+
 import numpy as np
 import nibabel as nib
 from scipy import ndimage
@@ -284,10 +283,6 @@ def max_min_norm(ar: np.ndarray) -> np.ndarray:
     ar = ar + 0
     ar[ar == np.infty] = ar[ar != np.infty].max()
     return (ar - ar.min()) / (ar.max() - ar.min())
-
-
-def arctan_threshold(x, P):
-    return 1/pi * torch.arctan(P * x) + 1/2
 
 
 def uniform_sampling_bound(a: np.ndarray, b: np.ndarray) -> np.ndarray:
