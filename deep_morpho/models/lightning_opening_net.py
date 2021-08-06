@@ -42,6 +42,13 @@ class LightningOpeningNet(NetLightning):
             )
         self.save_hyperparameters()
 
+        # new_hparams = {}
+        # for key, value in self.hparams.items():
+        #     if isinstance(value, dict):
+        #         for key2, value2 in value.items():
+        #             new_hparams[f'{key}/{key2}'] = value2
+        # self.hparams.update(new_hparams)
+
     def obs_training_step(self, batch, batch_idx):
         x, y = batch
         predictions = self.forward(x).squeeze()

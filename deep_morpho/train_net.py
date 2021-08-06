@@ -11,12 +11,10 @@ from deep_morpho.datasets.multi_rect_dataset import get_loader
 from deep_morpho.models import LightningDilationLayer, LightningOpeningNet
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
-from general.utils import dict_cross
 from deep_morpho.metrics import dice
-from deep_morpho.args import args as all_args
+from deep_morpho.args import all_args
 
 
-all_args = dict_cross(all_args)
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(device)
 
@@ -37,11 +35,12 @@ for args_idx, args in enumerate(all_args):
 
     loss = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam
+    metrics = {'dice': lambda y_true, y_pred: dice(y_true, y_pred, threshold=.5).mean()}
 
     observables = [
         obs.SaveLoss(),
         CalculateAndLogMetrics(
-            metrics={'dice': lambda y_true, y_pred: dice(y_true, y_pred, threshold=.5).mean()},
+            metrics=metrics,
             keep_preds_for_epoch=False,
         ),
         obs.PlotParametersDilation(freq=1),

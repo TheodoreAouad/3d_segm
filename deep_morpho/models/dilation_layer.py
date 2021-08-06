@@ -5,6 +5,7 @@ import torch.nn as nn
 
 from general.utils import max_min_norm
 from deep_morpho.threshold_fn import arctan_threshold, tanh_threshold, sigmoid_threshold, erf_threshold
+from .threshold_layer import dispatcher
 
 
 class DilationLayer(nn.Module):
@@ -28,8 +29,8 @@ class DilationLayer(nn.Module):
 
         self.weight_threshold_mode = weight_threshold_mode.lower()
         self.activation_threshold_mode = activation_threshold_mode.lower()
-        self._weight_P = weight_P
-        self.activation_P = activation_P
+        self._weight_P = nn.Parameter(torch.tensor([weight_P]).float())
+        self.activation_P_init = activation_P
         self.conv = nn.Conv2d(
             in_channels=in_channels,
             out_channels=out_channels,
@@ -45,47 +46,24 @@ class DilationLayer(nn.Module):
         self.shared_weights = shared_weights
         self.shared_weight_P = shared_weight_P
 
-        # for to_threshold in ['weight', 'activation']:
-        #     attr_mode = getattr(self, f'{to_threshold}_threshold_mode')
-        #     attr_fn = f'{to_threshold}_threshold_fn'
-        #     attr_P = f'{to_threshold}_P'
+        self.weight_threshold_layer = dispatcher[self.weight_threshold_mode](P_=self.weight_P)
+        self.activation_threshold_layer = dispatcher[self.activation_threshold_mode](P_=activation_P)
 
-        #     if attr_mode == "sigmoid":
-        #         setattr(self, attr_P, nn.Parameter(torch.tensor([getattr(self, attr_P)]).float()))
-        #         setattr(self, attr_fn, getattr(self, f"sigmoid_{to_threshold}"))
-        #     elif attr_mode == "max_min":
-        #         setattr(self, attr_fn, max_min_norm)
+    def activation_threshold_fn(self, x):
+        return self.activation_threshold_layer.threshold_fn(x)
 
-        # if weight_threshold_mode == "sigmoid":
-        #     if shared_weight_P is None:
-        #         self._weight_P = nn.Parameter(torch.tensor([weight_P]).float())
-        #     self.weight_threshold_fn = self.sigmoid_weight
-        # elif weight_threshold_mode == "max_min":
-        #     self.weight_threshold_fn = max_min_norm
-
-        if self.weight_threshold_mode != "max_min" and shared_weight_P is None:
-            self._weight_P = nn.Parameter(torch.tensor([weight_P]).float())
-        self.weight_threshold_fn = getattr(self, f'{self.weight_threshold_mode}_weight')
-
-        if self.activation_threshold_mode != "max_min":
-            self.activation_P = nn.Parameter(torch.tensor([activation_P]).float())
-        self.activation_threshold_fn = getattr(self, f'{self.activation_threshold_mode}_activation')
-
-        # if activation_threshold_mode == "sigmoid":
-        #     self.activation_P = nn.Parameter(torch.tensor([activation_P]).float())
-        #     self.activation_threshold_fn = self.sigmoid_activation
-        # elif activation_threshold_mode == 'max_min':
-        #     self.activation_threshold_fn = max_min_norm
+    def weight_threshold_fn(self, x):
+        return self.weight_threshold_layer.threshold_fn(x)
 
     def forward(self, x: torch.Tensor):
         output = self.conv._conv_forward(x, self._normalized_weight, self.bias, )
-        output = self.activation_threshold_fn(output)
+        output = self.activation_threshold_layer(output)
         return output
+        # return self.conv(x)
 
     @property
     def _normalized_weight(self):
-        conv_weight = self.weight_threshold_fn(self.weight)
-        # return conv_weight / conv_weight.sum()
+        conv_weight = self.weight_threshold_layer(self.weight)
         return conv_weight
 
     @property
@@ -99,6 +77,10 @@ class DilationLayer(nn.Module):
         if self.shared_weight_P is not None:
             return self.shared_weight_P
         return self._weight_P
+
+    @property
+    def activation_P(self):
+        return self.activation_threshold_layer.P_
 
     @property
     def weights(self):
