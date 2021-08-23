@@ -4,6 +4,7 @@ from .opening_net import OpeningNet
 from general.nn.pytorch_lightning_module.obs_lightning_module import NetLightning
 from ..loss import ThresholdPenalization
 
+
 class LightningOpeningNet(NetLightning):
 
     def __init__(

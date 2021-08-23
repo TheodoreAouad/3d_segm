@@ -1,14 +1,16 @@
 from typing import Tuple
 
+from skimage.morphology import disk
 import torch
 import torch.nn as nn
 
 from general.utils import max_min_norm
 from deep_morpho.threshold_fn import arctan_threshold, tanh_threshold, sigmoid_threshold, erf_threshold
 from .threshold_layer import dispatcher
+from .logical_not_layer import LogicalNotLayer
 
 
-class DilationLayer(nn.Module):
+class BiSE(nn.Module):
 
     def __init__(
         self,
@@ -55,7 +57,7 @@ class DilationLayer(nn.Module):
     def weight_threshold_fn(self, x):
         return self.weight_threshold_layer.threshold_fn(x)
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         output = self.conv._conv_forward(x, self._normalized_weight, self.bias, )
         output = self.activation_threshold_layer(output)
         return output
@@ -119,3 +121,43 @@ class DilationLayer(nn.Module):
 
     def erf_activation(self, x):
         return erf_threshold(x, self.activation_P)
+
+
+class LogicalNotBiSE(BiSE):
+
+    def __init__(self, *args, logical_not_threshold_mode: str = 'sigmoid', **kwargs):
+        super().__init__(*args, **kwargs)
+        self.conv.bias = None
+        self.logical_not_threshold_mode = logical_not_threshold_mode
+        self.logical_not_layer = LogicalNotLayer(logical_not_threshold_mode)
+
+        self._bias = nn.Parameter(torch.tensor([-0.5]).float(), requires_grad=False)
+
+        # test: we only learn the alpha parameter. We fix the selem
+        self.__normalized_weight = torch.zeros((1, 1, 5, 5)).float()
+        self.__normalized_weight[0, 0, ...] = torch.tensor(disk(2)).float()
+        self.__normalized_weight = nn.Parameter(self.__normalized_weight, requires_grad=False)
+        # self.activation_threshold_layer.P_.requires_grad = False
+
+
+    @property  # test: we only learn the alpha parameter. We fix the selem
+    def _normalized_weight(self):
+        return self.__normalized_weight
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        output = self.logical_not_layer(x)
+        output = super().forward(output)
+        output = self.logical_not_layer(output)
+        return output
+
+    @property
+    def bias(self):
+        return self._bias
+
+    @property
+    def alpha(self):
+        return self.logical_not_layer.alpha
+
+    @property
+    def thresholded_alpha(self):
+        return self.logical_not_layer.thresholded_alpha

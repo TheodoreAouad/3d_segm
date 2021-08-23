@@ -1,3 +1,7 @@
+from time import time
+import os
+from os.path import join
+
 import torch
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
@@ -8,21 +12,16 @@ import matplotlib.pyplot as plt
 
 from deep_morpho.datasets.generate_forms2 import get_random_diskorect
 from deep_morpho.datasets.multi_rect_dataset import get_loader
-from deep_morpho.models import LightningDilationLayer, LightningOpeningNet
+from deep_morpho.models import LightningBiSE, LightningLogicalNotBiSE, LightningOpeningNet
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
+from general.utils import format_time, log_console, create_logger
 from deep_morpho.metrics import dice
 from deep_morpho.args import all_args
+from general.code_saver import CodeSaver
 
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-print(device)
-
-for args_idx, args in enumerate(all_args):
-    print('=============================')
-    print(f'Args nb {args_idx + 1}/{len(all_args)}')
-    print(args['morp_operation'], args['selem'].sum())
-
+def main(args, logger):
     dataloader = get_loader(
         batch_size=args['batch_size'],
         n_inputs=args['n_inputs'],
@@ -51,11 +50,18 @@ for args_idx, args in enumerate(all_args):
 
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
     if args['morp_operation'].lower() != "opening":
-        model = LightningDilationLayer(
-            model_args={
-                "in_channels": 1, "out_channels": 1, "kernel_size": (5, 5), "activation_threshold_mode": args['activation_mode'],
-                "activation_P": args['activation_P']
-            },
+        model_args = {
+            "in_channels": 1, "out_channels": 1, "kernel_size": (5, 5), "activation_threshold_mode": args['activation_mode'],
+            "activation_P": args['activation_P']
+        }
+        if args['logical_not']:
+            lightning_model = LightningLogicalNotBiSE
+            model_args['logical_not_threshold_mode'] = args['activation_mode']
+        else:
+            lightning_model = LightningBiSE
+
+        model = lightning_model(
+            model_args=model_args,
             learning_rate=args['learning_rate'],
             loss=loss,
             optimizer=optimizer,
@@ -85,9 +91,6 @@ for args_idx, args in enumerate(all_args):
 
     model.to(device)
 
-    logger = TensorBoardLogger("deep_morpho/results", name=args['morp_operation'])
-    print(logger.log_dir)
-
     logger.experiment.add_graph(model, torch.ones(1, 1, 50, 50).to(device))
     logger.experiment.add_image("target_SE", args['selem'][np.newaxis, :].astype(float))
     fig, ax = plt.subplots(); ax.plot(xs, ys); ax.set_title(args['activation_mode'])
@@ -103,3 +106,49 @@ for args_idx, args in enumerate(all_args):
     )
 
     trainer.fit(model, dataloader)
+
+
+if __name__ == '__main__':
+    start_all = time()
+
+    code_saver = CodeSaver(
+        src_path=os.getcwd(),
+        temporary_path="deep_morpho/results",
+        ignore_patterns=("*__pycache__*", "*results*", "data", "*.ipynb", '.git', 'ssm'),
+    )
+
+    code_saver.save_in_temporary_file()
+
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print(device)
+    bugged = []
+    for args_idx, args in enumerate(all_args):
+        name = args['morp_operation']
+        if args['logical_not']:
+            name += "_logical_not"
+        logger = TensorBoardLogger("deep_morpho/results", name=name)
+        code_saver.save_in_final_file(join(logger.log_dir, 'code'))
+
+        console_logger = create_logger(
+            f'args_{args_idx}', all_logs_path=join(logger.log_dir, 'all_logs.log'), error_path=join(logger.log_dir, 'error_logs.log')
+        )
+
+        log_console('Device: {}'.format(device), logger=console_logger)
+        log_console('==================', logger=console_logger)
+        log_console('==================', logger=console_logger)
+        log_console(f'Args number {args_idx + 1} / {len(all_args)}', logger=console_logger)
+        log_console('Time since beginning: {} '.format(format_time(time() - start_all)), logger=console_logger)
+        log_console(logger.log_dir, logger=console_logger)
+        log_console(args['morp_operation'], args['selem'].sum(), logger=console_logger)
+        main(args, logger)
+        # try:
+        #     main(args, logger)
+        # except Exception:
+        #     console_logger.exception(
+        #         f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
+        #     bugged.append(args_idx+1)
+
+    code_saver.delete_temporary_file()
+
+    log_console(f'{len(bugged)} Args Bugged: ', bugged, logger=console_logger)
+    log_console(f'{len(all_args)} args done in {format_time(time() - start_all)} ', logger=console_logger)

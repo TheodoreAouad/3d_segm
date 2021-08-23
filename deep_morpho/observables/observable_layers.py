@@ -1,7 +1,7 @@
 from typing import List
 
 from general.nn.observables import Observable
-from ..models.lightning_dilation_layer import LightningDilationLayer
+from ..models.lightning_bise import LightningBiSE, LightningLogicalNotBiSE
 
 
 class ObservableLayers(Observable):
@@ -51,7 +51,10 @@ class ObservableLayers(Observable):
         if hasattr(pl_module.model, 'dilations'):
             return pl_module.model.dilations
 
-        if isinstance(pl_module, LightningDilationLayer):
+        if isinstance(pl_module, LightningBiSE):
+            return [pl_module.model]
+
+        if isinstance(pl_module, LightningLogicalNotBiSE):
             return [pl_module.model]
 
         raise NotImplementedError('Cannot automatically select layers for model. Give them manually.')

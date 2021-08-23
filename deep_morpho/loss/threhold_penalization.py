@@ -1,10 +1,10 @@
 from typing import List
 
-from ..models import DilationLayer
+from ..models import BiSE
 
 class ThresholdPenalization:
 
-    def __init__(self, dilation_layers: List[DilationLayer], coef: float = .5, degree: int = 2, detach_weights: bool = True,
+    def __init__(self, dilation_layers: List[BiSE], coef: float = .5, degree: int = 2, detach_weights: bool = True,
                  epsilon: float = .5):
         self.dilation_layers = dilation_layers
         self.coef = coef
