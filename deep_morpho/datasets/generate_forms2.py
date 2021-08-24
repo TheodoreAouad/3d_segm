@@ -12,7 +12,7 @@ def draw_disk(ar: np.ndarray, center: np.ndarray, radius: float) -> np.ndarray:
 
 
 def get_random_diskorect(
-    size: Tuple, n_shapes: int = 30, max_shape: Tuple[int] = (15, 15), borders: Tuple[float] = (.1, .9)
+    size: Tuple, n_shapes: int = 30, max_shape: Tuple[int] = (15, 15), borders: Tuple[float] = (.1, .9), p_invert: float = 0.5,
 ) -> np.ndarray:
 
     diskorect = np.zeros(size)
@@ -45,6 +45,8 @@ def get_random_diskorect(
             draw_disk(diskorect, (center_x, center_y), radius)
 
         # all_diskorect.append(diskorect)
+    if random.random() < p_invert:
+        diskorect = 1 - diskorect
 
     return diskorect
     # return all_diskorect[-1]

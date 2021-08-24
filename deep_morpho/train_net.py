@@ -10,12 +10,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-from deep_morpho.datasets.generate_forms2 import get_random_diskorect
+# from deep_morpho.datasets.generate_forms2 import get_random_diskorect
+# from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
 from deep_morpho.datasets.multi_rect_dataset import get_loader
 from deep_morpho.models import LightningBiSE, LightningLogicalNotBiSE, LightningOpeningNet
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
-from general.utils import format_time, log_console, create_logger
+from general.utils import format_time, log_console, create_logger, save_yaml
 from deep_morpho.metrics import dice
 from deep_morpho.args import all_args
 from general.code_saver import CodeSaver
@@ -25,7 +26,7 @@ def main(args, logger):
     dataloader = get_loader(
         batch_size=args['batch_size'],
         n_inputs=args['n_inputs'],
-        random_gen_fn=get_random_diskorect,
+        random_gen_fn=args['random_gen_fn'],
         random_gen_args=args['random_gen_args'],
         device=device,
         selem=args['selem'],
@@ -46,12 +47,15 @@ def main(args, logger):
         obs.PlotWeightsDilation(freq=100),
         obs.WeightsHistogramDilation(freq=100),
         obs.PlotPreds(freq=100),
+        obs.CountInputs(),
     ]
 
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
-    if args['morp_operation'].lower() != "opening":
+
+    # TODO: add general length nn
+    if isinstance(args['morp_operation'], str) and args['morp_operation'].lower() != "opening":
         model_args = {
-            "in_channels": 1, "out_channels": 1, "kernel_size": (5, 5), "activation_threshold_mode": args['activation_mode'],
+            "in_channels": 1, "out_channels": 1, "kernel_size": (9, 9), "activation_threshold_mode": args['activation_mode'],
             "activation_P": args['activation_P']
         }
         if args['logical_not']:
@@ -75,7 +79,7 @@ def main(args, logger):
     else:
         model = LightningOpeningNet(
             model_args={
-                "share_weights": args['share_weights'], "in_channels": 1, "out_channels": 1, "kernel_size": (5, 5), "activation_threshold_mode": args['activation_mode'],
+                "share_weights": args['share_weights'], "in_channels": 1, "out_channels": 1, "kernel_size": (9, 9), "activation_threshold_mode": args['activation_mode'],
                 "activation_P": args['activation_P']
             },
             learning_rate=args['learning_rate'],
@@ -123,11 +127,16 @@ if __name__ == '__main__':
     print(device)
     bugged = []
     for args_idx, args in enumerate(all_args):
-        name = args['morp_operation']
+        if isinstance(args['morp_operation'], str):
+            name = args['morp_operation']
+        else:
+            name = "custom_ops"
+
         if args['logical_not']:
             name += "_logical_not"
         logger = TensorBoardLogger("deep_morpho/results", name=name)
         code_saver.save_in_final_file(join(logger.log_dir, 'code'))
+        save_yaml(args, join(logger.log_dir, 'args.yaml'))
 
         console_logger = create_logger(
             f'args_{args_idx}', all_logs_path=join(logger.log_dir, 'all_logs.log'), error_path=join(logger.log_dir, 'error_logs.log')
