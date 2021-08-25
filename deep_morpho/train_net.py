@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
 from deep_morpho.datasets.multi_rect_dataset import get_loader
-from deep_morpho.models import LightningBiSE, LightningLogicalNotBiSE, LightningOpeningNet
+from deep_morpho.models import LightningBiSE, LightningLogicalNotBiSE, LightningOpeningNet, LightningBiMoNN
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
 from general.utils import format_time, log_console, create_logger, save_yaml
@@ -30,7 +30,7 @@ def main(args, logger):
         random_gen_args=args['random_gen_args'],
         device=device,
         selem=args['selem'],
-        morp_operation=args['morp_operation'],
+        morp_operation=args['morp_operation'].morp_fn,
     )
 
     loss = nn.BCEWithLogitsLoss()
@@ -53,14 +53,14 @@ def main(args, logger):
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
 
     # TODO: add general length nn
-    if isinstance(args['morp_operation'], str) and args['morp_operation'].lower() != "opening":
+    if args['morp_operation'].name.lower() in ['erosion', 'dilation']:
         model_args = {
-            "in_channels": 1, "out_channels": 1, "kernel_size": (9, 9), "activation_threshold_mode": args['activation_mode'],
-            "activation_P": args['activation_P']
+            "kernel_size": (args['kernel_size'], args['kernel_size']), "activation_threshold_mode": args['threshold_mode'],
+            "activation_P": args['activation_P'], "init_weight_identity": args["init_weight_identity"],
         }
         if args['logical_not']:
             lightning_model = LightningLogicalNotBiSE
-            model_args['logical_not_threshold_mode'] = args['activation_mode']
+            model_args['logical_not_threshold_mode'] = args['threshold_mode']
         else:
             lightning_model = LightningBiSE
 
@@ -76,11 +76,11 @@ def main(args, logger):
             first_batch_pen=args['first_batch_pen'],
         )
         ys = model.model.activation_threshold_fn(xs).detach()
-    else:
+    elif args['morp_operation'].name.lower() == 'opening':
         model = LightningOpeningNet(
             model_args={
-                "share_weights": args['share_weights'], "in_channels": 1, "out_channels": 1, "kernel_size": (9, 9), "activation_threshold_mode": args['activation_mode'],
-                "activation_P": args['activation_P']
+                "share_weights": args['share_weights'], "kernel_size": (args['kernel_size'], args['kernel_size']), "activation_threshold_mode": args['threshold_mode'],
+                "activation_P": args['activation_P'], "init_weight_identity": args["init_weight_identity"],
             },
             learning_rate=args['learning_rate'],
             loss=loss,
@@ -91,13 +91,38 @@ def main(args, logger):
             args_thresh_penalization=args['args_thresh_penalization'],
             first_batch_pen=args['first_batch_pen'],
         )
-        ys = model.model.dilations[0].activation_threshold_fn(xs).detach()
+        ys = model.model.bises[0].activation_threshold_fn(xs).detach()
+
+    else:
+        model = LightningBiMoNN(
+            model_args={
+                "kernel_size": [args['kernel_size'] for _ in range(len(args['morp_operation']))],
+                "activation_threshold_mode": args['threshold_mode'],
+                "weight_threshold_mode": args['threshold_mode'],
+                "activation_P": args['activation_P'],
+                "init_weight_identity": args["init_weight_identity"],
+            },
+            learning_rate=args['learning_rate'],
+            loss=loss,
+            optimizer=optimizer,
+            output_dir="deep_morpho/results",
+            observables=observables,
+            do_thresh_penalization=args['do_thresh_penalization'],
+            args_thresh_penalization=args['args_thresh_penalization'],
+            first_batch_pen=args['first_batch_pen'],
+        )
+        ys = model.model.bises[0].activation_threshold_fn(xs).detach()
+
 
     model.to(device)
 
     logger.experiment.add_graph(model, torch.ones(1, 1, 50, 50).to(device))
-    logger.experiment.add_image("target_SE", args['selem'][np.newaxis, :].astype(float))
-    fig, ax = plt.subplots(); ax.plot(xs, ys); ax.set_title(args['activation_mode'])
+
+    for selem_idx, selem in enumerate(args['morp_operation'].selems):
+        fig, ax = plt.subplots(); ax.imshow(selem); ax.set_title(args['morp_operation'].operations[selem_idx])
+        logger.experiment.add_figure(f"target_SE/target_SE_{selem_idx}", fig)
+        # logger.experiment.add_image(f"target_SE/target_SE_{selem_idx}", selem[np.newaxis, :].astype(float))
+    fig, ax = plt.subplots(); ax.plot(xs, ys); ax.set_title(args['threshold_mode'])
     logger.experiment.add_figure("threshold_fn", fig)
 
     trainer = Trainer(
@@ -127,10 +152,8 @@ if __name__ == '__main__':
     print(device)
     bugged = []
     for args_idx, args in enumerate(all_args):
-        if isinstance(args['morp_operation'], str):
-            name = args['morp_operation']
-        else:
-            name = "custom_ops"
+
+        name = args['morp_operation'].name
 
         if args['logical_not']:
             name += "_logical_not"
@@ -148,7 +171,7 @@ if __name__ == '__main__':
         log_console(f'Args number {args_idx + 1} / {len(all_args)}', logger=console_logger)
         log_console('Time since beginning: {} '.format(format_time(time() - start_all)), logger=console_logger)
         log_console(logger.log_dir, logger=console_logger)
-        log_console(args['morp_operation'], args['selem'].sum(), logger=console_logger)
+        log_console(args['morp_operation'], logger.log_dir, logger=console_logger)
         main(args, logger)
         # try:
         #     main(args, logger)

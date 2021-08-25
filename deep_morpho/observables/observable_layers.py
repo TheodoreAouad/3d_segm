@@ -48,8 +48,8 @@ class ObservableLayers(Observable):
         if self.layers is not None:
             return self.layers
 
-        if hasattr(pl_module.model, 'dilations'):
-            return pl_module.model.dilations
+        if hasattr(pl_module.model, 'bises'):
+            return pl_module.model.bises
 
         if isinstance(pl_module, LightningBiSE):
             return [pl_module.model]

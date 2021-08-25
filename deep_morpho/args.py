@@ -3,29 +3,12 @@ from skimage.morphology import disk
 
 from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
 from general.utils import dict_cross
-from general.array_morphology import sequentiel_morp_operations
+from .args_morp_ops import morp_operations
 
 args = {}
 
-
-seq_selems = []
-
-selem = np.zeros((7, 7))
-selem[3, :] = 1
-seq_selems.append(selem)
-
-selem = np.zeros((7, 7))
-selem[:, 3] = 1
-seq_selems.append(selem)
-
-
 # TODO: have one arg for the fn to learn, and one arg for the neural network OR one arg for both but handle it differently...
-args['morp_operation'] = [
-    # 'Dilation',
-    # 'Erosion',
-    # 'Opening',
-    sequentiel_morp_operations(['dilation', 'dilation'], selems=seq_selems, device="cuda", return_numpy_array=False)
-]
+args['morp_operation'] = morp_operations
 
 args['logical_not'] = [
     False
@@ -33,15 +16,17 @@ args['logical_not'] = [
 
 args['batch_size'] = [32]
 args['n_inputs'] = [
-    # 200_000,
-    5_000_000,
+    200_000,
+    # 2_000_000,
 ]
-args['learning_rate'] = [1e-3]
+args['learning_rate'] = [1e-2/2]
 args['random_gen_fn'] = [get_random_rotated_diskorect]
 args['random_gen_args'] = [{'size': (50, 50), 'n_shapes': 15, 'max_shape': (15, 15), 'p_invert': 0.5}]
 
+args['kernel_size'] = [7]
+args['init_weight_identity'] = [True]
 args['activation_P'] = [1]
-args['activation_mode'] = [
+args['threshold_mode'] = [
     # 'arctan',
     # 'sigmoid',
     'tanh',
@@ -104,7 +89,8 @@ selem[2, :] = 1
 # selems.append(selem)
 
 
-args['selem'] = selems
+# args['selem'] = selems
+args['selem'] = [None]
 
 all_args = dict_cross(args)
 #

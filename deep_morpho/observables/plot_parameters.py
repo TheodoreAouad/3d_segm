@@ -26,11 +26,11 @@ class PlotWeightsDilation(ObservableLayers):
         # trainer.logger.experiment.add_image(f"weights/Normalized_{layer_idx}", layer._normalized_weight[0], trainer.global_step)
         # trainer.logger.experiment.add_image(f"weights/Raw_{layer_idx}", max_min_norm(layer.weight[0]), trainer.global_step)
 
-        trainer.logger.experiment.add_figure(f"weights/Normalized_{layer_idx}", self.get_figure_weights(layer._normalized_weight[0]), trainer.global_step)
-        trainer.logger.experiment.add_figure(f"weights/Raw_{layer_idx}", self.get_figure_weights(max_min_norm(layer.weight[0])), trainer.global_step)
+        trainer.logger.experiment.add_figure(f"weights/Normalized_{layer_idx}", self.get_figure_normalized_weights(layer._normalized_weight[0]), trainer.global_step)
+        trainer.logger.experiment.add_figure(f"weights/Raw_{layer_idx}", self.get_figure_raw_weights(layer.weight[0]), trainer.global_step)
 
 
-    def get_figure_weights(self, weights):
+    def get_figure_normalized_weights(self, weights):
         weights = weights[0].cpu().detach()
         figure = plt.figure(figsize=(8, 8))
         plt.imshow(weights, interpolation='nearest', cmap=plt.cm.gray)
@@ -38,7 +38,23 @@ class PlotWeightsDilation(ObservableLayers):
         plt.clim(0, 1)
 
         # Use white text if squares are dark; otherwise black.
+
+        for i, j in itertools.product(range(weights.shape[0]), range(weights.shape[1])):
+            color = "white" if weights[i, j] < .5 else "black"
+            plt.text(j, i, round(weights[i, j].item(), 2), horizontalalignment="center", color=color)
+
+        plt.tight_layout()
+        return figure
+
+    def get_figure_raw_weights(self, weights):
+        weights = weights[0].cpu().detach()
         weights_normed = max_min_norm(weights)
+        figure = plt.figure(figsize=(8, 8))
+        plt.imshow(weights_normed, interpolation='nearest', cmap=plt.cm.gray)
+        plt.colorbar()
+        # plt.clim(0, 1)
+
+        # Use white text if squares are dark; otherwise black.
         threshold = weights_normed.max() / 2.
 
         for i, j in itertools.product(range(weights.shape[0]), range(weights.shape[1])):

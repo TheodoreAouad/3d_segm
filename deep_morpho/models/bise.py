@@ -14,8 +14,6 @@ class BiSE(nn.Module):
 
     def __init__(
         self,
-        in_channels: int,
-        out_channels: int,
         kernel_size: Tuple,
         weight_P: float = 1,
         weight_threshold_mode: str = "sigmoid",
@@ -24,6 +22,8 @@ class BiSE(nn.Module):
         shared_weights: torch.tensor = None,
         shared_weight_P: torch.tensor = None,
         init_bias_value: float = -2,
+        init_weight_identity: bool = True,
+        out_channels=1,
         *args,
         **kwargs
     ):
@@ -34,7 +34,7 @@ class BiSE(nn.Module):
         self._weight_P = nn.Parameter(torch.tensor([weight_P]).float())
         self.activation_P_init = activation_P
         self.conv = nn.Conv2d(
-            in_channels=in_channels,
+            in_channels=1,
             out_channels=out_channels,
             kernel_size=kernel_size,
             # bias=0,
@@ -44,6 +44,7 @@ class BiSE(nn.Module):
         )
         with torch.no_grad():
             self.conv.bias.fill_(init_bias_value)
+        self._init_as_identity()
 
         self.shared_weights = shared_weights
         self.shared_weight_P = shared_weight_P
@@ -61,7 +62,11 @@ class BiSE(nn.Module):
         output = self.conv._conv_forward(x, self._normalized_weight, self.bias, )
         output = self.activation_threshold_layer(output)
         return output
-        # return self.conv(x)
+
+    def _init_as_identity(self):
+        self.conv.weight.data.fill_(-1)
+        shape = self.conv.weight.shape
+        self.conv.weight.data[..., shape[-2]//2, shape[-1]//2] = 1
 
     @property
     def _normalized_weight(self):

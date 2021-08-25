@@ -14,9 +14,9 @@ class OpeningNet(nn.Module):
         else:
             self.dilations2 = BiSE(**bise_args)
 
-        self.dilations = [self.dilations1, self.dilations2]
+        self.bises = [self.dilations1, self.dilations2]
 
     def forward(self, x):
-        output = self.dilations[0](x)
-        output = self.dilations[1](output)
+        output = self.bises[0](x)
+        output = self.bises[1](output)
         return output

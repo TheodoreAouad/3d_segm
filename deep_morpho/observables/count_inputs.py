@@ -16,5 +16,5 @@ class CountInputs(Observable):
         batch_idx: int,
         dataloader_idx: int,
     ) -> None:
-        self.n_inputs += len(batch)
+        self.n_inputs += len(batch[0])
         trainer.logger.experiment.add_scalar("n_inputs", self.n_inputs, trainer.global_step)
