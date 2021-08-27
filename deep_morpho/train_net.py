@@ -43,6 +43,7 @@ def main(args, logger):
             metrics=metrics,
             keep_preds_for_epoch=False,
         ),
+        obs.InputAsPredMetric(metrics),
         obs.PlotParametersDilation(freq=1),
         obs.PlotWeightsDilation(freq=100),
         obs.WeightsHistogramDilation(freq=100),

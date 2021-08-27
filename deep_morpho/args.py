@@ -11,24 +11,28 @@ args = {}
 args['morp_operation'] = morp_operations
 
 args['logical_not'] = [
-    False
+    True,
+    False,
 ]
 
 args['batch_size'] = [32]
 args['n_inputs'] = [
     # 200_000,
-    1_000_000,
+    5_000_000,
 ]
 args['learning_rate'] = [1e-3]
 args['random_gen_fn'] = [get_random_rotated_diskorect]
 args['random_gen_args'] = [{'size': (50, 50), 'n_shapes': 15, 'max_shape': (15, 15), 'p_invert': 0.5}]
 
-args['kernel_size'] = [7]
+args['kernel_size'] = [
+    # 7
+    "adapt",
+]
 args['init_weight_identity'] = [True]
 args['activation_P'] = [1]
 args['threshold_mode'] = [
     # 'arctan',
-    # 'sigmoid',
+    'sigmoid',
     'tanh',
     # 'erf',
 ]
@@ -41,59 +45,13 @@ args['args_thresh_penalization'] = [{
 }]
 args['first_batch_pen'] = [1]
 
-selems = []
-
-# selem = np.zeros((5, 5))
-# selem[1:-1, 1:-1] = 1
-# selem[0, 2] = 1
-# selem[-1, 2] = 1
-# selems.append(selem)
-
-# selem = np.zeros((5, 5))
-selem = disk(2)
-selems.append(selem)
-
-selem = np.zeros((5, 5))
-selem[np.arange(5), 5 - np.arange(1, 6)] = 1
-selem[np.arange(5), np.arange(5)] = 1
-# # selem[:, 2] = 1
-# # selem[2, :] = 1
-# selem[np.arange(5), 5 - np.arange(1, 6)] = 1
-# selem[np.arange(5), np.arange(5)] = 1
-# selem[:, 2] = 1
-# selem[2, :] = 1
-selems.append(selem)
-
-selem = np.zeros((5, 5))
-selem[1:-1, 1:-1] = 1
-selems.append(selem)
-
-selem = np.zeros((5, 5))
-selem[:, 2] = 1
-selems.append(selem)
-
-selem = np.zeros((5, 5))
-selem[2, :] = 1
-selems.append(selem)
-#
-# selem = np.zeros((5, 5))
-# selem[1:-1, 1:-1] = 1
-# selems.append(selem)
-#
-selem = np.zeros((5, 5))
-selem[:, 2] = 1
-selems.append(selem)
-#
-# selem = np.zeros((5, 5))
-# selem[2, :] = 1
-# selems.append(selem)
-
-
-# args['selem'] = selems
 args['selem'] = [None]
 
 all_args = dict_cross(args)
 #
-# for idx, args in enumerate(all_args):
+for idx, args in enumerate(all_args):
+    if args["kernel_size"] == "adapt":
+        args["kernel_size"] = args["morp_operation"].selems[0].shape[0]
+    args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
 #     if "dilation" in args['morp_operation'].name:
 #         all_args[idx]['n_inputs'] = 200_000

@@ -24,7 +24,8 @@ def draw_ellipse(draw, center, radius):
 
 
 def get_random_rotated_diskorect(
-    size: Tuple, n_shapes: int = 30, max_shape: Tuple[int] = (15, 15), p_invert: float = 0.5, **kwargs
+    size: Tuple, n_shapes: int = 30, max_shape: Tuple[int] = (15, 15), p_invert: float = 0.5,
+        border=(4, 4), **kwargs
 ):
     diskorect = np.zeros(size)
     img = Image.fromarray(diskorect)
@@ -47,8 +48,14 @@ def get_random_rotated_diskorect(
             ry = np.random.randint(1, max_shape[1]//2)
             draw_ellipse(draw, np.array([x, y]), (rx, ry))
 
-    diskorect = np.asarray(img)
+    diskorect = np.asarray(img) + 0
+    # diskorect.setflags(write=1
     if np.random.rand() < p_invert:
         diskorect = 1 - diskorect
+
+    diskorect[:border[0], :] = 0
+    diskorect[-border[0]:, :] = 0
+    diskorect[:, :border[0]] = 0
+    diskorect[:, -border[0]:] = 0
 
     return diskorect
