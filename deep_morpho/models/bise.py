@@ -44,7 +44,8 @@ class BiSE(nn.Module):
         )
         with torch.no_grad():
             self.conv.bias.fill_(init_bias_value)
-        self._init_as_identity()
+        if init_weight_identity:
+            self._init_as_identity()
 
         self.shared_weights = shared_weights
         self.shared_weight_P = shared_weight_P
@@ -97,57 +98,57 @@ class BiSE(nn.Module):
     def bias(self):
         return self.conv.bias
 
-    def sigmoid_weight(self, x):
-        return sigmoid_threshold(x, self.weight_P)
-
-    def sigmoid_activation(self, x):
-        return sigmoid_threshold(x, self.activation_P)
-
-    def arctan_weight(self, x):
-        return arctan_threshold(x, self.weight_P)
-
-    def arctan_activation(self, x):
-        return arctan_threshold(x, self.activation_P)
-
-    def weight_max_min(self, x):
-        return max_min_norm(x)
-
-    def activation_max_min(self, x):
-        return max_min_norm(x)
-
-    def tanh_weight(self, x):
-        return tanh_threshold(x, self.weight_P)
-
-    def tanh_activation(self, x):
-        return tanh_threshold(x, self.activation_P)
-
-    def erf_weight(self, x):
-        return erf_threshold(x, self.weight_P)
-
-    def erf_activation(self, x):
-        return erf_threshold(x, self.activation_P)
+    # def sigmoid_weight(self, x):
+    #     return sigmoid_threshold(x, self.weight_P)
+    #
+    # def sigmoid_activation(self, x):
+    #     return sigmoid_threshold(x, self.activation_P)
+    #
+    # def arctan_weight(self, x):
+    #     return arctan_threshold(x, self.weight_P)
+    #
+    # def arctan_activation(self, x):
+    #     return arctan_threshold(x, self.activation_P)
+    #
+    # def weight_max_min(self, x):
+    #     return max_min_norm(x)
+    #
+    # def activation_max_min(self, x):
+    #     return max_min_norm(x)
+    #
+    # def tanh_weight(self, x):
+    #     return tanh_threshold(x, self.weight_P)
+    #
+    # def tanh_activation(self, x):
+    #     return tanh_threshold(x, self.activation_P)
+    #
+    # def erf_weight(self, x):
+    #     return erf_threshold(x, self.weight_P)
+    #
+    # def erf_activation(self, x):
+    #     return erf_threshold(x, self.activation_P)
 
 
 class LogicalNotBiSE(BiSE):
 
-    def __init__(self, *args, logical_not_threshold_mode: str = 'sigmoid', **kwargs):
+    def __init__(self, *args, logical_not_threshold_mode: str = 'sigmoid', alpha_init=0, **kwargs):
         super().__init__(*args, **kwargs)
         self.conv.bias = None
         self.logical_not_threshold_mode = logical_not_threshold_mode
-        self.logical_not_layer = LogicalNotLayer(logical_not_threshold_mode)
+        self.logical_not_layer = LogicalNotLayer(logical_not_threshold_mode, alpha_init=alpha_init)
 
         self._bias = nn.Parameter(torch.tensor([-0.5]).float(), requires_grad=False)
 
         # test: we only learn the alpha parameter. We fix the selem
-        self.__normalized_weight = torch.zeros((1, 1, 5, 5)).float()
-        self.__normalized_weight[0, 0, ...] = torch.tensor(disk(2)).float()
-        self.__normalized_weight = nn.Parameter(self.__normalized_weight, requires_grad=False)
+        # self.__normalized_weight = torch.zeros((1, 1, 5, 5)).float()
+        # self.__normalized_weight[0, 0, ...] = torch.tensor(disk(2)).float()
+        # self.__normalized_weight = nn.Parameter(self.__normalized_weight, requires_grad=False)
         # self.activation_threshold_layer.P_.requires_grad = False
 
 
-    @property  # test: we only learn the alpha parameter. We fix the selem
-    def _normalized_weight(self):
-        return self.__normalized_weight
+    # @property  # test: we only learn the alpha parameter. We fix the selem
+    # def _normalized_weight(self):
+    #     return self.__normalized_weight
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         output = self.logical_not_layer(x)

@@ -16,10 +16,10 @@ args['logical_not'] = [
 
 args['batch_size'] = [32]
 args['n_inputs'] = [
-    200_000,
-    # 2_000_000,
+    # 200_000,
+    1_000_000,
 ]
-args['learning_rate'] = [1e-2/2]
+args['learning_rate'] = [1e-3]
 args['random_gen_fn'] = [get_random_rotated_diskorect]
 args['random_gen_args'] = [{'size': (50, 50), 'n_shapes': 15, 'max_shape': (15, 15), 'p_invert': 0.5}]
 
@@ -54,35 +54,35 @@ selem = disk(2)
 selems.append(selem)
 
 selem = np.zeros((5, 5))
-# selem[np.arange(5), 5 - np.arange(1, 6)] = 1
-# selem[np.arange(5), np.arange(5)] = 1
-# # selem[:, 2] = 1
-# # selem[2, :] = 1
 selem[np.arange(5), 5 - np.arange(1, 6)] = 1
 selem[np.arange(5), np.arange(5)] = 1
+# # selem[:, 2] = 1
+# # selem[2, :] = 1
+# selem[np.arange(5), 5 - np.arange(1, 6)] = 1
+# selem[np.arange(5), np.arange(5)] = 1
 # selem[:, 2] = 1
 # selem[2, :] = 1
-# selems.append(selem)
+selems.append(selem)
 
 selem = np.zeros((5, 5))
 selem[1:-1, 1:-1] = 1
-# selems.append(selem)
+selems.append(selem)
 
 selem = np.zeros((5, 5))
 selem[:, 2] = 1
-# selems.append(selem)
+selems.append(selem)
 
 selem = np.zeros((5, 5))
 selem[2, :] = 1
-# selems.append(selem)
+selems.append(selem)
 #
 # selem = np.zeros((5, 5))
 # selem[1:-1, 1:-1] = 1
 # selems.append(selem)
 #
-# selem = np.zeros((5, 5))
-# selem[:, 2] = 1
-# selems.append(selem)
+selem = np.zeros((5, 5))
+selem[:, 2] = 1
+selems.append(selem)
 #
 # selem = np.zeros((5, 5))
 # selem[2, :] = 1
@@ -95,5 +95,5 @@ args['selem'] = [None]
 all_args = dict_cross(args)
 #
 # for idx, args in enumerate(all_args):
-#     if args['morp_operation'] in ['Erosion', 'Dilation']:
+#     if "dilation" in args['morp_operation'].name:
 #         all_args[idx]['n_inputs'] = 200_000

@@ -101,6 +101,7 @@ def main(args, logger):
                 "weight_threshold_mode": args['threshold_mode'],
                 "activation_P": args['activation_P'],
                 "init_weight_identity": args["init_weight_identity"],
+                "logical_not": args["logical_not"],
             },
             learning_rate=args['learning_rate'],
             loss=loss,

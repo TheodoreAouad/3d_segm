@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from skimage.morphology import disk
+from general.structuring_elements import *
 
 from general.array_morphology import SequentialMorpOperations
 
@@ -10,31 +10,51 @@ else:
     device = 'cpu'
 
 morp_operations = []
+selems = []
 
-# selems = []
-
-# selem = np.zeros((7, 7))
-# selem[3, :] = 1
-# selems.append(selem)
-
+# vstick
 # selem = np.zeros((7, 7))
 # selem[:, 3] = 1
 # selems.append(selem)
 
-seq_morp = SequentialMorpOperations(
-    name='Bimonn_erosion',
-    selems=[disk(3)],
-    operations=['erosion'],
+# hstick
+# selem = np.zeros((7, 7))
+# selem[3, :] = 1
+# selems.append(selem)
+
+# for se in selems:
+#     for op in ['erosion']:
+#         seq_morp = SequentialMorpOperations(
+#             name='Bimonn_'+op,
+#             selems=[se],
+#             operations=[op],
+#             return_numpy_array=False,
+#             device=device
+#         )
+#         morp_operations.append(seq_morp)
+
+# morp_operations.append(SequentialMorpOperations(
+#     name="Bimonn_opening",
+#     selems=[disk(2), disk(2)],
+#     operations=['erosion', 'dilation'],
+#     return_numpy_array=False,
+#     device=device,
+# ))
+#
+morp_operations.append(SequentialMorpOperations(
+    name="Bimonn_network",
+    selems=[disk(3), hstick(7), straight_cross(7)],
+    operations=['dilation', 'erosion', 'dilation'],
     return_numpy_array=False,
     device=device,
-)
-morp_operations.append(seq_morp)
+))
 
 # seq_morp = SequentialMorpOperations(
-#     name='Bimonn_closing',
-#     selems=[disk(3), disk(3)],
-#     operations=['dilation', 'erosion'],
+#     name='Bimonn_erosion',
+#     selems=[disk(2)],
+#     operations=['erosion'],
 #     return_numpy_array=False,
 #     device=device,
 # )
 # morp_operations.append(seq_morp)
+
