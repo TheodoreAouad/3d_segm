@@ -22,16 +22,16 @@ selems = []
 # selem[3, :] = 1
 # selems.append(selem)
 
-# for se in [disk(3), ]:
-#     for op in ['erosion']:
-#         seq_morp = SequentialMorpOperations(
-#             name='Bimonn_'+op,
-#             selems=[se],
-#             operations=[op],
-#             return_numpy_array=False,
-#             device=device
-#         )
-#         morp_operations.append(seq_morp)
+for se in [disk(3), hstick(7), vstick(7), diagonal_cross(7), straight_cross(7), square(7)]:
+    for op in ['erosion', 'dilation']:
+        seq_morp = SequentialMorpOperations(
+            name='Bimonn_'+op,
+            selems=[se],
+            operations=[op],
+            return_numpy_array=False,
+            device=device
+        )
+        morp_operations.append(seq_morp)
 
 # morp_operations.append(SequentialMorpOperations(
 #     name="Bimonn_opening",
@@ -41,21 +41,21 @@ selems = []
 #     device=device,
 # ))
 #
-morp_operations.append(SequentialMorpOperations(
-    name="Bimonn_closing",
-    selems=[disk(3), disk(3)],
-    operations=['dilation', 'erosion',],
-    return_numpy_array=False,
-    device=device,
-))
+# morp_operations.append(SequentialMorpOperations(
+#     name="Bimonn_closing",
+#     selems=[disk(3), disk(3)],
+#     operations=['dilation', 'erosion',],
+#     return_numpy_array=False,
+#     device=device,
+# ))
 
-morp_operations.append(SequentialMorpOperations(
-    name="Bimonn_opening",
-    selems=[disk(3), disk(3)],
-    operations=['erosion', 'dilation'],
-    return_numpy_array=False,
-    device=device,
-))
+# morp_operations.append(SequentialMorpOperations(
+#     name="Bimonn_opening",
+#     selems=[disk(3), disk(3)],
+#     operations=['erosion', 'dilation'],
+#     return_numpy_array=False,
+#     device=device,
+# ))
 
 # seq_morp = SequentialMorpOperations(
 #     name='Bimonn_erosion',

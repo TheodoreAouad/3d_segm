@@ -12,13 +12,13 @@ args['morp_operation'] = morp_operations
 
 args['logical_not'] = [
     True,
-    False,
+    # False,
 ]
 
 args['batch_size'] = [32]
 args['n_inputs'] = [
-    # 200_000,
-    5_000_000,
+    2_000_000,
+    # 5_000_000,
 ]
 args['learning_rate'] = [1e-3]
 args['random_gen_fn'] = [get_random_rotated_diskorect]
@@ -32,7 +32,7 @@ args['init_weight_identity'] = [True]
 args['activation_P'] = [1]
 args['threshold_mode'] = [
     # 'arctan',
-    'sigmoid',
+    # 'sigmoid',
     'tanh',
     # 'erf',
 ]
