@@ -62,7 +62,7 @@ def format_time(s):
     return "%02i:%02i:%02i" % (h, m, s)
 
 
-def create_logger(logger_name=None, all_logs_path=None, error_path=None, level="debug"):
+def create_logger(logger_name=None, all_logs_path=None, error_path=None, level="info"):
 
     level_dicts = {'debug': logging.DEBUG, 'info': logging.INFO}
     logging.basicConfig(

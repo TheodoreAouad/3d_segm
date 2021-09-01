@@ -6,9 +6,9 @@ from ..threshold_fn import *
 
 class ThresholdLayer(nn.Module):
 
-    def __init__(self, threshold_fn, P_: float = 1, threshold_name: str = ''):
+    def __init__(self, threshold_fn, P_: float = 1, threshold_name: str = '', constant_P: bool = False):
         super().__init__()
-        if isinstance(P_, nn.Parameter):
+        if isinstance(P_, nn.Parameter) or constant_P:
             self.P_ = P_
         else:
             self.P_ = nn.Parameter(torch.tensor([P_]).float())
@@ -20,26 +20,31 @@ class ThresholdLayer(nn.Module):
 
 
 class SigmoidLayer(ThresholdLayer):
-    def __init__(self, P_: float = 1):
-        super().__init__(threshold_fn=sigmoid_threshold,  P_=P_, threshold_name='sigmoid')
+    def __init__(self, *args, **kwargs):
+        super().__init__(threshold_fn=sigmoid_threshold, threshold_name='sigmoid', *args, **kwargs)
 
 
 class ArctanLayer(ThresholdLayer):
-    def __init__(self, P_: float = 1):
-        super().__init__(threshold_fn=arctan_threshold,  P_=P_, threshold_name='arctan')
+    def __init__(self, *args, **kwargs):
+        super().__init__(threshold_fn=arctan_threshold, threshold_name='arctan', *args, **kwargs)
 
 
 class TanhLayer(ThresholdLayer):
-    def __init__(self, P_: float = 1):
-        super().__init__(threshold_fn=tanh_threshold,  P_=P_, threshold_name='tanh')
+    def __init__(self, *args, **kwargs):
+        super().__init__(threshold_fn=tanh_threshold, threshold_name='tanh', *args, **kwargs)
 
 
 class ErfLayer(ThresholdLayer):
-    def __init__(self, P_: float = 1):
-        super().__init__(threshold_fn=erf_threshold,  P_=P_, threshold_name='erf')
+    def __init__(self, *args, **kwargs):
+        super().__init__(threshold_fn=erf_threshold, threshold_name='erf', *args, **kwargs)
+
+
+class ClampLayer(ThresholdLayer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(threshold_fn=lambda x: clamp_threshold(x, 0, 1), threshold_name='clamp', *args, **kwargs)
 
 
 dispatcher = {
-    'sigmoid': SigmoidLayer, 'arctan': ArctanLayer, 'tanh': TanhLayer, 'erf': ErfLayer
+    'sigmoid': SigmoidLayer, 'arctan': ArctanLayer, 'tanh': TanhLayer, 'erf': ErfLayer, 'clamp': ClampLayer
 }
 

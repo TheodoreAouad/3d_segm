@@ -12,9 +12,8 @@ class BiMoNN(nn.Module):
         kernel_size: List[Union[Tuple, int]],
         logical_not: Union[bool, List[bool]] = False,
         weight_P: Union[float, List[float]] = 1,
-        weight_threshold_mode: Union[str, List[str]] = "sigmoid",
+        threshold_mode: Union[Union[str, dict], List[Union[str, dict]]] = "sigmoid",
         activation_P: Union[float, List[float]] = 10,
-        activation_threshold_mode: Union[str, List[str]] = "sigmoid",
         init_bias_value: Union[float, List[float]] = -2,
         init_weight_identity: Union[bool, List[bool]] = True,
         out_channels: Union[int, List[int]] = 1,
@@ -76,8 +75,8 @@ class BiMoNN(nn.Module):
     @property
     def bises_args(self):
         return [
-            'kernel_size', 'weight_P', 'weight_threshold_mode', 'activation_P',
-            'activation_threshold_mode', 'init_bias_value', 'init_weight_identity', 'out_channels'
+            'kernel_size', 'weight_P', 'threshold_mode', 'activation_P',
+            'init_bias_value', 'init_weight_identity', 'out_channels'
         ]
 
     @property

@@ -16,3 +16,7 @@ def sigmoid_threshold(x):
 
 def erf_threshold(x):
     return 1/2 * torch.erf(x) + 1/2
+
+
+def clamp_threshold(x, s1=0, s2=1):
+    return x.clamp(s1, s2)

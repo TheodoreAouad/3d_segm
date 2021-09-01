@@ -7,7 +7,7 @@ from .args_morp_ops import morp_operations
 
 args = {}
 
-# TODO: have one arg for the fn to learn, and one arg for the neural network OR one arg for both but handle it differently...
+args['experiment_name'] = ['Bimonn_exp_16']
 args['morp_operation'] = morp_operations
 
 args['logical_not'] = [
@@ -17,7 +17,7 @@ args['logical_not'] = [
 
 args['batch_size'] = [32]
 args['n_inputs'] = [
-    2_000_000,
+    3_000_000,
     # 5_000_000,
 ]
 args['learning_rate'] = [1e-3]
@@ -35,7 +35,10 @@ args['threshold_mode'] = [
     # 'sigmoid',
     'tanh',
     # 'erf',
+    # {"activation": "tanh", "weight": "tanh", "logical_not": "clamp"}
 ]
+args["alpha_init"] = [[0, 0]]
+
 args['share_weights'] = [False]
 args['do_thresh_penalization'] = [False]
 args['args_thresh_penalization'] = [{

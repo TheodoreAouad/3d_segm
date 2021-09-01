@@ -42,7 +42,7 @@ class SequentialMorpOperations:
         operations: List['str'],
         selems: List["np.ndarray"],
         device="cpu",
-        return_numpy_array: bool = True,
+        return_numpy_array: bool = False,
         name: str = None,
     ):
         self.operations = [op.lower() for op in operations]

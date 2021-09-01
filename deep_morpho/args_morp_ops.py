@@ -23,20 +23,33 @@ selems = []
 # selems.append(selem)
 
 for se in [disk(3), hstick(7), vstick(7), diagonal_cross(7), straight_cross(7), square(7)]:
-    for op in ['erosion', 'dilation']:
-        seq_morp = SequentialMorpOperations(
-            name='Bimonn_'+op,
-            selems=[se],
-            operations=[op],
-            return_numpy_array=False,
-            device=device
-        )
-        morp_operations.append(seq_morp)
+    # for op in ['erosion', 'dilation']:
+    #     morp_operations.append(SequentialMorpOperations(
+    #         name=op,
+    #         selems=[se],
+    #         operations=[op],
+    #         return_numpy_array=False,
+    #         device=device
+    #     ))
+    # morp_operations.append(SequentialMorpOperations(
+    #     name="opening",
+    #     selems=[se, se],
+    #     operations=['erosion', 'dilation'],
+    #     return_numpy_array=False,
+    #     device=device
+    # ))
+    morp_operations.append(SequentialMorpOperations(
+        name="closing",
+        selems=[se, se],
+        operations=['dilation', 'erosion'],
+        return_numpy_array=False,
+        device=device
+    ))
 
 # morp_operations.append(SequentialMorpOperations(
-#     name="Bimonn_opening",
-#     selems=[disk(2), disk(2)],
-#     operations=['erosion', 'dilation'],
+#     name="dilation",
+#     selems=[disk(3)],
+#     operations=['dilation'],
 #     return_numpy_array=False,
 #     device=device,
 # ))
@@ -58,11 +71,19 @@ for se in [disk(3), hstick(7), vstick(7), diagonal_cross(7), straight_cross(7), 
 # ))
 
 # seq_morp = SequentialMorpOperations(
-#     name='Bimonn_erosion',
-#     selems=[disk(2)],
-#     operations=['erosion'],
+#     name='Bimonn_network/experiment_14',
+#     selems=[disk(3), disk(3), straight_cross(7), straight_cross(7)],
+#     operations=['erosion', 'dilation', 'erosion', 'dilation'],
 #     return_numpy_array=False,
 #     device=device,
 # )
 # morp_operations.append(seq_morp)
-
+#
+# seq_morp = SequentialMorpOperations(
+#     name='Bimonn_network/experiment_14',
+#     selems=[disk(2), diagonal_cross(5), straight_cross(5), straight_cross(5)],
+#     operations=['dilation', 'dilation', 'erosion', 'dilation'],
+#     return_numpy_array=False,
+#     device=device,
+# )
+# morp_operations.append(seq_morp)
