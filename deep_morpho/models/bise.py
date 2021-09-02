@@ -116,26 +116,31 @@ class LogicalNotBiSE(BiSE):
         self.conv.bias = None
         self.logical_not_layer = LogicalNotLayer(self.logical_not_threshold_mode, alpha_init=alpha_init)
 
-        self._bias = nn.Parameter(torch.tensor([-0.5]).float(), requires_grad=False)
+        self._bias = nn.Parameter(torch.tensor([0.5]).float(), requires_grad=False)
 
-        # exp 11 logical not
+        # exp 12 logical not
         # self.activation_threshold_layer.P_.requires_grad = False
         # self.activation_threshold_layer.P_.fill_(10)
 
-    # exp 11 logical not
+    # exp 12 logical not
     # @property
     # def _normalized_weight(self):
-    #     return torch.FloatTensor(disk(3)).unsqueeze(0).unsqueeze(0).cuda()
+    #     return torch.FloatTensor(disk(2)).unsqueeze(0).unsqueeze(0).cuda()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         output = self.logical_not_layer(x)
         output = super().forward(output)
-        output = self.logical_not_layer(output)
+        if self.thresholded_alpha < 1/2:
+            return 1 - output
+        # output = self.logical_not_layer(output)
         return output
 
     @property
     def bias(self):
-        return self._bias
+        return -(
+                min(self.thresholded_alpha.detach(), 1 - self.thresholded_alpha.detach()) *
+                (self._normalized_weight.sum().detach() - 1) + self._bias
+        )
 
     @property
     def alpha(self):

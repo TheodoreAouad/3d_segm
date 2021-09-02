@@ -84,6 +84,7 @@ class PlotParametersDilation(ObservableLayers):
 
         if isinstance(layer, LogicalNotBiSE):
             trainer.logger.experiment.add_scalar(f"weights/norm_alpha_{layer_idx}", layer.thresholded_alpha, trainer.global_step)
+            trainer.logger.experiment.add_scalar(f"weights/bias_{layer_idx}", layer.bias, trainer.global_step)
         elif isinstance(layer, BiSE):
             trainer.logger.experiment.add_scalar(f"weights/bias_{layer_idx}", layer.bias, trainer.global_step)
             trainer.logger.experiment.add_scalar(f"weights/bias+weights_{layer_idx}", layer._normalized_weight.sum() + layer.bias, trainer.global_step)

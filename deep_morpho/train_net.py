@@ -29,13 +29,9 @@ def main(args, logger):
         random_gen_fn=args['random_gen_fn'],
         random_gen_args=args['random_gen_args'],
         device=device,
-        selem=args['selem'],
         morp_operation=args['morp_operation'].morp_fn,
     )
 
-    # loss = nn.BCEWithLogitsLoss()
-    loss = nn.BCELoss()
-    optimizer = torch.optim.Adam
     metrics = {'dice': lambda y_true, y_pred: dice(y_true, y_pred, threshold=.5).mean()}
 
     observables = [
@@ -54,47 +50,6 @@ def main(args, logger):
 
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
 
-    # if args['morp_operation'].name.lower() in ['erosion', 'dilation']:
-    #     model_args = {
-    #         "kernel_size": (args['kernel_size'], args['kernel_size']), "activation_threshold_mode": args['threshold_mode'],
-    #         "activation_P": args['activation_P'], "init_weight_identity": args["init_weight_identity"],
-    #     }
-    #     if args['logical_not']:
-    #         lightning_model = LightningLogicalNotBiSE
-    #         model_args['logical_not_threshold_mode'] = args['threshold_mode']
-    #     else:
-    #         lightning_model = LightningBiSE
-    #
-    #     model = lightning_model(
-    #         model_args=model_args,
-    #         learning_rate=args['learning_rate'],
-    #         loss=loss,
-    #         optimizer=optimizer,
-    #         output_dir="deep_morpho/results",
-    #         observables=observables,
-    #         do_thresh_penalization=args['do_thresh_penalization'],
-    #         args_thresh_penalization=args['args_thresh_penalization'],
-    #         first_batch_pen=args['first_batch_pen'],
-    #     )
-    #     ys = model.model.activation_threshold_fn(xs).detach()
-    # elif args['morp_operation'].name.lower() == 'opening':
-    #     model = LightningOpeningNet(
-    #         model_args={
-    #             "share_weights": args['share_weights'], "kernel_size": (args['kernel_size'], args['kernel_size']), "activation_threshold_mode": args['threshold_mode'],
-    #             "activation_P": args['activation_P'], "init_weight_identity": args["init_weight_identity"],
-    #         },
-    #         learning_rate=args['learning_rate'],
-    #         loss=loss,
-    #         optimizer=optimizer,
-    #         output_dir="deep_morpho/results",
-    #         observables=observables,
-    #         do_thresh_penalization=args['do_thresh_penalization'],
-    #         args_thresh_penalization=args['args_thresh_penalization'],
-    #         first_batch_pen=args['first_batch_pen'],
-    #     )
-    #     ys = model.model.bises[0].activation_threshold_fn(xs).detach()
-    #
-    # else:
     model = LightningBiMoNN(
         model_args={
             "kernel_size": [args['kernel_size'] for _ in range(len(args['morp_operation']))],
@@ -105,8 +60,8 @@ def main(args, logger):
             "alpha_init": args["alpha_init"],
         },
         learning_rate=args['learning_rate'],
-        loss=loss,
-        optimizer=optimizer,
+        loss=args['loss'],
+        optimizer=args['optimizer'],
         output_dir="deep_morpho/results",
         observables=observables,
         do_thresh_penalization=args['do_thresh_penalization'],
