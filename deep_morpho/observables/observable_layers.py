@@ -6,11 +6,12 @@ from ..models.lightning_bise import LightningBiSE, LightningLogicalNotBiSE
 
 class ObservableLayers(Observable):
 
-    def __init__(self, layers: List["nn.Module"] = None, freq: int = 1, *args, **kwargs):
+    def __init__(self, layers: List["nn.Module"] = None, freq: int = 1, layer_name: str = 'bises', *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.layers = layers
         self.freq = freq
         self.freq_idx = 0
+        self.layer_name = layer_name
 
 
     def on_train_batch_end(
@@ -48,8 +49,8 @@ class ObservableLayers(Observable):
         if self.layers is not None:
             return self.layers
 
-        if hasattr(pl_module.model, 'bises'):
-            return pl_module.model.bises
+        if hasattr(pl_module.model, self.layer_name):
+            return getattr(pl_module.model, self.layer_name)
 
         if isinstance(pl_module, LightningBiSE):
             return [pl_module.model]

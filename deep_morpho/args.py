@@ -9,7 +9,7 @@ from .args_morp_ops import morp_operations
 
 args = {}
 
-args['experiment_name'] = ['Bise_logical_not_exp_12']
+args['experiment_name'] = ['Bise_logical_not_exp_14']
 
 
 # DATA ARGS
@@ -20,7 +20,7 @@ args['random_gen_args'] = [{'size': (50, 50), 'n_shapes': 15, 'max_shape': (15, 
 
 # TRAINING ARGS
 args['learning_rate'] = [
-    1e-3,
+    1e-2,
     # 1e-2/2,
 ]
 args['loss'] = [
@@ -30,7 +30,7 @@ args['loss'] = [
 args['optimizer'] = [optim.Adam]
 args['batch_size'] = [32]
 args['n_inputs'] = [
-    1_000_000,
+    500_000,
     # 5_000_000,
 ]
 
@@ -49,11 +49,11 @@ args['activation_P'] = [1]
 args['threshold_mode'] = [
     # 'arctan',
     # 'sigmoid',
-    'tanh',
-    # 'erf',
+    # 'tanh',
+    'erf',
     # {"activation": "tanh", "weight": "tanh", "logical_not": "clamp"}
 ]
-args["alpha_init"] = [[0, 0]]
+args["alpha_init"] = [0]
 
 args['share_weights'] = [False]
 args['do_thresh_penalization'] = [False]

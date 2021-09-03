@@ -37,7 +37,11 @@ class CalculateAndLogMetrics(Observable):
                 step = trainer.current_epoch
 
             trainer.logger.experiment.add_scalars(
-                f"mean_metrics_{batch_or_epoch}/{metric_name}", {state: metric}, step
+                f"comparative_metrics_{batch_or_epoch}/{metric_name}", {state: metric}, step
+            )
+
+            trainer.logger.log_metrics(
+                {f"metrics_{batch_or_epoch}/{metric_name}_{state}": metric}, step
             )
 
             if batch_or_epoch == 'batch':

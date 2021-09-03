@@ -3,6 +3,10 @@ from typing import Tuple
 from skimage.morphology import disk
 import torch
 import torch.nn as nn
+from torch import Tensor
+from torch.nn.functional import conv2d, pad
+from torch.nn.modules.utils import _pair
+
 
 from .threshold_layer import dispatcher
 from .logical_not_layer import LogicalNotLayer
@@ -33,6 +37,7 @@ class BiSE(nn.Module):
             out_channels=out_channels,
             kernel_size=kernel_size,
             padding=kernel_size[0]//2,
+            padding_mode='replicate',
             *args,
             **kwargs
         )
@@ -53,7 +58,7 @@ class BiSE(nn.Module):
     def weight_threshold_fn(self, x):
         return self.weight_threshold_layer.threshold_fn(x)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         output = self.conv._conv_forward(x, self._normalized_weight, self.bias, )
         output = self.activation_threshold_layer(output)
         return output
@@ -118,16 +123,19 @@ class LogicalNotBiSE(BiSE):
 
         self._bias = nn.Parameter(torch.tensor([0.5]).float(), requires_grad=False)
 
-        # exp 12 logical not
+        # exp 13 logical not
         # self.activation_threshold_layer.P_.requires_grad = False
         # self.activation_threshold_layer.P_.fill_(10)
 
-    # exp 12 logical not
+    # exp 13 logical not
     # @property
     # def _normalized_weight(self):
     #     return torch.FloatTensor(disk(2)).unsqueeze(0).unsqueeze(0).cuda()
+        # selem = torch.zeros((5, 5))
+        # selem[2, 2] = 1
+        # return torch.FloatTensor(selem).unsqueeze(0).unsqueeze(0).cuda()
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         output = self.logical_not_layer(x)
         output = super().forward(output)
         if self.thresholded_alpha < 1/2:
@@ -138,8 +146,8 @@ class LogicalNotBiSE(BiSE):
     @property
     def bias(self):
         return -(
-                min(self.thresholded_alpha.detach(), 1 - self.thresholded_alpha.detach()) *
-                (self._normalized_weight.sum().detach() - 1) + self._bias
+                min(self.thresholded_alpha, 1 - self.thresholded_alpha) *
+                (self._normalized_weight.sum() - 1) + self._bias
         )
 
     @property

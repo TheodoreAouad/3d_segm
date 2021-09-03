@@ -74,6 +74,12 @@ def main(args, logger):
     model.to(device)
 
     logger.experiment.add_graph(model, torch.ones(1, 1, 50, 50).to(device))
+    logger.log_hyperparams(args, dict(
+        **{f'{k}_{layer_idx}': -1 for k in [
+            f"weights/sum_norm_weights", f"params/weight_P", f"params/activation_P", f"weights/norm_alpha", f"weights/bias"
+        ] for layer_idx in range(len(model.model.bises))},
+        **{f"metrics_batch/dice_train": 0},
+    ))
 
     for selem_idx, selem in enumerate(args['morp_operation'].selems):
         fig, ax = plt.subplots(); ax.imshow(selem); ax.set_title(args['morp_operation'].operations[selem_idx])
@@ -114,7 +120,7 @@ if __name__ == '__main__':
         if args['logical_not']:
             name += "_logical_not"
 
-        logger = TensorBoardLogger("deep_morpho/results", name=name)
+        logger = TensorBoardLogger("deep_morpho/results", name=name, default_hp_metric=False)
         code_saver.save_in_final_file(join(logger.log_dir, 'code'))
         save_yaml(args, join(logger.log_dir, 'args.yaml'))
 

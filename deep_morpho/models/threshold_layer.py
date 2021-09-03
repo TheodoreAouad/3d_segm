@@ -6,7 +6,7 @@ from ..threshold_fn import *
 
 class ThresholdLayer(nn.Module):
 
-    def __init__(self, threshold_fn, P_: float = 1, threshold_name: str = '', constant_P: bool = False):
+    def __init__(self, threshold_fn, P_: float = 1, threshold_name: str = '', bias: float = 0, constant_P: bool = False):
         super().__init__()
         if isinstance(P_, nn.Parameter) or constant_P:
             self.P_ = P_
@@ -14,9 +14,10 @@ class ThresholdLayer(nn.Module):
             self.P_ = nn.Parameter(torch.tensor([P_]).float())
         self.threshold_name = threshold_name
         self.threshold_fn = threshold_fn
+        self.bias = bias
 
     def forward(self, x):
-        return self.threshold_fn(x * self.P_)
+        return self.threshold_fn((x + self.bias) * self.P_)
 
 
 class SigmoidLayer(ThresholdLayer):

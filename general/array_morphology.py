@@ -70,6 +70,13 @@ class SequentialMorpOperations:
     def __len__(self):
         return len(self.selems)
 
+    def __repr__(self):
+        ops = ""
+        for op, selem in zip(self.operations, self.selems):
+            ops += f"{op}{selem.shape}) "
+        ops = ops[:-1]
+        return f"SequentialMorpOperations({ops})"
+
 
 # def sequentiel_morp_operations(
 #     operations: List['str'], selems: List["np.ndarray"], device="cpu", return_numpy_array: bool = True
