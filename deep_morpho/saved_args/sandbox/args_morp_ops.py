@@ -22,25 +22,25 @@ selems = []
 # selem[3, :] = 1
 # selems.append(selem)
 
-for se in [disk(3), hstick(7), vstick(7), diagonal_cross(7), straight_cross(7), square(7)]:
-    for op in ['erosion', 'dilation']:
-        morp_operations.append(SequentialMorpOperations(
-            name=op + "_7x7",
-            selems=[se],
-            operations=[op],
-            return_numpy_array=False,
-            device=device
-        ))
-
-for se in [disk(2), hstick(5), vstick(5), diagonal_cross(5), straight_cross(5), square(5)]:
-    for op in ['erosion', 'dilation']:
-        morp_operations.append(SequentialMorpOperations(
-            name=op + "_5x5",
-            selems=[se],
-            operations=[op],
-            return_numpy_array=False,
-            device=device
-        ))
+# for se in [disk(3), hstick(7), vstick(7), diagonal_cross(7), straight_cross(7), square(7)]:
+#     for op in ['erosion', 'dilation']:
+#         morp_operations.append(SequentialMorpOperations(
+#             name=op + "_7x7",
+#             selems=[se],
+#             operations=[op],
+#             return_numpy_array=False,
+#             device=device
+#         ))
+#
+# for se in [disk(2), hstick(5), vstick(5), diagonal_cross(5), straight_cross(5), square(5)]:
+#     for op in ['erosion', 'dilation']:
+#         morp_operations.append(SequentialMorpOperations(
+#             name=op + "_5x5",
+#             selems=[se],
+#             operations=[op],
+#             return_numpy_array=False,
+#             device=device
+#         ))
     # morp_operations.append(SequentialMorpOperations(
     #     name="opening",
     #     selems=[se, se],
@@ -56,12 +56,18 @@ for se in [disk(2), hstick(5), vstick(5), diagonal_cross(5), straight_cross(5), 
     #     device=device
     # ))
 
-# morp_operations.append(SequentialMorpOperations(
-#     name="erosion",
-#     selems=[disk(2)],
-#     operations=['erosion'],
-#     device=device,
-# ))
+morp_operations.append(SequentialMorpOperations(
+    name="dilation",
+    selems=[disk(3)],
+    operations=['dilation'],
+    device=device,
+))
+morp_operations.append(SequentialMorpOperations(
+    name="erosion",
+    selems=[disk(3)],
+    operations=['erosion'],
+    device=device,
+))
 #
 # morp_operations.append(SequentialMorpOperations(
 #     name="Bimonn_closing",

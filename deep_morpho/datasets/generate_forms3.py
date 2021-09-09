@@ -14,25 +14,24 @@ def get_rect(x, y, width, height, angle):
     return transformed_rect
 
 
-def draw_poly(draw, poly):
-    draw.polygon([tuple(p) for p in poly], fill=1)
+def draw_poly(draw, poly, fill_value=1):
+    draw.polygon([tuple(p) for p in poly], fill=fill_value)
 
 
-def draw_ellipse(draw, center, radius):
+def draw_ellipse(draw, center, radius, fill_value=1):
     bbox = (center[0] - radius[0], center[1] - radius[1], center[0] + radius[0], center[1] + radius[1])
-    draw.ellipse(bbox, fill=1)
+    draw.ellipse(bbox, fill=fill_value)
 
 
 def get_random_rotated_diskorect(
     size: Tuple, n_shapes: int = 30, max_shape: Tuple[int] = (15, 15), p_invert: float = 0.5,
-        border=(4, 4), **kwargs
+        border=(4, 4), n_holes: int = 15, max_shape_holes: Tuple[int] = (5, 5), noise_proba=0.05, **kwargs
 ):
     diskorect = np.zeros(size)
     img = Image.fromarray(diskorect)
     draw = ImageDraw.Draw(img)
 
-    for _ in range(n_shapes):
-
+    def draw_shape(max_shape, fill_value):
         x = np.random.randint(0, size[0] - 2)
         y = np.random.randint(0, size[0] - 2)
 
@@ -41,15 +40,22 @@ def get_random_rotated_diskorect(
             L = np.random.randint(1, max_shape[1])
 
             angle = np.random.rand() * 45
-            draw_poly(draw, get_rect(x, y, W, L, angle))
+            draw_poly(draw, get_rect(x, y, W, L, angle), fill_value=fill_value)
 
         else:
             rx = np.random.randint(1, max_shape[0]//2)
             ry = np.random.randint(1, max_shape[1]//2)
-            draw_ellipse(draw, np.array([x, y]), (rx, ry))
+            draw_ellipse(draw, np.array([x, y]), (rx, ry), fill_value=fill_value)
+
+    for _ in range(n_shapes):
+        draw_shape(max_shape=max_shape, fill_value=1)
+
+    for _ in range(n_holes):
+        draw_shape(max_shape=max_shape_holes, fill_value=0)
 
     diskorect = np.asarray(img) + 0
     # diskorect.setflags(write=1
+    diskorect[np.random.rand(*diskorect.shape) >= 1- noise_proba] = 1
     if np.random.rand() < p_invert:
         diskorect = 1 - diskorect
 

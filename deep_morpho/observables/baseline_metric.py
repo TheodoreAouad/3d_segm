@@ -24,7 +24,7 @@ class InputAsPredMetric(Observable):
                 step = trainer.current_epoch
 
             trainer.logger.experiment.add_scalars(
-                f"comparative_metrics_{batch_or_epoch}/{metric_name}", {f"input_as_pred": metric}, step
+                f"comparative/metrics_{batch_or_epoch}/{metric_name}", {f"input_as_pred": metric}, step
             )
 
             if batch_or_epoch == 'batch':

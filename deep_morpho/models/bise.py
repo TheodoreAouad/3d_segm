@@ -1,11 +1,10 @@
 from typing import Tuple
 
 from skimage.morphology import disk
+import numpy as np
 import torch
 import torch.nn as nn
 from torch import Tensor
-from torch.nn.functional import conv2d, pad
-from torch.nn.modules.utils import _pair
 
 
 from .threshold_layer import dispatcher
@@ -67,6 +66,26 @@ class BiSE(nn.Module):
         self.conv.weight.data.fill_(-1)
         shape = self.conv.weight.shape
         self.conv.weight.data[..., shape[-2]//2, shape[-1]//2] = 1
+
+    def is_erosion_by(self, S: np.ndarray):
+        assert np.isin(np.unique(S), [0, 1]).all(), "S must be binary matrix"
+        lb, ub = self.bias_bounds_erosion(S)
+        return lb < -self.bias < ub
+
+    def is_dilation_by(self, S: np.ndarray):
+        assert np.isin(np.unique(S), [0, 1]).all(), "S must be binary matrix"
+        lb, ub = self.bias_bounds_dilation(S)
+        return lb < -self.bias < ub
+
+    def bias_bounds_erosion(self, S):
+        S = S.astype(bool)
+        W = self._normalized_weight.squeeze().cpu().detach().numpy()
+        return W.sum() - W[S].min(), W[S].sum()
+
+    def bias_bounds_dilation(self, S):
+        S = S.astype(bool)
+        W = self._normalized_weight.squeeze().cpu().detach().numpy()
+        return W[~S].sum(), W[S].min()
 
     @staticmethod
     def _init_threshold_mode(threshold_mode):

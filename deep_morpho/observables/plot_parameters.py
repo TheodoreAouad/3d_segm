@@ -90,7 +90,6 @@ class PlotParametersDilation(ObservableLayers):
         #     trainer.logger.experiment.add_scalar(f"weights/bias+weights_{layer_idx}", layer._normalized_weight.sum() + layer.bias, trainer.global_step)
         #
         metrics = {
-
             f"weights/sum_norm_weights_{layer_idx}": layer._normalized_weight.sum(),
             f"params/weight_P_{layer_idx}": layer.weight_P,
             f"params/activation_P_{layer_idx}": layer.activation_P,
