@@ -57,18 +57,18 @@ selems = []
     # ))
 
 morp_operations.append(SequentialMorpOperations(
-    name="dilation",
-    selems=[disk(3)],
-    operations=['dilation'],
+    name="opening",
+    selems=[disk(3), disk(3)],
+    operations=['erosion', 'dilation'],
     device=device,
 ))
-morp_operations.append(SequentialMorpOperations(
-    name="erosion",
-    selems=[disk(3)],
-    operations=['erosion'],
-    device=device,
-))
-#
+# morp_operations.append(SequentialMorpOperations(
+#     name="erosion",
+#     selems=[disk(3)],
+#     operations=['erosion'],
+#     device=device,
+# ))
+# #
 # morp_operations.append(SequentialMorpOperations(
 #     name="Bimonn_closing",
 #     selems=[disk(3), disk(3)],

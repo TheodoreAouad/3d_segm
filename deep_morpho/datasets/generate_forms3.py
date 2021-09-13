@@ -1,18 +1,52 @@
 from typing import Tuple
+from random import randint
 
 import numpy as np
 from PIL import Image, ImageDraw
+from numba import njit
+from general.numba_utils import numba_randint, numba_rand, numba_rand_shape_2d
 
+
+@njit
+def numba_straight_rect(width, height):
+    return np.array([(0, 0), (width, 0), (width, height), (0, height), (0, 0)])
+
+@njit
+def numba_rotation_matrix(theta):
+    return np.array([[np.cos(theta), -np.sin(theta)],
+                     [np.sin(theta), np.cos(theta)]])
+
+@njit
+def numba_transform_rect(rect: np.ndarray, R: np.ndarray, offset: np.ndarray):
+    return np.dot(rect, R) + offset
+
+@njit
+def numba_correspondance(ar: np.ndarray) -> np.ndarray:
+    return 1 - ar
+
+@njit
+def numba_invert_proba(ar: np.ndarray, p_invert: float) -> np.ndarray:
+    if numba_rand() < p_invert:
+        return numba_correspondance(ar)
+    return ar
 
 def get_rect(x, y, width, height, angle):
-    rect = np.array([(0, 0), (width, 0), (width, height), (0, height), (0, 0)])
+    rect = numba_straight_rect(width, height)
     theta = (np.pi / 180.0) * angle
-    R = np.array([[np.cos(theta), -np.sin(theta)],
-                  [np.sin(theta), np.cos(theta)]])
+    R = numba_rotation_matrix(theta)
     offset = np.array([x, y])
     transformed_rect = np.dot(rect, R) + offset
+    # transformed_rect = numba_transform_rect(rect.astype(float), R.astype(float), offset.astype(float))
     return transformed_rect
 
+# def get_rect(x, y, width, height, angle):
+#     rect = np.array([(0, 0), (width, 0), (width, height), (0, height), (0, 0)])
+#     theta = (np.pi / 180.0) * angle
+#     R = np.array([[np.cos(theta), -np.sin(theta)],
+#                   [np.sin(theta), np.cos(theta)]])
+#     offset = np.array([x, y])
+#     transformed_rect = np.dot(rect, R) + offset
+#     return transformed_rect
 
 def draw_poly(draw, poly, fill_value=1):
     draw.polygon([tuple(p) for p in poly], fill=fill_value)
@@ -32,19 +66,19 @@ def get_random_rotated_diskorect(
     draw = ImageDraw.Draw(img)
 
     def draw_shape(max_shape, fill_value):
-        x = np.random.randint(0, size[0] - 2)
-        y = np.random.randint(0, size[0] - 2)
+        x = numba_randint(0, size[0] - 2)
+        y = numba_randint(0, size[0] - 2)
 
         if np.random.rand() < .5:
-            W = np.random.randint(1, max_shape[0])
-            L = np.random.randint(1, max_shape[1])
+            W = numba_randint(1, max_shape[0])
+            L = numba_randint(1, max_shape[1])
 
-            angle = np.random.rand() * 45
+            angle = numba_rand() * 45
             draw_poly(draw, get_rect(x, y, W, L, angle), fill_value=fill_value)
 
         else:
-            rx = np.random.randint(1, max_shape[0]//2)
-            ry = np.random.randint(1, max_shape[1]//2)
+            rx = numba_randint(1, max_shape[0]//2)
+            ry = numba_randint(1, max_shape[1]//2)
             draw_ellipse(draw, np.array([x, y]), (rx, ry), fill_value=fill_value)
 
     for _ in range(n_shapes):
@@ -55,9 +89,12 @@ def get_random_rotated_diskorect(
 
     diskorect = np.asarray(img) + 0
     # diskorect.setflags(write=1
-    diskorect[np.random.rand(*diskorect.shape) >= 1- noise_proba] = 1
-    if np.random.rand() < p_invert:
-        diskorect = 1 - diskorect
+    # diskorect[np.random.rand(*diskorect.shape) < noise_proba] = 1
+    diskorect[numba_rand_shape_2d(*diskorect.shape) < noise_proba] = 1
+    # if numba_rand() < p_invert:
+        # diskorect = 1 - diskorect
+        # diskorect = numba_correspondance(diskorect)
+    diskorect = numba_invert_proba(diskorect, p_invert)
 
     diskorect[:border[0], :] = 0
     diskorect[-border[0]:, :] = 0

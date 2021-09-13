@@ -12,6 +12,7 @@ class CheckMorpOperation(ObservableLayers):
 
     def on_train_start(self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule') -> None:
         layers = self._get_layers(pl_module)
+        default_layout = {}
         for layer_idx, layer in enumerate(layers):
             tags_dilation = [
                 f'comparative/weights/bias_{layer_idx}/bias',
@@ -23,13 +24,13 @@ class CheckMorpOperation(ObservableLayers):
                 f'comparative/weights/bias_{layer_idx}/erosion_lb',
                 f'comparative/weights/bias_{layer_idx}/erosion_ub'
             ]
+            default_layout.update({
+                    f"dilation_{layer_idx}": ['Margin', tags_dilation],
+                    f"erosion_{layer_idx}": ['Margin', tags_erosion],
+            })
 
-            layout = {"default": {
-                    "dilation": ['Margin', tags_dilation],
-                    "erosion": ['Margin', tags_erosion],
-                }
-            }
-            trainer.logger.experiment._get_file_writer().add_summary(custom_scalars(layout))
+        layout = {"default": default_layout}
+        trainer.logger.experiment._get_file_writer().add_summary(custom_scalars(layout))
 
 
     def on_train_batch_end_layers(
@@ -61,13 +62,13 @@ class CheckMorpOperation(ObservableLayers):
 
         if self.operations[layer_idx] == 'dilation':
             metrics = {
-                "metrics/bias - lb(op)": -layer.bias - dilation_lb,
-                "metrics/ub(op) - bias": dilation_ub - (-layer.bias),
+                f"metrics/bias - lb(op)_{layer_idx}": -layer.bias - dilation_lb,
+                f"metrics/ub(op) - bias_{layer_idx}": dilation_ub - (-layer.bias),
             }
         elif self.operations[layer_idx] == 'erosion':
             metrics = {
-                "metrics/bias - lb(op)": -layer.bias - erosion_lb,
-                "metrics/ub(op) - bias": erosion_ub - (-layer.bias),
+                f"metrics/bias - lb(op)_{layer_idx}": -layer.bias - erosion_lb,
+                f"metrics/ub(op) - bias_{layer_idx}": erosion_ub - (-layer.bias),
             }
         else:
             raise NotImplementedError('operation must be dilation or erosion.')

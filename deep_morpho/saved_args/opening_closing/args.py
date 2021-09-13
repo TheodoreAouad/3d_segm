@@ -32,13 +32,13 @@ for SE_size in SE_sizes:
         disk(SE_size//2), hstick(SE_size), vstick(SE_size),
         diagonal_cross(SE_size), straight_cross(SE_size), square(SE_size)
     ]:
-        args['morp_operation'].append(SequentialMorpOperations(
-            name= f"opening_size_{SE_size}x{SE_size}",
-            selems=[se, se],
-            operations=['erosion', 'dilation'],
-            return_numpy_array=False,
-            device=device
-        ))
+        # args['morp_operation'].append(SequentialMorpOperations(
+        #     name= f"opening_size_{SE_size}x{SE_size}",
+        #     selems=[se, se],
+        #     operations=['erosion', 'dilation'],
+        #     return_numpy_array=False,
+        #     device=device
+        # ))
         args['morp_operation'].append(SequentialMorpOperations(
             name=f"closing_size_{SE_size}x{SE_size}",
             selems=[se, se],
@@ -53,7 +53,7 @@ args['random_gen_args'] = [
 ]
 
 # TRAINING ARGS
-args['learning_rate'] = [1e-2]
+args['learning_rate'] = [1e-2/2]
 args['loss'] = [nn.BCELoss()]
 args['optimizer'] = [optim.Adam]
 args['batch_size'] = [32]

@@ -9,21 +9,21 @@ from .args_morp_ops import morp_operations
 
 args = {}
 
-args['experiment_name'] = ['Test_margin']
+args['experiment_name'] = ['Bimonn_exp_19']
 
 
 # DATA ARGS
 args['morp_operation'] = morp_operations
 args['random_gen_fn'] = [get_random_rotated_diskorect]
 args['random_gen_args'] = [
-    {'size': (75, 75), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.2}
+    {'size': (75, 75), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
 ]
 
 
 # TRAINING ARGS
 args['learning_rate'] = [
-    1e-2,
-    # 1e-2/2,
+    # 1e-2,
+    1e-2/2,
 ]
 args['loss'] = [
     nn.BCELoss(),
@@ -32,8 +32,8 @@ args['loss'] = [
 args['optimizer'] = [optim.Adam]
 args['batch_size'] = [32]
 args['n_inputs'] = [
-    500_000,
-    # 5_000_000,
+    # 500_000,
+    1_000_000,
 ]
 
 
