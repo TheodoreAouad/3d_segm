@@ -46,7 +46,8 @@ def main(args, logger):
         obs.WeightsHistogramDilation(freq=100),
         obs.PlotPreds(freq=100),
         obs.CountInputs(),
-        obs.CheckMorpOperation(selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50)
+        obs.CheckMorpOperation(selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50),
+        obs.PlotGradientBise(freq=100),
     ]
 
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()

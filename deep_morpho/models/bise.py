@@ -87,6 +87,22 @@ class BiSE(nn.Module):
         W = self._normalized_weight.squeeze().cpu().detach().numpy()
         return W[~S].sum(), W[S].min()
 
+    def find_all_selem_operation(self, operation: str):
+        weight_values = self._normalized_weight.unique()
+        res = []
+        is_op_fn = {'dilation': self.is_dilation_by, 'erosion': self.is_erosion_by}[operation]
+        for value in weight_values:
+            S = (self._normalized_weight >= value).squeeze().cpu().detach().numpy()
+            if is_op_fn(S):
+                res.append(S)
+        return res
+
+    def find_all_selem_dilation(self):
+        return self.find_all_selem_operation('dilation')
+
+    def find_all_selem_erosion(self):
+        return self.find_all_selem_operation('erosion')
+
     @staticmethod
     def _init_threshold_mode(threshold_mode):
         if isinstance(threshold_mode, str):

@@ -23,17 +23,17 @@ args['random_gen_args'] = [
 # TRAINING ARGS
 args['learning_rate'] = [
     # 1e-2,
-    1e-2/2,
+    2.5e-3,
 ]
 args['loss'] = [
-    nn.BCELoss(),
-    # nn.BCEWithLogitsLoss(),
+    # nn.BCELoss(),
+    nn.BCEWithLogitsLoss(),
 ]
 args['optimizer'] = [optim.Adam]
 args['batch_size'] = [32]
 args['n_inputs'] = [
-    # 500_000,
-    1_000_000,
+    500_000,
+    # 1_000_000,
 ]
 
 
