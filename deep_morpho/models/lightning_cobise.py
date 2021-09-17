@@ -1,11 +1,11 @@
 from typing import Dict, Callable, List
 
-from .opening_net import OpeningNet
+from .cobise import COBiSE
 from general.nn.pytorch_lightning_module.obs_lightning_module import NetLightning
 from ..loss import ThresholdPenalization
 
 
-class LightningOpeningNet(NetLightning):
+class LightningCOBiSe(NetLightning):
 
     def __init__(
         self,
@@ -25,7 +25,7 @@ class LightningOpeningNet(NetLightning):
         observables: [List["Observable"]] = [],
     ):
         super().__init__(
-            model=OpeningNet(**model_args),
+            model=COBiSE(**model_args),
             learning_rate=learning_rate,
             loss=loss,
             optimizer=optimizer,

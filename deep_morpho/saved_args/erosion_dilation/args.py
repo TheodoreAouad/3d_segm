@@ -53,7 +53,7 @@ args['batch_size'] = [32]
 args['n_inputs'] = [1_000_000]
 
 # MODEL ARGS
-args['logical_not'] = [False]
+args['complementation'] = [False]
 args['kernel_size'] = ["adapt"]
 args['init_weight_identity'] = [True]
 args['activation_P'] = [1]

@@ -5,7 +5,6 @@ from os.path import join
 import torch
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
-from torch import nn
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -13,7 +12,7 @@ import matplotlib.pyplot as plt
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
 from deep_morpho.datasets.multi_rect_dataset import get_loader
-from deep_morpho.models import LightningBiSE, LightningLogicalNotBiSE, LightningOpeningNet, LightningBiMoNN
+from deep_morpho.models import LightningBiMoNN
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
 from general.utils import format_time, log_console, create_logger, save_yaml
@@ -54,11 +53,11 @@ def main(args, logger):
 
     model = LightningBiMoNN(
         model_args={
-            "kernel_size": [args['kernel_size'] for _ in range(len(args['morp_operation']))],
+            "kernel_size": [args['kernel_size'] for _ in range(args['n_atoms'])],
+            "atomic_element": args["atomic_element"],
             "threshold_mode": args['threshold_mode'],
             "activation_P": args['activation_P'],
             "init_weight_identity": args["init_weight_identity"],
-            "logical_not": args["logical_not"],
             "alpha_init": args["alpha_init"],
         },
         learning_rate=args['learning_rate'],
@@ -70,7 +69,7 @@ def main(args, logger):
         args_thresh_penalization=args['args_thresh_penalization'],
         first_batch_pen=args['first_batch_pen'],
     )
-    ys = model.model.bises[0].activation_threshold_fn(xs).detach()
+    ys = model.model.layers[0].activation_threshold_fn(xs).detach()
 
 
     model.to(device)
@@ -125,8 +124,8 @@ if __name__ == '__main__':
     for args_idx, args in enumerate(all_args):
 
         name = join(args["experiment_name"], args['morp_operation'].name)
-        if args['logical_not']:
-            name += "_logical_not"
+
+        name += f"_{args['atomic_element']}"
 
         logger = TensorBoardLogger("deep_morpho/results", name=name, default_hp_metric=False)
         code_saver.save_in_final_file(join(logger.log_dir, 'code'))

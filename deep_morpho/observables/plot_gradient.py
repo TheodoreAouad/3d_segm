@@ -4,7 +4,6 @@ import itertools
 from .observable_layers import ObservableLayers
 from general.utils import max_min_norm
 
-from ..models.bise import BiSE, LogicalNotBiSE
 
 
 class PlotGradientBise(ObservableLayers):
@@ -24,7 +23,8 @@ class PlotGradientBise(ObservableLayers):
         layer_idx: int,
     ):
         trainer.logger.experiment.add_figure(f"weights_gradient/{layer_idx}", self.get_figure_gradient(layer.weight.grad[0]), trainer.global_step)
-        trainer.logger.experiment.add_scalar(f"weights/bias_gradient_{layer_idx}", layer.bias.grad, trainer.global_step)
+        if layer.bias.grad is not None:
+            trainer.logger.experiment.add_scalar(f"weights/bias_gradient_{layer_idx}", layer.bias.grad, trainer.global_step)
 
     def get_figure_gradient(self, gradient):
         gradient = gradient[0].cpu().detach()

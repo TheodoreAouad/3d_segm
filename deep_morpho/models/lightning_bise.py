@@ -1,6 +1,6 @@
 from typing import Dict, Callable, List
 
-from .bise import BiSE, LogicalNotBiSE
+from .bise import BiSE, BiSEC
 from general.nn.pytorch_lightning_module.obs_lightning_module import NetLightning
 from ..loss import ThresholdPenalization
 
@@ -59,7 +59,7 @@ class LightningBiSE(NetLightning):
         return outputs, predictions
 
 
-class LightningLogicalNotBiSE(NetLightning):
+class LightningBiSEC(NetLightning):
 
     def __init__(
         self,
@@ -79,7 +79,7 @@ class LightningLogicalNotBiSE(NetLightning):
         observables: [List["Observable"]] = [],
     ):
         super().__init__(
-            model=LogicalNotBiSE(**model_args),
+            model=BiSEC(**model_args),
             learning_rate=learning_rate,
             loss=loss,
             optimizer=optimizer,

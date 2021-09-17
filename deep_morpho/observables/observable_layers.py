@@ -1,12 +1,12 @@
 from typing import List
 
 from general.nn.observables import Observable
-from ..models.lightning_bise import LightningBiSE, LightningLogicalNotBiSE
+from ..models.lightning_bise import LightningBiSE, LightningBiSEC
 
 
 class ObservableLayers(Observable):
 
-    def __init__(self, layers: List["nn.Module"] = None, freq: int = 1, layer_name: str = 'bises', *args, **kwargs):
+    def __init__(self, layers: List["nn.Module"] = None, freq: int = 1, layer_name: str = 'layers', *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.layers = layers
         self.freq = freq
@@ -46,6 +46,10 @@ class ObservableLayers(Observable):
         raise NotImplementedError
 
     def _get_layers(self, pl_module):
+
+        # TEST COBISE AND COBISEC
+        # return pl_module.model.layers[0].bises
+
         if self.layers is not None:
             return self.layers
 
@@ -55,7 +59,7 @@ class ObservableLayers(Observable):
         if isinstance(pl_module, LightningBiSE):
             return [pl_module.model]
 
-        if isinstance(pl_module, LightningLogicalNotBiSE):
+        if isinstance(pl_module, LightningBiSEC):
             return [pl_module.model]
 
         raise NotImplementedError('Cannot automatically select layers for model. Give them manually.')

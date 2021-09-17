@@ -8,7 +8,7 @@ from torch import Tensor
 
 
 from .threshold_layer import dispatcher
-from .logical_not_layer import LogicalNotLayer
+from .complementation_layer import ComplementationLayer
 
 
 class BiSE(nn.Module):
@@ -149,12 +149,14 @@ class BiSE(nn.Module):
         return self.conv.bias
 
 
-class LogicalNotBiSE(BiSE):
+class BiSEC(BiSE):
 
-    def __init__(self, *args, alpha_init=0, **kwargs):
+    def __init__(self, *args, alpha_init=0, invert_thresholded_alpha=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.conv.bias = None
-        self.logical_not_layer = LogicalNotLayer(self.logical_not_threshold_mode, alpha_init=alpha_init)
+        self.complementation_layer = ComplementationLayer(
+            self.complementation_threshold_mode, alpha_init=alpha_init, invert_thresholded_alpha=invert_thresholded_alpha
+        )
 
         self._bias = nn.Parameter(torch.tensor([0.5]).float(), requires_grad=False)
 
@@ -171,36 +173,36 @@ class LogicalNotBiSE(BiSE):
         # return torch.FloatTensor(selem).unsqueeze(0).unsqueeze(0).cuda()
 
     def forward(self, x: Tensor) -> Tensor:
-        output = self.logical_not_layer(x)
+        output = self.complementation_layer(x)
         output = super().forward(output)
         if self.thresholded_alpha < 1/2:
             return 1 - output
-        # output = self.logical_not_layer(output)
+        # output = self.complementation_layer(output)
         return output
 
     @property
     def bias(self):
         return -(
-                min(self.thresholded_alpha, 1 - self.thresholded_alpha) *
-                (self._normalized_weight.sum() - 1) + self._bias
+            min(self.thresholded_alpha, 1 - self.thresholded_alpha) *
+            (self._normalized_weight.sum() - 1) + self._bias
         )
 
     @property
     def alpha(self):
-        return self.logical_not_layer.alpha
+        return self.complementation_layer.alpha
 
     @property
     def thresholded_alpha(self):
-        return self.logical_not_layer.thresholded_alpha
+        return self.complementation_layer.thresholded_alpha
 
     @property
-    def logical_not_threshold_mode(self):
-        return self.threshold_mode["logical_not"]
+    def complementation_threshold_mode(self):
+        return self.threshold_mode["complementation"]
 
     @staticmethod
     def _init_threshold_mode(threshold_mode):
         if isinstance(threshold_mode, str):
-            threshold_mode = {k: threshold_mode.lower() for k in ["weight", "activation", "logical_not"]}
+            threshold_mode = {k: threshold_mode.lower() for k in ["weight", "activation", "complementation"]}
         elif not isinstance(threshold_mode, dict):
             raise NotImplementedError(f"threshold_mode type {type(threshold_mode)} not supported.")
         return threshold_mode

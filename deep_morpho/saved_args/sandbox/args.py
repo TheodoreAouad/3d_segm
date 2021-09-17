@@ -9,14 +9,14 @@ from .args_morp_ops import morp_operations
 
 args = {}
 
-args['experiment_name'] = ['Bimonn_exp_19']
+args['experiment_name'] = ['Bimonn_exp_20']
 
 
 # DATA ARGS
 args['morp_operation'] = morp_operations
 args['random_gen_fn'] = [get_random_rotated_diskorect]
 args['random_gen_args'] = [
-    {'size': (75, 75), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
+    {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
 ]
 
 
@@ -32,15 +32,20 @@ args['loss'] = [
 args['optimizer'] = [optim.Adam]
 args['batch_size'] = [32]
 args['n_inputs'] = [
-    500_000,
+    1_000_000,
     # 1_000_000,
 ]
 
 
 # MODEL ARGS
-args['logical_not'] = [
-    False,
-    # True,
+args['n_atoms'] = [
+    'adapt',
+]
+args['atomic_element'] = [
+    # 'bise',
+    # 'bisec',
+    'cobise',
+    'cobisec',
 ]
 args['kernel_size'] = [
     # 7
@@ -53,7 +58,7 @@ args['threshold_mode'] = [
     # 'sigmoid',
     'tanh',
     # 'erf',
-    # {"activation": "tanh", "weight": "tanh", "logical_not": "clamp"}
+    # {"activation": "tanh", "weight": "tanh", "complementation": "clamp"}
 ]
 args["alpha_init"] = [0]
 
@@ -72,5 +77,11 @@ for idx, args in enumerate(all_args):
     if args["kernel_size"] == "adapt":
         args["kernel_size"] = args["morp_operation"].selems[0].shape[0]
     args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
+
+    if args["n_atoms"] == 'adapt':
+        args['n_atoms'] = len(args['morp_operation'])
+        if args['atomic_element'] in ['cobise', 'cobisec']:
+            args['n_atoms'] = args['n_atoms'] // 2
+
 #     if "dilation" in args['morp_operation'].name:
 #         all_args[idx]['n_inputs'] = 200_000

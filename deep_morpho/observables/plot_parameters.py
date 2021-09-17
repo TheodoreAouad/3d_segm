@@ -4,7 +4,7 @@ import itertools
 from .observable_layers import ObservableLayers
 from general.utils import max_min_norm
 
-from ..models.bise import BiSE, LogicalNotBiSE
+from ..models import BiSE, BiSEC, COBiSE, COBiSEC
 
 
 class PlotWeightsDilation(ObservableLayers):
@@ -82,7 +82,7 @@ class PlotParametersDilation(ObservableLayers):
         # trainer.logger.experiment.add_scalar(f"params/weight_P_{layer_idx}", layer.weight_P, trainer.global_step)
         # trainer.logger.experiment.add_scalar(f"params/activation_P_{layer_idx}", layer.activation_P, trainer.global_step)
         #
-        # if isinstance(layer, LogicalNotBiSE):
+        # if isinstance(layer, BiSEC):
         #     trainer.logger.experiment.add_scalar(f"weights/norm_alpha_{layer_idx}", layer.thresholded_alpha, trainer.global_step)
         #     trainer.logger.experiment.add_scalar(f"weights/bias_{layer_idx}", layer.bias, trainer.global_step)
         # elif isinstance(layer, BiSE):
@@ -98,10 +98,13 @@ class PlotParametersDilation(ObservableLayers):
         # trainer.logger.log_metrics(f"params/weight_P_{layer_idx}", layer.weight_P, trainer.global_step)
         # trainer.logger.log_metrics(f"params/activation_P_{layer_idx}", layer.activation_P, trainer.global_step)
 
-        if isinstance(layer, LogicalNotBiSE):
+        if isinstance(layer, BiSEC) or isinstance(layer, COBiSEC):
             metrics[f"weights/norm_alpha_{layer_idx}"] = layer.thresholded_alpha
             metrics[f"weights/bias_{layer_idx}"] = layer.bias
         elif isinstance(layer, BiSE):
             metrics[f"weights/bias_{layer_idx}"] = layer.bias
-            metrics[f"weights/bias+weights_{layer_idx}"] = layer._normalized_weight.sum() + layer.bias
+        elif isinstance(layer, COBiSE):
+            for bise_idx, bise_layer in enumerate(layer.bises):
+                metrics[f"weights/bias_{layer_idx}_{bise_idx}"] = layer.bias
+
         trainer.logger.log_metrics(metrics, trainer.global_step)
