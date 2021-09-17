@@ -72,3 +72,7 @@ class COBiSEC(COBiSE_base):
             self.dilations2 = BiSEC(invert_thresholded_alpha=True, **bisec_args)
 
         self.bises = [self.dilations1, self.dilations2]
+
+    @property
+    def thresholded_alpha(self):
+        return self.dilations1.thresholded_alpha

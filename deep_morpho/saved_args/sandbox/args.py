@@ -44,7 +44,7 @@ args['n_atoms'] = [
 args['atomic_element'] = [
     # 'bise',
     # 'bisec',
-    'cobise',
+    # 'cobise',
     'cobisec',
 ]
 args['kernel_size'] = [
