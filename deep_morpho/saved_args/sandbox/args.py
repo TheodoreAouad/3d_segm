@@ -26,13 +26,13 @@ args['learning_rate'] = [
     2.5e-3,
 ]
 args['loss'] = [
-    # nn.BCELoss(),
-    nn.BCEWithLogitsLoss(),
+    nn.BCELoss(),
+    # nn.BCEWithLogitsLoss(),
 ]
 args['optimizer'] = [optim.Adam]
 args['batch_size'] = [32]
 args['n_inputs'] = [
-    1_000_000,
+    500_000,
     # 1_000_000,
 ]
 
@@ -44,8 +44,8 @@ args['n_atoms'] = [
 args['atomic_element'] = [
     # 'bise',
     # 'bisec',
-    # 'cobise',
-    'cobisec',
+    'cobise',
+    # 'cobisec',
 ]
 args['kernel_size'] = [
     # 7

@@ -4,7 +4,7 @@ from general.utils import max_min_norm
 from .observable_layers import ObservableLayers
 
 
-class WeightsHistogramDilation(ObservableLayers):
+class WeightsHistogramBiSE(ObservableLayers):
 
     def __init__(self, *args, freq: int = 100, **kwargs):
         super().__init__(*args, freq=freq, **kwargs)

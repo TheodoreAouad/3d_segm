@@ -42,7 +42,7 @@ def main(args, logger):
         obs.InputAsPredMetric(metrics),
         obs.PlotParametersDilation(freq=1),
         obs.PlotWeightsDilation(freq=100),
-        obs.WeightsHistogramDilation(freq=100),
+        obs.WeightsHistogramBiSE(freq=100),
         obs.PlotPreds(freq=100),
         obs.CountInputs(),
         obs.CheckMorpOperation(selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50),
@@ -75,7 +75,7 @@ def main(args, logger):
     model.to(device)
 
     logger.experiment.add_graph(model, torch.ones(1, 1, 50, 50).to(device))
-    logger.log_hyperparams(args, dict(
+    hyperparams = dict(
         **{f'{k}_{layer_idx}': -1 for k in [
             f"weights/sum_norm_weights",
             f"params/weight_P",
@@ -84,9 +84,21 @@ def main(args, logger):
             f"weights/bias",
         ] for layer_idx in range(len(model.model.bises))},
         **{f"metrics_batch/dice_train": 0},
-        **{f'metrics/bias - lb(op)_{layer_idx}': 0 for layer_idx in range(len(model.model.bises))},
-        **{f'metrics/ub(op) - bias_{layer_idx}': 0 for layer_idx in range(len(model.model.bises))},
-    ))
+    )
+    if args["atomic_element"] == 'cobise':
+        hyperparams.update(dict(
+            **{f'metrics/bias - lb(op)_{layer_idx}_0': 0 for layer_idx in range(len(model.model.bises))},
+            **{f'metrics/ub(op) - bias_{layer_idx}_0': 0 for layer_idx in range(len(model.model.bises))},
+            **{f'metrics/bias - lb(op)_{layer_idx}_1': 0 for layer_idx in range(len(model.model.bises))},
+            **{f'metrics/ub(op) - bias_{layer_idx}_1': 0 for layer_idx in range(len(model.model.bises))},
+        ))
+    elif args["atomic_element"] == "bise":
+        hyperparams.update(dict(
+            **{f'metrics/bias - lb(op)_{layer_idx}': 0 for layer_idx in range(len(model.model.bises))},
+            **{f'metrics/ub(op) - bias_{layer_idx}': 0 for layer_idx in range(len(model.model.bises))},
+        ))
+
+    logger.log_hyperparams(args, hyperparams)
 
     for selem_idx, selem in enumerate(args['morp_operation'].selems):
         fig, ax = plt.subplots(); ax.imshow(selem); ax.set_title(args['morp_operation'].operations[selem_idx])
