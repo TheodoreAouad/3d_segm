@@ -9,7 +9,7 @@ from .args_morp_ops import morp_operations
 
 args = {}
 
-args['experiment_name'] = ['Bimonn_exp_20']
+args['experiment_name'] = ['test_num_wokers']
 
 
 # DATA ARGS
@@ -31,6 +31,7 @@ args['loss'] = [
 ]
 args['optimizer'] = [optim.Adam]
 args['batch_size'] = [32]
+args['num_workers'] = [0]
 args['n_inputs'] = [
     500_000,
     # 1_000_000,
@@ -42,9 +43,9 @@ args['n_atoms'] = [
     'adapt',
 ]
 args['atomic_element'] = [
-    # 'bise',
+    'bise',
     # 'bisec',
-    'cobise',
+    # 'cobise',
     # 'cobisec',
 ]
 args['kernel_size'] = [

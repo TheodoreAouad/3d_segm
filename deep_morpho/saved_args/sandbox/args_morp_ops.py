@@ -22,12 +22,12 @@ selems = []
 # selem[3, :] = 1
 # selems.append(selem)
 
-for se in [
-    disk(5//2),
-    hstick(5),
-    vstick(5),
-    diagonal_cross(5), straight_cross(5), square(5),
-]:
+# for se in [
+#     disk(5//2),
+#     hstick(5),
+#     vstick(5),
+#     diagonal_cross(5), straight_cross(5), square(5),
+# ]:
 #     for op in ['erosion', 'dilation']:
 #         morp_operations.append(SequentialMorpOperations(
 #             name=op + "_7x7",
@@ -52,19 +52,20 @@ for se in [
 #         operations=['erosion', 'dilation'],
 #         device=device
 #     ))
-    morp_operations.append(SequentialMorpOperations(
-        name="closing",
-        selems=[se, se],
-        operations=['dilation', 'erosion'],
-        device=device
-    ))
+#     morp_operations.append(SequentialMorpOperations(
+#         name="closing",
+#         selems=[se, se],
+#         operations=['dilation', 'erosion'],
+#         device=device
+#     ))
 
-# morp_operations.append(SequentialMorpOperations(
-#     name="opening",
-#     selems=[disk(3), disk(3)],
-#     operations=['erosion', 'dilation'],
-#     device=device,
-# ))
+morp_operations.append(SequentialMorpOperations(
+    name="opening",
+    selems=[disk(3), disk(3)],
+    operations=['erosion', 'dilation'],
+    device="cpu",
+    # device=device,
+))
 
 
 # morp_operations.append(SequentialMorpOperations(

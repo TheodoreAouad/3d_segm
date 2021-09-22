@@ -5,14 +5,14 @@ from skimage.morphology import disk
 from general.array_morphology import array_dilation, array_erosion
 
 
-def get_loader(batch_size, n_inputs, random_gen_fn, random_gen_args, device='cpu', **kwargs):
-    return DataLoader(
-        MultiRectDataset(random_gen_fn, random_gen_args, device=device, len_dataset=n_inputs, **kwargs),
-        batch_size=batch_size,
-    )
+# def get_loader(batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, device='cpu', **kwargs):
+#     return DataLoader(
+#         MultiRectDatasetGenerator(random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device, len_dataset=n_inputs, ),
+#         batch_size=batch_size,  **kwargs
+#     )
 
 
-class MultiRectDataset(Dataset):
+class MultiRectDatasetGenerator(Dataset):
 
     def __init__(
             self,
@@ -52,7 +52,8 @@ class MultiRectDataset(Dataset):
         # target = self.morp_fn(input_, self.selem, device=self.device, return_numpy_array=False).float()
         target = self.morp_fn(input_).float()
         # input_ = format_for_conv(input_, device=self.device)
-        input_ = torch.tensor(input_).unsqueeze(0).float().to(self.device)
+        # input_ = torch.tensor(input_).unsqueeze(0).float().to(self.device)
+        input_ = torch.tensor(input_).unsqueeze(0).float()
 
         return input_, target
 
@@ -71,4 +72,11 @@ class MultiRectDataset(Dataset):
             self.selem,
             device=self.device,
             return_numpy_array=False,
+        )
+
+    @staticmethod
+    def get_loader(batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, device='cpu', **kwargs):
+        return DataLoader(
+            MultiRectDatasetGenerator(random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device, len_dataset=n_inputs, ),
+            batch_size=batch_size,  **kwargs
         )

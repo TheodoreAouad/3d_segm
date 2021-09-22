@@ -35,3 +35,9 @@ def square(size: int, rect_size: int = None) -> np.ndarray:
     margin = (size - rect_size) // 2
     selem[margin: -margin, margin: -margin] = 1
     return selem
+
+def dcross(*args, **kwargs):
+    return diagonal_cross(*args, **kwargs)
+
+def scross(*args, **kwargs):
+    return straight_cross(*args, **kwargs)

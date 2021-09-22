@@ -10,10 +10,12 @@ from general.structuring_elements import *
 from general.array_morphology import SequentialMorpOperations
 from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
 from general.utils import dict_cross
+args = {}
 
 ############ ARGS ############
 SE_sizes = [5]
 threshold_modes = ['tanh']
+args['experiment_name'] = ['Bimonn_exp_22']
 ##############################
 
 if torch.cuda.is_available():
@@ -21,9 +23,7 @@ if torch.cuda.is_available():
 else:
     device = 'cpu'
 
-args = {}
 
-args['experiment_name'] = ['Bimonn_exp_20']
 
 # DATA ARGS
 args['morp_operation'] = []
@@ -33,20 +33,20 @@ for SE_size in SE_sizes:
         hstick(SE_size), vstick(SE_size),
         diagonal_cross(SE_size), straight_cross(SE_size), square(SE_size)
     ]:
-        # args['morp_operation'].append(SequentialMorpOperations(
-        #     name= f"opening_size_{SE_size}x{SE_size}",
-        #     selems=[se, se],
-        #     operations=['erosion', 'dilation'],
-        #     return_numpy_array=False,
-        #     device=device
-        # ))
         args['morp_operation'].append(SequentialMorpOperations(
-            name=f"closing_size_{SE_size}x{SE_size}",
+            name= f"opening_size_{SE_size}x{SE_size}",
             selems=[se, se],
-            operations=['dilation', 'erosion'],
+            operations=['erosion', 'dilation'],
             return_numpy_array=False,
             device=device
         ))
+        # args['morp_operation'].append(SequentialMorpOperations(
+        #     name=f"closing_size_{SE_size}x{SE_size}",
+        #     selems=[se, se],
+        #     operations=['dilation', 'erosion'],
+        #     return_numpy_array=False,
+        #     device=device
+        # ))
 
 args['random_gen_fn'] = [get_random_rotated_diskorect]
 args['random_gen_args'] = [
@@ -58,10 +58,14 @@ args['learning_rate'] = [2.5e-3]
 args['loss'] = [nn.BCELoss()]
 args['optimizer'] = [optim.Adam]
 args['batch_size'] = [32]
-args['n_inputs'] = [2_000_000]
+args['n_inputs'] = [1_000_000]
 
 # MODEL ARGS
-args['atomic_element'] = ["cobise", "cobisec"]
+args['atomic_element'] = [
+    # "cobise", "cobisec",
+    # "bise",
+    "bisec",
+]
 args['kernel_size'] = ["adapt"]
 args['init_weight_identity'] = [True]
 args['activation_P'] = [1]

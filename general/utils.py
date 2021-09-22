@@ -6,6 +6,7 @@ import os
 from os.path import join
 import re
 
+import json
 import yaml
 import numpy as np
 import nibabel as nib
@@ -13,6 +14,16 @@ from scipy import ndimage
 from skimage.morphology import disk, dilation, erosion, label
 from skimage.transform import warp
 from sklearn.model_selection import ParameterGrid
+
+
+def save_json(dic, path, sort_keys=True, indent=4):
+    with open(path, 'w') as fp:
+        json.dump(dic, fp, sort_keys=sort_keys, indent=indent)
+
+
+def load_json(path):
+    with open(path, 'r') as fp:
+        return json.load(fp)
 
 
 def get_next_same_name(parent_dir, pattern='', sep='', crude=False):

@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
-from deep_morpho.datasets.multi_rect_dataset import get_loader
+from deep_morpho.datasets.multi_rect_dataset import MultiRectDatasetGenerator
 from deep_morpho.models import LightningBiMoNN
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
@@ -22,13 +22,14 @@ from general.code_saver import CodeSaver
 
 
 def main(args, logger):
-    dataloader = get_loader(
+    dataloader = MultiRectDatasetGenerator.get_loader(
         batch_size=args['batch_size'],
         n_inputs=args['n_inputs'],
         random_gen_fn=args['random_gen_fn'],
         random_gen_args=args['random_gen_args'],
-        device=device,
         morp_operation=args['morp_operation'].morp_fn,
+        device=device,
+        num_workers=args['num_workers']
     )
 
     metrics = {'dice': lambda y_true, y_pred: dice(y_true, y_pred, threshold=.5).mean()}
@@ -41,12 +42,12 @@ def main(args, logger):
         ),
         obs.InputAsPredMetric(metrics),
         obs.PlotParametersDilation(freq=1),
-        obs.PlotWeightsDilation(freq=100),
-        obs.WeightsHistogramBiSE(freq=100),
-        obs.PlotPreds(freq=100),
+        obs.PlotWeightsDilation(freq=1000),
+        obs.WeightsHistogramBiSE(freq=1000),
+        obs.PlotPreds(freq=1000),
         obs.CountInputs(),
         obs.CheckMorpOperation(selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50),
-        obs.PlotGradientBise(freq=100),
+        obs.PlotGradientBise(freq=1000),
     ]
 
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
