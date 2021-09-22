@@ -25,13 +25,13 @@ morp_operations_args = []
 morp_operations_args.append({
     "name": "opening",
     "selems_fn": [disk, disk],
-    "selems_args": [3],
+    "selems_args": [3, 3],
     "operations": ["erosion", "dilation"]
 })
 morp_operations_args.append({
     "name": "closing",
     "selems_fn": [disk, disk],
-    "selems_args": [3],
+    "selems_args": [3, 3],
     "operations": ["dilation", 'erosion']
 })
 
@@ -39,13 +39,13 @@ for operation in [hstick, vstick, scross, dcross, square]:
     morp_operations_args.append({
         "name": "opening",
         "selems_fn": [operation, operation],
-        "selems_args": [7],
+        "selems_args": [7, 7],
         "operations": ["erosion", "dilation"]
     })
     morp_operations_args.append({
         "name": "closing",
         "selems_fn": [operation, operation],
-        "selems_args": [7],
+        "selems_args": [7, 7],
         "operations": ["dilation", 'erosion']
     })
 
