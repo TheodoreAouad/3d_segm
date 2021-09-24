@@ -16,6 +16,8 @@ class BiMoNN(nn.Module):
         weight_P: Union[float, List[float]] = 1,
         threshold_mode: Union[Union[str, dict], List[Union[str, dict]]] = "tanh",
         activation_P: Union[float, List[float]] = 10,
+        constant_activation_P: Union[bool, List[bool]] = False,
+        constant_weight_P: Union[bool, List[bool]] = False,
         init_bias_value: Union[float, List[float]] = -2,
         init_weight_identity: Union[bool, List[bool]] = True,
         out_channels: Union[int, List[int]] = 1,
@@ -115,7 +117,8 @@ class BiMoNN(nn.Module):
     def bises_args(self):
         return [
             'kernel_size', 'weight_P', 'threshold_mode', 'activation_P',
-            'init_bias_value', 'init_weight_identity', 'out_channels'
+            'init_bias_value', 'init_weight_identity', 'out_channels', "constant_activation_P",
+            "constant_weight_P"
         ]
 
     @property
@@ -157,6 +160,7 @@ class BiMoNN(nn.Module):
     @property
     def all_args(self):
         return [
-            "kernel_size", "atomic_element", "weight_P", "threshold_mode", "activation_P", "init_bias_value",
-            "init_weight_identity", "out_channels", "alpha_init", "init_value", "share_weights",
+            "kernel_size", "atomic_element", "weight_P", "threshold_mode", "activation_P", "constant_activation_P",
+            "init_bias_value", "init_weight_identity", "out_channels", "alpha_init", "init_value", "share_weights",
+            "constant_weight_P"
         ]

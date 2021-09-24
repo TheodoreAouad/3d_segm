@@ -23,10 +23,10 @@ selems = []
 # selems.append(selem)
 
 # for se in [
-#     disk(5//2),
-#     hstick(5),
-#     vstick(5),
-#     diagonal_cross(5), straight_cross(5), square(5),
+#     disk(7//2),
+#     hstick(7),
+#     vstick(7),
+#     diagonal_cross(7), straight_cross(7), square(7),
 # ]:
 #     for op in ['erosion', 'dilation']:
 #         morp_operations.append(SequentialMorpOperations(
@@ -36,37 +36,43 @@ selems = []
 #             return_numpy_array=False,
 #             device=device
 #         ))
-#
-# for se in [disk(2), hstick(5), vstick(5), diagonal_cross(5), straight_cross(5), square(5)]:
-#     for op in ['erosion', 'dilation']:
-#         morp_operations.append(SequentialMorpOperations(
-#             name=op + "_5x5",
-#             selems=[se],
-#             operations=[op],
-#             return_numpy_array=False,
-#             device=device
-#         ))
-#     morp_operations.append(SequentialMorpOperations(
-#         name="opening",
-#         selems=[se, se],
-#         operations=['erosion', 'dilation'],
-#         device=device
-#     ))
-#     morp_operations.append(SequentialMorpOperations(
-#         name="closing",
-#         selems=[se, se],
-#         operations=['dilation', 'erosion'],
-#         device=device
-#     ))
 
-morp_operations.append(SequentialMorpOperations(
-    name="opening",
-    selems=[disk(3), disk(3)],
-    operations=['erosion', 'dilation'],
-    device="cpu",
-    # device=device,
-))
+size = 7
+for se in [disk, hstick, vstick, diagonal_cross, straight_cross, square]:
+    for op in ['erosion', 'dilation']:
+        morp_operations.append(SequentialMorpOperations(
+            name=op + f"_{se.shape[0]}x{se.shape[1]}",
+            selems=[(se, size if se.__name__ != 'disk' else size // 2)],
+            operations=[op],
+            return_numpy_array=False,
+            device='cpu'
+        ))
+    # morp_operations.append(SequentialMorpOperations(
+    #     name="opening",
+    #     selems=[se, se],
+    #     operations=['erosion', 'dilation'],
+    #     device=device
+    # ))
+    # morp_operations.append(SequentialMorpOperations(
+    #     name="closing",
+    #     selems=[se, se],
+    #     operations=['dilation', 'erosion'],
+    #     device=device
+    # ))
 
+# morp_operations.append(SequentialMorpOperations(
+#     name="erosion",
+#     selems=[("disk", 3)],
+#     operations=['erosion'],
+#     device="cpu",
+# ))    
+
+# morp_operations.append(SequentialMorpOperations(
+#     name="erosion",
+#     selems=[("disk", 3)],
+#     operations=['erosion'],
+#     device="cpu",
+# ))
 
 # morp_operations.append(SequentialMorpOperations(
 #     name="opening",

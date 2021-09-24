@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
-from deep_morpho.datasets.multi_rect_dataset import MultiRectDatasetGenerator
+from deep_morpho.datasets.multi_rect_dataset import MultiRectDatasetGenerator, MultiRectDataset
 from deep_morpho.models import LightningBiMoNN
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
@@ -22,14 +22,21 @@ from general.code_saver import CodeSaver
 
 
 def main(args, logger):
-    dataloader = MultiRectDatasetGenerator.get_loader(
-        batch_size=args['batch_size'],
-        n_inputs=args['n_inputs'],
-        random_gen_fn=args['random_gen_fn'],
-        random_gen_args=args['random_gen_args'],
-        morp_operation=args['morp_operation'].morp_fn,
-        device=device,
-        num_workers=args['num_workers']
+    if (args['dataset_path'] is not None) and (args['dataset_path'] != 'generate'):
+        dataloader = MultiRectDataset.get_loader(
+            batch_size=args['batch_size'], dataset_path=args['dataset_path'], do_load_in_ram=args['in_ram'],
+            morp_operation=args['morp_operation'], logger=console_logger, n_inputs=args['n_inputs'],
+            num_workers=args['num_workers']
+        )
+    else:
+        dataloader = MultiRectDatasetGenerator.get_loader(
+            batch_size=args['batch_size'],
+            n_inputs=args['n_inputs'],
+            random_gen_fn=args['random_gen_fn'],
+            random_gen_args=args['random_gen_args'],
+            morp_operation=args['morp_operation'].morp_fn,
+            device=device,
+            num_workers=args['num_workers']
     )
 
     metrics = {'dice': lambda y_true, y_pred: dice(y_true, y_pred, threshold=.5).mean()}
@@ -55,9 +62,11 @@ def main(args, logger):
     model = LightningBiMoNN(
         model_args={
             "kernel_size": [args['kernel_size'] for _ in range(args['n_atoms'])],
-            "atomic_element": args["atomic_element"],
+            "atomic_element": args["atomic_element"] if args["atomic_element"] != "conv" else "bise",
             "threshold_mode": args['threshold_mode'],
             "activation_P": args['activation_P'],
+            "constant_activation_P": args['constant_activation_P'],
+            "constant_weight_P": args['constant_weight_P'],
             "init_weight_identity": args["init_weight_identity"],
             "alpha_init": args["alpha_init"],
         },

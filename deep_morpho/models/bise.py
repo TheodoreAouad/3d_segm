@@ -19,6 +19,8 @@ class BiSE(nn.Module):
         weight_P: float = 1,
         threshold_mode: str = "sigmoid",
         activation_P: float = 10,
+        constant_activation_P: bool = False,
+        constant_weight_P: bool = False,
         shared_weights: torch.tensor = None,
         shared_weight_P: torch.tensor = None,
         init_bias_value: float = -2,
@@ -48,8 +50,8 @@ class BiSE(nn.Module):
         self.shared_weights = shared_weights
         self.shared_weight_P = shared_weight_P
 
-        self.weight_threshold_layer = dispatcher[self.weight_threshold_mode](P_=self.weight_P)
-        self.activation_threshold_layer = dispatcher[self.activation_threshold_mode](P_=activation_P)
+        self.weight_threshold_layer = dispatcher[self.weight_threshold_mode](P_=self.weight_P, constant_P=constant_weight_P)
+        self.activation_threshold_layer = dispatcher[self.activation_threshold_mode](P_=activation_P, constant_P=constant_activation_P)
 
     def activation_threshold_fn(self, x):
         return self.activation_threshold_layer.threshold_fn(x)

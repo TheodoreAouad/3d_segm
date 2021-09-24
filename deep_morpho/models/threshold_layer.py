@@ -8,10 +8,12 @@ class ThresholdLayer(nn.Module):
 
     def __init__(self, threshold_fn, P_: float = 1, threshold_name: str = '', bias: float = 0, constant_P: bool = False):
         super().__init__()
-        if isinstance(P_, nn.Parameter) or constant_P:
+        if isinstance(P_, nn.Parameter):
             self.P_ = P_
         else:
             self.P_ = nn.Parameter(torch.tensor([P_]).float())
+        if constant_P:
+            self.P_.requires_grad = False
         self.threshold_name = threshold_name
         self.threshold_fn = threshold_fn
         self.bias = bias
@@ -45,7 +47,11 @@ class ClampLayer(ThresholdLayer):
         super().__init__(threshold_fn=lambda x: clamp_threshold(x, 0, 1), threshold_name='clamp', *args, **kwargs)
 
 
+class IdentityLayer(ThresholdLayer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(threshold_fn=lambda x: x, threshold_name='identity', *args, **kwargs)
+
 dispatcher = {
-    'sigmoid': SigmoidLayer, 'arctan': ArctanLayer, 'tanh': TanhLayer, 'erf': ErfLayer, 'clamp': ClampLayer
+    'sigmoid': SigmoidLayer, 'arctan': ArctanLayer, 'tanh': TanhLayer, 'erf': ErfLayer, 'clamp': ClampLayer, 'identity': IdentityLayer
 }
 

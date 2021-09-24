@@ -20,3 +20,4 @@ def erf_threshold(x):
 
 def clamp_threshold(x, s1=0, s2=1):
     return x.clamp(s1, s2)
+

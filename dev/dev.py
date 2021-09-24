@@ -1,19 +1,8 @@
-from time import time
+from general.utils import load_json, save_json
 
-from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
+mtd = load_json('data/deep_morpho/dataset_0/metadata.json')
 
-t1 = time()
-for _ in range(1):
-    get_random_rotated_diskorect(
-        (50, 50), n_shapes = 30, max_shape = (15, 15), p_invert = 0.5,
-            border=(4, 4), n_holes = 15, max_shape_holes = (5, 5), noise_proba=0.05
-    )
-print("first one:", time() - t1)
+for key in mtd['seqs'].keys():
+    mtd['seqs'][key]['path_target'] += '/images'
 
-t1 = time()
-for _ in range(20000):
-    get_random_rotated_diskorect(
-        (50, 50), n_shapes = 30, max_shape = (15, 15), p_invert = 0.5,
-            border=(4, 4), n_holes = 15, max_shape_holes = (5, 5), noise_proba=0.05
-    )
-print(time() - t1)
+save_json(mtd, 'data/deep_morpho/dataset_0/metadata.json')

@@ -78,7 +78,7 @@ for args_idx, args in enumerate(morp_operations_args):
     metadata = load_json(join(dataset_folder, 'metadata.json'))
     metadata['seqs'] = metadata.get('seqs', dict())
     metadata['seqs'][key_id] = {
-        "path_target": folder_op,
+        "path_target": join(folder_op, 'images'),
         "path_selems": path_selem
     }
     save_json(metadata, join(dataset_folder, 'metadata.json'))
