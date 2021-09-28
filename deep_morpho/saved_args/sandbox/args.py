@@ -7,7 +7,7 @@ from .args_morp_ops import morp_operations
 
 args = {}
 
-args['experiment_name'] = ['Bimonn_exp_23']
+args['experiment_name'] = ['Bimonn_exp_24']
 
 
 # DATA ARGS
@@ -25,19 +25,19 @@ args['random_gen_args'] = [
     {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
 ]
 args['n_inputs'] = [
-    200_000,
-    # 1_000_000,
+    # 200_000,
+    1_000_000,
 ]
 
 
 # TRAINING ARGS
 args['learning_rate'] = [
-    1e-2,
-    # 1e-3,
+    # 1e-2,
+    1e-3,
 ]
 args['loss'] = [
-    nn.BCELoss(),
-    # nn.BCEWithLogitsLoss(),
+    # nn.BCELoss(),
+    nn.BCEWithLogitsLoss(),
 ]
 args['optimizer'] = [optim.Adam]
 args['batch_size'] = [32]
@@ -52,9 +52,9 @@ args['n_atoms'] = [
     'adapt',
 ]
 args['atomic_element'] = [
-    'conv',
-    # 'bise',
-    # 'bisec',
+    # 'conv',
+    'bise',
+    'bisec',
     # 'cobise',
     # 'cobisec',
 ]
@@ -64,8 +64,8 @@ args['kernel_size'] = [
 ]
 args['init_weight_identity'] = [True]
 args['activation_P'] = [1]
-args['constant_activation_P'] = [True]
-args['constant_weight_P'] = [True]
+args['constant_activation_P'] = [False]
+args['constant_weight_P'] = [False]
 args['threshold_mode'] = [
     # 'arctan',
     # 'sigmoid',
@@ -100,5 +100,5 @@ for idx, args in enumerate(all_args):
     if args['atomic_element'] == "conv":
         args['threshold_mode'] = {"activation": "sigmoid", "weight": "identity"}
 
-#     if "dilation" in args['morp_operation'].name:
-#         all_args[idx]['n_inputs'] = 200_000
+    if "dilation" in args['morp_operation'].name or "erosion" in args['morp_operation'].name:
+        args['learning_rate'] = 1e-2

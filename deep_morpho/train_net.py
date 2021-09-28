@@ -102,7 +102,7 @@ def main(args, logger):
             **{f'metrics/bias - lb(op)_{layer_idx}_1': 0 for layer_idx in range(len(model.model.bises))},
             **{f'metrics/ub(op) - bias_{layer_idx}_1': 0 for layer_idx in range(len(model.model.bises))},
         ))
-    elif args["atomic_element"] == "bise":
+    elif args["atomic_element"] in ["bise", "conv"]:
         hyperparams.update(dict(
             **{f'metrics/bias - lb(op)_{layer_idx}': 0 for layer_idx in range(len(model.model.bises))},
             **{f'metrics/ub(op) - bias_{layer_idx}': 0 for layer_idx in range(len(model.model.bises))},
@@ -164,13 +164,13 @@ if __name__ == '__main__':
         log_console('Time since beginning: {} '.format(format_time(time() - start_all)), logger=console_logger)
         log_console(logger.log_dir, logger=console_logger)
         log_console(args['morp_operation'], logger.log_dir, logger=console_logger)
-        main(args, logger)
-        # try:
-        #     main(args, logger)
-        # except Exception:
-        #     console_logger.exception(
-        #         f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
-        #     bugged.append(args_idx+1)
+        # main(args, logger)
+        try:
+            main(args, logger)
+        except Exception:
+            console_logger.exception(
+                f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
+            bugged.append(args_idx+1)
 
     code_saver.delete_temporary_file()
 
