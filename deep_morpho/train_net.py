@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
 from deep_morpho.datasets.multi_rect_dataset import MultiRectDatasetGenerator, MultiRectDataset
-from deep_morpho.models import LightningBiMoNN
+from deep_morpho.models import LightningBiMoNN, BiSE, COBiSE, BiSEC, COBiSEC
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
 from general.utils import format_time, log_console, create_logger, save_yaml
@@ -49,12 +49,12 @@ def main(args, logger):
         ),
         obs.InputAsPredMetric(metrics),
         obs.PlotParametersDilation(freq=1),
-        obs.PlotWeightsDilation(freq=1000),
-        obs.WeightsHistogramBiSE(freq=1000),
-        obs.PlotPreds(freq=1000),
+        obs.PlotWeightsDilation(freq=args['freq_imgs']),
+        obs.WeightsHistogramBiSE(freq=args['freq_imgs']),
+        obs.PlotPreds(freq=args['freq_imgs']),
         obs.CountInputs(),
         obs.CheckMorpOperation(selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50),
-        obs.PlotGradientBise(freq=1000),
+        obs.PlotGradientBise(freq=args['freq_imgs']),
     ]
 
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
@@ -79,8 +79,10 @@ def main(args, logger):
         args_thresh_penalization=args['args_thresh_penalization'],
         first_batch_pen=args['first_batch_pen'],
     )
-    ys = model.model.layers[0].activation_threshold_fn(xs).detach()
-
+    if isinstance(model.model.layers[0], (BiSE, COBiSE, BiSEC, COBiSEC)):
+        ys = model.model.layers[0].activation_threshold_fn(xs).detach()
+        fig, ax = plt.subplots(); ax.plot(xs, ys); ax.set_title(args['threshold_mode'])
+        logger.experiment.add_figure("threshold_fn", fig)
 
     model.to(device)
 
@@ -114,8 +116,7 @@ def main(args, logger):
         fig, ax = plt.subplots(); ax.imshow(selem); ax.set_title(args['morp_operation'].operations[selem_idx])
         logger.experiment.add_figure(f"target_SE/target_SE_{selem_idx}", fig)
         # logger.experiment.add_image(f"target_SE/target_SE_{selem_idx}", selem[np.newaxis, :].astype(float))
-    fig, ax = plt.subplots(); ax.plot(xs, ys); ax.set_title(args['threshold_mode'])
-    logger.experiment.add_figure("threshold_fn", fig)
+
 
     trainer = Trainer(
         max_epochs=1,
@@ -164,13 +165,13 @@ if __name__ == '__main__':
         log_console('Time since beginning: {} '.format(format_time(time() - start_all)), logger=console_logger)
         log_console(logger.log_dir, logger=console_logger)
         log_console(args['morp_operation'], logger.log_dir, logger=console_logger)
-        # main(args, logger)
-        try:
-            main(args, logger)
-        except Exception:
-            console_logger.exception(
-                f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
-            bugged.append(args_idx+1)
+        main(args, logger)
+        # try:
+        #     main(args, logger)
+        # except Exception:
+        #     console_logger.exception(
+        #         f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
+        #     bugged.append(args_idx+1)
 
     code_saver.delete_temporary_file()
 

@@ -67,7 +67,7 @@ class DilationSumLayer(nn.Module):
         activation_P: float = 10,
         threshold_mode: str = 'tanh',
         padding: Union[int, str] = 'same',
-        init_value: float = -10,
+        init_value: float = -2,
     ):
         super().__init__()
         self.threshold_mode = self._init_threshold_mode(threshold_mode)
@@ -91,11 +91,13 @@ class DilationSumLayer(nn.Module):
         output = self.unfolder(x)
         output = output + self.kron_weight(x.shape[-self.ndim:])
         output = self.maxpool(output)
-        return self.activation_threshold_layer(output)
+        # return self.activation_threshold_layer(output)
+        return output
 
     def init_weights(self, init_value):
-        weights = torch.zeros(self.kernel_size) + init_value
-        weights[self.kernel_size[0]//2, self.kernel_size[1]//2] = 0
+        # weights = torch.zeros(self.kernel_size) + init_value
+        # weights[self.kernel_size[0]//2, self.kernel_size[1]//2] = 0
+        weights = torch.randn(self.kernel_size)
         return weights
 
     @property

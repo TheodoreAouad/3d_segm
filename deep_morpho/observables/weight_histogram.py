@@ -2,6 +2,7 @@ import torch
 from general.nn.observables import Observable
 from general.utils import max_min_norm
 from .observable_layers import ObservableLayers
+from ..models import BiSE, BiSEC, COBiSEC, COBiSE
 
 
 class WeightsHistogramBiSE(ObservableLayers):
@@ -20,8 +21,9 @@ class WeightsHistogramBiSE(ObservableLayers):
         layer: "nn.Module",
         layer_idx: int,
     ):
-        trainer.logger.experiment.add_histogram(f"weights_hist/Normalized_{layer_idx}", layer._normalized_weight[0], trainer.global_step)
-        trainer.logger.experiment.add_histogram(f"weights_hist/Raw_{layer_idx}", layer.weight[0], trainer.global_step)
+        if isinstance(layer, (BiSE, BiSEC, COBiSEC, COBiSE)):
+            trainer.logger.experiment.add_histogram(f"weights_hist/Normalized_{layer_idx}", layer._normalized_weight, trainer.global_step)
+        trainer.logger.experiment.add_histogram(f"weights_hist/Raw_{layer_idx}", layer.weight, trainer.global_step)
 
 # class WeightsHistogramDilation(Observable):
 

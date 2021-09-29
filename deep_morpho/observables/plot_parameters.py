@@ -4,7 +4,7 @@ import itertools
 from .observable_layers import ObservableLayers
 from general.utils import max_min_norm
 
-from ..models import BiSE, BiSEC, COBiSE, COBiSEC
+from ..models import BiSE, BiSEC, COBiSE, COBiSEC, MaxPlusAtom
 
 
 class PlotWeightsDilation(ObservableLayers):
@@ -25,9 +25,11 @@ class PlotWeightsDilation(ObservableLayers):
     ):
         # trainer.logger.experiment.add_image(f"weights/Normalized_{layer_idx}", layer._normalized_weight[0], trainer.global_step)
         # trainer.logger.experiment.add_image(f"weights/Raw_{layer_idx}", max_min_norm(layer.weight[0]), trainer.global_step)
+        if isinstance(layer, (BiSE, COBiSE, BiSEC, COBiSEC)):
+            trainer.logger.experiment.add_figure(f"weights/Normalized_{layer_idx}", self.get_figure_normalized_weights(layer._normalized_weight.squeeze()), trainer.global_step)
+        trainer.logger.experiment.add_figure(f"weights/Raw_{layer_idx}", self.get_figure_raw_weights(layer.weight.squeeze()), trainer.global_step)
 
-        trainer.logger.experiment.add_figure(f"weights/Normalized_{layer_idx}", self.get_figure_normalized_weights(layer._normalized_weight[0]), trainer.global_step)
-        trainer.logger.experiment.add_figure(f"weights/Raw_{layer_idx}", self.get_figure_raw_weights(layer.weight[0]), trainer.global_step)
+
 
 
     def get_figure_normalized_weights(self, weights):
@@ -47,7 +49,7 @@ class PlotWeightsDilation(ObservableLayers):
         return figure
 
     def get_figure_raw_weights(self, weights):
-        weights = weights[0].cpu().detach()
+        weights = weights.cpu().detach()
         weights_normed = max_min_norm(weights)
         figure = plt.figure(figsize=(8, 8))
         plt.imshow(weights_normed, interpolation='nearest', cmap=plt.cm.gray)
@@ -78,28 +80,18 @@ class PlotParametersDilation(ObservableLayers):
         layer: "nn.Module",
         layer_idx: int,
     ):
-        # trainer.logger.experiment.add_scalar(f"weights/sum_norm_weights_{layer_idx}", layer._normalized_weight.sum(), trainer.global_step)
-        # trainer.logger.experiment.add_scalar(f"params/weight_P_{layer_idx}", layer.weight_P, trainer.global_step)
-        # trainer.logger.experiment.add_scalar(f"params/activation_P_{layer_idx}", layer.activation_P, trainer.global_step)
-        #
-        # if isinstance(layer, BiSEC):
-        #     trainer.logger.experiment.add_scalar(f"weights/norm_alpha_{layer_idx}", layer.thresholded_alpha, trainer.global_step)
-        #     trainer.logger.experiment.add_scalar(f"weights/bias_{layer_idx}", layer.bias, trainer.global_step)
-        # elif isinstance(layer, BiSE):
-        #     trainer.logger.experiment.add_scalar(f"weights/bias_{layer_idx}", layer.bias, trainer.global_step)
-        #     trainer.logger.experiment.add_scalar(f"weights/bias+weights_{layer_idx}", layer._normalized_weight.sum() + layer.bias, trainer.global_step)
-        #
-        metrics = {
-            f"weights/sum_norm_weights_{layer_idx}": layer._normalized_weight.sum(),
-            f"params/weight_P_{layer_idx}": layer.weight_P,
-            f"params/activation_P_{layer_idx}": layer.activation_P,
-        }
-        # trainer.logger.log_metrics(f"weights/sum_norm_weights_{layer_idx}", layer._normalized_weight.sum(), trainer.global_step)
-        # trainer.logger.log_metrics(f"params/weight_P_{layer_idx}", layer.weight_P, trainer.global_step)
-        # trainer.logger.log_metrics(f"params/activation_P_{layer_idx}", layer.activation_P, trainer.global_step)
+        metrics = {}
 
-        if isinstance(layer, BiSEC) or isinstance(layer, COBiSEC):
+        if isinstance(layer, (BiSE, COBiSE, BiSEC, COBiSEC)):
+            metrics.update({
+                f"weights/sum_norm_weights_{layer_idx}": layer._normalized_weight.sum(),
+                f"params/weight_P_{layer_idx}": layer.weight_P,
+                f"params/activation_P_{layer_idx}": layer.activation_P,
+            })
+
+        if isinstance(layer, (BiSEC, COBiSEC, MaxPlusAtom)):
             metrics[f"weights/norm_alpha_{layer_idx}"] = layer.thresholded_alpha
+        if isinstance(layer, (BiSEC, COBiSEC)):
             metrics[f"weights/bias_{layer_idx}"] = layer.bias
         elif isinstance(layer, BiSE):
             metrics[f"weights/bias_{layer_idx}"] = layer.bias

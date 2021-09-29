@@ -7,7 +7,7 @@ from .args_morp_ops import morp_operations
 
 args = {}
 
-args['experiment_name'] = ['Bimonn_exp_24']
+args['experiment_name'] = ['Bimonn_exp_27']
 
 
 # DATA ARGS
@@ -25,7 +25,7 @@ args['random_gen_args'] = [
     {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
 ]
 args['n_inputs'] = [
-    # 200_000,
+    # 100_000,
     1_000_000,
 ]
 
@@ -37,7 +37,8 @@ args['learning_rate'] = [
 ]
 args['loss'] = [
     # nn.BCELoss(),
-    nn.BCEWithLogitsLoss(),
+    # nn.BCEWithLogitsLoss(),
+    nn.MSELoss(),
 ]
 args['optimizer'] = [optim.Adam]
 args['batch_size'] = [32]
@@ -45,6 +46,7 @@ args['num_workers'] = [
     5,
     # 0,
 ]
+args['freq_imgs'] = [500]
 
 
 # MODEL ARGS
@@ -53,10 +55,11 @@ args['n_atoms'] = [
 ]
 args['atomic_element'] = [
     # 'conv',
-    'bise',
-    'bisec',
+    # 'bise',
+    # 'bisec',
     # 'cobise',
     # 'cobisec',
+    "max_plus",
 ]
 args['kernel_size'] = [
     # 7
@@ -100,5 +103,5 @@ for idx, args in enumerate(all_args):
     if args['atomic_element'] == "conv":
         args['threshold_mode'] = {"activation": "sigmoid", "weight": "identity"}
 
-    if "dilation" in args['morp_operation'].name or "erosion" in args['morp_operation'].name:
-        args['learning_rate'] = 1e-2
+    # if "dilation" in args['morp_operation'].name or "erosion" in args['morp_operation'].name:
+    #     args['learning_rate'] = 1e-2

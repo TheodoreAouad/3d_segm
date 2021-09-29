@@ -22,7 +22,7 @@ class BiMoNN(nn.Module):
         init_weight_identity: Union[bool, List[bool]] = True,
         out_channels: Union[int, List[int]] = 1,
         alpha_init: Union[float, List[float]] = 0,
-        init_value: Union[float, List[float]] = -10,
+        init_value: Union[float, List[float]] = -2,
         share_weights: Union[bool, List[bool]] = True,
     ):
         super().__init__()
