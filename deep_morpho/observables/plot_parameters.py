@@ -33,7 +33,7 @@ class PlotWeightsDilation(ObservableLayers):
 
 
     def get_figure_normalized_weights(self, weights):
-        weights = weights[0].cpu().detach()
+        weights = weights.cpu().detach()
         figure = plt.figure(figsize=(8, 8))
         plt.imshow(weights, interpolation='nearest', cmap=plt.cm.gray)
         plt.colorbar()

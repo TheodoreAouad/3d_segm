@@ -92,22 +92,27 @@ def main(args, logger):
             f"weights/sum_norm_weights",
             f"params/weight_P",
             f"params/activation_P",
-            f"weights/norm_alpha",
             f"weights/bias",
-        ] for layer_idx in range(len(model.model.bises))},
+        ] for layer_idx in range(len(model.model.layers))},
         **{f"metrics_batch/dice_train": 0},
     )
+
+    if args['atomic_element'] in ['bisec', 'cobisec']:
+        hyperparams.update(dict(
+            **{f'{k}_{layer_idx}': -1 for k in ["weights/norm_alpha"] for layer_idx in range(len(model.model.layers))}
+        ))
+
     if args["atomic_element"] == 'cobise':
         hyperparams.update(dict(
-            **{f'metrics/bias - lb(op)_{layer_idx}_0': 0 for layer_idx in range(len(model.model.bises))},
-            **{f'metrics/ub(op) - bias_{layer_idx}_0': 0 for layer_idx in range(len(model.model.bises))},
-            **{f'metrics/bias - lb(op)_{layer_idx}_1': 0 for layer_idx in range(len(model.model.bises))},
-            **{f'metrics/ub(op) - bias_{layer_idx}_1': 0 for layer_idx in range(len(model.model.bises))},
+            **{f'metrics/bias - lb(op)_{layer_idx}_0': 0 for layer_idx in range(len(model.model.layers))},
+            **{f'metrics/ub(op) - bias_{layer_idx}_0': 0 for layer_idx in range(len(model.model.layers))},
+            **{f'metrics/bias - lb(op)_{layer_idx}_1': 0 for layer_idx in range(len(model.model.layers))},
+            **{f'metrics/ub(op) - bias_{layer_idx}_1': 0 for layer_idx in range(len(model.model.layers))},
         ))
     elif args["atomic_element"] in ["bise", "conv"]:
         hyperparams.update(dict(
-            **{f'metrics/bias - lb(op)_{layer_idx}': 0 for layer_idx in range(len(model.model.bises))},
-            **{f'metrics/ub(op) - bias_{layer_idx}': 0 for layer_idx in range(len(model.model.bises))},
+            **{f'metrics/bias - lb(op)_{layer_idx}': 0 for layer_idx in range(len(model.model.layers))},
+            **{f'metrics/ub(op) - bias_{layer_idx}': 0 for layer_idx in range(len(model.model.layers))},
         ))
 
     logger.log_hyperparams(args, hyperparams)
