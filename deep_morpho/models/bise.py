@@ -1,6 +1,5 @@
 from typing import Tuple
 
-from skimage.morphology import disk
 import numpy as np
 import torch
 import torch.nn as nn
@@ -69,41 +68,101 @@ class BiSE(nn.Module):
         shape = self.conv.weight.shape
         self.conv.weight.data[..., shape[-2]//2, shape[-1]//2] = 1
 
-    def is_erosion_by(self, S: np.ndarray):
+    def is_erosion_by(self, S: np.ndarray, v1: float = 0, v2: float = 1):
         assert np.isin(np.unique(S), [0, 1]).all(), "S must be binary matrix"
-        lb, ub = self.bias_bounds_erosion(S)
+        lb, ub = self.bias_bounds_erosion(S=S, v1=v1, v2=v2)
         return lb < -self.bias < ub
 
-    def is_dilation_by(self, S: np.ndarray):
+    def is_dilation_by(self, S: np.ndarray, v1: float = 0, v2: float = 1):
         assert np.isin(np.unique(S), [0, 1]).all(), "S must be binary matrix"
-        lb, ub = self.bias_bounds_dilation(S)
+        lb, ub = self.bias_bounds_dilation(S=S, v1=v1, v2=v2)
         return lb < -self.bias < ub
 
-    def bias_bounds_erosion(self, S):
+    def bias_bounds_erosion(self, S: np.ndarray, v1: float = 0, v2: float = 1):
         S = S.astype(bool)
         W = self._normalized_weight.squeeze().cpu().detach().numpy()
-        return W.sum() - W[S].min(), W[S].sum()
+        return W.sum() - (1 - v1) * W[S].min(), v2 * W[S].sum()
 
-    def bias_bounds_dilation(self, S):
+    def bias_bounds_dilation(self, S: np.ndarray, v1: float = 0, v2: float = 1):
         S = S.astype(bool)
         W = self._normalized_weight.squeeze().cpu().detach().numpy()
-        return W[~S].sum(), W[S].min()
+        return W[~S].sum() + v1 * W[S].sum(), v2 * W[S].min()
 
-    def find_all_selem_operation(self, operation: str):
+    def find_selem_for_operation(self, operation: str, v1: float = 0, v2: float = 1):
+        """
+        We find the selem for either a dilation or an erosion. In theory, there is at most one selem that works.
+        We verify this theory.
+
+        Args:
+            operation (str): 'dilation' or 'erosion', the operation we want to check for
+            v1 (float): the lower value of the almost binary
+            v2 (float): the upper value of the almost binary (input not in ]v1, v2[)
+
+        Returns:
+            np.ndarray if a selem is found
+            None if none is found
+        """
         weight_values = self._normalized_weight.unique()
         res = []
         is_op_fn = {'dilation': self.is_dilation_by, 'erosion': self.is_erosion_by}[operation]
         for value in weight_values:
             S = (self._normalized_weight >= value).squeeze().cpu().detach().numpy()
-            if is_op_fn(S):
+            if is_op_fn(S=S, v1=v1, v2=v2):
                 res.append(S)
+
+        assert len(res) <= 1, "There should only be at most one working selem. Check for errors."
+        if len(res) == 1:
+            return res[0]
+        return None
+
+    def find_selem_dilation(self, v1: float = 0, v2: float = 1):
+        return self.find_selem_for_operation('dilation', v1=v1, v2=v2)
+
+    def find_selem_erosion(self, v1: float = 0, v2: float = 1):
+        return self.find_selem_for_operation('erosion', v1=v1, v2=v2)
+
+    def find_selem_and_operation(self, v1: float = 0, v2: float = 1):
+        """Find the selem and the operation given the almost binary features.
+
+        Args:
+            v1 (float): lower bound of almost binary input deadzone. Defaults to 0.
+            v2 (float): upper bound of almost binary input deadzone. Defaults to 1.
+
+        Returns:
+            (np.ndarray, operation): if the selem is found, returns the selem and the operation
+            (None, None): if nothing is found, returns None
+        """
+        for operation in ['dilation', 'erosion']:
+            selem = self.find_selem_for_operation(operation, v1=v1, v2=v2)
+            if selem is not None:
+                return selem, operation
+        return None, None
+
+    def get_outputs_bounds(self, v1: float = 0, v2: float = 1):
+        """If the BiSE is learned, returns the bounds of the deadzone of the almost binary output.
+
+        Args:
+            v1 (float): lower bound of almost binary input deadzone. Defaults to 0.
+            v2 (float): upper bound of almost binary input deadzone. Defaults to 1.
+
+        Returns:
+            (float, float): if the bise is learned, bounds of the deadzone of the almost binary output
+            (None, None): if the bise is not learned
+        """
+        selem, operation = self.find_selem_and_operation(v1=v1, v2=v2)
+
+        if selem is None:
+            return None, None
+
+        if operation == 'dilation':
+            b1, b2 = self.bias_bounds_dilation(selem, v1=v1, v2=v2)
+        if operation == 'erosion':
+            b1, b2 = self.bias_bounds_erosion(selem, v1=v1, v2=v2)
+
+        with torch.no_grad():
+            res = [self.activation_threshold_layer(b1), self.activation_threshold_layer(b2)]
+        res = [i.cpu().detach().numpy() for i in res]
         return res
-
-    def find_all_selem_dilation(self):
-        return self.find_all_selem_operation('dilation')
-
-    def find_all_selem_erosion(self):
-        return self.find_all_selem_operation('erosion')
 
     @staticmethod
     def _init_threshold_mode(threshold_mode):
@@ -162,17 +221,6 @@ class BiSEC(BiSE):
 
         self._bias = nn.Parameter(torch.tensor([0.5]).float(), requires_grad=False)
 
-        # exp 13 logical not
-        # self.activation_threshold_layer.P_.requires_grad = False
-        # self.activation_threshold_layer.P_.fill_(10)
-
-    # exp 13 logical not
-    # @property
-    # def _normalized_weight(self):
-    #     return torch.FloatTensor(disk(2)).unsqueeze(0).unsqueeze(0).cuda()
-        # selem = torch.zeros((5, 5))
-        # selem[2, 2] = 1
-        # return torch.FloatTensor(selem).unsqueeze(0).unsqueeze(0).cuda()
 
     def forward(self, x: Tensor) -> Tensor:
         output = self.complementation_layer(x)

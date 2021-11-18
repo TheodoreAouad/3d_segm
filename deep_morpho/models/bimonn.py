@@ -54,6 +54,23 @@ class BiMoNN(nn.Module):
             output = bise_layer(output)
         return output
 
+    def get_bise_selems(self):
+        """Go through all BiSE indexes and shows the learned selem and operation. If None are learned, puts value
+        None.
+
+        Returns:
+            (dict, dict): the dictionary of learned selems and operations with indexes as keys.
+        """
+        selems = {}
+        operations = {}
+        v1, v2 = 0, 1
+        for idx in self.bises_idx:
+            if v1 is not None:
+                selems[idx], operations[idx] = self.layers[idx].find_selem_and_operation(v1, v2)
+                v1, v2 = self.layers[idx].get_outputs_bounds(v1, v2)
+            else:
+                selems[idx], operations[idx] = None, None
+        return selems, operations
 
     def __len__(self):
         return len(self.kernel_size)
