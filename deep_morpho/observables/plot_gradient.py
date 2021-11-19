@@ -29,7 +29,8 @@ class PlotGradientBise(ObservableLayers):
             if layer.bias.grad is not None:
                 trainer.logger.experiment.add_scalar(f"weights/bias_gradient_{layer_idx}", layer.bias.grad, trainer.global_step)
 
-    def get_figure_gradient(self, gradient):
+    @staticmethod
+    def get_figure_gradient(gradient):
         gradient = gradient.cpu().detach()
         gradient_normed = max_min_norm(gradient)
         figure = plt.figure(figsize=(8, 8))

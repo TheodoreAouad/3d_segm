@@ -48,13 +48,16 @@ def main(args, logger):
             keep_preds_for_epoch=False,
         ),
         obs.InputAsPredMetric(metrics),
-        obs.PlotParametersDilation(freq=1),
-        obs.PlotWeightsDilation(freq=args['freq_imgs']),
+        obs.PlotParametersBiSE(freq=1),
+        obs.PlotWeightsBiSE(freq=args['freq_imgs']),
         obs.WeightsHistogramBiSE(freq=args['freq_imgs']),
         obs.PlotPreds(freq=args['freq_imgs']),
         obs.CountInputs(),
         obs.CheckMorpOperation(selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50),
         obs.PlotGradientBise(freq=args['freq_imgs']),
+        obs.ConvergenceMetrics(metrics),
+        obs.ShowSelem(freq=args['freq_imgs']),
+        obs.ConvergenceLayers(freq=100),
     ]
 
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
@@ -93,8 +96,10 @@ def main(args, logger):
             f"params/weight_P",
             f"params/activation_P",
             f"weights/bias",
+            f"convergence/layer",
         ] for layer_idx in range(len(model.model.layers))},
         **{f"metrics_batch/dice_train": 0},
+        **{f"convergence/metric_dice_train": 0},
     )
 
     if args['atomic_element'] in ['bisec', 'cobisec']:

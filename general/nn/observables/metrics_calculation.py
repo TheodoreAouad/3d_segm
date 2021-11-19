@@ -15,6 +15,14 @@ class CalculateAndLogMetrics(Observable):
             self.all_targets = {'train': torch.tensor([]), 'val': torch.tensor([]), 'test': torch.tensor([])}
         self.tb_steps = {metric: {"train": 0, "val": 0, "test": 0} for metric in self.metrics.keys()}
 
+        self._hp_metrics = dict(
+            **{f"metrics_{batch_or_epoch}/{metric_name}_{state}": -1
+               for batch_or_epoch in ['batch', 'epoch']
+               for metric_name in self.metrics.keys()
+               for state in ['train', 'val']
+               }
+        )
+
     def on_train_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
         inputs, targets = batch
         self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='train')

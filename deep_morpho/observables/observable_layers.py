@@ -5,6 +5,8 @@ from ..models.lightning_bise import LightningBiSE, LightningBiSEC
 
 
 class ObservableLayers(Observable):
+    """ Class to do an observable on all the layers of the BiMoNN.
+    """
 
     def __init__(self, layers: List["nn.Module"] = None, freq: int = 1, layer_name: str = 'layers', *args, **kwargs):
         super().__init__(*args, **kwargs)

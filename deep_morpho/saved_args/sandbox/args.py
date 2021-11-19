@@ -7,7 +7,7 @@ from .args_morp_ops import morp_operations
 
 all_args = {}
 
-all_args['experiment_name'] = ['Bimonn_exp_27']
+all_args['experiment_name'] = ['Tests']
 
 
 # DATA ARGS
@@ -25,27 +25,30 @@ all_args['random_gen_args'] = [
     {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
 ]
 all_args['n_inputs'] = [
-    # 100_000,
-    1_000_000,
+    # 300_000,
+    6_000_000,
 ]
 
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
     # 1e-2,
-    1e-3,
+    1e-4,
 ]
 
 # if max_plus, then the loss is MSELoss
 all_args['loss'] = [
-    nn.BCELoss(),
+    # nn.BCELoss(),
     # nn.BCEWithLogitsLoss(),
-    # nn.MSELoss(),
+    nn.MSELoss(),
 ]
-all_args['optimizer'] = [optim.Adam]
-all_args['batch_size'] = [32]
+all_args['optimizer'] = [
+    optim.Adam,
+    # optim.SGD
+]
+all_args['batch_size'] = [256]
 all_args['num_workers'] = [
-    5,
+    22,
     # 0,
 ]
 all_args['freq_imgs'] = [500]
@@ -57,11 +60,11 @@ all_args['n_atoms'] = [
 ]
 all_args['atomic_element'] = [
     # 'conv',
-    # 'bise',
+    'bise',
     # 'bisec',
     # 'cobise',
     # 'cobisec',
-    "max_plus",
+    # "max_plus",
 ]
 all_args['kernel_size'] = [
     # 7

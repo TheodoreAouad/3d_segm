@@ -1,6 +1,7 @@
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Dict
 
 import torch.nn as nn
+import numpy as np
 
 from .bise import BiSE, BiSEC
 from .dilation_sum_layer import MaxPlusAtom
@@ -54,7 +55,7 @@ class BiMoNN(nn.Module):
             output = bise_layer(output)
         return output
 
-    def get_bise_selems(self):
+    def get_bise_selems(self) -> (Dict[int, np.ndarray], Dict[int, str]):
         """Go through all BiSE indexes and shows the learned selem and operation. If None are learned, puts value
         None.
 

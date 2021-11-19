@@ -160,9 +160,10 @@ class BiSE(nn.Module):
             b1, b2 = self.bias_bounds_erosion(selem, v1=v1, v2=v2)
 
         with torch.no_grad():
-            res = [self.activation_threshold_layer(b1), self.activation_threshold_layer(b2)]
-        res = [i.cpu().detach().numpy() for i in res]
+            res = [self.activation_threshold_layer(b1 + self.bias), self.activation_threshold_layer(b2 + self.bias)]
+        res = [i.item() for i in res]
         return res
+        # return 0, 1
 
     @staticmethod
     def _init_threshold_mode(threshold_mode):

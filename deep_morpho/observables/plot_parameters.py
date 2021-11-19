@@ -7,7 +7,7 @@ from general.utils import max_min_norm
 from ..models import BiSE, BiSEC, COBiSE, COBiSEC, MaxPlusAtom
 
 
-class PlotWeightsDilation(ObservableLayers):
+class PlotWeightsBiSE(ObservableLayers):
 
     def __init__(self, *args, freq: int = 100, **kwargs):
         super().__init__(*args, freq=freq, **kwargs)
@@ -29,10 +29,8 @@ class PlotWeightsDilation(ObservableLayers):
             trainer.logger.experiment.add_figure(f"weights/Normalized_{layer_idx}", self.get_figure_normalized_weights(layer._normalized_weight.squeeze()), trainer.global_step)
         trainer.logger.experiment.add_figure(f"weights/Raw_{layer_idx}", self.get_figure_raw_weights(layer.weight.squeeze()), trainer.global_step)
 
-
-
-
-    def get_figure_normalized_weights(self, weights):
+    @staticmethod
+    def get_figure_normalized_weights(weights):
         weights = weights.cpu().detach()
         figure = plt.figure(figsize=(8, 8))
         plt.imshow(weights, interpolation='nearest', cmap=plt.cm.gray)
@@ -48,7 +46,8 @@ class PlotWeightsDilation(ObservableLayers):
         plt.tight_layout()
         return figure
 
-    def get_figure_raw_weights(self, weights):
+    @staticmethod
+    def get_figure_raw_weights(weights):
         weights = weights.cpu().detach()
         weights_normed = max_min_norm(weights)
         figure = plt.figure(figsize=(8, 8))
@@ -67,7 +66,7 @@ class PlotWeightsDilation(ObservableLayers):
         return figure
 
 
-class PlotParametersDilation(ObservableLayers):
+class PlotParametersBiSE(ObservableLayers):
 
     def on_train_batch_end_layers(
         self,
