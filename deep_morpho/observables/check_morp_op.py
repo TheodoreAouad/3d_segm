@@ -106,7 +106,7 @@ class CheckMorpOperation(ObservableLayers):
         trainer.logger.log_metrics(metrics, trainer.global_step)
 
 
-class ShowSelem(Observable):
+class ShowSelemAlmostBinary(Observable):
 
     def __init__(self, freq=1, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -126,15 +126,17 @@ class ShowSelem(Observable):
             selems, operations = pl_module.model.get_bise_selems()
             for layer_idx, layer in enumerate(pl_module.model.layers):
                 if not isinstance(layer, BiSE):
-                    fig = self.default_figure("Not BiSE")
+                    # fig = self.default_figure("Not BiSE")
+                    continue
 
                 elif selems[layer_idx] is None:
-                    fig = self.default_figure("No operation found.")
+                    continue
+                    # fig = self.default_figure("No operation found.")
 
                 else:
                     fig = self.selem_fig(selems[layer_idx], operations[layer_idx])
 
-                trainer.logger.experiment.add_figure(f"weights/learned_selem_{layer_idx}", fig, trainer.global_step)
+                trainer.logger.experiment.add_figure(f"learned_selem/almost_binary_{layer_idx}", fig, trainer.global_step)
         self.freq_idx += 1
 
     @staticmethod
@@ -142,6 +144,38 @@ class ShowSelem(Observable):
         fig = plt.figure(figsize=(5, 5))
         plt.text(2, 2, text, horizontalalignment="center")
         return fig
+
+    @staticmethod
+    def selem_fig(selem, operation):
+        fig = plt.figure(figsize=(5, 5))
+        plt.imshow(selem, interpolation="nearest")
+        plt.title(operation)
+        return fig
+
+
+class ShowSelemBinary(ObservableLayers):
+
+    def on_train_batch_end_layers(
+        self,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        dataloader_idx: int,
+        layer: "nn.Module",
+        layer_idx: int,
+    ):
+        if not isinstance(layer, BiSE):
+            return
+
+        selem, operation = layer.find_selem_and_operation(v1=0, v2=1)
+        if selem is None:
+            return
+
+        fig = self.selem_fig(selem, operation)
+        trainer.logger.experiment.add_figure(f"learned_selem/binary_{layer_idx}", fig, trainer.global_step)
+
 
     @staticmethod
     def selem_fig(selem, operation):

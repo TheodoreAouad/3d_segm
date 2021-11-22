@@ -1,4 +1,6 @@
 def dice(y_true, y_pred, threshold=.5, SMOOTH=1e-6,):
+    y_true = y_true.squeeze()
+    y_pred = y_pred.squeeze()
 
     targets = (y_true != 0)
     if threshold is None:

@@ -1,3 +1,4 @@
+from deep_morpho.observables.observable_layers import ObservableLayers
 from general.nn.observables import Observable
 from ..models import BiSE
 
@@ -64,7 +65,7 @@ class ConvergenceMetrics(Observable):
             self.convergence_step[state][metric_name] = step
 
 
-class ConvergenceLayers(Observable):
+class ConvergenceAlmostBinary(Observable):
 
     def __init__(self, freq=200, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -96,16 +97,63 @@ class ConvergenceLayers(Observable):
                 value = self.convergence_step.get(layer_idx, -1)
 
                 trainer.logger.experiment.add_scalar(
-                    f"comparative/convergence/layer_{layer_idx}",
+                    f"comparative/convergence/almost_binary_{layer_idx}",
                     value, trainer.global_step
                 )
 
                 trainer.logger.log_metrics(
-                    {f"convergence/layer_{layer_idx}": value}, trainer.global_step
+                    {f"convergence/almost_binary_{layer_idx}": value}, trainer.global_step
                 )
         self.freq_idx += 1
 
 
+
+    def update_step(self, layer_idx, is_converged, step):
+
+        if not self.has_converged.get(layer_idx, False) and is_converged:
+            self.convergence_step[layer_idx] = step
+
+        if not is_converged:
+            self.convergence_step[layer_idx] = -1
+
+        self.has_converged[layer_idx] = is_converged
+
+
+class ConvergenceBinary(ObservableLayers):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.convergence_step = {}
+        self.has_converged = {}
+
+    def on_train_batch_end_layers(
+        self,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        dataloader_idx: int,
+        layer: "nn.Module",
+        layer_idx: int
+    ):
+        if not isinstance(layer, BiSE):
+            return
+
+        selem, operation = layer.find_selem_and_operation(v1=0, v2=1)
+
+        self.update_step(layer_idx, selem is not None, trainer.global_step)
+
+        value = self.convergence_step.get(layer_idx, -1)
+
+        trainer.logger.experiment.add_scalar(
+            f"comparative/convergence/binary_{layer_idx}",
+            value, trainer.global_step
+        )
+
+        trainer.logger.log_metrics(
+            {f"convergence/binary_{layer_idx}": value}, trainer.global_step
+        )
 
     def update_step(self, layer_idx, is_converged, step):
 

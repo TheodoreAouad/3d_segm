@@ -3,6 +3,8 @@ from torch.utils.data.dataset import Dataset
 from torch.utils.data.dataloader import DataLoader
 import torchvision.transforms as transforms
 
+from general.nn.dataloaders import dataloader_resolution
+
 
 class AxspaROIDataset(Dataset):
 
@@ -22,7 +24,7 @@ class AxspaROIDataset(Dataset):
             input_ = self.preprocessing(input_)
             target = self.preprocessing(target)
 
-        return input_, target
+        return input_.float(), target.float()
 
 
     def __len__(self):
@@ -31,4 +33,10 @@ class AxspaROIDataset(Dataset):
 
     @staticmethod
     def get_loader(data, batch_size, preprocessing=transforms.ToTensor(), **kwargs):
-        return DataLoader(AxspaROIDataset(data, preprocessing=preprocessing), batch_size=batch_size, **kwargs)
+        return dataloader_resolution(
+            df=data,
+            dataset=AxspaROIDataset,
+            dataset_args={"preprocessing": preprocessing},
+            batch_size=batch_size,
+            **kwargs
+        )
