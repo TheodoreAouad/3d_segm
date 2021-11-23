@@ -9,7 +9,7 @@ from .args_morp_ops import morp_operations
 
 all_args = {}
 
-all_args['experiment_name'] = ['Bimonn_exp_29']
+all_args['experiment_name'] = ['Bimonn_exp_31']
 
 
 # DATA ARGS
@@ -35,13 +35,13 @@ all_args['random_gen_args'] = [
 ]
 all_args['n_inputs'] = [
     # 1_000_000,
-    3_000_000,
+    1_000_000,
 ]
 
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-2,
+    1e-1,
     # 1,
 ]
 
@@ -83,13 +83,13 @@ all_args['kernel_size'] = [
     # "adapt",
 ]
 all_args['init_weight_identity'] = [False]
-all_args['activation_P'] = [1]
-all_args['constant_activation_P'] = [False]
+all_args['activation_P'] = [4]
+all_args['constant_activation_P'] = [True]
 all_args['constant_weight_P'] = [True]
 all_args['threshold_mode'] = [
     # 'arctan',
-    # 'sigmoid',
-    'tanh',
+    'sigmoid',
+    # 'tanh',
     # 'erf',
     # "identity",
     # {"activation": "sigmoid", "weight": "identity", "complementation": "clamp"}

@@ -8,6 +8,7 @@ class CalculateAndLogMetrics(Observable):
     """
     def __init__(self, metrics, keep_preds_for_epoch=True):
         self.metrics = metrics
+        self.last_value = {k: 0 for k in metrics.keys()}
         self.keep_preds_for_epoch = keep_preds_for_epoch
 
         if self.keep_preds_for_epoch:
@@ -38,6 +39,7 @@ class CalculateAndLogMetrics(Observable):
     def _calculate_and_log_metrics(self, trainer, pl_module, targets, preds, state='train', batch_or_epoch='batch'):
         for metric_name in self.metrics:
             metric = self.metrics[metric_name](targets, preds)
+            self.last_value[metric_name] = metric
             # pl_module.log(f"mean_metrics_{batch_or_epoch}/{metric_name}/{state}", metric)
             if batch_or_epoch == 'batch':
                 step = self.tb_steps[metric_name][state]

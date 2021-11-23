@@ -38,7 +38,7 @@ selems = []
 #         ))
 
 # sizes = [5, 7]
-for size in [7]:
+for size in [5]:
     for se in [
         disk,
         hstick, vstick,
@@ -70,8 +70,8 @@ for size in [7]:
         ))
 
 # morp_operations.append(SequentialMorpOperations(
-#     name="closing",
-#     selems=[("disk", 7//2), ("disk", 7//2)],
+#     name="sandbox_closing",
+#     selems=[("square", 7), ("square", 7)],
 #     operations=['dilation', 'erosion'],
 #     device="cpu",
 # ))

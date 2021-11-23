@@ -112,6 +112,7 @@ class ShowSelemAlmostBinary(Observable):
         super().__init__(*args, **kwargs)
         self.freq = freq
         self.freq_idx = 0
+        self.last_selem_and_op = {}
 
     def on_train_batch_end(
         self,
@@ -137,6 +138,7 @@ class ShowSelemAlmostBinary(Observable):
                     fig = self.selem_fig(selems[layer_idx], operations[layer_idx])
 
                 trainer.logger.experiment.add_figure(f"learned_selem/almost_binary_{layer_idx}", fig, trainer.global_step)
+                self.last_selem_and_op[layer_idx] = (selems[layer_idx], operations[layer_idx])
         self.freq_idx += 1
 
     @staticmethod
@@ -147,13 +149,17 @@ class ShowSelemAlmostBinary(Observable):
 
     @staticmethod
     def selem_fig(selem, operation):
-        fig = plt.figure(figsize=(5, 5))
+        fig = plt.figure(figsize=(3, 3))
         plt.imshow(selem, interpolation="nearest")
         plt.title(operation)
         return fig
 
 
 class ShowSelemBinary(ObservableLayers):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.last_selem_and_op = {}
 
     def on_train_batch_end_layers(
         self,
@@ -175,11 +181,12 @@ class ShowSelemBinary(ObservableLayers):
 
         fig = self.selem_fig(selem, operation)
         trainer.logger.experiment.add_figure(f"learned_selem/binary_{layer_idx}", fig, trainer.global_step)
+        self.last_selem_and_op[layer_idx] = (selem, operation)
 
 
     @staticmethod
     def selem_fig(selem, operation):
-        fig = plt.figure(figsize=(5, 5))
+        fig = plt.figure(figsize=(3, 3))
         plt.imshow(selem, interpolation="nearest")
         plt.title(operation)
         return fig

@@ -59,28 +59,30 @@ def main(args, logger):
     dataloader = get_dataloader(args)
     metrics = {'dice': lambda y_true, y_pred: dice(y_true, y_pred, threshold=.5).mean()}
 
-    observables = [
-        obs.SaveLoss(),
-        CalculateAndLogMetrics(
+    observables_dict = {
+        "SaveLoss": obs.SaveLoss(),
+        "CalculateAndLogMetrics": CalculateAndLogMetrics(
             metrics=metrics,
             keep_preds_for_epoch=False,
         ),
-        obs.InputAsPredMetric(metrics),
-        obs.PlotParametersBiSE(freq=1),
-        obs.PlotWeightsBiSE(freq=args['freq_imgs']),
-        obs.WeightsHistogramBiSE(freq=args['freq_imgs']),
-        obs.PlotPreds(freq=args['freq_imgs']),
-        obs.CountInputs(),
-        obs.CheckMorpOperation(
+        "InputAsPredMetric": obs.InputAsPredMetric(metrics),
+        "PlotParametersBiSE": obs.PlotParametersBiSE(freq=1),
+        "PlotWeightsBiSE": obs.PlotWeightsBiSE(freq=args['freq_imgs']),
+        "WeightsHistogramBiSE": obs.WeightsHistogramBiSE(freq=args['freq_imgs']),
+        "PlotPreds": obs.PlotPreds(freq=args['freq_imgs']),
+        "CountInputs": obs.CountInputs(),
+        "CheckMorpOperation": obs.CheckMorpOperation(
             selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50
         ) if args['dataset_type'] == 'diskorect' else obs.Observable(),
-        obs.PlotGradientBise(freq=args['freq_imgs']),
-        obs.ConvergenceMetrics(metrics),
-        obs.ShowSelemAlmostBinary(freq=args['freq_imgs']),
-        obs.ShowSelemBinary(freq=args['freq_imgs']),
-        obs.ConvergenceAlmostBinary(freq=100),
-        obs.ConvergenceBinary(freq=100),
-    ]
+        "PlotGradientBise": obs.PlotGradientBise(freq=args['freq_imgs']),
+        "ConvergenceMetrics": obs.ConvergenceMetrics(metrics),
+        "ShowSelemAlmostBinary": obs.ShowSelemAlmostBinary(freq=args['freq_imgs']),
+        "ShowSelemBinary": obs.ShowSelemBinary(freq=args['freq_imgs']),
+        "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
+        "ConvergenceBinary": obs.ConvergenceBinary(freq=100),
+    }
+
+    observables = list(observables_dict.values())
 
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
 
@@ -162,6 +164,19 @@ def main(args, logger):
 
     trainer.fit(model, dataloader)
 
+    return pd.DataFrame({
+        'args': [args],
+        'tb_path': [logger.log_dir],
+        'weights': [[layer._normalized_weight for layer in model.model.layers]],
+        'biases': [[layer.bias for layer in model.model.layers]],
+        'dice_score': [observables_dict["CalculateAndLogMetrics"].last_value['dice']],
+        'convergence_dice': [observables_dict["ConvergenceMetrics"].cur_value['train']['dice']],
+        'learned_selem_almost_binary': [list(observables_dict["ShowSelemAlmostBinary"].last_selem_and_op.items())],
+        'learned_selem_binary': [list(observables_dict["ShowSelemBinary"].last_selem_and_op.items())],
+        'convergence_layer_almost_binary': [list(observables_dict["ConvergenceAlmostBinary"].convergence_step.items())],
+        'convergence_layer_binary': [list(observables_dict["ConvergenceBinary"].convergence_step.items())],
+    })
+
 
 if __name__ == '__main__':
     start_all = time()
@@ -177,6 +192,8 @@ if __name__ == '__main__':
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
     bugged = []
+    results = []
+
     for args_idx, args in enumerate(all_args):
 
         name = join(args["experiment_name"], args['experiment_subname'])
@@ -198,7 +215,7 @@ if __name__ == '__main__':
         log_console('Time since beginning: {} '.format(format_time(time() - start_all)), logger=console_logger)
         log_console(logger.log_dir, logger=console_logger)
         log_console(args['morp_operation'], logger.log_dir, logger=console_logger)
-        main(args, logger)
+        results.append(main(args, logger))
         # try:
         #     main(args, logger)
         # except Exception:
@@ -207,6 +224,8 @@ if __name__ == '__main__':
         #     bugged.append(args_idx+1)
 
     code_saver.delete_temporary_file()
+
+    results = pd.concat(results)
 
     log_console(f'{len(bugged)} Args Bugged: ', bugged, logger=console_logger)
     log_console(f'{len(all_args)} args done in {format_time(time() - start_all)} ', logger=console_logger)
