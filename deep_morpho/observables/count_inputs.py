@@ -1,3 +1,6 @@
+import pathlib
+from os.path import join
+
 from general.nn.observables import Observable
 
 
@@ -18,3 +21,12 @@ class CountInputs(Observable):
     ) -> None:
         self.n_inputs += len(batch[0])
         trainer.logger.experiment.add_scalar("n_inputs", self.n_inputs, trainer.global_step)
+
+    def save(self, save_path: str):
+        final_dir = join(save_path, self.__class__.__name__)
+        pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
+
+        with open(join(final_dir, str(self.n_inputs)), "w"):
+            pass
+
+        return self.n_inputs

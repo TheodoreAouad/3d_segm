@@ -1,3 +1,6 @@
+import pathlib
+from os.path import join
+
 from torch.utils.tensorboard.summary import custom_scalars
 import matplotlib.pyplot as plt
 
@@ -154,6 +157,19 @@ class ShowSelemAlmostBinary(Observable):
         plt.title(operation)
         return fig
 
+    def save(self, save_path: str):
+        final_dir = join(save_path, self.__class__.__name__)
+        pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
+
+        saved = []
+
+        for layer_idx, (selem, operation) in self.last_selem_and_op.items():
+            fig = self.selem_fig(selem, operation)
+            fig.savefig(join(final_dir, f"layer_{layer_idx}.png"))
+            saved.append(fig)
+
+        return saved
+
 
 class ShowSelemBinary(ObservableLayers):
 
@@ -190,3 +206,17 @@ class ShowSelemBinary(ObservableLayers):
         plt.imshow(selem, interpolation="nearest")
         plt.title(operation)
         return fig
+
+
+    def save(self, save_path: str):
+        final_dir = join(save_path, self.__class__.__name__)
+        pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
+
+        saved = []
+
+        for layer_idx, (selem, operation) in self.last_selem_and_op.items():
+            fig = self.selem_fig(selem, operation)
+            fig.savefig(join(final_dir, f"layer_{layer_idx}.png"))
+            saved.append(fig)
+
+        return saved

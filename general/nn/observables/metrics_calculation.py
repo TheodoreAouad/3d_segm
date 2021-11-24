@@ -1,5 +1,9 @@
+import pathlib
+from os.path import join
+
 import torch
 from .observable import Observable
+from ...utils import save_json
 
 
 class CalculateAndLogMetrics(Observable):
@@ -83,3 +87,9 @@ class CalculateAndLogMetrics(Observable):
             self._calculate_and_log_metrics(trainer, pl_module, self.all_targets['test'], self.all_preds['test'], state='test', batch_or_epoch='epoch')
             self.all_preds['test'] = torch.tensor([])
             self.all_targets['test'] = torch.tensor([])
+
+    def save(self, save_path: str):
+        final_dir = join(save_path, self.__class__.__name__)
+        pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
+        save_json({k: str(v) for k, v in self.last_value.items()}, join(final_dir, "metrics.json"))
+        return self.last_value

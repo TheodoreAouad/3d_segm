@@ -1,6 +1,12 @@
+import pathlib
+from os.path import join
+
+
 from deep_morpho.observables.observable_layers import ObservableLayers
 from general.nn.observables import Observable
 from ..models import BiSE
+from general.utils import save_json
+
 
 
 class ConvergenceMetrics(Observable):
@@ -64,6 +70,12 @@ class ConvergenceMetrics(Observable):
             self.cur_value[state][metric_name] = metric_value
             self.convergence_step[state][metric_name] = step
 
+    def save(self, save_path: str):
+        final_dir = join(save_path, self.__class__.__name__)
+        pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
+        save_json(self.convergence_step, join(final_dir, "convergence_step.json"))
+        return self.convergence_step
+
 
 class ConvergenceAlmostBinary(Observable):
 
@@ -118,6 +130,13 @@ class ConvergenceAlmostBinary(Observable):
 
         self.has_converged[layer_idx] = is_converged
 
+    def save(self, save_path: str):
+        final_dir = join(save_path, self.__class__.__name__)
+        pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
+        save_json(self.convergence_step, join(final_dir, "convergence_step.json"))
+        return self.convergence_step
+
+
 
 class ConvergenceBinary(ObservableLayers):
 
@@ -164,3 +183,10 @@ class ConvergenceBinary(ObservableLayers):
             self.convergence_step[layer_idx] = -1
 
         self.has_converged[layer_idx] = is_converged
+
+
+    def save(self, save_path: str):
+        final_dir = join(save_path, self.__class__.__name__)
+        pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
+        save_json(self.convergence_step, join(final_dir, "convergence_step.json"))
+        return self.convergence_step

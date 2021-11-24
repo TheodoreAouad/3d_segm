@@ -92,3 +92,7 @@ class Observable(pl.callbacks.Callback):
             preds: Any,
     ) -> None:
         pass
+
+
+    def save(self, savepath: str):
+        pass

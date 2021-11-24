@@ -9,7 +9,7 @@ from .args_morp_ops import morp_operations
 
 all_args = {}
 
-all_args['experiment_name'] = ['Bimonn_exp_31']
+all_args['experiment_name'] = ['Test_save']
 
 
 # DATA ARGS
@@ -35,7 +35,7 @@ all_args['random_gen_args'] = [
 ]
 all_args['n_inputs'] = [
     # 1_000_000,
-    1_000_000,
+    10_000,
 ]
 
 

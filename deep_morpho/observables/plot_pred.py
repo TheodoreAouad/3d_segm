@@ -1,3 +1,6 @@
+import pathlib
+from os.path import join
+
 import torch
 import matplotlib.pyplot as plt
 
@@ -11,6 +14,7 @@ class PlotPreds(Observable):
         super().__init__(*args, **kwargs)
         self.freq = freq
         self.idx = 0
+        self.saved_fig = None
 
 
     def on_train_batch_end_with_preds(
@@ -32,6 +36,7 @@ class PlotPreds(Observable):
             pred = preds[0].squeeze()
             fig = self.plot_three(*[k.cpu().detach() for k in [img, pred, target]])
             trainer.logger.experiment.add_figure("preds/input_pred_target", fig, trainer.global_step)
+            self.saved_fig = fig
 
         self.idx += 1
 
@@ -47,3 +52,11 @@ class PlotPreds(Observable):
         axs[2].set_title('target')
 
         return fig
+
+    def save(self, save_path: str):
+        if self.saved_fig is not None:
+            final_dir = join(save_path, self.__class__.__name__)
+            pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
+            self.saved_fig.savefig(join(final_dir, "input_pred_target.png"))
+
+        return self.saved_fig

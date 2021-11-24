@@ -164,6 +164,9 @@ def main(args, logger):
 
     trainer.fit(model, dataloader)
 
+    for observable in observables:
+        observable.save(join(trainer.log_dir, 'observables'))
+
     return pd.DataFrame({
         'args': [args],
         'tb_path': [logger.log_dir],
