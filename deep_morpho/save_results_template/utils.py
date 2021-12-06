@@ -3,6 +3,8 @@ from typing import List, Dict
 import base64
 import io
 
+import matplotlib.pyplot as plt
+
 
 def plot_to_base64(figure):
     my_stringIObytes = io.BytesIO()
@@ -35,3 +37,12 @@ def detect_identical_values(all_args: List[Dict]) -> (List[str], List[str]):
         same_values.append(key)
 
     return same_values, list(set(all_args[0].keys()).difference(same_values))
+
+
+def load_png_as_fig(path: str, **kwargs):
+    ar = plt.imread(path)
+    fig, ax = plt.subplots(1, 1, **kwargs)
+    ax.imshow(ar)
+    ax.grid(False)
+    ax.axis('off')
+    return fig
