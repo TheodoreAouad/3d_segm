@@ -1,6 +1,7 @@
 from time import time
 import os
 from os.path import join
+import pathlib
 
 import torch
 from pytorch_lightning import Trainer
@@ -147,8 +148,10 @@ def main(args, logger):
     logger.log_hyperparams(args, hyperparams)
 
     if args['dataset_type'] == "diskorect":
+        pathlib.Path(join(logger.log_dir, "target_SE")).mkdir(exist_ok=True, parents=True)
         for selem_idx, selem in enumerate(args['morp_operation'].selems):
             fig, ax = plt.subplots(); ax.imshow(selem); ax.set_title(args['morp_operation'].operations[selem_idx])
+            fig.savefig(join(logger.log_dir, "target_SE", f"target_SE_{selem_idx}.png"))
             logger.experiment.add_figure(f"target_SE/target_SE_{selem_idx}", fig)
             # logger.experiment.add_image(f"target_SE/target_SE_{selem_idx}", selem[np.newaxis, :].astype(float))
 

@@ -14,6 +14,8 @@ def plot_to_base64(figure):
 
 
 def plot_to_html(figure):
+    if figure is None:
+        return ""
     base64_fig = plot_to_base64(figure)
     return f"<img src='data:image/png;base64, {base64_fig}'>"
 
@@ -32,9 +34,8 @@ def detect_identical_values(all_args: List[Dict]) -> (List[str], List[str]):
                 bad_key = True
                 break
 
-        if bad_key:
-            break
-        same_values.append(key)
+        if not bad_key:
+            same_values.append(key)
 
     return same_values, list(set(all_args[0].keys()).difference(same_values))
 

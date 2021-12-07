@@ -37,17 +37,18 @@ def html_template():
 
 def get_results_from_tensorboard(tb_path: str):
     res = {
-        "args": None,
+        "args": [None],
         "tb_path": None,
         "weights": None,
-        "normalized_weights": None,
+        "normalized_weights": [None],
         "bias": None,
         "dice": None,
         "baseline_dice": None,
         "convergence_dice": None,
-        "activation_P": None,
-        "learned_selem": None,
+        "activation_P": [None],
+        "learned_selem": dict(),
         "convergence_layer": None,
+        "target_selem": [None],
     }
     obs_path = join(tb_path, "observables")
 
@@ -58,14 +59,16 @@ def get_results_from_tensorboard(tb_path: str):
     weights = []
     normalized_weights = []
 
-    for file_ in os.listdir(join(obs_path, "PlotWeightsBiSE")):
-        fig_path = join(obs_path, "PlotWeightsBiSE", file_)
-        if "normalized" in file_:
-            normalized_weights.append(load_png_as_fig(fig_path))
-        else:
-            weights.append(load_png_as_fig(fig_path))
-    res['weights'] = weights
-    res['normalized_weights'] = normalized_weights
+    folder_plot_weights = join(obs_path, "PlotWeightsBiSE")
+    if os.path.exists(folder_plot_weights):
+        for file_ in os.listdir(folder_plot_weights):
+            fig_path = join(folder_plot_weights, file_)
+            if "normalized" in file_:
+                normalized_weights.append(load_png_as_fig(fig_path))
+            else:
+                weights.append(load_png_as_fig(fig_path))
+        res['weights'] = weights
+        res['normalized_weights'] = normalized_weights
 
     file_parameters = join(obs_path, "PlotParametersBiSE", "parameters.json")
     if os.path.exists(file_parameters):
@@ -94,10 +97,20 @@ def get_results_from_tensorboard(tb_path: str):
     if os.path.exists(file_learned_selem):
         learned_selem = {}
         for file_ in os.listdir(file_learned_selem):
-            layer_idx = re.findall(r'layer_(\d+)}', file_)
+            layer_idx = int(re.findall(r'layer_(\d+)', file_)[0])
             learned_selem[layer_idx] = load_png_as_fig(join(file_learned_selem, file_))
         res['learned_selem'] = learned_selem
 
+
+    folder_target_selem = join(tb_path, "target_SE")
+    if os.path.exists(folder_target_selem):
+        all_files_target = os.listdir(folder_target_selem)
+        target_selem = [0 for _ in range(len(all_files_target))]
+        for file_ in all_files_target:
+            layer_idx = int(re.findall(r'target_SE_(\d+)', file_)[0])
+            # target_selem[layer_idx] = load_png_as_fig(join(folder_plot_weights, file_))
+            target_selem[layer_idx] = (load_png_as_fig(join(folder_target_selem, file_)))
+        res['target_selem'] = target_selem
 
     return res
 
@@ -115,10 +128,12 @@ def write_html_from_dict_deep_morpho(results_dict: List[Dict], save_path: str, t
         results_html += (
             f"<div>"
             f"<h3>{results['tb_path']}</h3>"  # tb
-            f"<p>{dict({k: results[k] for k in changing_args})}</p>"  # args
+            f"<p>{dict({k: results['args'][k] for k in changing_args})}</p>"  # args
         )
 
         results_html += ''.join([f"<span>{plot_to_html(fig)}</span>" for fig in results['normalized_weights']])
+        results_html += ''.join([f"<span>{plot_to_html(fig)}</span>" for fig in results['target_selem']])
+
         results_html += (
             f"<p>dice={results['dice']}  baseline={results['baseline_dice']}  step until convergence (dice)={results['convergence_dice']}</p>"
             "<p>learned selems: "
@@ -148,33 +163,3 @@ def write_html_from_dict_deep_morpho(results_dict: List[Dict], save_path: str, t
 def write_html_deep_morpho(tb_paths: List[str], save_path: str, title: str = ""):
     results_dict = [get_results_from_tensorboard(tb_path) for tb_path in tb_paths]
     return write_html_from_dict_deep_morpho(results_dict, save_path, title)
-
-
-def save_html(results_dict: List[Dict]):
-    def filter_params(params):
-        filtered = []
-        for k, p in params.items():
-            if torch.is_tensor(p):
-                clean_p = f"Tensor {p.shape}"
-            # elif callable(p):
-            #     clean_p = p.__qualname__
-            else:
-                clean_p = p
-            filtered.append(f"{k}: {clean_p}")
-        return filtered
-
-    html = html_template()
-    # Put results in an html file to keep
-    results_html = ""
-    for i, (algo, params) in enumerate(run_params.items()):
-        results_html += f"<div><h3>{algo}</h3><p>{str(filter_params(params))}</p><span>{denoising_figures[algo]}</span></div>"
-    results_html += f"<div><h3>Recap</h3>{''.join([f'<span>{fig}</span>' for fig in recap_figures])}</div>"
-    html = html.format(title="Denoising with tseng Algorithm",
-                       parameters=f"Gaussian Nosise N({parameters.NOISE_MEAN}, {parameters.NOISE_STD}) Gaussian Blur sigma={parameters.BLUR_STD} Size={parameters.KERNEL_SIZE} Data fidelity p={parameters.DATA_FIDELITY_P}",
-                       results=results_html)
-
-    save_path = parameters.RESULTS_PATH / f"results_{len(list(parameters.RESULTS_PATH.glob('*')))}.html"
-    print(f"Saving html {save_path}")
-    with open(save_path, "w") as f:
-        f.write(html)
-    webbrowser.open(str(save_path))

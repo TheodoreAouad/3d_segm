@@ -9,7 +9,7 @@ from .args_morp_ops import morp_operations
 
 all_args = {}
 
-all_args['experiment_name'] = ['Test_save']
+all_args['experiment_name'] = ['Bimonn_exp_32']
 
 
 # DATA ARGS
@@ -31,26 +31,28 @@ all_args['in_ram'] = [
 ]
 all_args['random_gen_fn'] = [get_random_rotated_diskorect]
 all_args['random_gen_args'] = [
-    {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
+    # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
+    {'size': (50, 50), 'n_shapes': 30, 'max_shape': (15, 15), 'p_invert': 0.5, 'n_holes': 15, 'max_shape_holes': (7, 7)}
+
 ]
 all_args['n_inputs'] = [
-    # 1_000_000,
-    10_000,
+    2_000_000,
+    # 10_000,
 ]
 
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-1,
+    5e-3,
     # 1,
 ]
 
 # if max_plus, then the loss is MSELoss
 all_args['loss'] = [
-    # nn.BCELoss(),
+    nn.BCELoss(),
     # nn.BCEWithLogitsLoss(),
     # nn.MSELoss(),
-    DiceLoss(),
+    # DiceLoss(),
 ]
 all_args['optimizer'] = [
     optim.Adam,
@@ -82,14 +84,14 @@ all_args['kernel_size'] = [
     7,
     # "adapt",
 ]
-all_args['init_weight_identity'] = [False]
-all_args['activation_P'] = [4]
-all_args['constant_activation_P'] = [True]
-all_args['constant_weight_P'] = [True]
+all_args['init_weight_identity'] = [True]
+all_args['activation_P'] = [1]
+all_args['constant_activation_P'] = [False]
+all_args['constant_weight_P'] = [False]
 all_args['threshold_mode'] = [
     # 'arctan',
-    'sigmoid',
-    # 'tanh',
+    # 'sigmoid',
+    'tanh',
     # 'erf',
     # "identity",
     # {"activation": "sigmoid", "weight": "identity", "complementation": "clamp"}
