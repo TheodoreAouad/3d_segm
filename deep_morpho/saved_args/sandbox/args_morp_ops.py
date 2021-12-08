@@ -40,10 +40,12 @@ selems = []
 # sizes = [5, 7]
 for size in [7]:
     for se in [
-        # disk,
-        # hstick, vstick,
-        diagonal_cross,
-        # straight_cross, square
+        disk,
+        # hstick,
+        # vstick,
+        # diagonal_cross,
+        # straight_cross,
+        # square
     ]:
         cur_size = size if se.__name__ != 'disk' else size // 2
         # for op in [
@@ -57,18 +59,18 @@ for size in [7]:
         #         return_numpy_array=False,
         #         device='cpu'
         #     ))
+        # morp_operations.append(SequentialMorpOperations(
+        #     name=f"opening_size_{size}x{size}",
+        #     selems=[(se, cur_size) for _ in range(2)],
+        #     operations=['erosion', 'dilation'],
+        #     device='cpu'
+        # ))
         morp_operations.append(SequentialMorpOperations(
-            name=f"opening_size_{size}x{size}",
+            name=f"closing_size_{size}x{size}",
             selems=[(se, cur_size) for _ in range(2)],
-            operations=['erosion', 'dilation'],
+            operations=['dilation', 'erosion'],
             device='cpu'
         ))
-#         morp_operations.append(SequentialMorpOperations(
-#             name=f"closing_size_{size}x{size}",
-#             selems=[(se, cur_size) for _ in range(2)],
-#             operations=['dilation', 'erosion'],
-#             device='cpu'
-#         ))
 
 # morp_operations.append(SequentialMorpOperations(
 #     name="sandbox_closing",

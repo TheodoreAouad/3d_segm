@@ -36,7 +36,7 @@ all_args['random_gen_args'] = [
 
 ]
 all_args['n_inputs'] = [
-    2_000_000,
+    3_000_000,
     # 10_000,
 ]
 
@@ -58,7 +58,7 @@ all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
-all_args['batch_size'] = [256]
+all_args['batch_size'] = [32]
 all_args['num_workers'] = [
     20,
     # 0,
@@ -95,7 +95,7 @@ all_args['threshold_mode'] = [
     # 'erf',
     # "identity",
     # {"activation": "sigmoid", "weight": "identity", "complementation": "clamp"}
-]
+]   
 all_args["alpha_init"] = [0]
 
 all_args['share_weights'] = [False]

@@ -8,10 +8,11 @@ def list_dir_joined(folder: str):
 
 
 
-TB_PATHS = sorted(
-    list_dir_joined('deep_morpho/results/Bimonn_exp_32/dilation_size_7x7_bise') +
-    list_dir_joined('deep_morpho/results/Bimonn_exp_32/erosion_size_7x7_bise') + 
-    list_dir_joined('deep_morpho/results/Bimonn_exp_32/opening_size_7x7_bise') 
+TB_PATHS = (
+    sorted(list_dir_joined('deep_morpho/results/Bimonn_exp_32/dilation_size_7x7_bise')) +
+    sorted(list_dir_joined('deep_morpho/results/Bimonn_exp_32/erosion_size_7x7_bise')) + 
+    sorted(list_dir_joined('deep_morpho/results/Bimonn_exp_32/opening_size_7x7_bise')) +
+    sorted(list_dir_joined('deep_morpho/results/Bimonn_exp_32/closing_size_7x7_bise')) 
 )
 
 SAVE_PATH = 'html_pages/page0.html'
