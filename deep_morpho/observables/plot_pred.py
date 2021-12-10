@@ -34,13 +34,20 @@ class PlotPreds(Observable):
             # trainer.logger.experiment.add_image("preds/input_pred_target", input_pred_target, trainer.global_step)
             img, target = batch[0][0].squeeze(), batch[1][0].squeeze()
             pred = preds[0].squeeze()
-            fig = self.plot_three(*[k.cpu().detach() for k in [img, pred, target]])
+
+            if img.ndim == 3:
+                fig = self.plot_channels(*[k.cpu().detach() for k in [img, pred, target]])
+            elif img.ndim == 2:
+                fig = self.plot_three(*[k.cpu().detach() for k in [img, pred, target]])
+            else:
+                raise ValueError(f'Image has invalid dimension. Expected (W x L x H), got {img.shape}.')
             trainer.logger.experiment.add_figure("preds/input_pred_target", fig, trainer.global_step)
             self.saved_fig = fig
 
         self.idx += 1
 
-    def plot_three(self, img, pred, target):
+    @staticmethod
+    def plot_three(img, pred, target):
         fig, axs = plt.subplots(1, 3)
         axs[0].imshow(img, cmap='gray')
         axs[0].set_title('input')
@@ -50,6 +57,23 @@ class PlotPreds(Observable):
 
         axs[2].imshow(target, cmap='gray')
         axs[2].set_title('target')
+
+        return fig
+
+    @staticmethod
+    def plot_channels(img, pred, target):
+        ncols = max(img.shape[-1], 2)
+        fig, axs = plt.subplots(2, ncols, figsize=(ncols*7, 2*7))
+
+        for chan in range(img.shape[-1]):
+            axs[0, chan].imshow(img[..., chan], cmap='gray')
+            axs[0, chan].set_title(f'input_{chan}')
+
+        axs[1, 0].imshow(pred, cmap='gray', vmin=0, vmax=1)
+        axs[1, 0].set_title('pred')
+
+        axs[1, 1].imshow(target, cmap='gray')
+        axs[1, 1].set_title('target')
 
         return fig
 

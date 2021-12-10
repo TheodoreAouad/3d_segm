@@ -18,7 +18,7 @@ from general.utils import load_json, log_console
 #     )
 
 
-class MultiRectDatasetGenerator(Dataset):
+class InputOutputGeneratorDataset(Dataset):
     def __init__(
             self,
             random_gen_fn,
@@ -37,7 +37,12 @@ class MultiRectDatasetGenerator(Dataset):
     def __getitem__(self, idx):
         input_ = self.random_gen_fn(**self.random_gen_args)
         target = self.morp_fn(input_).float()
-        input_ = torch.tensor(input_).unsqueeze(0).float()
+        input_ = torch.tensor(input_).float()
+
+        if input_.ndim == 2:
+            input_ = input_.unsqueeze(-1)  # Must have at least one channel
+
+        # input_ = input_.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)
 
         return input_, target
 
@@ -47,7 +52,7 @@ class MultiRectDatasetGenerator(Dataset):
     @staticmethod
     def get_loader(batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, device='cpu', **kwargs):
         return DataLoader(
-            MultiRectDatasetGenerator(random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device, len_dataset=n_inputs, ),
+            InputOutputGeneratorDataset(random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device, len_dataset=n_inputs, ),
             batch_size=batch_size, **kwargs
         )
 

@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
-from deep_morpho.datasets.multi_rect_dataset import MultiRectDatasetGenerator, MultiRectDataset
+from deep_morpho.datasets.multi_rect_dataset import InputOutputGeneratorDataset, MultiRectDataset
 from deep_morpho.datasets.axspa_roi_dataset import AxspaROIDataset
 from deep_morpho.models import LightningBiMoNN, BiSE, COBiSE, BiSEC, COBiSEC
 import deep_morpho.observables as obs
@@ -34,7 +34,7 @@ def get_dataloader(args):
                 num_workers=args['num_workers']
             )
         else:
-            dataloader = MultiRectDatasetGenerator.get_loader(
+            dataloader = InputOutputGeneratorDataset.get_loader(
                 batch_size=args['batch_size'],
                 n_inputs=args['n_inputs'],
                 random_gen_fn=args['random_gen_fn'],

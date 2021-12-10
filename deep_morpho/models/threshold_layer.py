@@ -6,20 +6,34 @@ from ..threshold_fn import *
 
 class ThresholdLayer(nn.Module):
 
-    def __init__(self, threshold_fn, P_: float = 1, threshold_name: str = '', bias: float = 0, constant_P: bool = False):
+    def __init__(
+        self,
+        threshold_fn,
+        P_: float = 1,
+        n_channels: int = 1,
+        threshold_name: str = '',
+        bias: float = 0,
+        constant_P: bool = False,
+    ):
         super().__init__()
-        if isinstance(P_, nn.Parameter):
-            self.P_ = P_
-        else:
-            self.P_ = nn.Parameter(torch.tensor([P_]).float())
-        if constant_P:
-            self.P_.requires_grad = False
+        self.n_channels = n_channels
         self.threshold_name = threshold_name
         self.threshold_fn = threshold_fn
         self.bias = bias
 
+        if isinstance(P_, nn.Parameter):
+            self.P_ = P_
+        else:
+            self.P_ = nn.Parameter(torch.tensor([P_ for _ in range(n_channels)]).float())
+        if constant_P:
+            self.P_.requires_grad = False
+
     def forward(self, x):
-        return self.threshold_fn((x + self.bias) * self.P_)
+        # print((x + self.bias).shape)
+        # print(self.P_.view(*([len(self.P_)] + [1 for _ in range(x.ndim - 1)])).shape)
+        return self.threshold_fn(
+            (x + self.bias) * self.P_.view(*([1 for _ in range(x.ndim - 1)] + [len(self.P_)]))
+        )
 
 
 class SigmoidLayer(ThresholdLayer):

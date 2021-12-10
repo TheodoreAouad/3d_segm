@@ -22,7 +22,7 @@ class LightningBiMoNN(NetLightning):
         },
         first_batch_pen: int = 100,
         optimizer_args: Dict = {},
-        observables: [List["Observable"]] = [],
+        observables: List["Observable"] = [],
     ):
         super().__init__(
             model=BiMoNN(**model_args),
