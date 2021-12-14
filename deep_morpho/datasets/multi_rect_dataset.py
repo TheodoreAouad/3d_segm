@@ -8,7 +8,7 @@ import torch
 from torch.utils.data.dataset import Dataset
 from torch.utils.data.dataloader import DataLoader
 
-from general.array_morphology import SequentialMorpOperations
+from deep_morpho.morp_operations import SequentialMorpOperations
 from general.utils import load_json, log_console
 
 # def get_loader(batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, device='cpu', **kwargs):

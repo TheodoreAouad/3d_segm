@@ -7,7 +7,7 @@ import torch.optim as optim
 import torch
 
 from general.structuring_elements import *
-from general.array_morphology import SequentialMorpOperations
+from deep_morpho.morp_operations import SequentialMorpOperations
 from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
 from general.utils import dict_cross
 

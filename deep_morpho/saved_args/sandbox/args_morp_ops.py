@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from general.structuring_elements import *
 
-from general.array_morphology import SequentialMorpOperations
+from deep_morpho.morp_operations import SequentialMorpOperations
 
 if torch.cuda.is_available():
     device = 'cuda'

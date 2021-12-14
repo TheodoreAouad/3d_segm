@@ -6,7 +6,7 @@ import torch
 import numpy as np
 from tqdm import tqdm
 
-from general.array_morphology import SequentialMorpOperations
+from deep_morpho.morp_operations import SequentialMorpOperations
 from general.structuring_elements import *
 from general.utils import get_next_same_name, load_json, save_json
 
