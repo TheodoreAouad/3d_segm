@@ -1,6 +1,7 @@
 from typing import Union, Tuple, List, Callable, Any
 
 import numpy as np
+import torch
 
 from general.structuring_elements import *
 from general.array_morphology import array_erosion, array_dilation, union_chans, intersection_chans
@@ -153,7 +154,7 @@ class ParallelMorpOperations:
             op_fn = args[0]
 
         selem, selem_name, selem_args = self._erodila_selem_converter(args[1])
-        return lambda x: op_fn(x, selem=selem), op_name, selem_name, selem_args, selem
+        return lambda x: op_fn(x, selem=selem, return_numpy_array=self.return_numpy_array), op_name, selem_name, selem_args, selem
 
 
     def _ui_converter(self, args):
@@ -231,13 +232,15 @@ class ParallelMorpOperations:
     def apply_ops(self, ar):
         x = ar + 0
         for layer in self.operations:
-            next_x = np.zeros(x.shape[:-1] + (len(layer),))
+            next_x = torch.zeros(x.shape[:-1] + (len(layer),))
             for chan_idx, chan in enumerate(layer):
                 morps, ui = chan[:-1], chan[-1]
                 next_x[..., chan_idx] = ui(
                     np.stack([morps[idx](x[..., idx]) for idx in range(len(morps))], axis=-1)
                 )
             x = next_x
+        if self.return_numpy_array:
+            return torch.tensor(x)
         return x
 
 

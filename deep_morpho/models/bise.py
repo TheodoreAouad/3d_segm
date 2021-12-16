@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Union
 
 import numpy as np
 import torch
@@ -32,11 +32,13 @@ class BiSE(nn.Module):
         self.threshold_mode = self._init_threshold_mode(threshold_mode)
         self._weight_P = nn.Parameter(torch.tensor([weight_P]).float())
         self.activation_P_init = activation_P
+        self.kernel_size = self._init_kernel_size(kernel_size)
         self.conv = nn.Conv2d(
             in_channels=1,
             out_channels=out_channels,
-            kernel_size=kernel_size,
-            padding=kernel_size[0]//2,
+            kernel_size=self.kernel_size,
+            # padding="same",
+            padding=self.kernel_size[0]//2,
             padding_mode='replicate',
             *args,
             **kwargs
@@ -51,6 +53,12 @@ class BiSE(nn.Module):
 
         self.weight_threshold_layer = dispatcher[self.weight_threshold_mode](P_=self.weight_P, constant_P=constant_weight_P)
         self.activation_threshold_layer = dispatcher[self.activation_threshold_mode](P_=activation_P, constant_P=constant_activation_P)
+
+    @staticmethod
+    def _init_kernel_size(kernel_size: Union[Tuple, int]):
+        if isinstance(kernel_size, int):
+            return (kernel_size, kernel_size)
+        return kernel_size
 
     def activation_threshold_fn(self, x):
         return self.activation_threshold_layer.threshold_fn(x)
@@ -68,27 +76,31 @@ class BiSE(nn.Module):
         shape = self.conv.weight.shape
         self.conv.weight.data[..., shape[-2]//2, shape[-1]//2] = 1
 
-    def is_erosion_by(self, S: np.ndarray, v1: float = 0, v2: float = 1):
+    @staticmethod
+    def is_erosion_by(normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1):
         assert np.isin(np.unique(S), [0, 1]).all(), "S must be binary matrix"
-        lb, ub = self.bias_bounds_erosion(S=S, v1=v1, v2=v2)
-        return lb < -self.bias < ub
+        lb, ub = BiSE.bias_bounds_erosion(normalized_weights=normalized_weights, S=S, v1=v1, v2=v2)
+        return lb < -bias < ub
 
-    def is_dilation_by(self, S: np.ndarray, v1: float = 0, v2: float = 1):
+    @staticmethod
+    def is_dilation_by(normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1):
         assert np.isin(np.unique(S), [0, 1]).all(), "S must be binary matrix"
-        lb, ub = self.bias_bounds_dilation(S=S, v1=v1, v2=v2)
-        return lb < -self.bias < ub
+        lb, ub = BiSE.bias_bounds_dilation(normalized_weights=normalized_weights, S=S, v1=v1, v2=v2)
+        return lb < -bias < ub
 
-    def bias_bounds_erosion(self, S: np.ndarray, v1: float = 0, v2: float = 1):
+    @staticmethod
+    def bias_bounds_erosion(normalized_weights: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1):
         S = S.astype(bool)
-        W = self._normalized_weight.squeeze().cpu().detach().numpy()
+        W = normalized_weights.squeeze().cpu().detach().numpy()
         return W.sum() - (1 - v1) * W[S].min(), v2 * W[S].sum()
 
-    def bias_bounds_dilation(self, S: np.ndarray, v1: float = 0, v2: float = 1):
+    @staticmethod
+    def bias_bounds_dilation(normalized_weights: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1):
         S = S.astype(bool)
-        W = self._normalized_weight.squeeze().cpu().detach().numpy()
+        W = normalized_weights.squeeze().cpu().detach().numpy()
         return W[~S].sum() + v1 * W[S].sum(), v2 * W[S].min()
 
-    def find_selem_for_operation(self, operation: str, v1: float = 0, v2: float = 1):
+    def find_selem_for_operation_chan(self, idx: int, operation: str, v1: float = 0, v2: float = 1):
         """
         We find the selem for either a dilation or an erosion. In theory, there is at most one selem that works.
         We verify this theory.
@@ -102,12 +114,14 @@ class BiSE(nn.Module):
             np.ndarray if a selem is found
             None if none is found
         """
-        weight_values = self._normalized_weight.unique()
+        weights = self._normalized_weight[idx]
+        weight_values = weights.unique()
+        bias = self.bias[idx]
         res = []
         is_op_fn = {'dilation': self.is_dilation_by, 'erosion': self.is_erosion_by}[operation]
         for value in weight_values:
-            S = (self._normalized_weight >= value).squeeze().cpu().detach().numpy()
-            if is_op_fn(S=S, v1=v1, v2=v2):
+            S = (weights >= value).squeeze().cpu().detach().numpy()
+            if is_op_fn(normalized_weights=weights, bias=bias, S=S, v1=v1, v2=v2):
                 res.append(S)
 
         assert len(res) <= 1, "There should only be at most one working selem. Check for errors."
@@ -115,13 +129,13 @@ class BiSE(nn.Module):
             return res[0]
         return None
 
-    def find_selem_dilation(self, v1: float = 0, v2: float = 1):
-        return self.find_selem_for_operation('dilation', v1=v1, v2=v2)
+    def find_selem_dilation_chan(self, idx: int, v1: float = 0, v2: float = 1):
+        return self.find_selem_for_operation(idx, 'dilation', v1=v1, v2=v2)
 
-    def find_selem_erosion(self, v1: float = 0, v2: float = 1):
-        return self.find_selem_for_operation('erosion', v1=v1, v2=v2)
+    def find_selem_erosion_chan(self, idx: int, v1: float = 0, v2: float = 1):
+        return self.find_selem_for_operation(idx, 'erosion', v1=v1, v2=v2)
 
-    def find_selem_and_operation(self, v1: float = 0, v2: float = 1):
+    def find_selem_and_operation_chan(self, idx: int, v1: float = 0, v2: float = 1):
         """Find the selem and the operation given the almost binary features.
 
         Args:
@@ -133,7 +147,7 @@ class BiSE(nn.Module):
             (None, None): if nothing is found, returns None
         """
         for operation in ['dilation', 'erosion']:
-            selem = self.find_selem_for_operation(operation, v1=v1, v2=v2)
+            selem = self.find_selem_for_operation_chan(idx, operation, v1=v1, v2=v2)
             if selem is not None:
                 return selem, operation
         return None, None
@@ -187,10 +201,24 @@ class BiSE(nn.Module):
         return conv_weight
 
     @property
+    def _normalized_weights(self):
+        return self._normalized_weight
+
+    @property
     def weight(self):
         if self.shared_weights is not None:
             return self.shared_weights
         return self.conv.weight
+
+    def set_weights(self, new_weights: torch.Tensor) -> torch.Tensor:
+        assert self.weight.shape == new_weights.shape, f"Weights must be of same shape {self.weight.shape}"
+        self.conv.weight.data = new_weights
+        return new_weights
+
+    def set_bias(self, new_bias: torch.Tensor) -> torch.Tensor:
+        assert self.bias.shape == new_bias.shape
+        self.conv.bias.data = new_bias
+        return new_bias
 
     @property
     def weight_P(self):

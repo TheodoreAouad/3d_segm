@@ -42,7 +42,8 @@ class InputOutputGeneratorDataset(Dataset):
         if input_.ndim == 2:
             input_ = input_.unsqueeze(-1)  # Must have at least one channel
 
-        # input_ = input_.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)
+        input_ = input_.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)
+        target = target.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)
 
         return input_, target
 

@@ -1,0 +1,103 @@
+from typing import Union, Tuple, Dict
+
+import torch
+import torch.nn as nn
+
+from .bise import BiSE
+from .lui import LUI
+
+
+class BiSEL(nn.Module):
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: Union[int, Tuple],
+        threshold_mode: str = 'sigmoid',
+        lui_kwargs: Dict = {},
+        **bise_kwargs
+    ):
+        super().__init__()
+
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.kernel_size = kernel_size
+        self.threshold_mode = threshold_mode
+
+        self.bises = [
+            BiSE(
+                out_channels=out_channels, kernel_size=kernel_size,
+                threshold_mode=threshold_mode, **bise_kwargs
+            ) for _ in range(in_channels)
+        ]
+
+        self.luis = [
+            LUI(chan_inputs=in_channels, threshold_mode=threshold_mode, chan_outputs=1, **lui_kwargs)
+            for _ in range(out_channels)
+        ]
+
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        bise_res = torch.cat([
+            layer(x[:, chan:chan+1, ...])[:, None, ...] for chan, layer in enumerate(self.bises)
+        ], axis=1)
+
+        lui_res = torch.cat([
+            layer(bise_res[:, :, chan, ...]) for chan, layer in enumerate(self.luis)
+        ], axis=1)
+
+        return lui_res
+
+
+    @property
+    def weight(self) -> torch.Tensor:
+        """ Returns the convolution weights, of shape (out_channels, in_channels, W, L).
+        """
+        return torch.cat([layer.weight for layer in self.bises], axis=1)
+
+    @property
+    def weights(self) -> torch.Tensor:
+        return self.weight
+
+    @property
+    def bias_bise(self) -> torch.Tensor:
+        """ Returns the bais of the bise layers, of shape (out_channels, in_channels).
+        """
+        return torch.stack([layer.bias for layer in self.bises], axis=-1)
+
+    @property
+    def bias_bises(self) -> torch.Tensor:
+        return self.bias_bise
+
+    @property
+    def bias_lui(self) -> torch.Tensor:
+        return torch.cat([layer.bias for layer in self.luis])
+
+    @property
+    def bias_luis(self) -> torch.Tensor:
+        return self.bias_lui
+
+    @property
+    def normalized_weight(self) -> torch.Tensor:
+        """ Returns the convolution weights, of shape (out_channels, in_channels, W, L).
+        """
+        return torch.cat([layer._normalized_weight for layer in self.bises], axis=1)
+
+    @property
+    def normalized_weights(self) -> torch.Tensor:
+        return self.normalized_weight
+
+    @property
+    def _normalized_weight(self) -> torch.Tensor:
+        return self.normalized_weight
+
+    @property
+    def _normalized_weights(self) -> torch.Tensor:
+        return self.normalized_weights
+
+    @property
+    def coefs(self) -> torch.Tensor:
+        """ Returns the coefficients of the linear operation of LUI, of shape (out_channels, in_channels).
+        """
+        return torch.cat([layer.weight for layer in self.luis], axis=0)
