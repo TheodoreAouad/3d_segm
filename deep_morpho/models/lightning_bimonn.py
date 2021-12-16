@@ -52,7 +52,8 @@ class LightningBiMoNN(NetLightning):
 
     def obs_training_step(self, batch, batch_idx):
         x, y = batch
-        predictions = self.forward(x).squeeze()
+        # predictions = self.forward(x).squeeze()
+        predictions = self.forward(x)
 
         outputs = {}
 

@@ -32,15 +32,16 @@ class PlotPreds(Observable):
             # pred = preds[0].unsqueeze(0)
             # input_pred_target = torch.cat([img, pred, target], dim=2)
             # trainer.logger.experiment.add_image("preds/input_pred_target", input_pred_target, trainer.global_step)
-            img, target = batch[0][0].squeeze(), batch[1][0].squeeze()
-            pred = preds[0].squeeze()
+            img, target = batch[0][0], batch[1][0]
+            pred = preds[0]
+            fig = self.plot_three(*[k.cpu().detach() for k in [img, pred, target]])
 
-            if img.ndim == 3:
-                fig = self.plot_channels(*[k.cpu().detach() for k in [img, pred, target]])
-            elif img.ndim == 2:
-                fig = self.plot_three(*[k.cpu().detach() for k in [img, pred, target]])
-            else:
-                raise ValueError(f'Image has invalid dimension. Expected (W x L x H), got {img.shape}.')
+            # if img.ndim == 3:
+            #     fig = self.plot_channels(*[k.cpu().detach() for k in [img, pred, target]])
+            # elif img.ndim == 2:
+            #     fig = self.plot_three(*[k.cpu().detach() for k in [img, pred, target]])
+            # else:
+            #     raise ValueError(f'Image has invalid dimension. Expected (W x L x H), got {img.shape}.')
             trainer.logger.experiment.add_figure("preds/input_pred_target", fig, trainer.global_step)
             self.saved_fig = fig
 
@@ -48,15 +49,20 @@ class PlotPreds(Observable):
 
     @staticmethod
     def plot_three(img, pred, target):
-        fig, axs = plt.subplots(1, 3)
-        axs[0].imshow(img, cmap='gray')
-        axs[0].set_title('input')
+        ncols = max(img.shape[0], pred.shape[0])
+        fig, axs = plt.subplots(3, ncols, figsize=(4 * ncols, 4 * 3))
 
-        axs[1].imshow(pred, cmap='gray')
-        axs[1].set_title('pred')
+        for chan in range(img.shape[0]):
+            axs[0, chan].imshow(img[chan], cmap='gray')
+            axs[0, chan].set_title(f'input_{chan}')
 
-        axs[2].imshow(target, cmap='gray')
-        axs[2].set_title('target')
+        for chan in range(pred.shape[0]):
+            axs[1, chan].imshow(pred[chan], cmap='gray')
+            axs[1, chan].set_title(f'pred_{chan}')
+
+        for chan in range(target.shape[0]):
+            axs[2, chan].imshow(target[chan], cmap='gray')
+            axs[2, chan].set_title(f'target_{chan}')
 
         return fig
 

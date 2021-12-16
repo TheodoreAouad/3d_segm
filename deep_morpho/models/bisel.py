@@ -15,6 +15,7 @@ class BiSEL(nn.Module):
         out_channels: int,
         kernel_size: Union[int, Tuple],
         threshold_mode: str = 'sigmoid',
+        constant_P_lui: bool = False,
         lui_kwargs: Dict = {},
         **bise_kwargs
     ):
@@ -24,18 +25,38 @@ class BiSEL(nn.Module):
         self.out_channels = out_channels
         self.kernel_size = kernel_size
         self.threshold_mode = threshold_mode
+        self.constant_P_lui = constant_P_lui
+        self.bise_kwargs = bise_kwargs
+        self.lui_kwargs = lui_kwargs
 
-        self.bises = [
-            BiSE(
-                out_channels=out_channels, kernel_size=kernel_size,
-                threshold_mode=threshold_mode, **bise_kwargs
-            ) for _ in range(in_channels)
-        ]
+        self.bises = self._init_bises()
+        self.luis = self._init_luis()
 
-        self.luis = [
-            LUI(chan_inputs=in_channels, threshold_mode=threshold_mode, chan_outputs=1, **lui_kwargs)
-            for _ in range(out_channels)
-        ]
+    def _init_bises(self):
+        bises = []
+        for idx in range(self.in_channels):
+            layer = BiSE(
+                out_channels=self.out_channels, kernel_size=self.kernel_size,
+                threshold_mode=self.threshold_mode, **self.bise_kwargs
+            )
+            setattr(self, f'bise_{idx}', layer)
+            bises.append(layer)
+        return bises
+
+
+    def _init_luis(self):
+        luis = []
+        for idx in range(self.out_channels):
+            layer = LUI(
+                chan_inputs=self.in_channels,
+                threshold_mode=self.threshold_mode,
+                chan_outputs=1,
+                constant_P=self.constant_P_lui,
+                **self.lui_kwargs
+            )
+            setattr(self, f'lui_{idx}', layer)
+            luis.append(layer)
+        return luis
 
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

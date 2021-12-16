@@ -116,8 +116,8 @@ class ParallelMorpOperations:
         self.operation_names = None
         self.selem_names = None
         self.selem_args = None
-        self.layers_in_channels = None
-        self.layers_out_channels = None
+        self.in_channels = None
+        self.out_channels = None
         self.selems = None
 
         self.convert_ops(operations)

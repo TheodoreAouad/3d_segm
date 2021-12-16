@@ -2,14 +2,14 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision.transforms as transforms
 
-from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
+from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect, get_random_diskorect_channels
 from general.utils import dict_cross
 from general.nn.loss import DiceLoss
 from .args_morp_ops import morp_operations
 
 all_args = {}
 
-all_args['experiment_name'] = ['Bimonn_exp_33']
+all_args['experiment_name'] = ['bisel_tests']
 
 
 # DATA ARGS
@@ -29,7 +29,10 @@ all_args['in_ram'] = [
     # False,
     True,
 ]
-all_args['random_gen_fn'] = [get_random_rotated_diskorect]
+all_args['random_gen_fn'] = [
+    # get_random_rotated_diskorect,
+    get_random_diskorect_channels
+]
 all_args['random_gen_args'] = [
     {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
     # {'size': (50, 50), 'n_shapes': 30, 'max_shape': (15, 15), 'p_invert': 0.5, 'n_holes': 15, 'max_shape_holes': (7, 7)}
@@ -74,7 +77,8 @@ all_args['n_atoms'] = [
 ]
 all_args['atomic_element'] = [
     # 'conv',
-    'bise',
+    # 'bise',
+    "bisel",
     # 'bisec',
     # 'cobise',
     # 'cobisec',
@@ -83,6 +87,9 @@ all_args['atomic_element'] = [
 all_args['kernel_size'] = [
     7,
     # "adapt",
+]
+all_args['channels'] = [
+    'adapt'
 ]
 all_args['init_weight_identity'] = [True]
 all_args['activation_P'] = [1]
@@ -124,9 +131,13 @@ for idx, args in enumerate(all_args):
 
 
         if args["kernel_size"] == "adapt":
-            args["kernel_size"] = args["morp_operation"].selems[0].shape[0]
+            args["kernel_size"] = args["morp_operation"].selems[0][0][0].shape[0]
         args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
+        args['random_gen_args']['size'] = args['random_gen_args']['size'] + (args["morp_operation"].in_channels[0],)
         args['experiment_subname'] = args['morp_operation'].name
+
+        if args['channels'] == 'adapt':
+            args['channels'] = args['morp_operation'].in_channels + [args['morp_operation'].out_channels[-1]]
 
         if args["n_atoms"] == 'adapt':
             args['n_atoms'] = len(args['morp_operation'])

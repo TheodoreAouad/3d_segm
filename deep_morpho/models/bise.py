@@ -30,7 +30,7 @@ class BiSE(nn.Module):
     ):
         super().__init__()
         self.threshold_mode = self._init_threshold_mode(threshold_mode)
-        self._weight_P = nn.Parameter(torch.tensor([weight_P]).float())
+        self._weight_P = nn.Parameter(torch.tensor([weight_P for _ in range(out_channels)]).float())
         self.activation_P_init = activation_P
         self.kernel_size = self._init_kernel_size(kernel_size)
         self.conv = nn.Conv2d(
@@ -51,8 +51,8 @@ class BiSE(nn.Module):
         self.shared_weights = shared_weights
         self.shared_weight_P = shared_weight_P
 
-        self.weight_threshold_layer = dispatcher[self.weight_threshold_mode](P_=self.weight_P, constant_P=constant_weight_P)
-        self.activation_threshold_layer = dispatcher[self.activation_threshold_mode](P_=activation_P, constant_P=constant_activation_P)
+        self.weight_threshold_layer = dispatcher[self.weight_threshold_mode](P_=self.weight_P, constant_P=constant_weight_P, n_channels=out_channels, axis_channels=0)
+        self.activation_threshold_layer = dispatcher[self.activation_threshold_mode](P_=activation_P, constant_P=constant_activation_P, n_channels=out_channels, axis_channels=1)
 
     @staticmethod
     def _init_kernel_size(kernel_size: Union[Tuple, int]):

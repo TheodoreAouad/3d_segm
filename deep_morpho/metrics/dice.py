@@ -1,6 +1,12 @@
+import numpy as np
+
+
 def dice(y_true, y_pred, threshold=.5, SMOOTH=1e-6,):
     y_true = y_true.squeeze()
     y_pred = y_pred.squeeze()
+
+    if y_true.ndim == 4:
+        return np.stack([dice(y_true[:, k, ...], y_pred[:, k, ...], threshold, SMOOTH) for k in range(y_true.shape[1])], axis=0).mean(0)
 
     targets = (y_true != 0)
     if threshold is None:

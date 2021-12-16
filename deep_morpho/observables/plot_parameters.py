@@ -4,7 +4,7 @@ from os.path import join
 import matplotlib.pyplot as plt
 import itertools
 
-from .observable_layers import ObservableLayers
+from .observable_layers import ObservableLayers, ObservableLayersChans
 from general.utils import max_min_norm, save_json
 
 from ..models import BiSE, BiSEC, COBiSE, COBiSEC, MaxPlusAtom

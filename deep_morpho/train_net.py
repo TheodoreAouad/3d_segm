@@ -39,7 +39,7 @@ def get_dataloader(args):
                 n_inputs=args['n_inputs'],
                 random_gen_fn=args['random_gen_fn'],
                 random_gen_args=args['random_gen_args'],
-                morp_operation=args['morp_operation'].morp_fn,
+                morp_operation=args['morp_operation'],
                 device=device,
                 num_workers=args['num_workers']
         )
@@ -66,21 +66,21 @@ def main(args, logger):
             metrics=metrics,
             keep_preds_for_epoch=False,
         ),
-        "InputAsPredMetric": obs.InputAsPredMetric(metrics),
-        "PlotParametersBiSE": obs.PlotParametersBiSE(freq=1),
-        "PlotWeightsBiSE": obs.PlotWeightsBiSE(freq=args['freq_imgs']),
-        "WeightsHistogramBiSE": obs.WeightsHistogramBiSE(freq=args['freq_imgs']),
         "PlotPreds": obs.PlotPreds(freq=args['freq_imgs']),
+        "InputAsPredMetric": obs.InputAsPredMetric(metrics),
         "CountInputs": obs.CountInputs(),
-        "CheckMorpOperation": obs.CheckMorpOperation(
-            selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50
-        ) if args['dataset_type'] == 'diskorect' else obs.Observable(),
-        "PlotGradientBise": obs.PlotGradientBise(freq=args['freq_imgs']),
-        "ConvergenceMetrics": obs.ConvergenceMetrics(metrics),
-        "ShowSelemAlmostBinary": obs.ShowSelemAlmostBinary(freq=args['freq_imgs']),
-        "ShowSelemBinary": obs.ShowSelemBinary(freq=args['freq_imgs']),
-        "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
-        "ConvergenceBinary": obs.ConvergenceBinary(freq=100),
+        # "PlotParametersBiSE": obs.PlotParametersBiSE(freq=1),
+        # "PlotWeightsBiSE": obs.PlotWeightsBiSE(freq=args['freq_imgs']),
+        # "WeightsHistogramBiSE": obs.WeightsHistogramBiSE(freq=args['freq_imgs']),
+        # "CheckMorpOperation": obs.CheckMorpOperation(
+        #     selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50
+        # ) if args['dataset_type'] == 'diskorect' else obs.Observable(),
+        # "PlotGradientBise": obs.PlotGradientBise(freq=args['freq_imgs']),
+        # "ConvergenceMetrics": obs.ConvergenceMetrics(metrics),
+        # "ShowSelemAlmostBinary": obs.ShowSelemAlmostBinary(freq=args['freq_imgs']),
+        # "ShowSelemBinary": obs.ShowSelemBinary(freq=args['freq_imgs']),
+        # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
+        # "ConvergenceBinary": obs.ConvergenceBinary(freq=100),
     }
 
     observables = list(observables_dict.values())
@@ -90,6 +90,7 @@ def main(args, logger):
     model = LightningBiMoNN(
         model_args={
             "kernel_size": [args['kernel_size'] for _ in range(args['n_atoms'])],
+            "channels": args['channels'],
             "atomic_element": args["atomic_element"] if args["atomic_element"] != "conv" else "bise",
             "threshold_mode": args['threshold_mode'],
             "activation_P": args['activation_P'],
@@ -114,7 +115,7 @@ def main(args, logger):
 
     model.to(device)
 
-    logger.experiment.add_graph(model, torch.ones(1, 1, 50, 50).to(device))
+    # logger.experiment.add_graph(model, torch.ones(1, 1, 50, 50).to(device))
     hyperparams = dict(
         **{f'{k}_{layer_idx}': -1 for k in [
             f"weights/sum_norm_weights",
@@ -147,12 +148,12 @@ def main(args, logger):
 
     logger.log_hyperparams(args, hyperparams)
 
-    if args['dataset_type'] == "diskorect":
-        pathlib.Path(join(logger.log_dir, "target_SE")).mkdir(exist_ok=True, parents=True)
-        for selem_idx, selem in enumerate(args['morp_operation'].selems):
-            fig, ax = plt.subplots(); ax.imshow(selem); ax.set_title(args['morp_operation'].operations[selem_idx])
-            fig.savefig(join(logger.log_dir, "target_SE", f"target_SE_{selem_idx}.png"))
-            logger.experiment.add_figure(f"target_SE/target_SE_{selem_idx}", fig)
+    # if args['dataset_type'] == "diskorect":
+    #     pathlib.Path(join(logger.log_dir, "target_SE")).mkdir(exist_ok=True, parents=True)
+    #     for selem_idx, selem in enumerate(args['morp_operation'].selems):
+    #         fig, ax = plt.subplots(); ax.imshow(selem); ax.set_title(args['morp_operation'].operations[selem_idx])
+    #         fig.savefig(join(logger.log_dir, "target_SE", f"target_SE_{selem_idx}.png"))
+    #         logger.experiment.add_figure(f"target_SE/target_SE_{selem_idx}", fig)
             # logger.experiment.add_image(f"target_SE/target_SE_{selem_idx}", selem[np.newaxis, :].astype(float))
 
 
@@ -170,18 +171,18 @@ def main(args, logger):
     for observable in observables:
         observable.save(join(trainer.log_dir, 'observables'))
 
-    return pd.DataFrame({
-        'args': [args],
-        'tb_path': [logger.log_dir],
-        'weights': [[layer._normalized_weight for layer in model.model.layers]],
-        'biases': [[layer.bias for layer in model.model.layers]],
-        'dice_score': [observables_dict["CalculateAndLogMetrics"].last_value['dice']],
-        'convergence_dice': [observables_dict["ConvergenceMetrics"].cur_value['train']['dice']],
-        'learned_selem_almost_binary': [list(observables_dict["ShowSelemAlmostBinary"].last_selem_and_op.items())],
-        'learned_selem_binary': [list(observables_dict["ShowSelemBinary"].last_selem_and_op.items())],
-        'convergence_layer_almost_binary': [list(observables_dict["ConvergenceAlmostBinary"].convergence_step.items())],
-        'convergence_layer_binary': [list(observables_dict["ConvergenceBinary"].convergence_step.items())],
-    })
+    # return pd.DataFrame({
+    #     'args': [args],
+    #     'tb_path': [logger.log_dir],
+    #     'weights': [[layer._normalized_weight for layer in model.model.layers]],
+    #     'biases': [[layer.bias for layer in model.model.layers]],
+    #     'dice_score': [observables_dict["CalculateAndLogMetrics"].last_value['dice']],
+    #     'convergence_dice': [observables_dict["ConvergenceMetrics"].cur_value['train']['dice']],
+    #     'learned_selem_almost_binary': [list(observables_dict["ShowSelemAlmostBinary"].last_selem_and_op.items())],
+    #     'learned_selem_binary': [list(observables_dict["ShowSelemBinary"].last_selem_and_op.items())],
+    #     'convergence_layer_almost_binary': [list(observables_dict["ConvergenceAlmostBinary"].convergence_step.items())],
+    #     'convergence_layer_binary': [list(observables_dict["ConvergenceBinary"].convergence_step.items())],
+    # })
 
 
 if __name__ == '__main__':
@@ -231,7 +232,7 @@ if __name__ == '__main__':
 
     code_saver.delete_temporary_file()
 
-    results = pd.concat(results)
+    # results = pd.concat(results)
 
     log_console(f'{len(bugged)} Args Bugged: ', bugged, logger=console_logger)
     log_console(f'{len(all_args)} args done in {format_time(time() - start_all)} ', logger=console_logger)
