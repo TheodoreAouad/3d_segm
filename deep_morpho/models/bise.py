@@ -210,6 +210,10 @@ class BiSE(nn.Module):
             return self.shared_weights
         return self.conv.weight
 
+    @property
+    def out_channels(self):
+        return self.conv.out_channels
+
     def set_weights(self, new_weights: torch.Tensor) -> torch.Tensor:
         assert self.weight.shape == new_weights.shape, f"Weights must be of same shape {self.weight.shape}"
         self.conv.weight.data = new_weights

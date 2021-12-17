@@ -80,19 +80,20 @@ class ObservableLayersChans(ObservableLayers):
         layer_idx: int,
     ):
         if isinstance(layer, BiSEL):
-            for chan, bise in enumerate(layer.bises):
-                self.on_train_batch_end_layers_chans(
-                    trainer=trainer,
-                    pl_module=pl_module,
-                    outputs=outputs,
-                    batch=batch,
-                    batch_idx=batch_idx,
-                    dataloader_idx=dataloader_idx,
-                    layer=layer,
-                    layer_idx=layer_idx,
-                    chan=chan,
-                    bise_chan=bise,
-                )
+            for chan_input in range(layer.in_channels):
+                for chan_output in range(layer.out_channels):
+                    self.on_train_batch_end_layers_chans(
+                        trainer=trainer,
+                        pl_module=pl_module,
+                        outputs=outputs,
+                        batch=batch,
+                        batch_idx=batch_idx,
+                        dataloader_idx=dataloader_idx,
+                        layer=layer,
+                        layer_idx=layer_idx,
+                        chan_input=chan_input,
+                        chan_output=chan_output,
+                    )
 
     def on_train_batch_end_layers_chans(
         self,
@@ -104,7 +105,7 @@ class ObservableLayersChans(ObservableLayers):
         dataloader_idx: int,
         layer: "nn.Module",
         layer_idx: int,
-        chan: int,
-        bise_chan: int,
+        chan_input: int,
+        chan_output: int,
     ):
         raise NotImplementedError

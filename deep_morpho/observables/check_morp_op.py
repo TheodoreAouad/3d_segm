@@ -4,7 +4,7 @@ from os.path import join
 from torch.utils.tensorboard.summary import custom_scalars
 import matplotlib.pyplot as plt
 
-from .observable_layers import ObservableLayers
+from .observable_layers import ObservableLayers, ObservableLayersChans
 from general.nn.observables import Observable
 
 from ..models import COBiSE, BiSE
@@ -171,13 +171,13 @@ class ShowSelemAlmostBinary(Observable):
         return saved
 
 
-class ShowSelemBinary(ObservableLayers):
+class ShowSelemBinary(ObservableLayersChans):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.last_selem_and_op = {}
 
-    def on_train_batch_end_layers(
+    def on_train_batch_end_layers_chans(
         self,
         trainer: 'pl.Trainer',
         pl_module: 'pl.LightningModule',
@@ -187,17 +187,16 @@ class ShowSelemBinary(ObservableLayers):
         dataloader_idx: int,
         layer: "nn.Module",
         layer_idx: int,
+        chan_input: int,
+        chan_output: int,
     ):
-        if not isinstance(layer, BiSE):
-            return
-
-        selem, operation = layer.find_selem_and_operation(v1=0, v2=1)
+        selem, operation = layer.bises[chan_input].find_selem_and_operation_chan(chan_output, v1=0, v2=1)
         if selem is None:
             return
 
         fig = self.selem_fig(selem, operation)
-        trainer.logger.experiment.add_figure(f"learned_selem/binary_{layer_idx}", fig, trainer.global_step)
-        self.last_selem_and_op[layer_idx] = (selem, operation)
+        trainer.logger.experiment.add_figure(f"learned_selem/binary/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}", fig, trainer.global_step)
+        self.last_selem_and_op[(layer_idx, chan_input, chan_output)] = (selem, operation)
 
 
     @staticmethod
@@ -214,9 +213,9 @@ class ShowSelemBinary(ObservableLayers):
 
         saved = []
 
-        for layer_idx, (selem, operation) in self.last_selem_and_op.items():
+        for (layer_idx, chan_input, chan_output), (selem, operation) in self.last_selem_and_op.items():
             fig = self.selem_fig(selem, operation)
-            fig.savefig(join(final_dir, f"layer_{layer_idx}.png"))
+            fig.savefig(join(final_dir, f"layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}.png"))
             saved.append(fig)
 
         return saved

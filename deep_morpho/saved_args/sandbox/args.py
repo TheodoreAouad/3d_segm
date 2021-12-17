@@ -9,7 +9,7 @@ from .args_morp_ops import morp_operations
 
 all_args = {}
 
-all_args['experiment_name'] = ['bisel_tests']
+all_args['experiment_name'] = ['Bimonn_exp_36']
 
 
 # DATA ARGS
@@ -39,7 +39,7 @@ all_args['random_gen_args'] = [
 
 ]
 all_args['n_inputs'] = [
-    3_000_000,
+    1_000_000,
     # 10_000,
 ]
 
@@ -66,7 +66,7 @@ all_args['num_workers'] = [
     20,
     # 0,
 ]
-all_args['freq_imgs'] = [500]
+all_args['freq_imgs'] = [300]
 all_args['n_epochs'] = [10]
 
 

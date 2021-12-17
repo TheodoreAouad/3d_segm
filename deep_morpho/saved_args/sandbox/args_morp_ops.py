@@ -16,8 +16,8 @@ morp_operations.append(ParallelMorpOperations(
     name='dilation_union',
     operations=[
         [
-            [('dilation', ('hstick', 5)), 'union'],
-            [('dilation', ('hstick', 5)), 'union']
+            [('dilation', ('hstick', 5)), ('dilation', ('hstick', 5)), 'intersection'],
+            # [('dilation', ('hstick', 5)), 'union']
         ]
     ]
 ))

@@ -41,3 +41,7 @@ class LUI(nn.Module):
 
     def init_bias(self):
         self.linear.bias.fill_(-.5)
+
+    @property
+    def activation_P(self):
+        return self.threshold_layer.P_

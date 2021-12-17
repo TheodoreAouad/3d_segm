@@ -1,16 +1,16 @@
 import torch
 from general.nn.observables import Observable
 from general.utils import max_min_norm
-from .observable_layers import ObservableLayers
+from .observable_layers import ObservableLayers, ObservableLayersChans
 from ..models import BiSE, BiSEC, COBiSEC, COBiSE
 
 
-class WeightsHistogramBiSE(ObservableLayers):
+class WeightsHistogramBiSE(ObservableLayersChans):
 
     def __init__(self, *args, freq: int = 100, **kwargs):
         super().__init__(*args, freq=freq, **kwargs)
 
-    def on_train_batch_end_layers(
+    def on_train_batch_end_layers_chans(
         self,
         trainer: 'pl.Trainer',
         pl_module: 'pl.LightningModule',
@@ -20,10 +20,22 @@ class WeightsHistogramBiSE(ObservableLayers):
         dataloader_idx: int,
         layer: "nn.Module",
         layer_idx: int,
+        chan_input: int,
+        chan_output: int,
     ):
-        if isinstance(layer, (BiSE, BiSEC, COBiSEC, COBiSE)):
-            trainer.logger.experiment.add_histogram(f"weights_hist/Normalized_{layer_idx}", layer._normalized_weight, trainer.global_step)
-        trainer.logger.experiment.add_histogram(f"weights_hist/Raw_{layer_idx}", layer.weight, trainer.global_step)
+        # if isinstance(layer, (BiSE, BiSEC, COBiSEC, COBiSE)):
+
+
+        trainer.logger.experiment.add_histogram(
+            f"weights_hist/Normalized/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
+            layer._normalized_weight[chan_output, chan_input],
+            trainer.global_step
+        )
+        trainer.logger.experiment.add_histogram(
+            f"weights_hist/Raw/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
+            layer.weight[chan_output, chan_input],
+            trainer.global_step
+        )
 
 # class WeightsHistogramDilation(Observable):
 

@@ -2,7 +2,7 @@ import pathlib
 from os.path import join
 
 
-from deep_morpho.observables.observable_layers import ObservableLayers
+from deep_morpho.observables.observable_layers import ObservableLayers, ObservableLayersChans
 from general.nn.observables import Observable
 from ..models import BiSE
 from general.utils import save_json
@@ -138,14 +138,14 @@ class ConvergenceAlmostBinary(Observable):
 
 
 
-class ConvergenceBinary(ObservableLayers):
+class ConvergenceBinary(ObservableLayersChans):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.convergence_step = {}
         self.has_converged = {}
 
-    def on_train_batch_end_layers(
+    def on_train_batch_end_layers_chans(
         self,
         trainer: 'pl.Trainer',
         pl_module: 'pl.LightningModule',
@@ -154,35 +154,35 @@ class ConvergenceBinary(ObservableLayers):
         batch_idx: int,
         dataloader_idx: int,
         layer: "nn.Module",
-        layer_idx: int
+        layer_idx: int,
+        chan_input: int,
+        chan_output: int,
     ):
-        if not isinstance(layer, BiSE):
-            return
 
-        selem, operation = layer.find_selem_and_operation(v1=0, v2=1)
+        selem, operation = layer.bises[chan_input].find_selem_and_operation_chan(chan_output, v1=0, v2=1)
 
         self.update_step(layer_idx, selem is not None, trainer.global_step)
 
-        value = self.convergence_step.get(layer_idx, -1)
+        value = self.convergence_step.get((layer_idx, chan_input, chan_output), -1)
 
-        trainer.logger.experiment.add_scalar(
-            f"comparative/convergence/binary_{layer_idx}",
-            value, trainer.global_step
+        trainer.logger.experiment.add_scalars(
+            f"comparative/convergence/binary/layer_{layer_idx}_chout_{chan_output}/",
+            {f"chin_{chan_input}": value}, trainer.global_step
         )
 
         trainer.logger.log_metrics(
-            {f"convergence/binary_{layer_idx}": value}, trainer.global_step
+            {f"convergence/binary/{layer_idx}": value}, trainer.global_step
         )
 
-    def update_step(self, layer_idx, is_converged, step):
+    def update_step(self, key, is_converged, step):
 
-        if not self.has_converged.get(layer_idx, False) and is_converged:
-            self.convergence_step[layer_idx] = step
+        if not self.has_converged.get(key, False) and is_converged:
+            self.convergence_step[key] = step
 
         if not is_converged:
-            self.convergence_step[layer_idx] = -1
+            self.convergence_step[key] = -1
 
-        self.has_converged[layer_idx] = is_converged
+        self.has_converged[key] = is_converged
 
 
     def save(self, save_path: str):

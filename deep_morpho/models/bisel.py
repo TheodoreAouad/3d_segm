@@ -82,8 +82,28 @@ class BiSEL(nn.Module):
         return self.weight
 
     @property
+    def activation_P_bise(self) -> torch.Tensor:
+        """ Returns the activations P of the bise layers, of shape (out_channels, in_channels).
+        """
+        return torch.stack([layer.activation_P for layer in self.bises], axis=-1)
+
+    @property
+    def weight_P_bise(self) -> torch.Tensor:
+        """ Returns the weights P of the bise layers, of shape (out_channels, in_channels).
+        """
+        return torch.stack([layer.weight_P for layer in self.bises], axis=-1)
+
+
+    @property
+    def activation_P_lui(self) -> torch.Tensor:
+        """ Returns the activations P of the lui layer, of shape (out_channels).
+        """
+        return torch.stack([layer.activation_P for layer in self.luis], axis=-1)
+
+
+    @property
     def bias_bise(self) -> torch.Tensor:
-        """ Returns the bais of the bise layers, of shape (out_channels, in_channels).
+        """ Returns the bias of the bise layers, of shape (out_channels, in_channels).
         """
         return torch.stack([layer.bias for layer in self.bises], axis=-1)
 
@@ -93,6 +113,8 @@ class BiSEL(nn.Module):
 
     @property
     def bias_lui(self) -> torch.Tensor:
+        """Returns the bias of the lui layer, of shape (out_channels).
+        """
         return torch.cat([layer.bias for layer in self.luis])
 
     @property

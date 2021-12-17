@@ -19,8 +19,10 @@ class InputAsPredMetric(Observable):
 
     def on_train_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
         inputs, targets = batch
-        if inputs.shape[1] != targets.shape[1]:
+        if inputs.shape[1] < targets.shape[1]:
             inputs = torch.cat([inputs for _ in range(targets.shape[1])], axis=1)
+        elif inputs.shape[1] > targets.shape[1]:
+            inputs = torch.cat([inputs[:, 0:1, ...] for _ in range(targets.shape[1])], axis=1)
         self._calculate_and_log_metrics(trainer, pl_module, targets, inputs.squeeze(), state='train')
 
     def _calculate_and_log_metrics(self, trainer, pl_module, targets, preds, state='train', batch_or_epoch='batch'):

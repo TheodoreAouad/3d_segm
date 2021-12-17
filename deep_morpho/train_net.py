@@ -69,18 +69,19 @@ def main(args, logger):
         "PlotPreds": obs.PlotPreds(freq=args['freq_imgs']),
         "InputAsPredMetric": obs.InputAsPredMetric(metrics),
         "CountInputs": obs.CountInputs(),
-        # "PlotParametersBiSE": obs.PlotParametersBiSE(freq=1),
-        # "PlotWeightsBiSE": obs.PlotWeightsBiSE(freq=args['freq_imgs']),
-        # "WeightsHistogramBiSE": obs.WeightsHistogramBiSE(freq=args['freq_imgs']),
+        "PlotParametersBiSE": obs.PlotParametersBiSE(freq=1),
+        "PlotWeightsBiSE": obs.PlotWeightsBiSE(freq=args['freq_imgs']),
+        "PlotLUIParametersBiSEL": obs.PlotLUIParametersBiSEL(),
+        "WeightsHistogramBiSE": obs.WeightsHistogramBiSE(freq=args['freq_imgs']),
         # "CheckMorpOperation": obs.CheckMorpOperation(
         #     selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50
         # ) if args['dataset_type'] == 'diskorect' else obs.Observable(),
-        # "PlotGradientBise": obs.PlotGradientBise(freq=args['freq_imgs']),
-        # "ConvergenceMetrics": obs.ConvergenceMetrics(metrics),
+        "PlotGradientBise": obs.PlotGradientBise(freq=args['freq_imgs']),
+        "ConvergenceMetrics": obs.ConvergenceMetrics(metrics),
         # "ShowSelemAlmostBinary": obs.ShowSelemAlmostBinary(freq=args['freq_imgs']),
-        # "ShowSelemBinary": obs.ShowSelemBinary(freq=args['freq_imgs']),
+        "ShowSelemBinary": obs.ShowSelemBinary(freq=args['freq_imgs']),
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
-        # "ConvergenceBinary": obs.ConvergenceBinary(freq=100),
+        "ConvergenceBinary": obs.ConvergenceBinary(freq=100),
     }
 
     observables = list(observables_dict.values())
@@ -115,7 +116,7 @@ def main(args, logger):
 
     model.to(device)
 
-    # logger.experiment.add_graph(model, torch.ones(1, 1, 50, 50).to(device))
+    logger.experiment.add_graph(model, torch.ones(1, args['channels'][0], 50, 50).to(device))
     hyperparams = dict(
         **{f'{k}_{layer_idx}': -1 for k in [
             f"weights/sum_norm_weights",

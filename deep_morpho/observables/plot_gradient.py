@@ -1,18 +1,20 @@
 import matplotlib.pyplot as plt
 import itertools
 
-from .observable_layers import ObservableLayers
+from deep_morpho.models.bisel import BiSEL
+
+from .observable_layers import ObservableLayers, ObservableLayersChans
 from general.utils import max_min_norm
 from ..models import BiSE, BiSEC, COBiSEC, COBiSE
 
 
 
-class PlotGradientBise(ObservableLayers):
+class PlotGradientBise(ObservableLayersChans):
 
     def __init__(self, *args, freq: int = 100, **kwargs):
         super().__init__(*args, freq=freq, **kwargs)
 
-    def on_train_batch_end_layers(
+    def on_train_batch_end_layers_chans(
         self,
         trainer: 'pl.Trainer',
         pl_module: 'pl.LightningModule',
@@ -22,12 +24,28 @@ class PlotGradientBise(ObservableLayers):
         dataloader_idx: int,
         layer: "nn.Module",
         layer_idx: int,
+        chan_input: int,
+        chan_output: int,
     ):
-        trainer.logger.experiment.add_figure(f"weights_gradient/{layer_idx}", self.get_figure_gradient(layer.weight.grad.squeeze()), trainer.global_step)
-        trainer.logger.experiment.add_histogram(f"weights_gradient_hist/{layer_idx}", layer.weight.grad.squeeze(), trainer.global_step)
-        if isinstance(layer, (BiSE, BiSEC, COBiSEC, COBiSE)):
-            if layer.bias.grad is not None:
-                trainer.logger.experiment.add_scalar(f"weights/bias_gradient_{layer_idx}", layer.bias.grad, trainer.global_step)
+        grad_weights = layer.bises[chan_input].weight.grad[chan_output].squeeze()
+        trainer.logger.experiment.add_figure(
+            f"weights_gradient/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
+            self.get_figure_gradient(grad_weights),
+            trainer.global_step
+        )
+        trainer.logger.experiment.add_histogram(
+            f"weights_gradient_hist/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
+            grad_weights,
+            trainer.global_step
+        )
+        # if isinstance(layer, (BiSE, BiSEC, COBiSEC, COBiSE, BiSEL)):
+        grad_bise = layer.bises[chan_input].bias.grad[chan_output]
+        if grad_bise is not None:
+            trainer.logger.experiment.add_scalars(
+                f"weights/bias_gradient/layer_{layer_idx}_chout_{chan_output}",
+                {f"{chan_input}": grad_bise},
+                trainer.global_step
+            )
 
     @staticmethod
     def get_figure_gradient(gradient):
