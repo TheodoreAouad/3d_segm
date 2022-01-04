@@ -1,10 +1,16 @@
 import pathlib
 from os.path import join
+import itertools
+from typing import Any
+
 
 import matplotlib.pyplot as plt
-import itertools
+from pytorch_lightning.utilities.types import STEP_OUTPUT
+import pytorch_lightning as pl
+import torch.nn as nn
 
-from .observable_layers import ObservableLayers, ObservableLayersChans
+
+from .observable_layers import ObservableLayersChans
 from general.utils import max_min_norm, save_json
 
 from ..models import BiSE, BiSEC, COBiSE, COBiSEC, MaxPlusAtom, BiSEL

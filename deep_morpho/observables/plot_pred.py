@@ -1,11 +1,12 @@
+from typing import Any
 import pathlib
 from os.path import join
 
-import torch
+from pytorch_lightning.utilities.types import STEP_OUTPUT
+import pytorch_lightning as pl
 import matplotlib.pyplot as plt
 
 from general.nn.observables import Observable
-from general.utils import max_min_norm
 
 
 class PlotPreds(Observable):

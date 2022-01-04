@@ -1,9 +1,13 @@
 import matplotlib.pyplot as plt
 import itertools
+from typing import Any
+
+from pytorch_lightning.utilities.types import STEP_OUTPUT
+import pytorch_lightning as pl
+import torch.nn as nn
 
 from deep_morpho.models.bisel import BiSEL
-
-from .observable_layers import ObservableLayers, ObservableLayersChans
+from .observable_layers import ObservableLayersChans
 from general.utils import max_min_norm
 from ..models import BiSE, BiSEC, COBiSEC, COBiSE
 

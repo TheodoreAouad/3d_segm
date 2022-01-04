@@ -1,8 +1,12 @@
+from typing import Any
 import pathlib
 from os.path import join
 
+from pytorch_lightning.utilities.types import STEP_OUTPUT
+import pytorch_lightning as pl
+import torch.nn as nn
 
-from deep_morpho.observables.observable_layers import ObservableLayers, ObservableLayersChans
+from deep_morpho.observables.observable_layers import ObservableLayersChans
 from general.nn.observables import Observable
 from ..models import BiSE
 from general.utils import save_json

@@ -1,3 +1,8 @@
+from typing import Any
+
+from pytorch_lightning.utilities.types import STEP_OUTPUT
+import pytorch_lightning as pl
+
 from general.nn.observables import Observable
 
 
@@ -19,5 +24,5 @@ class SaveLoss(Observable):
     ) -> None:
         """Called when the train batch ends."""
         trainer.logger.experiment.add_scalars(
-            f"loss/train", {k: v for k, v in outputs.items() if 'loss' in k}, trainer.global_step
+            "loss/train", {k: v for k, v in outputs.items() if 'loss' in k}, trainer.global_step
         )
