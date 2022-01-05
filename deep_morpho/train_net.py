@@ -172,18 +172,6 @@ def main(args, logger):
     for observable in observables:
         observable.save(join(trainer.log_dir, 'observables'))
 
-    # return pd.DataFrame({
-    #     'args': [args],
-    #     'tb_path': [logger.log_dir],
-    #     'weights': [[layer._normalized_weight for layer in model.model.layers]],
-    #     'biases': [[layer.bias for layer in model.model.layers]],
-    #     'dice_score': [observables_dict["CalculateAndLogMetrics"].last_value['dice']],
-    #     'convergence_dice': [observables_dict["ConvergenceMetrics"].cur_value['train']['dice']],
-    #     'learned_selem_almost_binary': [list(observables_dict["ShowSelemAlmostBinary"].last_selem_and_op.items())],
-    #     'learned_selem_binary': [list(observables_dict["ShowSelemBinary"].last_selem_and_op.items())],
-    #     'convergence_layer_almost_binary': [list(observables_dict["ConvergenceAlmostBinary"].convergence_step.items())],
-    #     'convergence_layer_binary': [list(observables_dict["ConvergenceBinary"].convergence_step.items())],
-    # })
 
 
 if __name__ == '__main__':

@@ -55,6 +55,16 @@ class BiSE(nn.Module):
         self.activation_threshold_layer = dispatcher[self.activation_threshold_mode](P_=activation_P, constant_P=constant_activation_P, n_channels=out_channels, axis_channels=1)
 
     @staticmethod
+    def bise_from_selem(selem: np.ndarray, operation: str, threshold_mode: str = "tanh", weight_P=10, **kwargs):
+        net = BiSE(kernel_size=selem.shape, threshold_mode=threshold_mode, **kwargs)
+        assert set(np.unique(selem)).issubset([0, 1])
+        net.set_weights((torch.tensor(selem) - .5)[None, None, ...])
+        net._weight_P.data = torch.FloatTensor([weight_P])
+        bias_value = -.5 if operation == "dilation" else -float(selem.sum()) + .5
+        net.set_bias(torch.FloatTensor([bias_value]))
+        return net
+
+    @staticmethod
     def _init_kernel_size(kernel_size: Union[Tuple, int]):
         if isinstance(kernel_size, int):
             return (kernel_size, kernel_size)
@@ -117,20 +127,23 @@ class BiSE(nn.Module):
         weights = self._normalized_weight[idx]
         weight_values = weights.unique()
         bias = self.bias[idx]
-        res = []
         is_op_fn = {'dilation': self.is_dilation_by, 'erosion': self.is_erosion_by}[operation]
-        for value in weight_values:
-            S = (weights >= value).squeeze().cpu().detach().numpy()
-            if is_op_fn(normalized_weights=weights, bias=bias, S=S, v1=v1, v2=v2):
-                res.append(S)
+        born = {'dilation': -bias / v2, "erosion": (weights.sum() + bias) / (1 - v1)}[operation]
 
-        assert len(res) <= 1, "There should only be at most one working selem. Check for errors."
-        if len(res) == 1:
-            return res[0]
+        possible_values = weight_values >= born
+        if not possible_values.any():
+            return None
+
+        selem = (weights >= weight_values[possible_values][0]).squeeze().cpu().detach().numpy()
+
+        if is_op_fn(weights, bias, selem):
+            return selem
         return None
+
 
     def find_selem_dilation_chan(self, idx: int, v1: float = 0, v2: float = 1):
         return self.find_selem_for_operation(idx, 'dilation', v1=v1, v2=v2)
+
 
     def find_selem_erosion_chan(self, idx: int, v1: float = 0, v2: float = 1):
         return self.find_selem_for_operation(idx, 'erosion', v1=v1, v2=v2)
