@@ -9,7 +9,7 @@ from .args_morp_ops import morp_operations
 
 all_args = {}
 
-all_args['experiment_name'] = ['Bimonn_exp_36']
+all_args['experiment_name'] = ['Bimonn_exp_37']
 
 
 # DATA ARGS
@@ -46,8 +46,8 @@ all_args['n_inputs'] = [
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    # 5e-3,
-    1,
+    1e-2,
+    # 1,
 ]
 
 # if max_plus, then the loss is MSELoss
@@ -58,8 +58,8 @@ all_args['loss'] = [
     # DiceLoss(),
 ]
 all_args['optimizer'] = [
-    # optim.Adam,
-    optim.SGD
+    optim.Adam,
+    # optim.SGD
 ]
 all_args['batch_size'] = [256]
 all_args['num_workers'] = [
@@ -132,6 +132,8 @@ for idx, args in enumerate(all_args):
 
         if args["kernel_size"] == "adapt":
             args["kernel_size"] = args["morp_operation"].selems[0][0][0].shape[0]
+        
+        args["random_gen_args"] = args["random_gen_args"].copy()
         args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
         args['random_gen_args']['size'] = args['random_gen_args']['size'] + (args["morp_operation"].in_channels[0],)
         args['experiment_subname'] = args['morp_operation'].name

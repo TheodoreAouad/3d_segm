@@ -1,6 +1,6 @@
-from typing import Any
 import pathlib
 from os.path import join
+from typing import Any
 
 from pytorch_lightning.utilities.types import STEP_OUTPUT
 import pytorch_lightning as pl

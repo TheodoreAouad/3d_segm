@@ -12,15 +12,44 @@ else:
 morp_operations = []
 selems = []
 
-morp_operations.append(ParallelMorpOperations(
-    name='dilation_union',
-    operations=[
-        [
-            [('dilation', ('hstick', 5)), ('dilation', ('hstick', 5)), 'intersection'],
-            # [('dilation', ('hstick', 5)), 'union']
-        ]
-    ]
-))
+
+
+for ops in [
+    ("dilation", "erosion", "dilation"),
+]:
+    for selems in [
+        (('dcross', 7), ('hstick', 7), ("scross", 7)),
+    ]:
+        for aggreg in ["intersection"]:
+
+            morp_operations.append(ParallelMorpOperations(
+                name=f'{aggreg}',
+                operations=[
+                    [
+                        # [('dilation', ('hstick', 5)), ('dilation', ('hstick', 5)), 'intersection'],
+                        [(op, selem) for op, selem in zip(ops, selems)] + [aggreg]
+                    ]
+                ]
+            ))
+
+for ops in [
+    ("dilation", "erosion"),
+]:
+    for selems in [
+        (('dcross', 7), ('hstick', 7)),
+        (('disk', 3), ('vstick', 7)),
+    ]:
+        for aggreg in ["intersection"]:
+
+            morp_operations.append(ParallelMorpOperations(
+                name=f'{aggreg}',
+                operations=[
+                    [
+                        # [('dilation', ('hstick', 5)), ('dilation', ('hstick', 5)), 'intersection'],
+                        [(op, selem) for op, selem in zip(ops, selems)] + [aggreg]
+                    ]
+                ]
+            ))
 
 # sizes = [5, 7]
 # for size in [7]:

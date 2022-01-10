@@ -123,7 +123,7 @@ def get_random_diskorect_channels(size: Tuple, squeeze: bool = False, *args, **k
         W, L = size
         H = 1
     else:
-        raise ValueError(f"size argument must have 3 or 2 values, not {len(size)}.")
+        raise ValueError(f"size argument must have 3 or 2 values, not f{len(size)}.")
 
     final_img = np.zeros((W, L, H))
     for chan in range(H):
