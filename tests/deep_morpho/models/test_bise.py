@@ -25,7 +25,7 @@ class TestBiSE:
         weight = disk(3)
         layer.conv.weight.data[0] = torch.FloatTensor(100*(weight - 0.5))
         layer.conv.bias.data = -torch.FloatTensor([weight.sum() - 1/2])
-        assert layer.is_erosion_by(weight, v1=0.003, v2=0.997)
+        assert layer.is_erosion_by(layer._normalized_weight, layer.bias, weight, v1=0.003, v2=0.997)
 
 
     @staticmethod
@@ -34,4 +34,4 @@ class TestBiSE:
         weight = disk(3)
         layer.conv.weight.data[0] = torch.FloatTensor(10*(weight - 0.5))
         layer.conv.bias.data = -torch.FloatTensor([1/2])
-        assert layer.is_dilation_by(weight, v1=0.003, v2=0.997)
+        assert layer.is_dilation_by(layer._normalized_weight, layer.bias, weight, v1=0.003, v2=0.997)

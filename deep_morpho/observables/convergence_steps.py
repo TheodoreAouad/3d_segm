@@ -146,8 +146,39 @@ class ConvergenceBinary(ObservableLayersChans):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.convergence_step = {}
-        self.has_converged = {}
+        self.convergence_step = {"lui": {}, "bisel": {}}
+        self.has_converged = {
+            "lui": {"intersection": {}, "union": {}},
+            "bisel": {"erosion": {}, "dilation": {}}
+        }
+
+    def on_train_batch_end_layers_chan_output(
+        self,
+        trainer='pl.Trainer',
+        pl_module='pl.LightningModule',
+        outputs="STEP_OUTPUT",
+        batch="Any",
+        batch_idx=int,
+        dataloader_idx=int,
+        layer="nn.Module",
+        layer_idx=int,
+        chan_output=int,
+    ):
+        C, operation = layer.luis[chan_output].find_set_and_operation_chan(0, v1=None, v2=None)
+
+        self.update_step("lui", (layer_idx, chan_output), operation, trainer.global_step)
+
+        value = self.convergence_step["lui"].get((layer_idx, chan_output), -1)
+        value = -value if operation == "intersection" else value
+
+        trainer.logger.experiment.add_scalars(
+            f"comparative/convergence/binary/lui/layer_{layer_idx}/",
+            {f"chout_{chan_output}": value}, trainer.global_step
+        )
+
+        trainer.logger.log_metrics(
+            {f"convergence/binary/lui/{layer_idx}_chout_{chan_output}": value}, trainer.global_step
+        )
 
     def on_train_batch_end_layers_chans(
         self,
@@ -165,28 +196,35 @@ class ConvergenceBinary(ObservableLayersChans):
 
         selem, operation = layer.bises[chan_input].find_selem_and_operation_chan(chan_output, v1=0, v2=1)
 
-        self.update_step(layer_idx, selem is not None, trainer.global_step)
+        self.update_step("bisel", (layer_idx, chan_input, chan_output), operation, trainer.global_step)
 
-        value = self.convergence_step.get((layer_idx, chan_input, chan_output), -1)
+        value = self.convergence_step["bisel"].get((layer_idx, chan_input, chan_output), -1)
+        value = -value if operation == "erosion" else value
 
         trainer.logger.experiment.add_scalars(
-            f"comparative/convergence/binary/layer_{layer_idx}_chout_{chan_output}/",
+            f"comparative/convergence/binary/bisel/layer_{layer_idx}_chout_{chan_output}/",
             {f"chin_{chan_input}": value}, trainer.global_step
         )
 
         trainer.logger.log_metrics(
-            {f"convergence/binary/{layer_idx}": value}, trainer.global_step
+            {f"convergence/binary/bisel/layer_{layer_idx}_chout_{chan_output}_chin_{chan_input}": value}, trainer.global_step
         )
 
-    def update_step(self, key, is_converged, step):
+    def update_step(self, layer_key, key, operation, step):
+        key = str(key)
+        is_converged = operation is not None
 
-        if not self.has_converged.get(key, False) and is_converged:
-            self.convergence_step[key] = step
+        if is_converged and not self.has_converged[layer_key][operation].get(key, False):
+            self.convergence_step[layer_key][key] = step
+
+        # we prepare to set only the right operation to True
+        for other_op in self.has_converged[layer_key].keys():
+            self.has_converged[layer_key][other_op][key] = False
 
         if not is_converged:
-            self.convergence_step[key] = -1
-
-        self.has_converged[key] = is_converged
+            self.convergence_step[layer_key][key] = -1
+        else:
+            self.has_converged[layer_key][operation][key] = True
 
 
     def save(self, save_path: str):

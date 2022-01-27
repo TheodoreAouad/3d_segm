@@ -9,7 +9,7 @@ from .args_morp_ops import morp_operations
 
 all_args = {}
 
-all_args['experiment_name'] = ['Bimonn_exp_37']
+all_args['experiment_name'] = ['Bimonn_exp_37_bis']
 
 
 # DATA ARGS
@@ -40,7 +40,7 @@ all_args['random_gen_args'] = [
 ]
 all_args['n_inputs'] = [
     1_000_000,
-    # 10_000,
+    # 100_000,
 ]
 
 
@@ -102,7 +102,7 @@ all_args['threshold_mode'] = [
     # 'erf',
     # "identity",
     # {"activation": "sigmoid", "weight": "identity", "complementation": "clamp"}
-]   
+]
 all_args["alpha_init"] = [0]
 
 all_args['share_weights'] = [False]
@@ -132,7 +132,7 @@ for idx, args in enumerate(all_args):
 
         if args["kernel_size"] == "adapt":
             args["kernel_size"] = args["morp_operation"].selems[0][0][0].shape[0]
-        
+
         args["random_gen_args"] = args["random_gen_args"].copy()
         args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
         args['random_gen_args']['size'] = args['random_gen_args']['size'] + (args["morp_operation"].in_channels[0],)

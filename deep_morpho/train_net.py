@@ -118,13 +118,25 @@ def main(args, logger):
 
     logger.experiment.add_graph(model, torch.ones(1, args['channels'][0], 50, 50).to(device))
     hyperparams = dict(
-        **{f'{k}_{layer_idx}': -1 for k in [
-            f"weights/sum_norm_weights",
-            f"params/weight_P",
-            f"params/activation_P",
-            f"weights/bias",
-            f"convergence/layer",
-        ] for layer_idx in range(len(model.model.layers))},
+        # **{f'{k}_{layer_idx}': -1 for k in [
+        #     f"weights/sum_norm_weights",
+        #     f"params/weight_P",
+        #     f"params/activation_P",
+        #     f"weights/bias",
+        # ] for layer_idx in range(len(model.model.layers))},
+        **{
+            f'{k}/layer_{layer_idx}_chout_{chan_output}_chin_{chan_input}': -1 for k in [
+                "convergence/binary/bisel",
+            ] for layer_idx in range(len(model.model.layers))
+            for chan_input in range(model.model.layers[layer_idx].in_channels)
+            for chan_output in range(model.model.layers[layer_idx].out_channels)
+        },
+        **{
+            f'{k}/layer_{layer_idx}_chout_{chan_output}': -1 for k in [
+                "convergence/binary/lui",
+            ] for layer_idx in range(len(model.model.layers))
+            for chan_output in range(model.model.layers[layer_idx].out_channels)
+        },
         **{f"metrics_batch/dice_train": 0},
         **{f"convergence/metric_dice_train": 0},
     )

@@ -125,18 +125,19 @@ class BiSE(nn.Module):
             None if none is found
         """
         weights = self._normalized_weight[idx]
-        weight_values = weights.unique()
+        # weight_values = weights.unique()
         bias = self.bias[idx]
         is_op_fn = {'dilation': self.is_dilation_by, 'erosion': self.is_erosion_by}[operation]
         born = {'dilation': -bias / v2, "erosion": (weights.sum() + bias) / (1 - v1)}[operation]
 
-        possible_values = weight_values >= born
-        if not possible_values.any():
+        # possible_values = weight_values >= born
+        selem = (weights > born).squeeze().cpu().detach().numpy()
+        if not selem.any():
             return None
 
-        selem = (weights >= weight_values[possible_values][0]).squeeze().cpu().detach().numpy()
+        # selem = (weights >= weight_values[possible_values][0]).squeeze().cpu().detach().numpy()
 
-        if is_op_fn(weights, bias, selem):
+        if is_op_fn(weights, bias, selem, v1, v2):
             return selem
         return None
 
