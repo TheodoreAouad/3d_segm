@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 
 from .threshold_layer import dispatcher
@@ -17,13 +18,15 @@ class LUI(nn.Module):
 
         self.threshold_layer = dispatcher[self.threshold_mode](P_=P_, constant_P=self.constant_P, n_channels=chan_outputs)
         self.linear = nn.Linear(chan_inputs, chan_outputs)
+        self.softplus_layer = nn.Softplus()
 
         with torch.no_grad():
             self.init_coefs()
             self.init_bias()
 
     def forward(self, x):
-        return self.threshold_layer(self.linear(x.permute(0, 2, 3, 1))).permute(0, 3, 1, 2)
+        # return self.threshold_layer(self.linear(x.permute(0, 2, 3, 1))).permute(0, 3, 1, 2)
+        return self.threshold_layer(F.linear(x.permute(0, 2, 3, 1), self.positive_weight, self.bias)).permute(0, 3, 1, 2)
 
     @property
     def bias(self):
@@ -32,6 +35,10 @@ class LUI(nn.Module):
     @property
     def weight(self):
         return self.linear.weight
+
+    @property
+    def positive_weight(self):
+        return self.softplus_layer(self.weight)
 
     @property
     def weights(self):

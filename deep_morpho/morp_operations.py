@@ -93,6 +93,9 @@ class SequentialMorpOperations:
 
 
 class ParallelMorpOperations:
+    """
+    Class to apply intersection / union of
+    """
     str_to_selem_fn = {
         'disk': disk, 'vstick': vstick, 'hstick': hstick, 'square': square, 'dcross': dcross, 'scross': scross,
         'vertical_stick': vstick, 'horizontal_stick': hstick, 'diagonal_cross': dcross, 'straight_cross': scross,
@@ -119,11 +122,24 @@ class ParallelMorpOperations:
         self.in_channels = None
         self.out_channels = None
         self.selems = None
+        self.do_complementation = None
 
         self.convert_ops(operations)
 
 
     def _erodila_selem_converter(self, args):
+        """ Scraps the argument of the creation of the structuring element.
+
+        Args:
+            args (np.ndarray | tuple):
+                np.ndarray: the structuring element
+                tuple: len == 2, the selem name (str | callable) and the selem args (Any)
+
+        Returns:
+            np.ndarray: the structuring element
+            (str | None): the name of the structuring element
+            (Any | None): the arguments of the creation of the structuring element
+        """
         selem_name = None
         selem_args = None
         if not isinstance(args, tuple):
@@ -139,10 +155,28 @@ class ParallelMorpOperations:
 
 
     def _erodila_op_converter(self, args):
+        """ Scraps the argument of the creation of an erosion / dilation operation.
+
+        Args:
+            args (callable | tuple):
+                callable: the erosion or dilation function
+                tuple:
+                    len(args) == 2: (operation name: str, operation selem: (tuple | np.ndarray))
+                    len(args) == 3: (operation name: str, operation selem: (tuple | np.ndarray), do complementation: bool)
+
+        Returns:
+            callable: the operation
+            (str | None): the name of the operation
+            (str | None): the name of the selem
+            (str | None): the name of the arguments of the selem
+            (np.ndarray | None): the selem
+        """
+
         op_name = None
         selem_name = None
         selem_args = None
         selem = None
+        do_complementation = False
 
         if not isinstance(args, tuple):
             return args, op_name, selem_name, selem_args, selem
@@ -154,11 +188,38 @@ class ParallelMorpOperations:
             op_fn = args[0]
 
         selem, selem_name, selem_args = self._erodila_selem_converter(args[1])
-        return lambda x: op_fn(x, selem=selem, return_numpy_array=self.return_numpy_array), op_name, selem_name, selem_args, selem
+
+        op_fn2 = lambda x: op_fn(x, selem=selem, return_numpy_array=self.return_numpy_array)
+
+        if len(args) == 3 and args[-1]:
+            final_operation = lambda x: ~op_fn2(x)
+            do_complementation = True
+        else:
+            final_operation = op_fn2
+
+        return (
+            final_operation,
+            op_name,
+            selem_name,
+            selem_args,
+            selem,
+            do_complementation,
+        )
 
 
     def _ui_converter(self, args):
+        """ Scraps the arguments for the creation of a union / intersection of channels.
 
+        Args:
+            args (callable | tuple):
+                callable: the union / intersection operation
+                tuple: len == 2. The operation (str | callable) and the arguments (str | list)
+
+        Returns:
+            callable: the union / intersection operation
+            (str | None): the name of the operation
+            str: the arguments of the operation
+        """
         ui_name = None
         ui_args = "all"
 
@@ -176,9 +237,9 @@ class ParallelMorpOperations:
 
 
     def convert_ops(self, all_op_str):
-        alls = {key: [] for key in ["op_fn", "op_names", "selem_names", "selem_args", "selems"]}
-        layers = {key: [] for key in ["op_fn", "op_names", "selem_names", "selem_args", "selems"]}
-        chans = {key: [] for key in ["op_fn", "op_names", "selem_names", "selem_args", "selems"]}
+        alls = {key: [] for key in ["op_fn", "op_names", "selem_names", "selem_args", "selems", "do_complementation"]}
+        layers = {key: [] for key in ["op_fn", "op_names", "selem_names", "selem_args", "selems", "do_complementation"]}
+        chans = {key: [] for key in ["op_fn", "op_names", "selem_names", "selem_args", "selems", "do_complementation"]}
 
         in_channels = []
         out_channels = []
@@ -195,19 +256,30 @@ class ParallelMorpOperations:
                     chans[key] = []
 
                 for cur_op_str in chan_str[:-1]:
-                    op_fn, op_name, selem_name, selem_args, selem = self._erodila_op_converter(cur_op_str)
+                    # in all_erodila_res: op_fn, op_name, selem_name, selem_args, selem, do_complementation
+                    all_erodila_res = self._erodila_op_converter(cur_op_str)
 
-                    chans["op_fn"].append(op_fn)
-                    chans["op_names"].append(op_name)
-                    chans['selem_names'].append(selem_name)
-                    chans['selem_args'].append(selem_args)
-                    chans['selems'].append(selem)
+                    for key, res in zip(chans.keys(), all_erodila_res):
+                        chans[key].append(res)
 
-                ui_fn, ui_name, ui_args = self._ui_converter(chan_str[-1])
-                chans["op_fn"].append(ui_fn)
-                chans["op_names"].append(ui_name)
+                    # chans["op_fn"].append(op_fn)
+                    # chans["op_names"].append(op_name)
+                    # chans['selem_names'].append(selem_name)
+                    # chans['selem_args'].append(selem_args)
+                    # chans['selems'].append(selem)
+                    # chans['']
+
+                # in all_ui_res: ui_fn, ui_name, ui_args
+                all_ui_res = self._ui_converter(chan_str[-1])
+                # ui_fn, ui_name, ui_args = self._ui_converter(chan_str[-1])
+
+                for key, res in zip(["op_fn", "op_names", "selem_args"], all_ui_res):
+                    chans[key].append(res)
                 chans['selem_names'].append("channels")
-                chans["selem_args"].append(ui_args)
+
+                # chans["op_fn"].append(ui_fn)
+                # chans["op_names"].append(ui_name)
+                # chans["selem_args"].append(ui_args)
 
                 for key in layers.keys():
                     layers[key].append(chans[key])
@@ -220,6 +292,7 @@ class ParallelMorpOperations:
         self.selem_names = alls['selem_names']
         self.selem_args = alls['selem_args']
         self.selems = alls['selems']
+        self.do_complementation = alls['do_complementation']
 
         assert in_channels[1:] == out_channels[:-1]
 
@@ -228,25 +301,32 @@ class ParallelMorpOperations:
 
         return alls
 
+    def apply_layer(self, layer, x):
+        next_x = torch.zeros(x.shape[:-1] + (len(layer),))
+        for chan_idx, chan in enumerate(layer):
+            morps, ui = chan[:-1], chan[-1]
+            next_x[..., chan_idx] = ui(
+                np.stack([morps[idx](x[..., idx]) for idx in range(len(morps))], axis=-1)
+            )
+        return next_x
 
     def apply_ops(self, ar):
         x = ar + 0
         for layer in self.operations:
-            next_x = torch.zeros(x.shape[:-1] + (len(layer),))
-            for chan_idx, chan in enumerate(layer):
-                morps, ui = chan[:-1], chan[-1]
-                next_x[..., chan_idx] = ui(
-                    np.stack([morps[idx](x[..., idx]) for idx in range(len(morps))], axis=-1)
-                )
-            x = next_x
-        if self.return_numpy_array:
+            # next_x = torch.zeros(x.shape[:-1] + (len(layer),))
+            # for chan_idx, chan in enumerate(layer):
+            #     morps, ui = chan[:-1], chan[-1]
+            #     next_x[..., chan_idx] = ui(
+            #         np.stack([morps[idx](x[..., idx]) for idx in range(len(morps))], axis=-1)
+            #     )
+            # x = next_x
+            x = self.apply_layer(layer, x)
+        if not self.return_numpy_array:
             return torch.tensor(x)
         return x
 
-
     def __call__(self, ar):
         return self.apply_ops(ar)
-
 
     def __len__(self):
         return len(self.selems)
@@ -266,7 +346,10 @@ class ParallelMorpOperations:
 
                 repr_ += f"\n{' '*8}Out{chan_idx}: {ui_name}(chans={self.selem_args[layer_idx][chan_idx][-1]}) |"
                 for op_idx in range(len(self.operation_names[layer_idx][chan_idx]) - 1):
-                    repr_ += f" {chan[op_idx]}({self.selem_names[layer_idx][chan_idx][op_idx]}({self.selem_args[layer_idx][chan_idx][op_idx]}))"
+                    to_add = f"{chan[op_idx]}({self.selem_names[layer_idx][chan_idx][op_idx]}({self.selem_args[layer_idx][chan_idx][op_idx]}))"
+                    if self.do_complementation[layer_idx][chan_idx][op_idx]:
+                        to_add = f"complement({to_add})"
+                    repr_ += f" {to_add}"
 
         return repr_
 
@@ -276,4 +359,76 @@ class ParallelMorpOperations:
             '=>'.join(self.operations) +
             ' -- ' +
             "=>".join([f'{fn.__name__}({arg})' for fn, arg in zip(self._selem_fn, self._selem_arg)])
+        )
+
+
+    @staticmethod
+    def erosion(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        return ParallelMorpOperations(
+            name='erosion',
+            operations=[[[('erosion', selem, False), 'union']]],
+            *args,
+            **kwargs
+        )
+
+    @staticmethod
+    def dilation(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        return ParallelMorpOperations(
+            name='dilation',
+            operations=[[[('dilation', selem, False), 'union']]],
+            *args,
+            **kwargs
+        )
+
+    @staticmethod
+    def opening(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        return ParallelMorpOperations(
+            name='opening',
+            operations=[
+                [[('erosion', selem, False), 'union']],
+                [[('dilation', selem, False), 'union']],
+            ],
+            *args,
+            **kwargs
+        )
+
+    @staticmethod
+    def closing(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        return ParallelMorpOperations(
+            name='closing',
+            operations=[
+                [[('dilation', selem, False), 'union']],
+                [[('erosion', selem, False), 'union']],
+            ],
+            *args,
+            **kwargs
+        )
+
+    @staticmethod
+    def white_tophat(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        identity = ('dilation', ('disk', 0), False)
+        return ParallelMorpOperations(
+            name='white_tophat',
+            operations=[
+                [
+                    [identity, 'union'],
+                    [('erosion', selem, False), 'union'],
+                ],
+                [[identity, ('dilation', selem, True), 'intersection']]
+            ]
+        )
+
+    @staticmethod
+    def black_tophat(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        identity1 = ('dilation', ('disk', 0), False)
+        identity2 = ('dilation', ('disk', 0), True)
+        return ParallelMorpOperations(
+            name='black_tophat',
+            operations=[
+                [
+                    [identity1, 'union'],
+                    [('dilation', selem, False), 'union'],
+                ],
+                [[identity2, ('erosion', selem, False), 'intersection']]
+            ]
         )

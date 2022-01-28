@@ -48,7 +48,7 @@ class BiSEL(nn.Module):
         luis = []
         for idx in range(self.out_channels):
             layer = LUI(
-                chan_inputs=self.in_channels,
+                chan_inputs=2 * self.in_channels,
                 threshold_mode=self.threshold_mode,
                 chan_outputs=1,
                 constant_P=self.constant_P_lui,
@@ -63,6 +63,7 @@ class BiSEL(nn.Module):
         bise_res = torch.cat([
             layer(x[:, chan:chan+1, ...])[:, None, ...] for chan, layer in enumerate(self.bises)
         ], axis=1)
+        bise_res = torch.cat([bise_res, 1-bise_res], axis=1)
 
         lui_res = torch.cat([
             layer(bise_res[:, :, chan, ...]) for chan, layer in enumerate(self.luis)
@@ -98,7 +99,7 @@ class BiSEL(nn.Module):
     def activation_P_lui(self) -> torch.Tensor:
         """ Returns the activations P of the lui layer, of shape (out_channels).
         """
-        return torch.stack([layer.activation_P for layer in self.luis], axis=-1)
+        return torch.cat([layer.activation_P for layer in self.luis])
 
 
     @property
@@ -141,6 +142,6 @@ class BiSEL(nn.Module):
 
     @property
     def coefs(self) -> torch.Tensor:
-        """ Returns the coefficients of the linear operation of LUI, of shape (out_channels, in_channels).
+        """ Returns the coefficients of the linear operation of LUI, of shape (out_channels, 2*in_channels).
         """
-        return torch.cat([layer.weight for layer in self.luis], axis=0)
+        return torch.cat([layer.positive_weight for layer in self.luis], axis=0)

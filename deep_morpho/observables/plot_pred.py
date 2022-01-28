@@ -51,7 +51,7 @@ class PlotPreds(Observable):
     @staticmethod
     def plot_three(img, pred, target):
         ncols = max(img.shape[0], pred.shape[0])
-        fig, axs = plt.subplots(3, ncols, figsize=(4 * ncols, 4 * 3))
+        fig, axs = plt.subplots(3, ncols, figsize=(4 * ncols, 4 * 3), squeeze=False)
 
         for chan in range(img.shape[0]):
             axs[0, chan].imshow(img[chan], cmap='gray')

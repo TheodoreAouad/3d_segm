@@ -9,7 +9,7 @@ from .args_morp_ops import morp_operations
 
 all_args = {}
 
-all_args['experiment_name'] = ['Bimonn_exp_37_bis']
+all_args['experiment_name'] = ['Bimonn_exp_39_sandbox']
 
 
 # DATA ARGS
@@ -89,9 +89,10 @@ all_args['kernel_size'] = [
     # "adapt",
 ]
 all_args['channels'] = [
-    'adapt'
+    'adapt',
+    # (7, 7)
 ]
-all_args['init_weight_identity'] = [True]
+all_args['init_weight_identity'] = [False]
 all_args['activation_P'] = [1]
 all_args['constant_activation_P'] = [False]
 all_args['constant_weight_P'] = [True]
@@ -125,7 +126,7 @@ for idx, args in enumerate(all_args):
         args['freq_imgs'] = 10
 
     elif args['dataset_type'] == "diskorect":
-        args['kernel_size'] = 'adapt'
+        # args['kernel_size'] = 'adapt'
         args['n_atoms'] = 'adapt'
         args['n_epochs'] = 1
 

@@ -80,6 +80,7 @@ def main(args, logger):
         "ConvergenceMetrics": obs.ConvergenceMetrics(metrics),
         # "ShowSelemAlmostBinary": obs.ShowSelemAlmostBinary(freq=args['freq_imgs']),
         "ShowSelemBinary": obs.ShowSelemBinary(freq=args['freq_imgs']),
+        "ShowLUISetBinary": obs.ShowLUISetBinary(freq=args['freq_imgs']),
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         "ConvergenceBinary": obs.ConvergenceBinary(freq=100),
     }
@@ -125,20 +126,20 @@ def main(args, logger):
         #     f"weights/bias",
         # ] for layer_idx in range(len(model.model.layers))},
         **{
-            f'{k}/layer_{layer_idx}_chout_{chan_output}_chin_{chan_input}': -1 for k in [
+            f'{k}/layer_{layer_idx}_chout_{chan_output}_chin_{chan_input}': torch.tensor([np.nan]) for k in [
                 "convergence/binary/bisel",
             ] for layer_idx in range(len(model.model.layers))
             for chan_input in range(model.model.layers[layer_idx].in_channels)
             for chan_output in range(model.model.layers[layer_idx].out_channels)
         },
         **{
-            f'{k}/layer_{layer_idx}_chout_{chan_output}': -1 for k in [
+            f'{k}/layer_{layer_idx}_chout_{chan_output}': torch.tensor([np.nan]) for k in [
                 "convergence/binary/lui",
             ] for layer_idx in range(len(model.model.layers))
             for chan_output in range(model.model.layers[layer_idx].out_channels)
         },
-        **{f"metrics_batch/dice_train": 0},
-        **{f"convergence/metric_dice_train": 0},
+        **{f"metrics_batch/dice_train": torch.tensor([np.nan])},
+        **{f"convergence/metric_dice_train": torch.tensor([np.nan])},
     )
 
     if args['atomic_element'] in ['bisec', 'cobisec']:
@@ -148,15 +149,15 @@ def main(args, logger):
 
     if args["atomic_element"] == 'cobise':
         hyperparams.update(dict(
-            **{f'metrics/bias - lb(op)_{layer_idx}_0': 0 for layer_idx in range(len(model.model.layers))},
-            **{f'metrics/ub(op) - bias_{layer_idx}_0': 0 for layer_idx in range(len(model.model.layers))},
-            **{f'metrics/bias - lb(op)_{layer_idx}_1': 0 for layer_idx in range(len(model.model.layers))},
-            **{f'metrics/ub(op) - bias_{layer_idx}_1': 0 for layer_idx in range(len(model.model.layers))},
+            **{f'metrics/bias - lb(op)_{layer_idx}_0': torch.tensor([np.nan]) for layer_idx in range(len(model.model.layers))},
+            **{f'metrics/ub(op) - bias_{layer_idx}_0': torch.tensor([np.nan]) for layer_idx in range(len(model.model.layers))},
+            **{f'metrics/bias - lb(op)_{layer_idx}_1': torch.tensor([np.nan]) for layer_idx in range(len(model.model.layers))},
+            **{f'metrics/ub(op) - bias_{layer_idx}_1': torch.tensor([np.nan]) for layer_idx in range(len(model.model.layers))},
         ))
     elif args["atomic_element"] in ["bise", "conv"]:
         hyperparams.update(dict(
-            **{f'metrics/bias - lb(op)_{layer_idx}': 0 for layer_idx in range(len(model.model.layers))},
-            **{f'metrics/ub(op) - bias_{layer_idx}': 0 for layer_idx in range(len(model.model.layers))},
+            **{f'metrics/bias - lb(op)_{layer_idx}': torch.tensor([np.nan]) for layer_idx in range(len(model.model.layers))},
+            **{f'metrics/ub(op) - bias_{layer_idx}': torch.tensor([np.nan]) for layer_idx in range(len(model.model.layers))},
         ))
 
     logger.log_hyperparams(args, hyperparams)
