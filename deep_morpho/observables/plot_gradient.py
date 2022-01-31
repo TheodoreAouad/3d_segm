@@ -42,12 +42,63 @@ class PlotGradientBise(ObservableLayersChans):
             grad_weights,
             trainer.global_step
         )
+
+    def on_train_batch_end_layers_chans_always(
+        self,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        dataloader_idx: int,
+        layer: "nn.Module",
+        layer_idx: int,
+        chan_input: int,
+        chan_output: int,
+    ):
         # if isinstance(layer, (BiSE, BiSEC, COBiSEC, COBiSE, BiSEL)):
-        grad_bise = layer.bises[chan_input].bias.grad[chan_output]
-        if grad_bise is not None:
+        grad_bise_bias = layer.bises[chan_input].bias.grad[chan_output]
+        if grad_bise_bias is not None:
             trainer.logger.experiment.add_scalars(
-                f"weights/bias_gradient/layer_{layer_idx}_chout_{chan_output}",
-                {f"{chan_input}": grad_bise},
+                f"weights/bisel/bias_gradient/layer_{layer_idx}_chout_{chan_output}",
+                {f"chin_{chan_input}": grad_bise_bias},
+                trainer.global_step
+            )
+
+        grad_bise_weights = layer.bises[chan_output].weight.grad[chan_input]
+        if grad_bise_weights is not None:
+            trainer.logger.experiment.add_scalars(
+                f"weights/bisel/weights_gradient_mean/layer_{layer_idx}_chout_{chan_output}",
+                {f"chin_{chan_input}": grad_bise_weights.mean()},
+                trainer.global_step
+            )
+
+        for chan in [chan_input, chan_input + layer.in_channels]:
+            grad_lui_weight = layer.luis[chan_output].weight.grad[0, chan]
+            if grad_lui_weight is not None:
+                trainer.logger.experiment.add_scalars(
+                    f"weights/lui/weights_gradient/layer_{layer_idx}_chout_{chan_output}",
+                    {f"chin_{chan}": grad_lui_weight},
+                    trainer.global_step
+                )
+
+    def on_train_batch_end_layers_chan_output_always(
+        self,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        dataloader_idx: int,
+        layer: "nn.Module",
+        layer_idx: int,
+        chan_output: int,
+    ):
+        grad_lui_bias = layer.luis[chan_output].bias.grad[0]
+        if grad_lui_bias is not None:
+            trainer.logger.experiment.add_scalars(
+                f"weights/lui/bias_gradient/layer_{layer_idx}",
+                {f"chout_{chan_output}": grad_lui_bias},
                 trainer.global_step
             )
 

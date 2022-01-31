@@ -1,4 +1,5 @@
 from typing import Union, Tuple, List, Callable, Any
+from matplotlib import pyplot as plt
 
 import numpy as np
 import torch
@@ -99,6 +100,7 @@ class ParallelMorpOperations:
     str_to_selem_fn = {
         'disk': disk, 'vstick': vstick, 'hstick': hstick, 'square': square, 'dcross': dcross, 'scross': scross,
         'vertical_stick': vstick, 'horizontal_stick': hstick, 'diagonal_cross': dcross, 'straight_cross': scross,
+        'identity': identity,
     }
     str_to_fn = {'dilation': array_dilation, 'erosion': array_erosion}
     str_to_ui_fn = {'union': union_chans, 'intersection': intersection_chans}
@@ -432,3 +434,62 @@ class ParallelMorpOperations:
                 [[identity2, ('erosion', selem, False), 'intersection']]
             ]
         )
+
+    @property
+    def ui_arrays(self):
+        ui_ars = []
+        for layer in self.operations_original:
+            layer_ars = []
+            for chan_output in layer:
+                ui_fn, ui_name, ui_args = self._ui_converter(chan_output[-1])
+                n_ops = len(chan_output) - 1
+                ui_args = range(n_ops) if isinstance(ui_args, str) else ui_args
+
+                cur_ar = np.zeros(n_ops, dtype=np.uint8)
+                cur_ar[ui_args] = 1
+
+                layer_ars.append((ui_name, cur_ar))
+            ui_ars.append(layer_ars)
+        return ui_ars
+
+    def plot_ui_arrays(self, *args, **kwargs):
+        """ Gives figures with the binary arrays of the intersection / union.
+
+        Returns:
+            dict(figs): all the figures of the binary arrays.
+        """
+        all_figs = {}
+        ui_ars = self.ui_arrays
+        for layer_idx, layer in enumerate(ui_ars):
+            for chan_output, (op_name, op_ar) in enumerate(layer):
+                fig, ax = plt.subplots(1, 1, *args, **kwargs)
+                ax.set_title(f"layer {layer_idx} | chan output {chan_output} | {op_name}")
+
+                array_no_compl = np.where(op_ar, ~np.array(self.do_complementation[layer_idx][chan_output]), 0)
+                array_compl = np.where(op_ar, np.array(self.do_complementation[layer_idx][chan_output]), 0)
+                final_array = np.concatenate([array_no_compl, array_compl])
+
+                ax.imshow(final_array[:, None], vmin=0, vmax=1, interpolation='nearest')
+                ax.set_xticks([])
+                ax.set_yticks(range(len(final_array)))
+                all_figs[(layer_idx, chan_output)] = fig
+        return all_figs
+
+
+    def plot_selem_arrays(self, *args, **kwargs):
+        all_figs = {}
+        for layer_idx, layer in enumerate(self.selems):
+            for chan_output, selems in enumerate(layer):
+                for chan_input, selem in enumerate(selems):
+                    fig, ax = plt.subplots(1, 1, *args, **kwargs)
+                    op_str = self.operation_names[layer_idx][chan_output][chan_input]
+                    if self.do_complementation[layer_idx][chan_output][chan_input]:
+                        op_str = f'complement({op_str})'
+                    ax.set_title(
+                        f"layer {layer_idx} | (chan in, chan out) ({chan_input}, {chan_output})  "
+                        f"| {op_str}")
+                    ax.imshow(selem, vmin=0, vmax=1, interpolation='nearest')
+                    ax.set_xticks(range(selem.shape[0]))
+                    ax.set_yticks(range(selem.shape[1]))
+                    all_figs[(layer_idx, chan_input, chan_output)] = fig
+        return all_figs

@@ -8,21 +8,31 @@ from .threshold_layer import dispatcher
 
 class LUI(nn.Module):
 
-    def __init__(self, threshold_mode: str, chan_inputs: int, chan_outputs: int, P_: float = 1, constant_P: bool = False,):
+    def __init__(
+        self,
+        threshold_mode: str,
+        chan_inputs: int,
+        chan_outputs: int,
+        P_: float = 1,
+        constant_P: bool = False,
+        init_mode: str = "normal",
+    ):
         super().__init__()
 
         self.threshold_mode = threshold_mode
         self.constant_P = constant_P
         self.chan_inputs = chan_inputs
         self.chan_outputs = chan_outputs
+        self.init_mode = init_mode
 
         self.threshold_layer = dispatcher[self.threshold_mode](P_=P_, constant_P=self.constant_P, n_channels=chan_outputs)
         self.linear = nn.Linear(chan_inputs, chan_outputs)
         self.softplus_layer = nn.Softplus()
 
         with torch.no_grad():
-            self.init_coefs()
-            self.init_bias()
+            if init_mode == "normal":
+                self.init_normal_coefs(mean=0, std=1)
+                self.init_normal_bias(mean=0, std=1)
 
     def forward(self, x):
         # return self.threshold_layer(self.linear(x.permute(0, 2, 3, 1))).permute(0, 3, 1, 2)
@@ -34,7 +44,16 @@ class LUI(nn.Module):
 
     @property
     def weight(self):
+        """Linear weights.
+
+        Returns:
+            torch.tensor: shape (in_features, out_features)
+        """
         return self.linear.weight
+
+    @property
+    def coefs(self):
+        return self.positive_weight
 
     @property
     def positive_weight(self):
@@ -43,6 +62,26 @@ class LUI(nn.Module):
     @property
     def weights(self):
         return self.weight
+
+    def set_weights(self, new_weights: torch.Tensor) -> torch.Tensor:
+        assert self.weight.shape == new_weights.shape, f"Weights must be of same shape {self.weight.shape}"
+        self.linear.weight.data = new_weights
+        return new_weights
+
+    def set_bias(self, new_bias: torch.Tensor) -> torch.Tensor:
+        assert self.bias.shape == new_bias.shape
+        self.linear.bias.data = new_bias
+        return new_bias
+
+    def init_normal_coefs(self, mean, std):
+        new_weights = torch.randn(self.linear.weight.shape) * std + mean
+        self.set_weights(new_weights)
+        return new_weights
+
+    def init_normal_bias(self, mean, std):
+        new_bias = -self.softplus_layer(torch.randn(self.linear.bias.shape) * std + mean)
+        self.set_bias(new_bias)
+        return new_bias
 
     def init_coefs(self):
         self.linear.weight.fill_(1)
@@ -139,17 +178,6 @@ class LUI(nn.Module):
             if C is not None:
                 return C, operation
         return None, None
-
-
-    def set_weights(self, new_weights: torch.Tensor) -> torch.Tensor:
-        assert self.weight.shape == new_weights.shape, f"Weights must be of same shape {self.weight.shape}"
-        self.linear.weight.data = new_weights
-        return new_weights
-
-    def set_bias(self, new_bias: torch.Tensor) -> torch.Tensor:
-        assert self.bias.shape == new_bias.shape
-        self.linear.bias.data = new_bias
-        return new_bias
 
     @staticmethod
     def from_set(C: np.ndarray, operation: str, threshold_mode: str = "tanh", **kwargs):

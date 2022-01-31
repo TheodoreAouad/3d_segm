@@ -133,7 +133,6 @@ class TestParallelMorpOperations:
             inpt[-n:] = 0
             inpt[:, :n] = 0
             inpt[:, -n:] = 0
-
             ero1 = opening(inpt[..., 0], morp_operation.selems[0][0][0])
             ero2 = morp_operation(inpt).squeeze().numpy()
             assert np.abs(ero1 - ero2).sum() == 0

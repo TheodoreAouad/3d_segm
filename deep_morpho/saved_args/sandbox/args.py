@@ -9,7 +9,7 @@ from .args_morp_ops import morp_operations
 
 all_args = {}
 
-all_args['experiment_name'] = ['Bimonn_exp_39_sandbox']
+all_args['experiment_name'] = ['Bimonn_exp_40_sandbox']
 
 
 # DATA ARGS

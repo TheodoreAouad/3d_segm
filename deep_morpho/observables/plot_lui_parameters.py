@@ -46,6 +46,17 @@ class PlotLUIParametersBiSEL(ObservableLayersChans):
         chan_input: int,
         chan_output: int
     ):
+        self.log_lui_params(trainer, layer, layer_idx, chan_input, chan_output)
+        self.log_lui_params(trainer, layer, layer_idx, chan_input + layer.in_channels, chan_output)
+
+    def log_lui_params(
+        self,
+        trainer,
+        layer,
+        layer_idx,
+        chan_input,
+        chan_output,
+    ):
         trainer.logger.experiment.add_scalars(
             f'params/lui_coefs/layer_{layer_idx}_chout_{chan_output}',
             {f"chin_{chan_input}": layer.coefs[chan_output, chan_input]},

@@ -61,12 +61,15 @@ class BiSEL(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         bise_res = torch.cat([
-            layer(x[:, chan:chan+1, ...])[:, None, ...] for chan, layer in enumerate(self.bises)
-        ], axis=1)
-        bise_res = torch.cat([bise_res, 1-bise_res], axis=1)
+            layer(x[:, chan_input:chan_input+1, ...])[:, None, ...] for chan_input, layer in enumerate(self.bises)
+        ], axis=1)  # bise_res shape: (batch_size, in_channels, out_channels, width, length)
+        bise_res2 = torch.cat([
+            1-bise_res,
+            bise_res,
+        ], axis=1)  # the chan_output does not change, so we have 2x chan_input
 
         lui_res = torch.cat([
-            layer(bise_res[:, :, chan, ...]) for chan, layer in enumerate(self.luis)
+            layer(bise_res2[:, :, chan_output, ...]) for chan_output, layer in enumerate(self.luis)
         ], axis=1)
 
         return lui_res

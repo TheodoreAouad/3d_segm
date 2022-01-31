@@ -2,6 +2,12 @@ import numpy as np
 from skimage.morphology import disk
 
 
+def identity(size: int) -> np.ndarray:
+    selem = np.zeros((size, size))
+    selem[size//2, size//2] = 1
+    return selem
+
+
 def vstick(size: int) -> np.ndarray:
     selem = np.zeros((size, size))
     selem[:, size//2] = 1

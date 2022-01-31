@@ -162,13 +162,24 @@ def main(args, logger):
 
     logger.log_hyperparams(args, hyperparams)
 
-    # if args['dataset_type'] == "diskorect":
-    #     pathlib.Path(join(logger.log_dir, "target_SE")).mkdir(exist_ok=True, parents=True)
-    #     for selem_idx, selem in enumerate(args['morp_operation'].selems):
-    #         fig, ax = plt.subplots(); ax.imshow(selem); ax.set_title(args['morp_operation'].operations[selem_idx])
-    #         fig.savefig(join(logger.log_dir, "target_SE", f"target_SE_{selem_idx}.png"))
-    #         logger.experiment.add_figure(f"target_SE/target_SE_{selem_idx}", fig)
-            # logger.experiment.add_image(f"target_SE/target_SE_{selem_idx}", selem[np.newaxis, :].astype(float))
+    if args['dataset_type'] == "diskorect":
+        pathlib.Path(join(logger.log_dir, "target_SE")).mkdir(exist_ok=True, parents=True)
+        figs_selems = args['morp_operation'].plot_selem_arrays()
+        for (layer_idx, chan_input, chan_output), fig in figs_selems.items():
+            fig.savefig(join(logger.log_dir, "target_SE", f"target_SE_l_{layer_idx}_chin_{chan_input}_chout_{chan_output}.png"))
+            logger.experiment.add_figure(f"target_SE/target_SE_l_{layer_idx}_chin_{chan_input}_chout_{chan_output}", fig)
+
+        pathlib.Path(join(logger.log_dir, "target_UI")).mkdir(exist_ok=True, parents=True)
+        figs_ui = args['morp_operation'].plot_ui_arrays()
+        for (layer_idx, chan_output), fig in figs_ui.items():
+            fig.savefig(join(logger.log_dir, "target_UI", f"target_UI_l_{layer_idx}_chin_chout_{chan_output}.png"))
+            logger.experiment.add_figure(f"target_UI/target_UI_l_{layer_idx}_chin_chout_{chan_output}", fig)
+
+        # for selem_idx, selem in enumerate(args['morp_operation'].selems):
+        #     fig, ax = plt.subplots(); ax.imshow(selem); ax.set_title(args['morp_operation'].operations[selem_idx])
+        #     fig.savefig(join(logger.log_dir, "target_SE", f"target_SE_{selem_idx}.png"))
+        #     logger.experiment.add_figure(f"target_SE/target_SE_{selem_idx}", fig)
+        #     logger.experiment.add_image(f"target_SE/target_SE_{selem_idx}", selem[np.newaxis, :].astype(float))
 
 
     trainer = Trainer(

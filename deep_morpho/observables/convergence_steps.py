@@ -181,7 +181,7 @@ class ConvergenceBinary(ObservableLayersChans):
         )
 
         trainer.logger.log_metrics(
-            {f"convergence/binary/lui/{layer_idx}_chout_{chan_output}": step_value}, trainer.global_step
+            {f"convergence/binary/lui/layer_{layer_idx}_chout_{chan_output}": step_value}, trainer.global_step
         )
 
     @property

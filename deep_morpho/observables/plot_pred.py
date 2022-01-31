@@ -35,7 +35,7 @@ class PlotPreds(Observable):
             # trainer.logger.experiment.add_image("preds/input_pred_target", input_pred_target, trainer.global_step)
             img, target = batch[0][0], batch[1][0]
             pred = preds[0]
-            fig = self.plot_three(*[k.cpu().detach() for k in [img, pred, target]])
+            fig = self.plot_three(*[k.cpu().detach().numpy() for k in [img, pred, target]])
 
             # if img.ndim == 3:
             #     fig = self.plot_channels(*[k.cpu().detach() for k in [img, pred, target]])
@@ -54,15 +54,15 @@ class PlotPreds(Observable):
         fig, axs = plt.subplots(3, ncols, figsize=(4 * ncols, 4 * 3), squeeze=False)
 
         for chan in range(img.shape[0]):
-            axs[0, chan].imshow(img[chan], cmap='gray')
+            axs[0, chan].imshow(img[chan], cmap='gray', vmin=0, vmax=1)
             axs[0, chan].set_title(f'input_{chan}')
 
         for chan in range(pred.shape[0]):
-            axs[1, chan].imshow(pred[chan], cmap='gray')
-            axs[1, chan].set_title(f'pred_{chan}')
+            axs[1, chan].imshow(pred[chan], cmap='gray', vmin=0, vmax=1)
+            axs[1, chan].set_title(f'pred_{chan} vmin={pred[chan].min():.2} vmax={pred[chan].max():.2}')
 
         for chan in range(target.shape[0]):
-            axs[2, chan].imshow(target[chan], cmap='gray')
+            axs[2, chan].imshow(target[chan], cmap='gray', vmin=0, vmax=1)
             axs[2, chan].set_title(f'target_{chan}')
 
         return fig
