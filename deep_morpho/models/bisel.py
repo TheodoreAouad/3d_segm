@@ -48,7 +48,7 @@ class BiSEL(nn.Module):
         luis = []
         for idx in range(self.out_channels):
             layer = LUI(
-                chan_inputs=2 * self.in_channels,
+                chan_inputs=self.in_channels,
                 threshold_mode=self.threshold_mode,
                 chan_outputs=1,
                 constant_P=self.constant_P_lui,
@@ -60,13 +60,13 @@ class BiSEL(nn.Module):
 
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        bise_res = torch.cat([
+        bise_res2 = torch.cat([
             layer(x[:, chan_input:chan_input+1, ...])[:, None, ...] for chan_input, layer in enumerate(self.bises)
         ], axis=1)  # bise_res shape: (batch_size, in_channels, out_channels, width, length)
-        bise_res2 = torch.cat([
-            1-bise_res,
-            bise_res,
-        ], axis=1)  # the chan_output does not change, so we have 2x chan_input
+        # bise_res2 = torch.cat([
+        #     1-bise_res,
+        #     bise_res,
+        # ], axis=1)  # the chan_output does not change, so we have 2x chan_input
 
         lui_res = torch.cat([
             layer(bise_res2[:, :, chan_output, ...]) for chan_output, layer in enumerate(self.luis)

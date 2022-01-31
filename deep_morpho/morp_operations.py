@@ -374,6 +374,15 @@ class ParallelMorpOperations:
         )
 
     @staticmethod
+    def complementation(size: int, *args, **kwargs):
+        return ParallelMorpOperations(
+            name='complementation',
+            operations=[[[('erosion', ('identity', size), False), 'union']]],
+            *args,
+            **kwargs
+        )
+
+    @staticmethod
     def dilation(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
         return ParallelMorpOperations(
             name='dilation',

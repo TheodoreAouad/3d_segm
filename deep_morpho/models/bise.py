@@ -48,6 +48,8 @@ class BiSE(nn.Module):
         if init_weight_identity:
             self._init_as_identity()
 
+        self.softplus_layer = nn.Softplus()
+
         self.shared_weights = shared_weights
         self.shared_weight_P = shared_weight_P
 
@@ -254,7 +256,7 @@ class BiSE(nn.Module):
 
     @property
     def bias(self):
-        return self.conv.bias
+        return -self.softplus_layer(self.conv.bias)
 
 
 class BiSEC(BiSE):

@@ -57,7 +57,7 @@ class PlotGradientBise(ObservableLayersChans):
         chan_output: int,
     ):
         # if isinstance(layer, (BiSE, BiSEC, COBiSEC, COBiSE, BiSEL)):
-        grad_bise_bias = layer.bises[chan_input].bias.grad[chan_output]
+        grad_bise_bias = layer.bises[chan_input].conv.bias.grad[chan_output]
         if grad_bise_bias is not None:
             trainer.logger.experiment.add_scalars(
                 f"weights/bisel/bias_gradient/layer_{layer_idx}_chout_{chan_output}",
@@ -73,7 +73,8 @@ class PlotGradientBise(ObservableLayersChans):
                 trainer.global_step
             )
 
-        for chan in [chan_input, chan_input + layer.in_channels]:
+        # for chan in [chan_input, chan_input + layer.in_channels]:
+        for chan in [chan_input]:
             grad_lui_weight = layer.luis[chan_output].weight.grad[0, chan]
             if grad_lui_weight is not None:
                 trainer.logger.experiment.add_scalars(

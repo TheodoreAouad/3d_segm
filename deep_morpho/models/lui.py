@@ -97,14 +97,14 @@ class LUI(nn.Module):
     def bias_bounds_intersection(betas: torch.Tensor, C: np.ndarray, v1: np.ndarray, v2: np.ndarray) -> bool:
         LUI.check_dims_bounds_params(betas, C, v1, v2)
         C = C.astype(bool)
-        betas = betas.squeeze().cpu().detach().numpy()
+        betas = betas.cpu().detach().numpy()
         return betas.sum() - ((1 - v1) * betas)[C].min(), (betas * v2)[C].sum()
 
     @staticmethod
     def bias_bounds_union(betas: torch.Tensor, C: np.ndarray, v1: np.ndarray, v2: np.ndarray) -> bool:
         LUI.check_dims_bounds_params(betas, C, v1, v2)
         C = C.astype(bool)
-        betas = betas.squeeze().cpu().detach().numpy()
+        betas = betas.cpu().detach().numpy()
         return (betas * v1)[C].sum() + betas[~C].sum(), (betas * v2)[C].min()
 
     @staticmethod
@@ -156,7 +156,7 @@ class LUI(nn.Module):
         is_op_fn = {'union': self.is_union_by, 'intersection': self.is_intersection_by}[operation]
 
         for thresh in coefs_values:
-            C = (coefs >= thresh).squeeze().detach().cpu().numpy()
+            C = (coefs >= thresh).detach().cpu().numpy()
             if is_op_fn(coefs, bias, C, v1, v2):
                 return C
         return None

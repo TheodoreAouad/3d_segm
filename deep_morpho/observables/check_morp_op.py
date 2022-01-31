@@ -207,7 +207,7 @@ class ShowSelemBinary(ObservableLayersChans):
     @staticmethod
     def selem_fig(selem, operation):
         fig = plt.figure(figsize=(3, 3))
-        plt.imshow(selem, interpolation="nearest")
+        plt.imshow(selem, interpolation="nearest", vmin=0, vmax=1)
         plt.title(operation)
         return fig
 

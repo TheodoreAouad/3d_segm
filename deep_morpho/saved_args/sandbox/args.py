@@ -93,7 +93,7 @@ all_args['channels'] = [
     # (7, 7)
 ]
 all_args['init_weight_identity'] = [False]
-all_args['activation_P'] = [1]
+all_args['activation_P'] = [-1]
 all_args['constant_activation_P'] = [False]
 all_args['constant_weight_P'] = [True]
 all_args['threshold_mode'] = [

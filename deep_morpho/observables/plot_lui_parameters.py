@@ -47,7 +47,7 @@ class PlotLUIParametersBiSEL(ObservableLayersChans):
         chan_output: int
     ):
         self.log_lui_params(trainer, layer, layer_idx, chan_input, chan_output)
-        self.log_lui_params(trainer, layer, layer_idx, chan_input + layer.in_channels, chan_output)
+        # self.log_lui_params(trainer, layer, layer_idx, chan_input + layer.in_channels, chan_output)
 
     def log_lui_params(
         self,
