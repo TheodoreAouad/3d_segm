@@ -7,6 +7,11 @@ class TestComplementationLayer:
 
     @staticmethod
     def test_identity():
+        """
+        Test that the identity difference is better.
+
+        Args:
+        """
         layer = ComplementationLayer(alpha_init=10000)
         x = torch.randint(2, (30, 30, 30))
 
@@ -14,6 +19,11 @@ class TestComplementationLayer:
 
     @staticmethod
     def test_complementation():
+        """
+        Test that the complementation layer is correctly applied
+
+        Args:
+        """
         layer = ComplementationLayer(alpha_init=-10000)
         x = torch.randint(2, (30, 30, 30))
 

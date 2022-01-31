@@ -16,6 +16,13 @@ from ..models import BiSE, BiSEC, COBiSEC, COBiSE
 class PlotGradientBise(ObservableLayersChans):
 
     def __init__(self, *args, freq: int = 100, **kwargs):
+        """
+        Frequency is in milliseconds.
+
+        Args:
+            self: write your description
+            freq: write your description
+        """
         super().__init__(*args, freq=freq, **kwargs)
 
     def on_train_batch_end_layers_chans(
@@ -31,6 +38,22 @@ class PlotGradientBise(ObservableLayersChans):
         chan_input: int,
         chan_output: int,
     ):
+        """
+        At the end of training the layers are the channels.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            dataloader_idx: write your description
+            layer: write your description
+            layer_idx: write your description
+            chan_input: write your description
+            chan_output: write your description
+        """
         grad_weights = layer.bises[chan_input].weight.grad[chan_output].squeeze()
         trainer.logger.experiment.add_figure(
             f"weights_gradient/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
@@ -56,6 +79,22 @@ class PlotGradientBise(ObservableLayersChans):
         chan_input: int,
         chan_output: int,
     ):
+        """
+        This function is called after the training step of the batch_end method. It grads the
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            dataloader_idx: write your description
+            layer: write your description
+            layer_idx: write your description
+            chan_input: write your description
+            chan_output: write your description
+        """
         # if isinstance(layer, (BiSE, BiSEC, COBiSEC, COBiSE, BiSEL)):
         grad_bise_bias = layer.bises[chan_input].bias.grad[chan_output]
         if grad_bise_bias is not None:
@@ -94,6 +133,21 @@ class PlotGradientBise(ObservableLayersChans):
         layer_idx: int,
         chan_output: int,
     ):
+        """
+        At the end of training the layer channel output is always the bias.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            dataloader_idx: write your description
+            layer: write your description
+            layer_idx: write your description
+            chan_output: write your description
+        """
         grad_lui_bias = layer.luis[chan_output].bias.grad[0]
         if grad_lui_bias is not None:
             trainer.logger.experiment.add_scalars(
@@ -104,6 +158,12 @@ class PlotGradientBise(ObservableLayersChans):
 
     @staticmethod
     def get_figure_gradient(gradient):
+        """
+        Returns a matplotlib figure with the gradient normed.
+
+        Args:
+            gradient: write your description
+        """
         gradient = gradient.cpu().detach()
         gradient_normed = max_min_norm(gradient)
         figure = plt.figure(figsize=(8, 8))

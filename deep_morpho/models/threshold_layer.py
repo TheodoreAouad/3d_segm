@@ -16,6 +16,19 @@ class ThresholdLayer(nn.Module):
         bias: float = 0,
         constant_P: bool = False,
     ):
+        """
+        Initialize the thresholding layer.
+
+        Args:
+            self: write your description
+            threshold_fn: write your description
+            P_: write your description
+            n_channels: write your description
+            axis_channels: write your description
+            threshold_name: write your description
+            bias: write your description
+            constant_P: write your description
+        """
         super().__init__()
         self.n_channels = n_channels
         self.axis_channels = axis_channels
@@ -31,6 +44,13 @@ class ThresholdLayer(nn.Module):
             self.P_.requires_grad = False
 
     def forward(self, x):
+        """
+        Forward pass of the estimator.
+
+        Args:
+            self: write your description
+            x: write your description
+        """
         # print((x + self.bias).shape)
         # print(self.P_.view(*([len(self.P_)] + [1 for _ in range(x.ndim - 1)])).shape)
         return self.threshold_fn(
@@ -40,31 +60,67 @@ class ThresholdLayer(nn.Module):
 
 class SigmoidLayer(ThresholdLayer):
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the thresholds.
+
+        Args:
+            self: write your description
+        """
         super().__init__(threshold_fn=sigmoid_threshold, threshold_name='sigmoid', *args, **kwargs)
 
 
 class ArctanLayer(ThresholdLayer):
     def __init__(self, *args, **kwargs):
+        """
+        Thresholds for arctan distance to the left.
+
+        Args:
+            self: write your description
+        """
         super().__init__(threshold_fn=arctan_threshold, threshold_name='arctan', *args, **kwargs)
 
 
 class TanhLayer(ThresholdLayer):
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the thresholds.
+
+        Args:
+            self: write your description
+        """
         super().__init__(threshold_fn=tanh_threshold, threshold_name='tanh', *args, **kwargs)
 
 
 class ErfLayer(ThresholdLayer):
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the thresholds.
+
+        Args:
+            self: write your description
+        """
         super().__init__(threshold_fn=erf_threshold, threshold_name='erf', *args, **kwargs)
 
 
 class ClampLayer(ThresholdLayer):
     def __init__(self, *args, **kwargs):
+        """
+        Thresholds must be between 0 and 1 inclusive.
+
+        Args:
+            self: write your description
+        """
         super().__init__(threshold_fn=lambda x: clamp_threshold(x, 0, 1), threshold_name='clamp', *args, **kwargs)
 
 
 class IdentityLayer(ThresholdLayer):
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the thresholds.
+
+        Args:
+            self: write your description
+        """
         super().__init__(threshold_fn=lambda x: x, threshold_name='identity', *args, **kwargs)
 
 dispatcher = {

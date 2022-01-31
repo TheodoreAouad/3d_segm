@@ -5,6 +5,14 @@ import numpy as np
 
 
 def draw_rectangle(ar, top_xy: Tuple, shape: Tuple) -> np.ndarray:
+    """
+    Draw a rectangle.
+
+    Args:
+        ar: write your description
+        top_xy: write your description
+        shape: write your description
+    """
     x, y = top_xy
     W, L = shape
     ar = ar + 0
@@ -23,6 +31,20 @@ def get_random_rectangle_args(
         width_props: Tuple[float] = (.1, .9),
         length_props: Tuple[float] = (.1, .9),
 ) -> np.ndarray:
+    """
+    Generate random rectangle parameters.
+
+    Args:
+        size: write your description
+        top_xy: write your description
+        shape: write your description
+        max_shape: write your description
+        centered: write your description
+        top_left_x_props: write your description
+        top_left_y_props: write your description
+        width_props: write your description
+        length_props: write your description
+    """
     if max_shape is None:
         max_shape = size
 
@@ -53,6 +75,13 @@ def get_random_rectangle_args(
 
 
 def random_rectangle(size: Tuple, return_args=False, *args, **kwargs) -> np.ndarray:
+    """
+    Draw a random rectangle.
+
+    Args:
+        size: write your description
+        return_args: write your description
+    """
     rect = np.zeros(size)
     rect_args = get_random_rectangle_args(size, *args, **kwargs)
     res = draw_rectangle(rect, *rect_args)
@@ -63,6 +92,16 @@ def random_rectangle(size: Tuple, return_args=False, *args, **kwargs) -> np.ndar
 
 
 def random_multi_rect(size: Tuple, n_rectangles: int, max_shape: Tuple[int] = None, return_rects: bool = False, first_rect_args: Dict = {}) -> np.ndarray:
+    """
+    Draws a rectangle of size with multiple rectangles.
+
+    Args:
+        size: write your description
+        n_rectangles: write your description
+        max_shape: write your description
+        return_rects: write your description
+        first_rect_args: write your description
+    """
     if n_rectangles == 0:
         return np.zeros(size)
 

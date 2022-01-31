@@ -8,6 +8,11 @@ class TestThresholdLayer:
 
     @staticmethod
     def test_threshold_image():
+        """
+        Test that a random image is within a threshold
+
+        Args:
+        """
         x = torch.randn(1, 1, 50, 50)
         x[(x > -.2) & (x < .2)] = 1
         layer = dispatcher['tanh'](P_=50, n_channels=1)
@@ -15,6 +20,11 @@ class TestThresholdLayer:
 
     @staticmethod
     def test_threshold_image_channels():
+        """
+        Test that the threshold image is correctly aligned with the image channels
+
+        Args:
+        """
         x = torch.randn(1, 6, 50, 50)
         x[(x > -.2) & (x < .2)] = 1
         layer = dispatcher['tanh'](P_=50, n_channels=6)

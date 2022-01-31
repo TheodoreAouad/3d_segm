@@ -7,6 +7,12 @@ import matplotlib.pyplot as plt
 
 
 def plot_to_base64(figure):
+    """
+    Converts a matplotlib figure to a base64 string.
+
+    Args:
+        figure: write your description
+    """
     my_stringIObytes = io.BytesIO()
     figure.savefig(my_stringIObytes, format='jpg')
     my_stringIObytes.seek(0)
@@ -14,6 +20,12 @@ def plot_to_base64(figure):
 
 
 def plot_to_html(figure):
+    """
+    Convert a matplotlib figure to HTML.
+
+    Args:
+        figure: write your description
+    """
     if figure is None:
         return ""
     base64_fig = plot_to_base64(figure)
@@ -41,6 +53,12 @@ def detect_identical_values(all_args: List[Dict]) -> (List[str], List[str]):
 
 
 def load_png_as_fig(path: str, **kwargs):
+    """
+    Load a PNG file as a figure.
+
+    Args:
+        path: write your description
+    """
     ar = plt.imread(path)
     fig, ax = plt.subplots(1, 1, **kwargs)
     ax.imshow(ar)

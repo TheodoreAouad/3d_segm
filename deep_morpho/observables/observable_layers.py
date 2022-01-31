@@ -14,6 +14,16 @@ class ObservableLayers(Observable):
     """
 
     def __init__(self, layers: List["nn.Module"] = None, freq: int = 1, layer_name: str = 'layers', *args, **kwargs):
+        """
+        Initialize the filter with a list of layers and a frequency.
+
+        Args:
+            self: write your description
+            layers: write your description
+            List: write your description
+            freq: write your description
+            layer_name: write your description
+        """
         super().__init__(*args, **kwargs)
         self.layers = layers
         self.freq = freq
@@ -56,6 +66,20 @@ class ObservableLayers(Observable):
         layer: "nn.Module",
         layer_idx: int,
     ):
+        """
+        Callback when the training batch end the layers.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            dataloader_idx: write your description
+            layer: write your description
+            layer_idx: write your description
+        """
         pass
 
     def on_train_batch_end_layers_always(
@@ -69,9 +93,30 @@ class ObservableLayers(Observable):
         layer: "nn.Module",
         layer_idx: int,
     ):
+        """
+        Callback when the training batch end all layers are always finished.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            dataloader_idx: write your description
+            layer: write your description
+            layer_idx: write your description
+        """
         pass
 
     def _get_layers(self, pl_module):
+        """
+        Get the layers for the given pl_module.
+
+        Args:
+            self: write your description
+            pl_module: write your description
+        """
 
         if self.layers is not None:
             return self.layers
@@ -102,6 +147,20 @@ class ObservableLayersChans(ObservableLayers):
         layer: "nn.Module",
         layer_idx: int,
     ):
+        """
+        Callback when the training batch end all layers.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            dataloader_idx: write your description
+            layer: write your description
+            layer_idx: write your description
+        """
         if isinstance(layer, BiSEL):
             for chan_output in range(layer.out_channels):
                 self.on_train_batch_end_layers_chan_output(
@@ -142,6 +201,22 @@ class ObservableLayersChans(ObservableLayers):
         chan_input: int,
         chan_output: int,
     ):
+        """
+        Callback when the training batch end of layers channels.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            dataloader_idx: write your description
+            layer: write your description
+            layer_idx: write your description
+            chan_input: write your description
+            chan_output: write your description
+        """
         pass
 
     def on_train_batch_end_layers_chan_output(
@@ -156,6 +231,25 @@ class ObservableLayersChans(ObservableLayers):
         layer_idx=int,
         chan_output=int,
     ):
+        """
+        Callback when the batch_end of a training batch includes the layer and the chan_output.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            int: write your description
+            dataloader_idx: write your description
+            int: write your description
+            layer: write your description
+            layer_idx: write your description
+            int: write your description
+            chan_output: write your description
+            int: write your description
+        """
         pass
 
 
@@ -170,6 +264,20 @@ class ObservableLayersChans(ObservableLayers):
         layer: "nn.Module",
         layer_idx: int,
     ):
+        """
+        This method is called when the training batch is finished.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            dataloader_idx: write your description
+            layer: write your description
+            layer_idx: write your description
+        """
         if isinstance(layer, BiSEL):
             for chan_output in range(layer.out_channels):
                 self.on_train_batch_end_layers_chan_output_always(
@@ -210,6 +318,22 @@ class ObservableLayersChans(ObservableLayers):
         chan_input: int,
         chan_output: int,
     ):
+        """
+        Callback when the training batch end of layers is called.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            dataloader_idx: write your description
+            layer: write your description
+            layer_idx: write your description
+            chan_input: write your description
+            chan_output: write your description
+        """
         pass
 
     def on_train_batch_end_layers_chan_output_always(
@@ -224,4 +348,23 @@ class ObservableLayersChans(ObservableLayers):
         layer_idx=int,
         chan_output=int,
     ):
+        """
+        Callback when the training batch end with layers_chan_output_always.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            int: write your description
+            dataloader_idx: write your description
+            int: write your description
+            layer: write your description
+            layer_idx: write your description
+            int: write your description
+            chan_output: write your description
+            int: write your description
+        """
         pass

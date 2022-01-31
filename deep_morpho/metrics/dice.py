@@ -2,6 +2,15 @@ import numpy as np
 
 
 def dice(y_true, y_pred, threshold=.5, SMOOTH=1e-6,):
+    """
+    Dice test for the given threshold.
+
+    Args:
+        y_true: write your description
+        y_pred: write your description
+        threshold: write your description
+        SMOOTH: write your description
+    """
     y_true = y_true.squeeze()
     y_pred = y_pred.squeeze()
 

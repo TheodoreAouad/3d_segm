@@ -25,6 +25,11 @@ from general.code_saver import CodeSaver
 
 
 def get_dataloader(args):
+    """
+    Get dataset loader.
+
+    Args:
+    """
 
     if args['dataset_type'] == 'diskorect':
         if (args['dataset_path'] is not None) and (args['dataset_path'] != 'generate'):
@@ -56,6 +61,12 @@ def get_dataloader(args):
 
 
 def main(args, logger):
+    """
+    Main function for the target SE module.
+
+    Args:
+        logger: write your description
+    """
 
     dataloader = get_dataloader(args)
     metrics = {'dice': lambda y_true, y_pred: dice(y_true, y_pred, threshold=.5).mean()}

@@ -12,8 +12,26 @@ for modl in [nu]:
 
 
 def time_decorator(n_iter=int(1e6)):
+    """
+    Decorator to time a function.
+
+    Args:
+        n_iter: write your description
+        int: write your description
+    """
     def wrapper_fn(fn):
+        """
+        Wrap a function to print the time it took to execute it and print the return value.
+
+        Args:
+            fn: write your description
+        """
         def wrapper(*args, **kwargs):
+            """
+            Wrapper function to print time and n_iter times
+
+            Args:
+            """
             t1 = time()
             fn(*args, **kwargs)
             print('first:', time() - t1)
@@ -29,6 +47,13 @@ def time_decorator(n_iter=int(1e6)):
 
 @njit
 def numba_sum(ar1, ar2):
+    """
+    Sums the two numbers using the numba algorithm.
+
+    Args:
+        ar1: write your description
+        ar2: write your description
+    """
     return ar1 + ar2
 
 
@@ -36,10 +61,22 @@ ar = np.zeros((50, 50))
 
 @time_decorator(n_iter=int(1e6))
 def f1(x):
+    """
+    First order function
+
+    Args:
+        x: write your description
+    """
     numba_sum(ar, ar)
 
 @time_decorator(n_iter=int(1e6))
 def f2(x):
+    """
+    Exponential random variates.
+
+    Args:
+        x: write your description
+    """
     return ar + ar
 
 

@@ -19,6 +19,19 @@ class BiSEL(nn.Module):
         lui_kwargs: Dict = {},
         **bise_kwargs
     ):
+        """
+        Initialize the BiseLuiS object.
+
+        Args:
+            self: write your description
+            in_channels: write your description
+            out_channels: write your description
+            kernel_size: write your description
+            threshold_mode: write your description
+            constant_P_lui: write your description
+            lui_kwargs: write your description
+            bise_kwargs: write your description
+        """
         super().__init__()
 
         self.in_channels = in_channels
@@ -33,6 +46,12 @@ class BiSEL(nn.Module):
         self.luis = self._init_luis()
 
     def _init_bises(self):
+        """
+        Initializes the bise layers.
+
+        Args:
+            self: write your description
+        """
         bises = []
         for idx in range(self.in_channels):
             layer = BiSE(
@@ -45,6 +64,12 @@ class BiSEL(nn.Module):
 
 
     def _init_luis(self):
+        """
+        Create LUI layers for each channel.
+
+        Args:
+            self: write your description
+        """
         luis = []
         for idx in range(self.out_channels):
             layer = LUI(
@@ -60,6 +85,15 @@ class BiSEL(nn.Module):
 
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward computation for the LUI layer
+
+        Args:
+            self: write your description
+            x: write your description
+            torch: write your description
+            Tensor: write your description
+        """
         bise_res = torch.cat([
             layer(x[:, chan_input:chan_input+1, ...])[:, None, ...] for chan_input, layer in enumerate(self.bises)
         ], axis=1)  # bise_res shape: (batch_size, in_channels, out_channels, width, length)
@@ -83,6 +117,12 @@ class BiSEL(nn.Module):
 
     @property
     def weights(self) -> torch.Tensor:
+        """
+        The weights of the model.
+
+        Args:
+            self: write your description
+        """
         return self.weight
 
     @property
@@ -113,6 +153,12 @@ class BiSEL(nn.Module):
 
     @property
     def bias_bises(self) -> torch.Tensor:
+        """
+        The bias basis of the network.
+
+        Args:
+            self: write your description
+        """
         return self.bias_bise
 
     @property
@@ -123,6 +169,12 @@ class BiSEL(nn.Module):
 
     @property
     def bias_luis(self) -> torch.Tensor:
+        """
+        The bias_lui property
+
+        Args:
+            self: write your description
+        """
         return self.bias_lui
 
     @property
@@ -133,14 +185,32 @@ class BiSEL(nn.Module):
 
     @property
     def normalized_weights(self) -> torch.Tensor:
+        """
+        The normalized weights of the model.
+
+        Args:
+            self: write your description
+        """
         return self.normalized_weight
 
     @property
     def _normalized_weight(self) -> torch.Tensor:
+        """
+        The normalized weight of the model.
+
+        Args:
+            self: write your description
+        """
         return self.normalized_weight
 
     @property
     def _normalized_weights(self) -> torch.Tensor:
+        """
+        The normalized weights for the model.
+
+        Args:
+            self: write your description
+        """
         return self.normalized_weights
 
     @property

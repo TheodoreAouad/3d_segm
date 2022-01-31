@@ -14,6 +14,11 @@ import ssm.pyqtgraph_mesh as pm
 
 
 def reload_modules():
+    """
+    Reload all modules
+
+    Args:
+    """
     for modl in [su, sh, sm, pm]:
         reload(modl)
 
@@ -68,6 +73,12 @@ verts_mean = []
 
 
 def min_max_norm(ar):
+    """
+    Minimum and maximum norm of an array.
+
+    Args:
+        ar: write your description
+    """
     return (ar - ar.min()) / (ar.max() - ar.min())
 
 

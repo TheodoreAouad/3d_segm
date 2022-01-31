@@ -47,6 +47,13 @@ class Observable(pl.callbacks.Callback):
 
 
     def set_hp_metrics(self, hp_metrics: Dict[str, Any]):
+        """
+        Set the HP metrics.
+
+        Args:
+            self: write your description
+            hp_metrics: write your description
+        """
         self._hp_metrics = hp_metrics
 
 
@@ -69,6 +76,22 @@ class Observable(pl.callbacks.Callback):
             batch_idx: int,
             preds: Any,
     ) -> None:
+        """
+        Called when the training batch is finished with preds.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl: write your description
+            Trainer: write your description
+            pl_module: write your description
+            pl: write your description
+            LightningModule: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            preds: write your description
+        """
         pass
 
     def on_validation_batch_end_with_preds(
@@ -80,6 +103,22 @@ class Observable(pl.callbacks.Callback):
             batch_idx: int,
             preds: Any,
     ) -> None:
+        """
+        Called when the training batch is finished with preds.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl: write your description
+            Trainer: write your description
+            pl_module: write your description
+            pl: write your description
+            LightningModule: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            preds: write your description
+        """
         pass
 
     def on_test_batch_end_with_preds(
@@ -91,8 +130,31 @@ class Observable(pl.callbacks.Callback):
             batch_idx: int,
             preds: Any,
     ) -> None:
+        """
+        After test batch end with preds.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl: write your description
+            Trainer: write your description
+            pl_module: write your description
+            pl: write your description
+            LightningModule: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            preds: write your description
+        """
         pass
 
 
     def save(self, savepath: str):
+        """
+        Saves the object to the specified file path.
+
+        Args:
+            self: write your description
+            savepath: write your description
+        """
         pass

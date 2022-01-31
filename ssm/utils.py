@@ -4,12 +4,30 @@ import numpy as np
 
 
 def array_wo_idx(ar: np.ndarray, idx: int) -> np.ndarray:
+    """
+    Takes an array and returns it without the given index.
+
+    Args:
+        ar: write your description
+        np: write your description
+        ndarray: write your description
+        idx: write your description
+    """
     totake = np.ones(len(ar)).astype(bool)
     totake[idx] = False
     return ar[totake]
 
 
 def is_outlier_1d(ar: np.ndarray, ratio_inter_quartile: float = 1.5) -> np.ndarray:
+    """
+    Checks if an ar value is an outlier.
+
+    Args:
+        ar: write your description
+        np: write your description
+        ndarray: write your description
+        ratio_inter_quartile: write your description
+    """
     q1, q3 = np.quantile(ar, [0.25, 0.75])
     return np.maximum(ar - q3, q1 - ar) - ratio_inter_quartile * (q3 - q1) > 0
 
@@ -50,10 +68,25 @@ def transform_cloud(T: np.ndarray, mat: np.ndarray) -> np.ndarray:
 
 
 def sort_by_regex(lis, regex=r'labels-(\d+)'):
+    """
+    Sort list by regex.
+
+    Args:
+        lis: write your description
+        regex: write your description
+    """
     return sorted(lis, key=lambda x: int(re.findall(regex, x)[0]))
 
 
 def random_color_generator(size: int, alpha: float = 1, RGB: bool = False) -> np.ndarray:
+    """
+    Generate a random palette of colors.
+
+    Args:
+        size: write your description
+        alpha: write your description
+        RGB: write your description
+    """
     colors = np.ones((size, 4)) * alpha
     if RGB:
         colors[:, :-1] = np.random.rand(size, 3)

@@ -24,6 +24,23 @@ class LightningBiSE(NetLightning):
         optimizer_args: Dict = {},
         observables: [List["Observable"]] = [],
     ):
+        """
+        Initialize the BiSE model.
+
+        Args:
+            self: write your description
+            model_args: write your description
+            learning_rate: write your description
+            optimizer: write your description
+            output_dir: write your description
+            loss: write your description
+            do_thresh_penalization: write your description
+            args_thresh_penalization: write your description
+            first_batch_pen: write your description
+            optimizer_args: write your description
+            observables: write your description
+            List: write your description
+        """
         super().__init__(
             model=BiSE(**model_args),
             learning_rate=learning_rate,
@@ -44,6 +61,14 @@ class LightningBiSE(NetLightning):
         self.save_hyperparameters()
 
     def obs_training_step(self, batch, batch_idx):
+        """
+        Performs obs training step.
+
+        Args:
+            self: write your description
+            batch: write your description
+            batch_idx: write your description
+        """
         x, y = batch
         predictions = self.forward(x).squeeze()
 
@@ -78,6 +103,23 @@ class LightningBiSEC(NetLightning):
         optimizer_args: Dict = {},
         observables: [List["Observable"]] = [],
     ):
+        """
+        Initialize the BiSEC model.
+
+        Args:
+            self: write your description
+            model_args: write your description
+            learning_rate: write your description
+            optimizer: write your description
+            output_dir: write your description
+            loss: write your description
+            do_thresh_penalization: write your description
+            args_thresh_penalization: write your description
+            first_batch_pen: write your description
+            optimizer_args: write your description
+            observables: write your description
+            List: write your description
+        """
         super().__init__(
             model=BiSEC(**model_args),
             learning_rate=learning_rate,
@@ -98,6 +140,14 @@ class LightningBiSEC(NetLightning):
         self.save_hyperparameters()
 
     def obs_training_step(self, batch, batch_idx):
+        """
+        Performs obs training step.
+
+        Args:
+            self: write your description
+            batch: write your description
+            batch_idx: write your description
+        """
         x, y = batch
         predictions = self.forward(x).squeeze()
 

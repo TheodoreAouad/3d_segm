@@ -19,6 +19,13 @@ only_new = True
 
 
 def convert_instance_number_idx(patient, path_slices="/hdd/aouadt/projets/SpondiDetect/SpondiDetect/data/desir_slices"):
+    """
+    Convert the instance number and index of a patient to an instance number and index.
+
+    Args:
+        patient: write your description
+        path_slices: write your description
+    """
     dic = {}
     for slice_ in os.listdir(join(path_slices, patient, 'npy')):
         slice_idx = re.findall(r'slice(\d+)-', slice_)[0]

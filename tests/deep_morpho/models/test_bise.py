@@ -8,12 +8,22 @@ class TestBiSE:
 
     @staticmethod
     def test_bise_init():
+        """
+        Test the BiSE initialization.
+
+        Args:
+        """
         layer = BiSE((7, 7), threshold_mode='sigmoid')
         layer
 
 
     @staticmethod
     def test_bise_forward():
+        """
+        Test the BiSE layer with a forward layer
+
+        Args:
+        """
         layer = BiSE((7, 7), threshold_mode='sigmoid')
         inpt = torch.rand((1, 1, 50, 50))
         layer(inpt)
@@ -21,6 +31,11 @@ class TestBiSE:
 
     @staticmethod
     def test_bise_erosion_check():
+        """
+        BiSE layer test for oasision by a standard model.
+
+        Args:
+        """
         layer = BiSE((7, 7), threshold_mode='sigmoid')
         weight = disk(3)
         layer.conv.weight.data[0] = torch.FloatTensor(100*(weight - 0.5))
@@ -30,6 +45,11 @@ class TestBiSE:
 
     @staticmethod
     def test_bise_dilation_check():
+        """
+        BiSE layer test for the dilation of saturated channels
+
+        Args:
+        """
         layer = BiSE((7, 7), threshold_mode='sigmoid')
         weight = disk(3)
         layer.conv.weight.data[0] = torch.FloatTensor(10*(weight - 0.5))

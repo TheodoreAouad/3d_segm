@@ -9,6 +9,13 @@ from general.nn.observables import Observable
 class SaveLoss(Observable):
 
     def __init__(self, freq: int = 100, *args, **kwargs):
+        """
+        Initialize the filter.
+
+        Args:
+            self: write your description
+            freq: write your description
+        """
         super().__init__(*args, **kwargs)
         self.freq = freq
         self.idx = 0

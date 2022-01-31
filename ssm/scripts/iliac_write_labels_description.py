@@ -17,6 +17,13 @@ organ = "iliac"
 
 
 def get_sorted_dirs_by_regex(path_parent, regex):
+    """
+    Returns a list of directories that match the regex.
+
+    Args:
+        path_parent: write your description
+        regex: write your description
+    """
     all_dirs = [f for f in os.listdir(path_parent) if os.path.isdir(join(path_parent, f))]
     return su.sort_by_regex(all_dirs, regex=regex)
 

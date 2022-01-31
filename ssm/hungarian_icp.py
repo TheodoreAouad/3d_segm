@@ -9,6 +9,17 @@ from .best_fit_transform import best_fit_transform
 
 
 def create_bipartite_graph(sample1: np.ndarray, sample2: np.ndarray) -> nx.Graph:
+    """
+    Create a graph of the bipartite graph from the sample points sample1 and sample2.
+
+    Args:
+        sample1: write your description
+        np: write your description
+        ndarray: write your description
+        sample2: write your description
+        np: write your description
+        ndarray: write your description
+    """
     gbi = nx.Graph()
     for ref_idx in range(len(sample1)):
         ref_point = sample1[ref_idx]

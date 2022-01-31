@@ -23,6 +23,11 @@ import sampling.src.watershed as ws
 
 
 def reload_modules():
+    """
+    Reloads all modules
+
+    Args:
+    """
     for mudl in [p, an, u, du, gd, m, ws]:
         reload(mudl)
 
