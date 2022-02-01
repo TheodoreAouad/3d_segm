@@ -33,8 +33,14 @@ class ThresholdLayer(nn.Module):
     def forward(self, x):
         # print((x + self.bias).shape)
         # print(self.P_.view(*([len(self.P_)] + [1 for _ in range(x.ndim - 1)])).shape)
+        # return self.threshold_fn(
+        #     (x + self.bias) * self.P_.view(*([1 for _ in range(self.axis_channels)] + [len(self.P_)] + [1 for _ in range(self.axis_channels, x.ndim - 1)]))
+        # )
+        return self.apply_threshold(x, self.P_, self.bias)
+
+    def apply_threshold(self, x, P_, bias):
         return self.threshold_fn(
-            (x + self.bias) * self.P_.view(*([1 for _ in range(self.axis_channels)] + [len(self.P_)] + [1 for _ in range(self.axis_channels, x.ndim - 1)]))
+            (x + bias) * P_.view(*([1 for _ in range(self.axis_channels)] + [len(P_)] + [1 for _ in range(self.axis_channels, x.ndim - 1)]))
         )
 
 

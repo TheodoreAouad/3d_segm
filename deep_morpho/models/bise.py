@@ -215,6 +215,9 @@ class BiSE(nn.Module):
     def _normalized_weight(self):
         conv_weight = self.weight_threshold_layer(self.weight)
         return conv_weight
+        # weights = torch.zeros_like(self.weight)
+        # weights.data[..., self.kernel_size[0]//2, self.kernel_size[1]//2] = 1
+        # return weights
 
     @property
     def _normalized_weights(self):
@@ -240,6 +243,11 @@ class BiSE(nn.Module):
         self.conv.bias.data = new_bias
         return new_bias
 
+    def set_activation_P(self, new_P: torch.Tensor) -> torch.Tensor:
+        assert self.activation_P.shape == new_P.shape
+        self.activation_threshold_layer.P_.data = new_P
+        return new_P
+
     @property
     def weight_P(self):
         if self.shared_weight_P is not None:
@@ -256,7 +264,8 @@ class BiSE(nn.Module):
 
     @property
     def bias(self):
-        return -self.softplus_layer(self.conv.bias)
+        return -self.softplus_layer(self.conv.bias) - .5
+        # return self.conv.bias
 
 
 class BiSEC(BiSE):

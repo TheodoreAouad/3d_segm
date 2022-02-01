@@ -36,10 +36,23 @@ class LUI(nn.Module):
 
     def forward(self, x):
         # return self.threshold_layer(self.linear(x.permute(0, 2, 3, 1))).permute(0, 3, 1, 2)
-        return self.threshold_layer(F.linear(x.permute(0, 2, 3, 1), self.positive_weight, self.bias)).permute(0, 3, 1, 2)
+        # return self.threshold_layer(F.linear(x.permute(0, 2, 3, 1), self.positive_weight, self.positive_bias)).permute(0, 3, 1, 2)
+        return self.threshold_layer.apply_threshold(
+            F.linear(x.permute(0, 2, 3, 1), self.positive_weight, self.bias),
+            self.activation_P, 0
+        ).permute(0, 3, 1, 2)
 
     @property
-    def bias(self):
+    def P_(self):
+        # return self.threshold_layer.P_
+        return self.softplus_layer(self.threshold_layer.P_)
+
+    @property
+    def positive_P(self):
+        return self.softplus_layer(self.P_)
+
+    @property
+    def bias_raw(self):
         return self.linear.bias
 
     @property
@@ -60,6 +73,11 @@ class LUI(nn.Module):
         return self.softplus_layer(self.weight)
 
     @property
+    def bias(self):
+        return -self.softplus_layer(self.bias_raw) -.5
+
+
+    @property
     def weights(self):
         return self.weight
 
@@ -72,6 +90,11 @@ class LUI(nn.Module):
         assert self.bias.shape == new_bias.shape
         self.linear.bias.data = new_bias
         return new_bias
+
+    def set_activation_P(self, new_P: torch.Tensor) -> torch.Tensor:
+        assert self.activation_P.shape == new_P.shape
+        self.threshold_layer.P_.data = new_P
+        return new_P
 
     def init_normal_coefs(self, mean, std):
         new_weights = torch.randn(self.linear.weight.shape) * std + mean
@@ -91,7 +114,8 @@ class LUI(nn.Module):
 
     @property
     def activation_P(self):
-        return self.threshold_layer.P_
+        # return self.threshold_layer.P_
+        return self.softplus_layer(self.threshold_layer.P_) + 1
 
     @staticmethod
     def bias_bounds_intersection(betas: torch.Tensor, C: np.ndarray, v1: np.ndarray, v2: np.ndarray) -> bool:

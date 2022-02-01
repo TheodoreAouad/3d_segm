@@ -16,7 +16,8 @@ selems = []
 # morp_operations.append(ParallelMorpOperations.opening(('disk', 3)))
 
 # morp_operations.append(ParallelMorpOperations.erosion(('identity', 7)))
-morp_operations.append(ParallelMorpOperations.complementation(size=7))
+morp_operations.append(ParallelMorpOperations.complementation(size=5))
+# morp_operations.append(ParallelMorpOperations.identity(size=7))
 # morp_operations.append(ParallelMorpOperations(
 #     name="complementation",
 #     operations=[[[('dilation', ('identity', 7), True), 'union']]]

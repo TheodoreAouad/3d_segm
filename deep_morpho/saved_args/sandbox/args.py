@@ -9,7 +9,7 @@ from .args_morp_ops import morp_operations
 
 all_args = {}
 
-all_args['experiment_name'] = ['Bimonn_exp_40_sandbox']
+all_args['experiment_name'] = ['Bimonn_exp_40_sandbox2']
 
 
 # DATA ARGS
@@ -46,7 +46,7 @@ all_args['n_inputs'] = [
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-2,
+    1e-1,
     # 1,
 ]
 
@@ -85,7 +85,7 @@ all_args['atomic_element'] = [
     # "max_plus",
 ]
 all_args['kernel_size'] = [
-    7,
+    5,
     # "adapt",
 ]
 all_args['channels'] = [
@@ -93,8 +93,9 @@ all_args['channels'] = [
     # (7, 7)
 ]
 all_args['init_weight_identity'] = [False]
-all_args['activation_P'] = [-1]
+all_args['activation_P'] = [1]
 all_args['constant_activation_P'] = [False]
+all_args['constant_P_lui'] = [False]
 all_args['constant_weight_P'] = [True]
 all_args['threshold_mode'] = [
     # 'arctan',

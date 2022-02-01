@@ -363,21 +363,29 @@ class ParallelMorpOperations:
             "=>".join([f'{fn.__name__}({arg})' for fn, arg in zip(self._selem_fn, self._selem_arg)])
         )
 
+    @staticmethod
+    def complementation(size: int, *args, **kwargs):
+        return ParallelMorpOperations(
+            name='complementation',
+            operations=[[[('erosion', ('identity', size), True), 'union']]],
+            *args,
+            **kwargs
+        )
+
+    @staticmethod
+    def identity(size: int, *args, **kwargs):
+        return ParallelMorpOperations(
+            name='complementation',
+            operations=[[[('erosion', ('identity', size), False), 'union']]],
+            *args,
+            **kwargs
+        )
 
     @staticmethod
     def erosion(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
         return ParallelMorpOperations(
             name='erosion',
             operations=[[[('erosion', selem, False), 'union']]],
-            *args,
-            **kwargs
-        )
-
-    @staticmethod
-    def complementation(size: int, *args, **kwargs):
-        return ParallelMorpOperations(
-            name='complementation',
-            operations=[[[('erosion', ('identity', size), False), 'union']]],
             *args,
             **kwargs
         )
