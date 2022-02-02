@@ -14,11 +14,12 @@ import matplotlib.pyplot as plt
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
 from deep_morpho.datasets.multi_rect_dataset import InputOutputGeneratorDataset, MultiRectDataset
-from deep_morpho.datasets.axspa_roi_dataset import AxspaROIDataset
+from deep_morpho.datasets.axspa_roi_dataset import AxspaROIDataset, AxspaROISimpleDataset
 from deep_morpho.models import LightningBiMoNN, BiSE, COBiSE, BiSEC, COBiSEC
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
 from general.utils import format_time, log_console, create_logger, save_yaml
+from general.nn.utils import train_val_test_split
 from deep_morpho.metrics import dice
 from deep_morpho.args import all_args
 from general.code_saver import CodeSaver
@@ -45,19 +46,26 @@ def get_dataloader(args):
         )
 
     elif args['dataset_type'] == 'axspa_roi':
-        dataloader = AxspaROIDataset.get_loader(
-            pd.read_csv(args['dataset_path']),
+        data = pd.read_csv(args['dataset_path'])
+        prop_train, prop_val, prop_test = args['train_test_split']
+        trainloader, valloader, testloader = AxspaROISimpleDataset.get_train_val_test_loader(
+            *train_val_test_split(
+                data,
+                train_size=int(prop_train * len(data)),
+                val_size=int(prop_val * len(data)),
+                test_size=int(prop_test * len(data))
+            ),
             batch_size=args['batch_size'],
             preprocessing=args['preprocessing'],
             shuffle=True,
         )
 
-    return dataloader
+    return trainloader, valloader, testloader
 
 
 def main(args, logger):
 
-    dataloader = get_dataloader(args)
+    trainloader, valloader, testloader = get_dataloader(args)
     metrics = {'dice': lambda y_true, y_pred: dice(y_true, y_pred, threshold=.5).mean()}
 
     observables_dict = {
@@ -66,7 +74,7 @@ def main(args, logger):
             metrics=metrics,
             keep_preds_for_epoch=False,
         ),
-        "PlotPreds": obs.PlotPreds(freq=args['freq_imgs']),
+        "PlotPreds": obs.PlotPreds(freq={'train': args['freq_imgs'], 'val': 2}),
         "InputAsPredMetric": obs.InputAsPredMetric(metrics),
         "CountInputs": obs.CountInputs(),
         "PlotParametersBiSE": obs.PlotParametersBiSE(freq=1),
@@ -187,12 +195,12 @@ def main(args, logger):
         max_epochs=args['n_epochs'],
         gpus=1 if torch.cuda.is_available() else 0,
         logger=logger,
-        progress_bar_refresh_rate=10,
+        # progress_bar_refresh_rate=10,
         callbacks=observables.copy(),
         log_every_n_steps=10,
     )
 
-    trainer.fit(model, dataloader)
+    trainer.fit(model, trainloader, valloader)
 
     for observable in observables:
         observable.save(join(trainer.log_dir, 'observables'))

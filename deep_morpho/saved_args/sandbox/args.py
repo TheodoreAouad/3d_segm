@@ -9,17 +9,17 @@ from .args_morp_ops import morp_operations
 
 all_args = {}
 
-all_args['experiment_name'] = ['Bimonn_exp_40_sandbox2']
+all_args['experiment_name'] = ['Bimonn_exp_42_sandbox']
 
 
 # DATA ARGS
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
-    'diskorect',
-    # 'axspa_roi',
+    # 'diskorect',
+    'axspa_roi',
 ]
 all_args['preprocessing'] = [  # for axspa roi
-    transforms.ToTensor(),
+    None,
 ]
 all_args['dataset_path'] = [
     # 'data/deep_morpho/dataset_0',
@@ -42,26 +42,27 @@ all_args['n_inputs'] = [
     1_000_000,
     # 100_000,
 ]
+all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-1,
+    1,
     # 1,
 ]
 
 # if max_plus, then the loss is MSELoss
 all_args['loss'] = [
-    nn.BCELoss(),
+    # nn.BCELoss(),
     # nn.BCEWithLogitsLoss(),
     # nn.MSELoss(),
-    # DiceLoss(),
+    DiceLoss(),
 ]
 all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
-all_args['batch_size'] = [256]
+all_args['batch_size'] = [32]
 all_args['num_workers'] = [
     20,
     # 0,
@@ -71,10 +72,10 @@ all_args['n_epochs'] = [10]
 
 
 # MODEL ARGS
-all_args['n_atoms'] = [
-    # 'adapt',
-    4,
-]
+# all_args['n_atoms'] = [
+#     # 'adapt',
+#     4,
+# ]
 all_args['atomic_element'] = [
     # 'conv',
     # 'bise',
@@ -85,14 +86,17 @@ all_args['atomic_element'] = [
     # "max_plus",
 ]
 all_args['kernel_size'] = [
-    5,
+    7,
     # "adapt",
 ]
 all_args['channels'] = [
-    'adapt',
-    # (7, 7)
+    # 'adapt',
+    [
+        2,  # input
+        2, 2, 2, 1,
+    ]
 ]
-all_args['init_weight_identity'] = [False]
+all_args['init_weight_identity'] = [True]
 all_args['activation_P'] = [1]
 all_args['constant_activation_P'] = [False]
 all_args['constant_P_lui'] = [False]
@@ -125,6 +129,7 @@ for idx, args in enumerate(all_args):
         args['morp_operation'] = []
         args['experiment_subname'] = 'axspa_roi'
         args['freq_imgs'] = 10
+        args['n_atoms'] = len(args['channels']) - 1
 
     elif args['dataset_type'] == "diskorect":
         # args['kernel_size'] = 'adapt'

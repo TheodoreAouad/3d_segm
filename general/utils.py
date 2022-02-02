@@ -16,6 +16,39 @@ from skimage.transform import warp
 from sklearn.model_selection import ParameterGrid
 
 
+def one_hot_array(ar: np.ndarray, nb_chans: int = "auto", axis: int = -1, background: float = 0) -> np.ndarray:
+    """ Performs one hot encoding of an array. Adds a channel on the axis axis, such that all the channels are binary.
+
+    Args:
+        ar (np.ndarray): array to one hot encode.
+        axis (np.ndarray): axis where the additional channel is created.
+        background (None | float): value to ignore
+
+    Returns:
+        np.ndarray: one hot encoded array
+    """
+    unique_values = sorted(list(set(np.unique(ar)).difference([background])))
+    if nb_chans == 'auto':
+        nb_chans = len(unique_values)
+
+    if axis == -1:
+        res = np.zeros(ar.shape + (nb_chans,))
+
+        for idx, value in enumerate(unique_values):
+            res[..., idx] = ar == value
+        return res
+
+    elif axis == 0:
+        res = np.zeros((nb_chans,) + ar.shape)
+
+        for idx, value in enumerate(unique_values):
+            res[idx] = ar == value
+        return res
+
+    else:
+        raise ValueError("axis must be 0 or -1.")
+
+
 def save_json(dic, path, sort_keys=True, indent=4):
     with open(path, 'w') as fp:
         json.dump(dic, fp, sort_keys=sort_keys, indent=indent)

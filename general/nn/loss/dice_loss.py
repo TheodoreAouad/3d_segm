@@ -11,6 +11,12 @@ class DiceLoss(nn.Module):
     def forward(self, ypred, ytrue):
         ypred = ypred.squeeze()
         ytrue = ytrue.squeeze()
+
+        if ypred.ndim == 2:
+            ypred = ypred.unsqueeze(0)
+        if ytrue.ndim == 2:
+            ytrue = ytrue.unsqueeze(0)
+
         assert len(ypred.shape) == 3
         assert len(ytrue.shape) == 3
 
