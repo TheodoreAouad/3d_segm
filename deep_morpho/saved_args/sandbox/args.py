@@ -9,14 +9,17 @@ from .args_morp_ops import morp_operations
 
 all_args = {}
 
-all_args['experiment_name'] = ['Bimonn_exp_42_sandbox']
+all_args['experiment_name'] = [
+    'Bimonn_exp_43_sandbox'
+    # "sandbox/opening"
+]
 
 
 # DATA ARGS
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
-    # 'diskorect',
-    'axspa_roi',
+    'diskorect',
+    # 'axspa_roi',
 ]
 all_args['preprocessing'] = [  # for axspa roi
     None,
@@ -47,7 +50,7 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1,
+    1e-2,
     # 1,
 ]
 
@@ -55,14 +58,14 @@ all_args['learning_rate'] = [
 all_args['loss'] = [
     # nn.BCELoss(),
     # nn.BCEWithLogitsLoss(),
-    # nn.MSELoss(),
-    DiceLoss(),
+    nn.MSELoss(),
+    # DiceLoss(),
 ]
 all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
-all_args['batch_size'] = [32]
+all_args['batch_size'] = [256]
 all_args['num_workers'] = [
     20,
     # 0,
@@ -90,14 +93,18 @@ all_args['kernel_size'] = [
     # "adapt",
 ]
 all_args['channels'] = [
-    # 'adapt',
-    [
-        2,  # input
-        2, 2, 2, 1,
-    ]
+    'adapt',
+    # [
+    #     2,  # input
+    #     2, 2, 2, 1,
+    # ]
 ]
-all_args['init_weight_identity'] = [True]
-all_args['activation_P'] = [1]
+all_args['init_weight_mode'] = [
+    # "identity",
+    "normal_identity",
+    # "conv"
+]
+all_args['activation_P'] = [0]
 all_args['constant_activation_P'] = [False]
 all_args['constant_P_lui'] = [False]
 all_args['constant_weight_P'] = [True]

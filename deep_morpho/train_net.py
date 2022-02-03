@@ -35,7 +35,7 @@ def get_dataloader(args):
                 num_workers=args['num_workers']
             )
         else:
-            dataloader = InputOutputGeneratorDataset.get_loader(
+            trainloader = InputOutputGeneratorDataset.get_loader(
                 batch_size=args['batch_size'],
                 n_inputs=args['n_inputs'],
                 random_gen_fn=args['random_gen_fn'],
@@ -43,7 +43,9 @@ def get_dataloader(args):
                 morp_operation=args['morp_operation'],
                 device=device,
                 num_workers=args['num_workers']
-        )
+            )
+            valloader = None
+            testloader = None
 
     elif args['dataset_type'] == 'axspa_roi':
         data = pd.read_csv(args['dataset_path'])
@@ -107,7 +109,7 @@ def main(args, logger):
             "constant_activation_P": args['constant_activation_P'],
             "constant_P_lui": args['constant_P_lui'],
             "constant_weight_P": args['constant_weight_P'],
-            "init_weight_identity": args["init_weight_identity"],
+            "init_weight_mode": args["init_weight_mode"],
             "alpha_init": args["alpha_init"],
         },
         learning_rate=args['learning_rate'],

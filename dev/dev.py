@@ -1,13 +1,10 @@
-class ListIndex(list):
+from enum import Enum
 
-    def __getitem__(self, idx):
-        if isinstance(idx, int):
-            return super().__getitem__(idx)
-        if not isinstance(idx, tuple):
-            raise ValueError("index must be int or tuple.")
+class AB:
+    A = 1
+    B = 2
 
-        itm = super().__getitem__(idx[0])
-        for cur_idx in idx[1:]:
-            itm = itm[cur_idx]
+class ZE(AB):
+    C = 3
+    D = 4
 
-        return itm

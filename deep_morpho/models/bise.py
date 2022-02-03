@@ -1,4 +1,5 @@
 from typing import Tuple, Union
+import warnings
 
 import numpy as np
 import torch
@@ -23,7 +24,7 @@ class BiSE(nn.Module):
         shared_weights: torch.tensor = None,
         shared_weight_P: torch.tensor = None,
         init_bias_value: float = -2,
-        init_weight_identity: bool = True,
+        init_weight_mode: str = "normal_identity",
         out_channels=1,
         *args,
         **kwargs
@@ -33,6 +34,7 @@ class BiSE(nn.Module):
         self._weight_P = nn.Parameter(torch.tensor([weight_P for _ in range(out_channels)]).float())
         self.activation_P_init = activation_P
         self.kernel_size = self._init_kernel_size(kernel_size)
+        self.init_weight_mode = init_weight_mode
         self.conv = nn.Conv2d(
             in_channels=1,
             out_channels=out_channels,
@@ -43,10 +45,6 @@ class BiSE(nn.Module):
             *args,
             **kwargs
         )
-        with torch.no_grad():
-            self.conv.bias.fill_(init_bias_value)
-        if init_weight_identity:
-            self._init_as_identity()
 
         self.softplus_layer = nn.Softplus()
 
@@ -55,6 +53,12 @@ class BiSE(nn.Module):
 
         self.weight_threshold_layer = dispatcher[self.weight_threshold_mode](P_=self.weight_P, constant_P=constant_weight_P, n_channels=out_channels, axis_channels=0)
         self.activation_threshold_layer = dispatcher[self.activation_threshold_mode](P_=activation_P, constant_P=constant_activation_P, n_channels=out_channels, axis_channels=1)
+
+        with torch.no_grad():
+            self.conv.bias.fill_(init_bias_value)
+
+        self.init_weights()
+
 
     @staticmethod
     def bise_from_selem(selem: np.ndarray, operation: str, threshold_mode: str = "tanh", weight_P=10, **kwargs):
@@ -72,6 +76,26 @@ class BiSE(nn.Module):
             return (kernel_size, kernel_size)
         return kernel_size
 
+    def init_weights(self):
+        if self.init_weight_mode == "normal_identity":
+            self.set_weights(self._init_normal_identity(self.kernel_size, self.out_channels))
+        elif self.init_weight_mode == "identity":
+            self._init_as_identity()
+        else:
+            warnings.warn(f"init weight mode {self.init_weight_mode} not recognized. Classical conv init used.")
+            pass
+
+    @staticmethod
+    def _init_normal_identity(kernel_size, chan_output, std=0.3, mean=1):
+        weights = torch.randn((chan_output,) + kernel_size)[:, None, ...] * std - mean
+        weights[..., kernel_size[0] // 2, kernel_size[1] // 2] += 2*mean
+        return weights
+
+    def _init_as_identity(self):
+        self.conv.weight.data.fill_(-1)
+        shape = self.conv.weight.shape
+        self.conv.weight.data[..., shape[-2]//2, shape[-1]//2] = 1
+
     def activation_threshold_fn(self, x):
         return self.activation_threshold_layer.threshold_fn(x)
 
@@ -82,11 +106,6 @@ class BiSE(nn.Module):
         output = self.conv._conv_forward(x, self._normalized_weight, self.bias, )
         output = self.activation_threshold_layer(output)
         return output
-
-    def _init_as_identity(self):
-        self.conv.weight.data.fill_(-1)
-        shape = self.conv.weight.shape
-        self.conv.weight.data[..., shape[-2]//2, shape[-1]//2] = 1
 
     @staticmethod
     def is_erosion_by(normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1):
