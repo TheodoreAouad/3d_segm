@@ -1,10 +1,6 @@
-from enum import Enum
+from deep_morpho.datasets.mnist_dataset import MnistMorphoDataset
+from deep_morpho.morp_operations import ParallelMorpOperations
 
-class AB:
-    A = 1
-    B = 2
 
-class ZE(AB):
-    C = 3
-    D = 4
-
+dataset = MnistMorphoDataset(n_inputs=10000, morp_operation=ParallelMorpOperations.erosion(('disk', 3)))
+dataset[0]

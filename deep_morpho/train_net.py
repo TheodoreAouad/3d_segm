@@ -9,6 +9,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from deep_morpho.datasets.mnist_dataset import MnistMorphoDataset
 
 
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
@@ -60,6 +61,20 @@ def get_dataloader(args):
             batch_size=args['batch_size'],
             preprocessing=args['preprocessing'],
             shuffle=True,
+        )
+
+    elif args['dataset_type'] == "mnist":
+        prop_train, prop_val, prop_test = args['train_test_split']
+        trainloader, valloader, testloader = MnistMorphoDataset.get_train_val_test_loader(
+            n_inputs_train=int(prop_train * args['n_inputs']),
+            n_inputs_val=int(prop_val * args['n_inputs']),
+            n_inputs_test=int(prop_test * args['n_inputs']),
+            batch_size=args['batch_size'],
+            morp_operation=args['morp_operation'],
+            preprocessing=args['preprocessing'],
+            shuffle=True,
+            num_workers=args['num_workers'],
+            threshold=args['mnist_threshold'],
         )
 
     return trainloader, valloader, testloader
@@ -173,7 +188,7 @@ def main(args, logger):
 
     logger.log_hyperparams(args, hyperparams)
 
-    if args['dataset_type'] == "diskorect":
+    if args['dataset_type'] in ["diskorect", "mnist"]:
         pathlib.Path(join(logger.log_dir, "target_SE")).mkdir(exist_ok=True, parents=True)
         figs_selems = args['morp_operation'].plot_selem_arrays()
         for (layer_idx, chan_input, chan_output), fig in figs_selems.items():

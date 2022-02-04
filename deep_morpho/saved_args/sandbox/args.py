@@ -10,7 +10,7 @@ from .args_morp_ops import morp_operations
 all_args = {}
 
 all_args['experiment_name'] = [
-    'Bimonn_exp_43_sandbox'
+    'Bimonn_exp_44'
     # "sandbox/opening"
 ]
 
@@ -18,9 +18,11 @@ all_args['experiment_name'] = [
 # DATA ARGS
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
-    'diskorect',
+    # 'diskorect',
     # 'axspa_roi',
+    "mnist",
 ]
+all_args['mnist_threshold'] = [30]
 all_args['preprocessing'] = [  # for axspa roi
     None,
 ]
@@ -42,10 +44,11 @@ all_args['random_gen_args'] = [
 
 ]
 all_args['n_inputs'] = [
-    1_000_000,
+    # 1_000_000,
     # 100_000,
+    70000,
 ]
-all_args['train_test_split'] = [(0.8, 0.2, 0)]
+all_args['train_test_split'] = [(1, 1, 0)]
 
 
 # TRAINING ARGS
@@ -58,8 +61,8 @@ all_args['learning_rate'] = [
 all_args['loss'] = [
     # nn.BCELoss(),
     # nn.BCEWithLogitsLoss(),
-    nn.MSELoss(),
-    # DiceLoss(),
+    # nn.MSELoss(),
+    DiceLoss(),
 ]
 all_args['optimizer'] = [
     optim.Adam,
@@ -71,7 +74,7 @@ all_args['num_workers'] = [
     # 0,
 ]
 all_args['freq_imgs'] = [300]
-all_args['n_epochs'] = [10]
+all_args['n_epochs'] = [20]
 
 
 # MODEL ARGS
@@ -89,13 +92,13 @@ all_args['atomic_element'] = [
     # "max_plus",
 ]
 all_args['kernel_size'] = [
-    7,
-    # "adapt",
+    # 7,
+    "adapt",
 ]
 all_args['channels'] = [
     'adapt',
     # [
-    #     2,  # input
+        # 1,  # input
     #     2, 2, 2, 1,
     # ]
 ]
@@ -138,18 +141,18 @@ for idx, args in enumerate(all_args):
         args['freq_imgs'] = 10
         args['n_atoms'] = len(args['channels']) - 1
 
-    elif args['dataset_type'] == "diskorect":
+    if args['dataset_type'] == "mnist":
+        args['freq_imgs'] = 300
+
+
+    if args['dataset_type'] in ["diskorect", 'mnist']:
         # args['kernel_size'] = 'adapt'
         args['n_atoms'] = 'adapt'
-        args['n_epochs'] = 1
 
 
         if args["kernel_size"] == "adapt":
             args["kernel_size"] = args["morp_operation"].selems[0][0][0].shape[0]
 
-        args["random_gen_args"] = args["random_gen_args"].copy()
-        args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
-        args['random_gen_args']['size'] = args['random_gen_args']['size'] + (args["morp_operation"].in_channels[0],)
         args['experiment_subname'] = args['morp_operation'].name
 
         if args['channels'] == 'adapt':
@@ -159,6 +162,14 @@ for idx, args in enumerate(all_args):
             args['n_atoms'] = len(args['morp_operation'])
             if args['atomic_element'] in ['cobise', 'cobisec']:
                 args['n_atoms'] = max(args['n_atoms'] // 2, 1)
+
+
+    if args['dataset_type'] == "diskorect":
+        args['n_epochs'] = 1
+        args["random_gen_args"] = args["random_gen_args"].copy()
+        args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
+        args['random_gen_args']['size'] = args['random_gen_args']['size'] + (args["morp_operation"].in_channels[0],)
+
 
     if args['atomic_element'] == "conv":
         args['threshold_mode'] = {"activation": "sigmoid", "weight": "identity"}
