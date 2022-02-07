@@ -9,8 +9,12 @@ from .args_morp_ops import morp_operations
 
 all_args = {}
 
+all_args['n_try'] = [0]
+# all_args['n_try'] = range(1, 11)
+
 all_args['experiment_name'] = [
-    'Bimonn_exp_44'
+    # 'Bimonn_exp_45_sandbox_disk'
+    'Bimonn_exp_45_hstick'
     # "sandbox/opening"
 ]
 
@@ -61,8 +65,8 @@ all_args['learning_rate'] = [
 all_args['loss'] = [
     # nn.BCELoss(),
     # nn.BCEWithLogitsLoss(),
-    # nn.MSELoss(),
-    DiceLoss(),
+    nn.MSELoss(),
+    # DiceLoss(),
 ]
 all_args['optimizer'] = [
     optim.Adam,
@@ -104,17 +108,17 @@ all_args['channels'] = [
 ]
 all_args['init_weight_mode'] = [
     # "identity",
-    "normal_identity",
-    # "conv"
+    # "normal_identity",
+    "conv"
 ]
-all_args['activation_P'] = [0]
+all_args['activation_P'] = [1]
 all_args['constant_activation_P'] = [False]
 all_args['constant_P_lui'] = [False]
 all_args['constant_weight_P'] = [True]
 all_args['threshold_mode'] = [
     # 'arctan',
-    # 'sigmoid',
-    'tanh',
+    'sigmoid',
+    # 'tanh',
     # 'erf',
     # "identity",
     # {"activation": "sigmoid", "weight": "identity", "complementation": "clamp"}

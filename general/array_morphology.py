@@ -6,7 +6,9 @@ import torch.nn.functional as F
 
 
 def format_for_conv(ar: np.ndarray, device: torch.device) -> torch.Tensor:
-    return torch.tensor(ar).unsqueeze(0).unsqueeze(0).float().to(device)
+    if not isinstance(ar, torch.Tensor):
+        ar = torch.tensor(ar)
+    return ar.unsqueeze(0).unsqueeze(0).float().to(device)
 
 
 def array_erosion(ar: np.ndarray, selem: np.ndarray, device: torch.device = "cpu", return_numpy_array: bool = True) -> Union[np.ndarray, torch.Tensor]:

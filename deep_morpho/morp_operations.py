@@ -324,7 +324,8 @@ class ParallelMorpOperations:
             # x = next_x
             x = self.apply_layer(layer, x)
         if not self.return_numpy_array:
-            return torch.tensor(x)
+            if not isinstance(x, torch.Tensor):
+                return torch.tensor(x)
         return x
 
     def __call__(self, ar):

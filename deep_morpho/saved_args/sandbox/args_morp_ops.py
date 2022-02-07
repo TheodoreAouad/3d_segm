@@ -15,19 +15,20 @@ selems = []
 # morp_operations.append(ParallelMorpOperations.black_tophat(('disk', 3)))
 # morp_operations.append(ParallelMorpOperations.white_tophat(('disk', 3)))
 
-# morp_operations.append(ParallelMorpOperations.closing(('disk', 1)))
+morp_operations.append(ParallelMorpOperations.closing(('dcross', 7)))
 
-for op in ['disk', 'hstick', 'vstick', 'scross', 'dcross', 'square']:
-    size1 = 5
-    size2 = 7
-    if op == "disk":
-        size1 = size1 // 2
-        size2 = size2 // 2
 
-    morp_operations.append(ParallelMorpOperations.dilation((op, size1)))
-    morp_operations.append(ParallelMorpOperations.erosion((op, size1)))
-    morp_operations.append(ParallelMorpOperations.opening((op, size2)))
-    morp_operations.append(ParallelMorpOperations.closing((op, size2)))
+# for op in ['disk', 'hstick', 'vstick', 'scross', 'dcross', 'square']:
+#     size1 = 5
+#     size2 = 7
+#     if op == "disk":
+#         size1 = size1 // 2
+#         size2 = size2 // 2
+
+#     morp_operations.append(ParallelMorpOperations.dilation((op, size1)))
+#     morp_operations.append(ParallelMorpOperations.erosion((op, size1)))
+#     morp_operations.append(ParallelMorpOperations.opening((op, size2)))
+#     morp_operations.append(ParallelMorpOperations.closing((op, size2)))
 # morp_operations.append(ParallelMorpOperations.dilation(('disk', 2)))
 # morp_operations.append(ParallelMorpOperations.dilation(('disk', 2)))
 
