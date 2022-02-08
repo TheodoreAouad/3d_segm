@@ -125,6 +125,7 @@ class ParallelMorpOperations:
         self.out_channels = None
         self.selems = None
         self.do_complementation = None
+        self.max_selem_shape = None
 
         self.convert_ops(operations)
 
@@ -243,6 +244,7 @@ class ParallelMorpOperations:
         layers = {key: [] for key in ["op_fn", "op_names", "selem_names", "selem_args", "selems", "do_complementation"]}
         chans = {key: [] for key in ["op_fn", "op_names", "selem_names", "selem_args", "selems", "do_complementation"]}
 
+        max_selem_shape = []
         in_channels = []
         out_channels = []
 
@@ -251,6 +253,7 @@ class ParallelMorpOperations:
                 layers[key] = []
             out_channels.append(len(layer_str))
             in_channels.append(len(layer_str[0]) - 1)
+            cur_max_shape = (0, 0)
 
             for chan_str in layer_str:
 
@@ -260,6 +263,7 @@ class ParallelMorpOperations:
                 for cur_op_str in chan_str[:-1]:
                     # in all_erodila_res: op_fn, op_name, selem_name, selem_args, selem, do_complementation
                     all_erodila_res = self._erodila_op_converter(cur_op_str)
+                    cur_max_shape = np.maximum(all_erodila_res[4].shape, cur_max_shape)
 
                     for key, res in zip(chans.keys(), all_erodila_res):
                         chans[key].append(res)
@@ -288,6 +292,7 @@ class ParallelMorpOperations:
 
             for key in alls.keys():
                 alls[key].append(layers[key])
+            max_selem_shape.append(cur_max_shape)
 
         self.operations = alls['op_fn']
         self.operation_names = alls['op_names']
@@ -300,6 +305,7 @@ class ParallelMorpOperations:
 
         self.in_channels = in_channels
         self.out_channels = out_channels
+        self.max_selem_shape = max_selem_shape
 
         return alls
 
@@ -402,8 +408,9 @@ class ParallelMorpOperations:
 
     @staticmethod
     def opening(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        if "name" not in kwargs.keys():
+            kwargs["name"] = "opening"
         return ParallelMorpOperations(
-            name='opening',
             operations=[
                 [[('erosion', selem, False), 'union']],
                 [[('dilation', selem, False), 'union']],

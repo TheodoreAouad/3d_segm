@@ -14,7 +14,7 @@ class Element:
         if xy_coords_botleft is not None and xy_coords_mean is not None:
             raise ValueError("choose either xy coords botleft or mean.")
 
-        self.shape = shape
+        self.shape = np.array(shape)
         self.xy_coords_botleft = None
 
         if xy_coords_botleft is not None:
@@ -84,17 +84,22 @@ class Element:
 class ElementGrouper(Element):
 
     def __init__(self, elements=dict(), *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(shape=np.zeros(2), xy_coords_botleft=np.zeros(2), *args, **kwargs)
         self.elements = dict()
         for key, element in elements.items():
             self.add_element(element, key=key)
-        self.xy_coords_botleft = np.array([0, 0])  # TODO: adapt this to the elements
-        self.shape = np.array([0, 0])  # TODO: adapt this to the elements
+        # self.xy_coords_botleft = np.array([0, 0])  # TODO: adapt this to the elements
+        # self.shape = np.array([0, 0])  # TODO: adapt this to the elements
 
     def translate_group(self, vector: np.ndarray):
         # self.translate(vector)
         for element in self.elements.values():
             element.translate(vector)
+        return self
+
+    @property  # TODO: merge with self.shape
+    def shape_group(self):
+        return np.array([np.array(elt.shape) for elt in self.elements.values()]).mean(1)
 
     def add_element(self, element: Element, key=None):
         if key is None:
@@ -103,6 +108,7 @@ class ElementGrouper(Element):
                 key = np.random.randint(0, 9999999)
 
         self.elements[key] = element
+        return self
 
     def add_to_canva(self, canva: "Canva"):
         for key, element in self.elements.items():
@@ -118,6 +124,7 @@ class ElementGrouper(Element):
                 canva.add_element(element, key=key)
 
             canva.add_element(element, key)
+        return self
 
     def __len__(self):
         return len(self.elements)

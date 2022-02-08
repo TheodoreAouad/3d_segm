@@ -9,12 +9,13 @@ from .args_morp_ops import morp_operations
 
 all_args = {}
 
-all_args['n_try'] = [0]
-# all_args['n_try'] = range(1, 11)
+# all_args['n_try'] = [0]
+all_args['n_try'] = range(1, 11)
 
 all_args['experiment_name'] = [
     # 'Bimonn_exp_45_sandbox_disk'
-    'Bimonn_exp_45_hstick'
+    'Bimonn_exp_46/multi_opening'
+    # 'Bimonn_exp_46_sandbox'
     # "sandbox/opening"
 ]
 
@@ -22,9 +23,9 @@ all_args['experiment_name'] = [
 # DATA ARGS
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
-    # 'diskorect',
+    'diskorect',
     # 'axspa_roi',
-    "mnist",
+    # "mnist",
 ]
 all_args['mnist_threshold'] = [30]
 all_args['preprocessing'] = [  # for axspa roi
@@ -48,9 +49,9 @@ all_args['random_gen_args'] = [
 
 ]
 all_args['n_inputs'] = [
-    # 1_000_000,
+    2_000_000,
     # 100_000,
-    70000,
+    # 70000,
 ]
 all_args['train_test_split'] = [(1, 1, 0)]
 
@@ -112,13 +113,13 @@ all_args['init_weight_mode'] = [
     "conv"
 ]
 all_args['activation_P'] = [1]
-all_args['constant_activation_P'] = [False]
+all_args['constant_activation_P'] = [True]
 all_args['constant_P_lui'] = [False]
 all_args['constant_weight_P'] = [True]
 all_args['threshold_mode'] = [
     # 'arctan',
-    'sigmoid',
-    # 'tanh',
+    # 'sigmoid',
+    'tanh',
     # 'erf',
     # "identity",
     # {"activation": "sigmoid", "weight": "identity", "complementation": "clamp"}

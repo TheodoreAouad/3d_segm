@@ -2,7 +2,7 @@ from typing import Tuple, Any
 
 import numpy as np
 
-from matplotlib.pyplot import plt
+import matplotlib.pyplot as plt
 
 from .element import Element
 

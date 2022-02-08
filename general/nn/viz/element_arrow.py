@@ -18,6 +18,11 @@ class ElementArrow(Element):
         self.x, self.y, self.dx, self.dy = x, y, dx, dy
         self.arrow_kwargs = arrow_kwargs
 
+    def translate(self, vector: np.ndarray):
+        super().translate(vector)
+        self.x, self.y = np.array([self.x, self.y]) + vector
+
+
     def add_to_canva(self, canva: "Canva", ):
         return canva.ax.arrow(self.x, self.y, self.dx, self.dy, **self.arrow_kwargs)
 
