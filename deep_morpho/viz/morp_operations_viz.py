@@ -1,12 +1,17 @@
 import numpy as np
 
-from general.nn.viz import Canva, Element, ElementArrow, ElementImage, ElementGrouper
+from general.nn.viz import Canva, ElementArrow, ElementImage, ElementGrouper, ElementCircle
 from ..morp_operations import ParallelMorpOperations
-from general.nn.viz import ElementSymbolDilation, ElementSymbolErosion, ElementSymbolIntersection, ElementSymbolUnion
+from general.nn.viz import (
+    ElementSymbolDilation, ElementSymbolErosion, ElementSymbolIntersection, ElementSymbolUnion
+)
 
 
 LUI_HORIZONTAL_FACTOR = 3
 LUI_RADIUS_FACTOR = .5
+INPUT_RADIUS_FACTOR = .8
+
+NEXT_LAYER_FACTOR = .3
 
 
 class MorpOperationsVizualiser:
@@ -36,6 +41,22 @@ class MorpOperationsVizualiser:
         for layer_idx in range(len(self)):
             self.canva.add_element(self.get_layer_group(layer_idx), key=f'layer_{layer_idx}')
         return self.canva
+
+
+    def get_layer_0(self):
+        layer_group = ElementGrouper()
+        n_elts = self.model.in_channels[0]
+        coords = np.linspace(0, self.box_height, 2*n_elts)[::2]
+
+        for elt_idx, coord in enumerate(coords):
+            layer_group.add_element(ElementCircle(
+                xy_coords_mean=np.array([0, coord]),
+                radius=INPUT_RADIUS_FACTOR * self.box_height / (2 * n_elts),
+                imshow_kwargs={"fill": True},
+            ), key=f"input_chan_{elt_idx}")
+
+        return layer_group, [layer_group.elements[f"input_chan_{elt_idx}"] for elt_idx in range(n_elts)]
+
 
     def get_layer_group(self, layer_idx):
         layer_group = ElementGrouper()
@@ -100,7 +121,7 @@ class MorpOperationsVizualiser:
             )
 
         layer_group.translate_group(np.array([0, ]))
-        return layer_group
+        return layer_group, [layer_group.elements[f"group_layer_{layer_idx}_chout_{group_idx}"] for group_idx in range(n_groups)]
 
 
 

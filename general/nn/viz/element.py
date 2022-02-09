@@ -14,8 +14,8 @@ class Element:
         if xy_coords_botleft is not None and xy_coords_mean is not None:
             raise ValueError("choose either xy coords botleft or mean.")
 
-        self.shape = np.array(shape)
-        self.xy_coords_botleft = None
+        self._shape = np.array(shape)
+        self._xy_coords_botleft = None
 
         if xy_coords_botleft is not None:
             self.set_xy_coords_botleft(xy_coords_botleft)
@@ -24,6 +24,14 @@ class Element:
 
     def translate(self, vector: np.ndarray):
         self.set_xy_coords_botleft(self.xy_coords_botleft + vector)
+
+    def set_shape(self, new_shape):
+        self._shape = np.array(new_shape)
+        return self
+
+    @property
+    def shape(self):
+        return self._shape
 
     @property
     def xy_coords_mean(self):
@@ -35,15 +43,15 @@ class Element:
 
     @property
     def xy_coords_topleft(self):
-        return self.xy_coords_topleft + np.array([self.shape[0], 0])
+        return self.xy_coords_botleft + np.array([self.shape[0], 0])
 
     @property
     def xy_coords_topright(self):
-        return self.xy_coords_topleft + self.shape
+        return self.xy_coords_botleft + self.shape
 
     @property
     def xy_coords_botright(self):
-        return self.xy_coords_topleft + np.array([0, self.shape[0]])
+        return self.xy_coords_botleft + np.array([0, self.shape[0]])
 
     @property
     def xy_coords_midright(self):
@@ -65,6 +73,10 @@ class Element:
     def xy_coords_midbottom(self):
         return self.xy_coords_midbot
 
+    @property
+    def xy_coords_botleft(self):
+        return self._xy_coords_botleft
+
     def is_inside_element(self, coords):
         coords = np.array(coords)
         return (self.xy_coords_botleft <= coords <= self.xy_coords_topright).all()
@@ -72,10 +84,10 @@ class Element:
     def set_xy_coords_mean(self, new_coords: Tuple):
         assert self.shape is not None, "Must give shape to give coords mean. Else give coords botleft and mean."
         new_coords = np.array(new_coords)
-        self.xy_coords_botleft = new_coords - self.shape / 2
+        self._xy_coords_botleft = new_coords - self.shape / 2
 
     def set_xy_coords_botleft(self, new_coords: Tuple):
-        self.xy_coords_botleft = np.array(new_coords)
+        self._xy_coords_botleft = np.array(new_coords)
 
     def add_to_canva(self, canva: "Canva"):
         raise NotImplementedError
@@ -128,3 +140,17 @@ class ElementGrouper(Element):
 
     def __len__(self):
         return len(self.elements)
+
+    @property
+    def xy_coords_botleft(self):
+        all_coords = np.stack([elt.shape for elt in self.elements.values()], axis=0)
+        return all_coords.min(0)
+
+    @property
+    def xy_coords_topright(self):
+        all_coords = np.stack([elt.shape for elt in self.elements.values()])
+        return all_coords.max(0)
+
+    @property
+    def shape(self):
+        return self.xy_coords_topright - self.xy_coords_botleft
