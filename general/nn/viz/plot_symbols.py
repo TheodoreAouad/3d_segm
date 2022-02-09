@@ -2,7 +2,11 @@ import numpy as np
 from matplotlib.patches import Arc
 
 
-def _plot_union_intersection_on_ax(op, ax, center, width=1, height=1, prop_arc=.3, **kwargs):
+def get_radius_union_intersection(height, prop_arc):
+    return height * (1 + prop_arc) * 1.5
+
+
+def _plot_union_intersection_on_ax(op, ax, center, width=1, height=1, prop_arc=.3, draw_circle=True, **kwargs):
     kwargs['color'] = kwargs.get('color', 'k')
 
     center = np.array(center)
@@ -19,6 +23,12 @@ def _plot_union_intersection_on_ax(op, ax, center, width=1, height=1, prop_arc=.
     ax.plot(*segm2, **kwargs)
 
     ax.add_patch(arc, )
+
+    if draw_circle:
+        circle_center = np.array([center[0], center[1]])
+        radius = get_radius_union_intersection(height, prop_arc)
+        ax.add_patch(Arc(circle_center, width=radius, height=radius, theta1=0, theta2=360, **kwargs))
+
     return ax
 
 

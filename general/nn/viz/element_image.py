@@ -2,15 +2,17 @@ from typing import Tuple, Union
 
 import numpy as np
 import cv2
+from matplotlib.patches import Rectangle
 
 from .element import Element
 
 
 class ElementImage(Element):
 
-    def __init__(self, image: np.ndarray, new_shape=None, imshow_kwargs={}, *args, **kwargs):
+    def __init__(self, image: np.ndarray, borders=True, new_shape=None, imshow_kwargs={}, *args, **kwargs):
         super().__init__(shape=np.array(image.shape), *args, **kwargs)
         self.image = image
+        self.borders = borders
         self.imshow_kwargs = imshow_kwargs
 
         if new_shape is not None:
@@ -38,6 +40,9 @@ class ElementImage(Element):
             self.xy_coords_botleft[0], self.xy_coords_botleft[0] + self.shape[0],
             self.xy_coords_botleft[1], self.xy_coords_botleft[1] + self.shape[1],
         ), **imshow_kwargs)
+
+        if self.borders:
+            canva.ax.add_patch(Rectangle(self.xy_coords_botleft, self.shape[0], self.shape[1], color='k', fill=False))
 
 
     def resize(self, new_shape: Union[Union[float, int], Tuple[int]], interpolation=cv2.INTER_AREA):

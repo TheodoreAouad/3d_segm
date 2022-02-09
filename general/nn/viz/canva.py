@@ -14,11 +14,12 @@ class Canva:
         elements=dict(),
         xlim=None,
         ylim=None,
+        axis='off',
         lim_mode='adaptable',
         **kwargs
     ):
         self.fig, self.ax = plt.subplots(1, 1, **kwargs)
-        self.ax.axis('off')
+        self.ax.axis(axis)
         if xlim is None:
             xlim = self.ax.get_xlim()
         if ylim is None:
@@ -107,3 +108,7 @@ class Canva:
     def show(self):
         self.fig.show()
         return self.fig
+
+    def draw_bounding_boxes(self):
+        for elt in self.elements.values():
+            elt.draw_bounding_box_on_ax(self.ax)

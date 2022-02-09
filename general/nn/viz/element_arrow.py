@@ -17,6 +17,7 @@ class ElementArrow(Element):
         )
         self.x, self.y, self.dx, self.dy = x, y, dx, dy
         self.arrow_kwargs = arrow_kwargs
+        self.arrow_kwargs['color'] = self.arrow_kwargs.get('color', 'k')
 
     def translate(self, vector: np.ndarray):
         super().translate(vector)
@@ -30,6 +31,7 @@ class ElementArrow(Element):
     def link_elements(
         elt1: Element,
         elt2: Element,
+        key=None,
         link1="adapt",
         link2="adapt",
         length_includes_head=True, width=.1, **kwargs
@@ -56,7 +58,7 @@ class ElementArrow(Element):
             "width": width
         })
 
-        return ElementArrow(x1, y1, x2-x1, y2-y1, arrow_kwargs=kwargs)
+        return ElementArrow(x1, y1, x2-x1, y2-y1, arrow_kwargs=kwargs, key=key)
 
     @staticmethod
     def adapt_link(elt1, elt2, link1, link2):

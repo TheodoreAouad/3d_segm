@@ -1,6 +1,7 @@
 from typing import Tuple
 
 import numpy as np
+from matplotlib.patches import Rectangle
 
 
 class Element:
@@ -10,10 +11,12 @@ class Element:
         shape=None,
         xy_coords_botleft=None,
         xy_coords_mean=None,
+        key=None,
     ):
         if xy_coords_botleft is not None and xy_coords_mean is not None:
             raise ValueError("choose either xy coords botleft or mean.")
 
+        self.key = key
         self._shape = np.array(shape)
         self._xy_coords_botleft = None
 
@@ -43,7 +46,7 @@ class Element:
 
     @property
     def xy_coords_topleft(self):
-        return self.xy_coords_botleft + np.array([self.shape[0], 0])
+        return self.xy_coords_botleft + np.array([0, self.shape[1]])
 
     @property
     def xy_coords_topright(self):
@@ -51,7 +54,7 @@ class Element:
 
     @property
     def xy_coords_botright(self):
-        return self.xy_coords_botleft + np.array([0, self.shape[0]])
+        return self.xy_coords_botleft + np.array([self.shape[0], 0])
 
     @property
     def xy_coords_midright(self):
@@ -92,6 +95,10 @@ class Element:
     def add_to_canva(self, canva: "Canva"):
         raise NotImplementedError
 
+    def draw_bounding_box_on_ax(self, ax, **kwargs):
+        kwargs['color'] = kwargs.get('color', 'k')
+        ax.add_patch(Rectangle(self.xy_coords_botleft, self.shape[0], self.shape[1], fill=False, **kwargs))
+
 
 class ElementGrouper(Element):
 
@@ -103,17 +110,19 @@ class ElementGrouper(Element):
         # self.xy_coords_botleft = np.array([0, 0])  # TODO: adapt this to the elements
         # self.shape = np.array([0, 0])  # TODO: adapt this to the elements
 
-    def translate_group(self, vector: np.ndarray):
+    def translate(self, vector: np.ndarray):
         # self.translate(vector)
         for element in self.elements.values():
             element.translate(vector)
         return self
 
-    @property  # TODO: merge with self.shape
-    def shape_group(self):
-        return np.array([np.array(elt.shape) for elt in self.elements.values()]).mean(1)
+    def set_xy_coords_mean(self, new_coords: Tuple):
+        return self.translate(new_coords - self.xy_coords_mean)
 
     def add_element(self, element: Element, key=None):
+        if key is None:
+            key = element.key
+
         if key is None:
             key = 0
             while key in self.elements.keys():
@@ -143,12 +152,12 @@ class ElementGrouper(Element):
 
     @property
     def xy_coords_botleft(self):
-        all_coords = np.stack([elt.shape for elt in self.elements.values()], axis=0)
+        all_coords = np.stack([elt.xy_coords_botleft for elt in self.elements.values()], axis=0)
         return all_coords.min(0)
 
     @property
     def xy_coords_topright(self):
-        all_coords = np.stack([elt.shape for elt in self.elements.values()])
+        all_coords = np.stack([elt.xy_coords_topright for elt in self.elements.values()])
         return all_coords.max(0)
 
     @property
