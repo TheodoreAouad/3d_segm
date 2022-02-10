@@ -32,3 +32,14 @@ class TestMnistMorphoDataset:
 
         for batch in testloader:
             pass
+
+    @staticmethod
+    def test_dataset_multi_chans():
+        morp_operation = ParallelMorpOperations(operations=[
+            [
+                [('dilation', ('hstick', 7), False), 'union'],
+                [('dilation', ('dstick', 7), False), 'union'],
+            ],
+        ])
+        dataset = MnistMorphoDataset(n_inputs=10000, morp_operation=ParallelMorpOperations.erosion(('disk', 3)))
+        dataset[0]

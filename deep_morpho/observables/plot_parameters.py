@@ -81,7 +81,7 @@ class PlotWeightsBiSE(ObservableLayersChans):
 
     @staticmethod
     def get_figure_normalized_weights(weights, bias, activation_P):
-        weights = weights.cpu().detach().squeeze()
+        weights = weights.cpu().detach()
         figure = plt.figure(figsize=(8, 8))
         plt.title(f"bias={bias.item()}  act_P={activation_P.item()}")
         plt.imshow(weights, interpolation='nearest', cmap=plt.cm.gray)
@@ -99,7 +99,7 @@ class PlotWeightsBiSE(ObservableLayersChans):
 
     @staticmethod
     def get_figure_raw_weights(weights):
-        weights = weights.cpu().detach().squeeze()
+        weights = weights.cpu().detach()
         weights_normed = max_min_norm(weights)
         figure = plt.figure(figsize=(8, 8))
         plt.imshow(weights_normed, interpolation='nearest', cmap=plt.cm.gray)

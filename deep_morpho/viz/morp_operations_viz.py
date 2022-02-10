@@ -1,7 +1,6 @@
 import numpy as np
 
 from general.nn.viz import Canva, ElementArrow, ElementImage, ElementGrouper, ElementCircle
-from ..morp_operations import ParallelMorpOperations
 from general.nn.viz import (
     ElementSymbolDilation, ElementSymbolErosion, ElementSymbolIntersection, ElementSymbolUnion
 )
@@ -23,7 +22,7 @@ class MorpOperationsVizualiser:
         'dilation': ElementSymbolDilation,
     }
 
-    def __init__(self, morp_operations: ParallelMorpOperations, ):
+    def __init__(self, morp_operations: "ParallelMorpOperations", ):
         self.morp_operations = morp_operations
         self.canva = None
         self.layer_groups = []
@@ -44,7 +43,7 @@ class MorpOperationsVizualiser:
         for layer_idx in range(-1, len(self)):
         # for layer_idx in range(len(self)):
             group, cur_elements = self.get_layer_group(layer_idx)
-            group.translate(np.array([cursor, 0]))
+            group.set_xy_coords_midleft(np.array([cursor, 0]))
 
             self.canva.add_element(group, key=f'layer_{layer_idx}')
 

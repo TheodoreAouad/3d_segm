@@ -32,7 +32,7 @@ class PlotGradientBise(ObservableLayersChans):
         chan_output: int,
     ):
         if layer.bises[chan_input].weight.grad is not None:
-            grad_weights = layer.bises[chan_input].weight.grad[chan_output].squeeze()
+            grad_weights = layer.bises[chan_input].weight.grad[chan_output][0]
             trainer.logger.experiment.add_figure(
                 f"weights_gradient/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
                 self.get_figure_gradient(grad_weights),

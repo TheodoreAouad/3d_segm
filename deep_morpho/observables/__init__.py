@@ -8,3 +8,4 @@ from .check_morp_op import *
 from .plot_gradient import *
 from .convergence_steps import *
 from .plot_lui_parameters import *
+from .plot_model import *

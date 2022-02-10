@@ -23,6 +23,8 @@ class ElementArrow(Element):
         super().translate(vector)
         self.x, self.y = np.array([self.x, self.y]) + vector
 
+    def set_width(self, new_width):
+        self.arrow_kwargs['width'] = new_width
 
     def add_to_canva(self, canva: "Canva", ):
         return canva.ax.arrow(self.x, self.y, self.dx, self.dy, **self.arrow_kwargs)
@@ -36,6 +38,10 @@ class ElementArrow(Element):
         link2="adapt",
         length_includes_head=True, width=.1, **kwargs
     ):
+        if width == 0:
+            return Element(shape=np.zeros(2), xy_coords_botleft=np.zeros(2))
+
+
         if link1 == "adapt" or link2 == "adapt":
             link1, link2 = ElementArrow.adapt_link(elt1, elt2, link1, link2)
 

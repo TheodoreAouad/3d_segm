@@ -24,15 +24,15 @@ for op in [
     # 'disk',
     'hstick', 'vstick', 'scross', 'dcross', 'square'
 ]:
-    size1 = 5
+#     size1 = 5
     size2 = 7
-    if op == "disk":
-        size1 = size1 // 2
-        size2 = size2 // 2
+#     if op == "disk":
+#         size1 = size1 // 2
+#         size2 = size2 // 2
 
 #     morp_operations.append(ParallelMorpOperations.dilation((op, size1)))
 #     morp_operations.append(ParallelMorpOperations.erosion((op, size1)))
-    morp_operations.append(ParallelMorpOperations.opening((op, size2), name=op))
+    morp_operations.append(ParallelMorpOperations.closing((op, size2), name=op))
 #     morp_operations.append(ParallelMorpOperations.closing((op, size2)))
 # morp_operations.append(ParallelMorpOperations.dilation(('disk', 2)))
 # morp_operations.append(ParallelMorpOperations.dilation(('disk', 2)))
@@ -64,23 +64,28 @@ for op in [
 #             ))
 
 for ops in [
-    ("dilation", "erosion"),
+    ("dilation", "dilation", "intersection"),
+    ("erosion", "erosion", "union"),
 ]:
+    aggreg = ops[-1]
+    ops = ops[:-1]
     for selems in [
         (('dcross', 7), ('hstick', 7)),
         (('disk', 3), ('vstick', 7)),
     ]:
-        for aggreg in [
-            "union",
-            "intersection"
-        ]:
-
-            morp_operations.append(ParallelMorpOperations(
-                name=f'{aggreg}',
-                operations=[
-                    [
-                        # [('dilation', ('hstick', 5)), ('dilation', ('hstick', 5)), 'intersection'],
-                        [(op, selem) for op, selem in zip(ops, selems)] + [aggreg]
-                    ]
-                ]
-            ))
+        # for aggreg in [
+        #     "union",
+        #     "intersection"
+        # ]:
+        morp_operations.append(ParallelMorpOperations(
+            name=f'{aggreg}',
+            operations=[
+                [
+                    [('dilation', ('identity', 7), False), 'union'] for _ in range(len(ops))
+                ],
+                [
+                    # [('dilation', ('hstick', 5)), ('dilation', ('hstick', 5)), 'intersection'],
+                    [(op, selem) for op, selem in zip(ops, selems)] + [aggreg]
+                ],
+            ]
+        ))

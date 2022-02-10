@@ -1,3 +1,4 @@
+import pathlib
 import numpy as np
 
 from general.nn.viz import Canva, ElementArrow, ElementImage, ElementGrouper, ElementCircle
@@ -5,7 +6,9 @@ from deep_morpho.models import BiMoNN
 from general.nn.viz import (
     ElementSymbolDilation, ElementSymbolErosion, ElementSymbolIntersection, ElementSymbolUnion
 )
+from general.nn.viz.element import Element
 from .element_lui import ElementLui
+from .element_bise import ElementBiseSelemChan, ElementBiseWeightsChan
 
 
 LUI_HORIZONTAL_FACTOR = 3
@@ -24,10 +27,13 @@ class BimonnVizualiser:
         'dilation': ElementSymbolDilation,
     }
 
-    def __init__(self, model: BiMoNN, ):
+    def __init__(self, model: BiMoNN, mode="weight"):
         self.model = model
         self.canva = None
         self.layer_groups = []
+
+        assert mode in ['weight', 'selem'], "mode must be either 'weight' or 'selem'."
+        self.mode = mode
 
         self.box_height = self._infer_box_height()
 
@@ -48,7 +54,7 @@ class BimonnVizualiser:
         prev_elements = []
         for layer_idx in range(-1, len(self)):
             group, cur_elements = self.get_layer_group(layer_idx)
-            group.translate(np.array([cursor, 0]))
+            group.set_xy_coords_midleft(np.array([cursor, 0]))
 
             self.canva.add_element(group, key=f'layer_{layer_idx}')
 
@@ -83,6 +89,41 @@ class BimonnVizualiser:
         return layer_group, [layer_group.elements[f"input_chan_{elt_idx}"] for elt_idx in range(n_elts)]
 
 
+    def _get_height_group(self, coords_group, n_groups):
+        if n_groups > 1:
+            return (coords_group[1] - coords_group[0])*.7
+        return self.box_height
+
+    def _get_coords_selem(self, height_group, n_per_group):
+        if n_per_group == 1:
+            return np.zeros(1)
+        return np.linspace(0, height_group, 2*n_per_group + 1)[1::2]
+
+    def add_bise_to_group(self, group, layer_idx, chout, chin, coord_selem) -> Element:
+        """ Add bise to the group. Returns the element to link to the LUI.
+        """
+        # selem = self.model.layers[layer_idx].normalized_weights[chout, chin].detach().cpu().numpy()
+        key_selem = f"selem_layer_{layer_idx}_chout_{chout}_chin_{chin}"
+
+        # cur_elt = ElementImage(
+        #     selem,
+        #     imshow_kwargs={"cmap": "gray", "interpolation": "nearest", "vmin": 0, "vmax": 1},
+        #     xy_coords_mean=(0, coord_selem)
+        # )
+        bise_model = self.model.layers[layer_idx].bises[chin]
+
+        if self.mode == "weight":
+            cur_elt = ElementBiseWeightsChan(model=bise_model, chout=chout, xy_coords_mean=np.array([0, coord_selem]))
+            lui_link_elt = cur_elt
+
+        elif self.mode == "selem":
+            cur_elt = ElementBiseSelemChan(model=bise_model, chout=chout, xy_coords_mean=np.array([0, coord_selem]))
+            lui_link_elt = cur_elt.elements['selem']
+
+        group.add_element(cur_elt, key=key_selem)
+
+        return lui_link_elt
+
     def get_layer_group(self, layer_idx):
         if layer_idx == -1:
             return self.get_input_layer()
@@ -93,18 +134,11 @@ class BimonnVizualiser:
         n_per_group = self.model.in_channels[layer_idx]
 
         coords_group = np.linspace(0, self.box_height, 2*n_groups + 1)[1::2]
-
-        if n_groups > 1:
-            height_group = (coords_group[1] - coords_group[0])*.7
-        else:
-            height_group = self.box_height
+        height_group = self._get_height_group(coords_group, n_groups)
 
         for chout, coord_group in enumerate(coords_group):
 
-            if n_per_group == 1:
-                coords_selem = np.zeros(1)
-            else:
-                coords_selem = np.linspace(0, height_group, 2*n_per_group + 1)[1::2]
+            coords_selem = self._get_coords_selem(height_group, n_per_group)
             subgroup = ElementGrouper()
 
             input_lui_elements = []
@@ -112,17 +146,18 @@ class BimonnVizualiser:
             # add bises
             for coord_selem_idx, chin in enumerate(range(n_per_group)):
                 coord_selem = coords_selem[coord_selem_idx]
-                selem = self.model.layers[layer_idx].normalized_weights[chout, chin].detach().cpu().numpy()
-                key_selem = f"selem_layer_{layer_idx}_chout_{chout}_chin_{chin}"
+                # selem = self.model.layers[layer_idx].normalized_weights[chout, chin].detach().cpu().numpy()
+                # key_selem = f"selem_layer_{layer_idx}_chout_{chout}_chin_{chin}"
 
-                cur_elt = ElementImage(
-                    selem,
-                    imshow_kwargs={"cmap": "gray", "interpolation": "nearest"},
-                    xy_coords_mean=(0, coord_selem)
-                )
+                # cur_elt = ElementImage(
+                #     selem,
+                #     imshow_kwargs={"cmap": "gray", "interpolation": "nearest", "vmin": 0, "vmax": 1},
+                #     xy_coords_mean=(0, coord_selem)
+                # )
 
-                subgroup.add_element(cur_elt, key=key_selem)
-                input_lui_elements.append(cur_elt)
+                # subgroup.add_element(cur_elt, key=key_selem)
+                link_lui_elt = self.add_bise_to_group(subgroup, layer_idx, chout, chin, coord_selem)
+                input_lui_elements.append(link_lui_elt)
 
             # add lui layers
             shape = LUI_RADIUS_FACTOR * np.array([self.max_selem_shape[layer_idx], self.max_selem_shape[layer_idx]])
@@ -131,7 +166,8 @@ class BimonnVizualiser:
                 input_elements=input_lui_elements,
                 xy_coords_mean=(LUI_HORIZONTAL_FACTOR * self.max_selem_shape[layer_idx], (coords_selem).mean()),
                 shape=shape,
-                imshow_kwargs={"color": "k"}
+                imshow_kwargs={"color": "k"},
+                mode=self.mode,
             ), key=f"lui_layer_{layer_idx}_chout_{chout}")
 
             subgroup.set_xy_coords_mean(np.array([0, coord_group]))
@@ -146,3 +182,12 @@ class BimonnVizualiser:
 
     def __len__(self):
         return len(self.model)
+
+    def save_fig(self, savepath: str, **kwargs):
+        pathlib.Path(savepath).parent.mkdir(exist_ok=True, parents=True)
+        self.draw(**kwargs)
+        self.canva.fig.savefig(savepath)
+
+    def get_fig(self, **kwargs):
+        self.draw(**kwargs)
+        return self.canva.fig

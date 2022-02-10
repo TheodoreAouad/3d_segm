@@ -9,23 +9,24 @@ from .args_morp_ops import morp_operations
 
 all_args = {}
 
-# all_args['n_try'] = [0]
-all_args['n_try'] = range(1, 11)
+all_args['n_try'] = [0]
+# all_args['n_try'] = range(1, 11)
 
 all_args['experiment_name'] = [
     # 'Bimonn_exp_45_sandbox_disk'
-    'Bimonn_exp_46/multi_opening'
+    'Bimonn_exp_46/multi_closing'
     # 'Bimonn_exp_46_sandbox'
-    # "sandbox/opening"
+    # 'Bimonn_exp_47_sandbox2',
+    # "test_plotmodels"
 ]
 
 
 # DATA ARGS
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
-    'diskorect',
     # 'axspa_roi',
-    # "mnist",
+    "mnist",
+    'diskorect',
 ]
 all_args['mnist_threshold'] = [30]
 all_args['preprocessing'] = [  # for axspa roi
@@ -49,7 +50,7 @@ all_args['random_gen_args'] = [
 
 ]
 all_args['n_inputs'] = [
-    2_000_000,
+    1_000_000,
     # 100_000,
     # 70000,
 ]
@@ -158,7 +159,7 @@ for idx, args in enumerate(all_args):
         if args["kernel_size"] == "adapt":
             args["kernel_size"] = args["morp_operation"].selems[0][0][0].shape[0]
 
-        args['experiment_subname'] = args['morp_operation'].name
+        args['experiment_subname'] = f"{args['dataset_type']}/{args['morp_operation'].name}"
 
         if args['channels'] == 'adapt':
             args['channels'] = args['morp_operation'].in_channels + [args['morp_operation'].out_channels[-1]]
@@ -174,6 +175,9 @@ for idx, args in enumerate(all_args):
         args["random_gen_args"] = args["random_gen_args"].copy()
         args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
         args['random_gen_args']['size'] = args['random_gen_args']['size'] + (args["morp_operation"].in_channels[0],)
+
+    if args['dataset_type'] == "mnist":
+        args['n_inputs'] = 70_000
 
 
     if args['atomic_element'] == "conv":

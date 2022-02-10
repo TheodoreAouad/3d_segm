@@ -10,14 +10,21 @@ from .element import Element
 class ElementImage(Element):
 
     def __init__(self, image: np.ndarray, borders=True, new_shape=None, imshow_kwargs={}, *args, **kwargs):
-        super().__init__(shape=np.array(image.shape), *args, **kwargs)
-        self.image = image
+        self._image = image
+        super().__init__(*args, **kwargs)
         self.borders = borders
         self.imshow_kwargs = imshow_kwargs
 
         if new_shape is not None:
             self.resize(new_shape)
 
+    @property
+    def shape(self):
+        return np.array(self.image.shape)
+
+    @property
+    def image(self):
+        return self._image
 
     @property
     def img(self):
@@ -50,5 +57,4 @@ class ElementImage(Element):
             new_shape = [int(new_shape), int(new_shape)]
 
         self.image = cv2.resize(self.image, (new_shape[1], new_shape[0]), interpolation=interpolation)
-        self.shape = np.array(new_shape)
         return self.image

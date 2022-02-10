@@ -6,6 +6,7 @@ import torch
 
 from general.structuring_elements import *
 from general.array_morphology import array_erosion, array_dilation, union_chans, intersection_chans
+from .viz.morp_operations_viz import MorpOperationsVizualiser
 
 
 class SequentialMorpOperations:
@@ -421,8 +422,9 @@ class ParallelMorpOperations:
 
     @staticmethod
     def closing(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        if "name" not in kwargs.keys():
+            kwargs["name"] = "opening"
         return ParallelMorpOperations(
-            name='closing',
             operations=[
                 [[('dilation', selem, False), 'union']],
                 [[('erosion', selem, False), 'union']],
@@ -518,3 +520,8 @@ class ParallelMorpOperations:
                     ax.set_yticks(range(selem.shape[1]))
                     all_figs[(layer_idx, chan_input, chan_output)] = fig
         return all_figs
+
+    def vizualise(self, **kwargs):
+        vizualiser = MorpOperationsVizualiser(self)
+        canva = vizualiser.draw(**kwargs)
+        return canva

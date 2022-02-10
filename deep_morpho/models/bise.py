@@ -122,13 +122,13 @@ class BiSE(nn.Module):
     @staticmethod
     def bias_bounds_erosion(normalized_weights: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1):
         S = S.astype(bool)
-        W = normalized_weights.squeeze().cpu().detach().numpy()
+        W = normalized_weights.cpu().detach().numpy()
         return W.sum() - (1 - v1) * W[S].min(), v2 * W[S].sum()
 
     @staticmethod
     def bias_bounds_dilation(normalized_weights: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1):
         S = S.astype(bool)
-        W = normalized_weights.squeeze().cpu().detach().numpy()
+        W = normalized_weights.cpu().detach().numpy()
         return W[~S].sum() + v1 * W[S].sum(), v2 * W[S].min()
 
     def find_selem_for_operation_chan(self, idx: int, operation: str, v1: float = 0, v2: float = 1):
@@ -145,14 +145,14 @@ class BiSE(nn.Module):
             np.ndarray if a selem is found
             None if none is found
         """
-        weights = self._normalized_weight[idx]
+        weights = self._normalized_weight[idx, 0]
         # weight_values = weights.unique()
         bias = self.bias[idx]
         is_op_fn = {'dilation': self.is_dilation_by, 'erosion': self.is_erosion_by}[operation]
         born = {'dilation': -bias / v2, "erosion": (weights.sum() + bias) / (1 - v1)}[operation]
 
         # possible_values = weight_values >= born
-        selem = (weights > born).squeeze().cpu().detach().numpy()
+        selem = (weights > born).cpu().detach().numpy()
         if not selem.any():
             return None
 

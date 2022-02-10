@@ -93,7 +93,7 @@ class Element:
         self._xy_coords_botleft = np.array(new_coords)
 
     def add_to_canva(self, canva: "Canva"):
-        raise NotImplementedError
+        pass
 
     def draw_bounding_box_on_ax(self, ax, **kwargs):
         kwargs['color'] = kwargs.get('color', 'k')
@@ -103,8 +103,8 @@ class Element:
 class ElementGrouper(Element):
 
     def __init__(self, elements=dict(), *args, **kwargs):
-        super().__init__(shape=np.zeros(2), xy_coords_botleft=np.zeros(2), *args, **kwargs)
         self.elements = dict()
+        super().__init__(shape=None, xy_coords_botleft=None, *args, **kwargs)
         for key, element in elements.items():
             self.add_element(element, key=key)
         # self.xy_coords_botleft = np.array([0, 0])  # TODO: adapt this to the elements
@@ -118,6 +118,13 @@ class ElementGrouper(Element):
 
     def set_xy_coords_mean(self, new_coords: Tuple):
         return self.translate(new_coords - self.xy_coords_mean)
+
+    def set_xy_coords_botleft(self, new_coords: Tuple):
+        return self.translate(new_coords - self.xy_coords_botleft)
+
+    def set_xy_coords_midleft(self, new_coords: Tuple):
+        return self.translate(new_coords - self.xy_coords_midleft)
+
 
     def add_element(self, element: Element, key=None):
         if key is None:
@@ -152,11 +159,15 @@ class ElementGrouper(Element):
 
     @property
     def xy_coords_botleft(self):
+        if len(self.elements) == 0:
+            return np.array([0, 0])
         all_coords = np.stack([elt.xy_coords_botleft for elt in self.elements.values()], axis=0)
         return all_coords.min(0)
 
     @property
     def xy_coords_topright(self):
+        if len(self.elements) == 0:
+            return np.array([0, 0])
         all_coords = np.stack([elt.xy_coords_topright for elt in self.elements.values()])
         return all_coords.max(0)
 

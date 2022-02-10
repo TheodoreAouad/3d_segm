@@ -112,3 +112,6 @@ class Canva:
     def draw_bounding_boxes(self):
         for elt in self.elements.values():
             elt.draw_bounding_box_on_ax(self.ax)
+
+    def save_fig(self, savepath: str):
+        self.fig.savefig(savepath)

@@ -108,6 +108,7 @@ def main(args, logger):
         "ShowLUISetBinary": obs.ShowLUISetBinary(freq=args['freq_imgs']),
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         "ConvergenceBinary": obs.ConvergenceBinary(freq=100),
+        "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs'])
     }
 
     observables = list(observables_dict.values())
@@ -201,6 +202,10 @@ def main(args, logger):
             fig.savefig(join(logger.log_dir, "target_UI", f"target_UI_l_{layer_idx}_chin_chout_{chan_output}.png"))
             logger.experiment.add_figure(f"target_UI/target_UI_l_{layer_idx}_chin_chout_{chan_output}", fig)
 
+        pathlib.Path(join(logger.log_dir, "morp_operations")).mkdir(exist_ok=True, parents=True)
+        fig_morp_operation = args['morp_operation'].vizualise().fig
+        fig_morp_operation.savefig(join(logger.log_dir, "morp_operations", "morp_operations.png"))
+        logger.experiment.add_figure("target_operations/morp_operations", fig_morp_operation)
         # for selem_idx, selem in enumerate(args['morp_operation'].selems):
         #     fig, ax = plt.subplots(); ax.imshow(selem); ax.set_title(args['morp_operation'].operations[selem_idx])
         #     fig.savefig(join(logger.log_dir, "target_SE", f"target_SE_{selem_idx}.png"))

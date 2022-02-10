@@ -52,6 +52,7 @@ class ElementSymbolDilation(Element):
         super().__init__((radius, radius), xy_coords_mean=xy_coords_mean, **kwargs)
         self.radius = radius
         self.imshow_kwargs = imshow_kwargs
+        self.imshow_kwargs['color'] = self.imshow_kwargs.get('color', 'k')
 
     def add_to_canva(self, canva: "Canva"):
         return plot_dilation_on_ax(
@@ -65,6 +66,7 @@ class ElementSymbolErosion(Element):
         super().__init__((radius, radius), xy_coords_mean=xy_coords_mean, **kwargs)
         self.radius = radius
         self.imshow_kwargs = imshow_kwargs
+        self.imshow_kwargs['color'] = self.imshow_kwargs.get('color', 'k')
 
     def add_to_canva(self, canva: "Canva"):
         return plot_erosion_on_ax(
