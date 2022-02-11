@@ -14,9 +14,9 @@ all_args['n_try'] = [0]
 
 all_args['experiment_name'] = [
     # 'Bimonn_exp_45_sandbox_disk'
-    'Bimonn_exp_46/multi_closing'
+    # 'Bimonn_exp_46/multi_closing'
     # 'Bimonn_exp_46_sandbox'
-    # 'Bimonn_exp_47_sandbox2',
+    'Bimonn_exp_47_sandbox4',
     # "test_plotmodels"
 ]
 
@@ -26,7 +26,7 @@ all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
     "mnist",
-    'diskorect',
+    # 'diskorect',
 ]
 all_args['mnist_threshold'] = [30]
 all_args['preprocessing'] = [  # for axspa roi

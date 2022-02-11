@@ -173,7 +173,7 @@ class LUI(nn.Module):
             np.ndarray if a set is found
             None if none is found
         """
-        coefs = self.weight[idx]
+        coefs = self.positive_weight[idx]
         coefs_values = coefs.unique()
         bias = self.bias[idx]
 

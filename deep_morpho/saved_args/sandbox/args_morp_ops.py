@@ -20,19 +20,19 @@ selems = []
 # morp_operations.append(ParallelMorpOperations.closing(('disk', 3)))
 
 
-for op in [
-    # 'disk',
-    'hstick', 'vstick', 'scross', 'dcross', 'square'
-]:
+# for op in [
+#     'disk',
+#     'hstick', 'vstick', 'scross', 'dcross', 'square'
+# ]:
 #     size1 = 5
-    size2 = 7
+    # size2 = 7
 #     if op == "disk":
 #         size1 = size1 // 2
 #         size2 = size2 // 2
 
 #     morp_operations.append(ParallelMorpOperations.dilation((op, size1)))
 #     morp_operations.append(ParallelMorpOperations.erosion((op, size1)))
-    morp_operations.append(ParallelMorpOperations.closing((op, size2), name=op))
+    # morp_operations.append(ParallelMorpOperations.closing((op, size2), name=op))
 #     morp_operations.append(ParallelMorpOperations.closing((op, size2)))
 # morp_operations.append(ParallelMorpOperations.dilation(('disk', 2)))
 # morp_operations.append(ParallelMorpOperations.dilation(('disk', 2)))
@@ -64,14 +64,14 @@ for op in [
 #             ))
 
 for ops in [
-    ("dilation", "dilation", "intersection"),
-    ("erosion", "erosion", "union"),
+    ("dilation", "dilation", "dilation", "intersection"),
+    ("erosion", "erosion", "erosion", "union"),
 ]:
     aggreg = ops[-1]
     ops = ops[:-1]
     for selems in [
-        (('dcross', 7), ('hstick', 7)),
-        (('disk', 3), ('vstick', 7)),
+        (('dcross', 7), ('hstick', 7), ('vstick', 7)),
+        (('scross', 7), ('vstick', 7), ('square', 7)),
     ]:
         # for aggreg in [
         #     "union",
