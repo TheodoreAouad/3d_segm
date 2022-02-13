@@ -21,7 +21,7 @@ import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
 from general.utils import format_time, log_console, create_logger, save_yaml
 from general.nn.utils import train_val_test_split
-from deep_morpho.metrics import dice
+from deep_morpho.metrics import masked_dice
 from deep_morpho.args import all_args
 from general.code_saver import CodeSaver
 
@@ -74,7 +74,7 @@ def get_dataloader(args):
             preprocessing=args['preprocessing'],
             shuffle=True,
             num_workers=args['num_workers'],
-            threshold=args['mnist_threshold'],
+            **args['mnist_args']
         )
 
     return trainloader, valloader, testloader
@@ -83,11 +83,11 @@ def get_dataloader(args):
 def main(args, logger):
 
     trainloader, valloader, testloader = get_dataloader(args)
-    metrics = {'dice': lambda y_true, y_pred: dice(y_true, y_pred, threshold=.5).mean()}
+    metrics = {'dice': lambda y_true, y_pred: masked_dice(y_true, y_pred, border=(args['kernel_size'] // 2, args['kernel_size'] // 2), threshold=.5).mean()}
 
     observables_dict = {
         "SaveLoss": obs.SaveLoss(),
-        "CalculateAndLogMetrics": CalculateAndLogMetrics(
+        "CalculateAndLogMetric": CalculateAndLogMetrics(
             metrics=metrics,
             keep_preds_for_epoch=False,
         ),
@@ -249,7 +249,7 @@ if __name__ == '__main__':
 
         name = join(args["experiment_name"], args['experiment_subname'])
 
-        name += f"_{args['atomic_element']}"
+        # name += f"_{args['atomic_element']}"
 
         logger = TensorBoardLogger("deep_morpho/results", name=name, default_hp_metric=False)
         code_saver.save_in_final_file(join(logger.log_dir, 'code'))

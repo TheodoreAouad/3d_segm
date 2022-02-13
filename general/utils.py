@@ -16,6 +16,15 @@ from skimage.transform import warp
 from sklearn.model_selection import ParameterGrid
 
 
+def set_borders_to(ar: np.ndarray, border: Tuple, value: float = 0, ):
+    res = ar + 0
+    res[:border[0], :] = value
+    res[-border[0]:, :] = value
+    res[:, :border[1]] = value
+    res[:, -border[1]:] = value
+    return res
+
+
 def one_hot_array(ar: np.ndarray, nb_chans: int = "auto", axis: int = -1, background: float = 0) -> np.ndarray:
     """ Performs one hot encoding of an array. Adds a channel on the axis axis, such that all the channels are binary.
 

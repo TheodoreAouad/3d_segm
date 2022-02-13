@@ -423,7 +423,7 @@ class ParallelMorpOperations:
     @staticmethod
     def closing(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
         if "name" not in kwargs.keys():
-            kwargs["name"] = "opening"
+            kwargs["name"] = "closing"
         return ParallelMorpOperations(
             operations=[
                 [[('dilation', selem, False), 'union']],

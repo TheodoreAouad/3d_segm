@@ -9,6 +9,7 @@ from torch import Tensor
 
 from .threshold_layer import dispatcher
 from .complementation_layer import ComplementationLayer
+from general.utils import set_borders_to
 
 
 class BiSE(nn.Module):
@@ -25,7 +26,8 @@ class BiSE(nn.Module):
         shared_weight_P: torch.tensor = None,
         init_bias_value: float = -2,
         init_weight_mode: str = "normal_identity",
-        out_channels=1,
+        out_channels: int = 1,
+        do_mask_output: bool = False,
         *args,
         **kwargs
     ):
@@ -35,6 +37,7 @@ class BiSE(nn.Module):
         self.activation_P_init = activation_P
         self.kernel_size = self._init_kernel_size(kernel_size)
         self.init_weight_mode = init_weight_mode
+        self.do_mask_output = do_mask_output
         self.conv = nn.Conv2d(
             in_channels=1,
             out_channels=out_channels,
@@ -105,7 +108,16 @@ class BiSE(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         output = self.conv._conv_forward(x, self._normalized_weight, self.bias, )
         output = self.activation_threshold_layer(output)
+
+        if self.do_mask_output:
+            return self.mask_output(output)
+
         return output
+
+    def mask_output(self, output):
+        masker = set_borders_to(torch.ones(output.shape[-2:], requires_grad=False), border=np.array(self.kernel_size) // 2)[None, None, ...]
+        return output * masker.to(output.device)
+
 
     @staticmethod
     def is_erosion_by(normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1):

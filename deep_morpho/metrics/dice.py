@@ -24,3 +24,15 @@ def dice(y_true, y_pred, threshold=.5, SMOOTH=1e-6,):
     return (
         (2*intersection + SMOOTH) / (targets.sum((1, 2)) + outputs.sum((1, 2)) + SMOOTH)
     ).detach().cpu().numpy()
+
+
+def masked_dice(ytrue, ypred, border, *args, **kwargs):
+    if border[0] != 0:
+        ypred = ypred[..., border[0]:-border[0], :]
+        ytrue = ytrue[..., border[0]:-border[0], :]
+
+    if border[1] != 0:
+        ypred = ypred[..., border[1]:-border[1]]
+        ytrue = ytrue[..., border[1]:-border[1]]
+
+    return dice(ytrue, ypred, *args, **kwargs)

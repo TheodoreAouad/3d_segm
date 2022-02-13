@@ -7,7 +7,8 @@ from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect, g
 from deep_morpho.loss import MaskedMSELoss
 from general.utils import dict_cross
 from general.nn.loss import DiceLoss
-from .args_morp_ops import morp_operations
+from .args_morp_ops_mnist import morp_operations as morp_operations_mnist
+from .args_morp_ops_diskorect import morp_operations as morp_operations_diskorect
 
 loss_dict = {"MaskedMSELoss": MaskedMSELoss}
 
@@ -17,21 +18,12 @@ all_args['n_try'] = [0]
 # all_args['n_try'] = range(1, 11)
 
 all_args['experiment_name'] = [
-    # 'Bimonn_exp_45_sandbox_disk'
-    # 'Bimonn_exp_46/multi_closing'
-    # 'Bimonn_exp_46_sandbox'
-    'Bimonn_exp_48',
-    # "test_plotmodels"
+    'ICIP_2022/',
 ]
 
 
 # DATA ARGS
-all_args['morp_operation'] = morp_operations
-all_args['dataset_type'] = [
-    # 'axspa_roi',
-    "mnist",
-    'diskorect',
-]
+
 all_args['preprocessing'] = [  # for axspa roi
     None,
 ]
@@ -142,40 +134,38 @@ all_args['args_thresh_penalization'] = [{
 }]
 all_args['first_batch_pen'] = [1]
 
-all_args = dict_cross(all_args)
+
+all_args['dataset_type'] = ['diskorect']
+all_args['morp_operation'] = morp_operations_diskorect
+all_args_diskorect = dict_cross(all_args)
+
+
+all_args['dataset_type'] = ['mnist']
+all_args['morp_operation'] = morp_operations_mnist
+all_args_mnist = dict_cross(all_args)
+
+all_args = all_args_diskorect + all_args_mnist
+
 #
 for idx, args in enumerate(all_args):
 
-    if args['dataset_type'] == "axspa_roi":
-        args['dataset_path'] = "data/deep_morpho/axspa_roi/axspa_roi.csv"
-        args['morp_operation'] = []
-        args['experiment_subname'] = 'axspa_roi'
-        args['freq_imgs'] = 10
-        args['n_atoms'] = len(args['channels']) - 1
-        args['loss'] = loss_dict[args['loss']](border=(0, 0))
-
-    if args['dataset_type'] == "mnist":
-        args['freq_imgs'] = 300
+    # args['kernel_size'] = 'adapt'
+    args['n_atoms'] = 'adapt'
 
 
-    if args['dataset_type'] in ["diskorect", 'mnist']:
-        # args['kernel_size'] = 'adapt'
-        args['n_atoms'] = 'adapt'
+    if args["kernel_size"] == "adapt":
+        args["kernel_size"] = args["morp_operation"].selems[0][0][0].shape[0]
 
+    args['loss'] = loss_dict[args['loss']](border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]))
+    args['experiment_subname'] = f"{args['dataset_type']}/{args['morp_operation'].name}/{args['atomic_element']}"
 
-        if args["kernel_size"] == "adapt":
-            args["kernel_size"] = args["morp_operation"].selems[0][0][0].shape[0]
+    if args['channels'] == 'adapt':
+        args['channels'] = args['morp_operation'].in_channels + [args['morp_operation'].out_channels[-1]]
 
-        args['loss'] = loss_dict[args['loss']](border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]))
-        args['experiment_subname'] = f"{args['dataset_type']}/{args['morp_operation'].name}"
-
-        if args['channels'] == 'adapt':
-            args['channels'] = args['morp_operation'].in_channels + [args['morp_operation'].out_channels[-1]]
-
-        if args["n_atoms"] == 'adapt':
-            args['n_atoms'] = len(args['morp_operation'])
-            if args['atomic_element'] in ['cobise', 'cobisec']:
-                args['n_atoms'] = max(args['n_atoms'] // 2, 1)
+    if args["n_atoms"] == 'adapt':
+        args['n_atoms'] = len(args['morp_operation'])
+        if args['atomic_element'] in ['cobise', 'cobisec']:
+            args['n_atoms'] = max(args['n_atoms'] // 2, 1)
 
 
     if args['dataset_type'] == "diskorect":
@@ -186,7 +176,6 @@ for idx, args in enumerate(all_args):
 
     if args['dataset_type'] == "mnist":
         args['n_inputs'] = 70_000
-
 
     if args['atomic_element'] == "conv":
         args['threshold_mode'] = {"activation": "sigmoid", "weight": "identity"}

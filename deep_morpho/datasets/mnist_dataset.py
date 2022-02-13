@@ -1,12 +1,14 @@
 from os.path import join
 from typing import Tuple, Any
 import cv2
+import numpy as np
 
 from torchvision.datasets import MNIST
 from torch.utils.data.dataloader import DataLoader
 import torch
 
 from deep_morpho.morp_operations import ParallelMorpOperations
+from general.utils import set_borders_to
 
 
 ROOT_MNIST_DIR = join('/', 'hdd', 'datasets', 'MNIST')
@@ -24,6 +26,7 @@ class MnistMorphoDataset(MNIST):
         preprocessing=None,
         root: str = ROOT_MNIST_DIR,
         train: bool = True,
+        invert_input_proba: bool = 0,
         **kwargs,
     ) -> None:
         super().__init__(root, train, *kwargs)
@@ -31,6 +34,7 @@ class MnistMorphoDataset(MNIST):
         self.threshold = threshold
         self.preprocessing = preprocessing
         self.size = size
+        self.invert_input_proba = invert_input_proba
 
         if n_inputs != "all":
             self.data = self.data[first_idx:n_inputs+first_idx]
@@ -41,6 +45,11 @@ class MnistMorphoDataset(MNIST):
             cv2.resize(self.data[index].numpy(), (self.size[1], self.size[0]), interpolation=cv2.INTER_CUBIC)
             >= (self.threshold)
         )[..., None]
+
+        if torch.rand(1) < self.invert_input_proba:
+            input_ = 1 - input_
+
+        # input_[..., 0] = set_borders_to(input_[..., 0], np.array(self.morp_operation.max_selem_shape[0]) // 2, value=0)
 
         target = self.morp_operation(input_).float()
         input_ = torch.tensor(input_).float()
@@ -63,13 +72,14 @@ class MnistMorphoDataset(MNIST):
 
 
     @staticmethod
-    def get_loader(batch_size, n_inputs, morp_operation, train, first_idx=0, threshold=.5, preprocessing=None, **kwargs):
+    def get_loader(batch_size, n_inputs, morp_operation, train, first_idx=0, threshold=.5, size=(50, 50), invert_input_proba=0, preprocessing=None, **kwargs):
         if n_inputs == 0:
             return DataLoader([])
         return DataLoader(
             MnistMorphoDataset(
                 morp_operation=morp_operation, n_inputs=n_inputs, first_idx=first_idx,
-                train=train, threshold=threshold, preprocessing=preprocessing
+                train=train, threshold=threshold, preprocessing=preprocessing,
+                size=size, invert_input_proba=invert_input_proba,
             ), batch_size=batch_size, **kwargs)
 
     @staticmethod

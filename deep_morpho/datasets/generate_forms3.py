@@ -1,9 +1,10 @@
-from typing import Tuple, final
+from typing import Tuple
 
 import numpy as np
 from PIL import Image, ImageDraw
 from numba import njit
 from general.numba_utils import numba_randint, numba_rand, numba_rand_shape_2d
+from general.utils import set_borders_to
 
 
 @njit
@@ -96,10 +97,11 @@ def get_random_rotated_diskorect(
     diskorect[numba_rand_shape_2d(*diskorect.shape) < noise_proba] = 1
     diskorect = numba_invert_proba(diskorect, p_invert)
 
-    diskorect[:border[0], :] = 0
-    diskorect[-border[0]:, :] = 0
-    diskorect[:, :border[0]] = 0
-    diskorect[:, -border[0]:] = 0
+    diskorect = set_borders_to(diskorect, border, value=0)
+    # diskorect[:border[0], :] = 0
+    # diskorect[-border[0]:, :] = 0
+    # diskorect[:, :border[0]] = 0
+    # diskorect[:, -border[0]:] = 0
 
     return diskorect
 
