@@ -16,6 +16,10 @@ from skimage.transform import warp
 from sklearn.model_selection import ParameterGrid
 
 
+def list_dir_joined(folder: str):
+    return [os.path.join(folder, k) for k in os.listdir(folder)]
+
+
 def set_borders_to(ar: np.ndarray, border: Tuple, value: float = 0, ):
     res = ar + 0
     res[:border[0], :] = value
@@ -417,9 +421,15 @@ def constant_color(color: np.ndarray, size: int) -> np.ndarray:
 
 
 def max_min_norm(ar: np.ndarray) -> np.ndarray:
+    armin = ar.min()
+    armax = ar.max()
+
+    if armin == armax:
+        return ar / armax
+
     ar = ar + 0
     ar[ar == np.infty] = ar[ar != np.infty].max()
-    return (ar - ar.min()) / (ar.max() - ar.min())
+    return (ar - armin) / (armax - armin)
 
 
 def uniform_sampling_bound(a: np.ndarray, b: np.ndarray) -> np.ndarray:

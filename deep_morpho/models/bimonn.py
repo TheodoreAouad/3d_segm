@@ -27,6 +27,7 @@ class BiMoNN(nn.Module):
         init_value: Union[float, List[float]] = -2,
         share_weights: Union[bool, List[bool]] = True,
         constant_P_lui: Union[bool, List[bool]] = False,
+        lui_kwargs: Union[Dict, List[Dict]] = {},
     ):
         super().__init__()
         self.kernel_size = self._init_kernel_size(kernel_size)
@@ -164,7 +165,7 @@ class BiMoNN(nn.Module):
 
     @property
     def bisels_args(self):
-        return self.bises_args + ['in_channels', 'constant_P_lui']
+        return self.bises_args + ['in_channels', 'constant_P_lui', "lui_kwargs"]
 
     @property
     def bisecs_args(self):
@@ -211,5 +212,5 @@ class BiMoNN(nn.Module):
         return [
             "kernel_size", "atomic_element", "weight_P", "threshold_mode", "activation_P", "constant_activation_P",
             "init_bias_value", "init_weight_mode", "alpha_init", "init_value", "share_weights",
-            "constant_weight_P", "constant_P_lui", "channels",
+            "constant_weight_P", "constant_P_lui", "channels", "lui_kwargs",
         ]

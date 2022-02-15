@@ -25,6 +25,7 @@ def load_args(path: str) -> Dict:
         "threshold_mode",
         "alpha_init",
         "share_weights",
+        "loss",
     ]
 
     with open(path, "r") as f:
@@ -32,7 +33,7 @@ def load_args(path: str) -> Dict:
 
     args = {}
 
-    args['loss'] = parse_yaml_dict_loss(yaml_str)
+    # args['loss'] = parse_yaml_dict_loss(yaml_str)
     args['optimizer'] = parse_yaml_dict_optimizer(yaml_str)
     args['operations'] = parse_yaml_dict_operations(yaml_str)
 

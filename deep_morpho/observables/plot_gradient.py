@@ -96,6 +96,8 @@ class PlotGradientBise(ObservableLayersChans):
         layer_idx: int,
         chan_output: int,
     ):
+        if layer.luis[chan_output].bias_raw.grad is None:
+            return
         grad_lui_bias = layer.luis[chan_output].bias_raw.grad[0]
         if grad_lui_bias is not None:
             trainer.logger.experiment.add_scalars(

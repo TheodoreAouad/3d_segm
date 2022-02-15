@@ -16,6 +16,7 @@ class LUI(nn.Module):
         P_: float = 1,
         constant_P: bool = False,
         init_mode: str = "normal",
+        force_identity: bool = False,
     ):
         super().__init__()
 
@@ -24,6 +25,7 @@ class LUI(nn.Module):
         self.chan_inputs = chan_inputs
         self.chan_outputs = chan_outputs
         self.init_mode = init_mode
+        self.force_identity = force_identity
 
         self.threshold_layer = dispatcher[self.threshold_mode](P_=P_, constant_P=self.constant_P, n_channels=chan_outputs)
         self.linear = nn.Linear(chan_inputs, chan_outputs)
@@ -37,6 +39,9 @@ class LUI(nn.Module):
     def forward(self, x):
         # return self.threshold_layer(self.linear(x.permute(0, 2, 3, 1))).permute(0, 3, 1, 2)
         # return self.threshold_layer(F.linear(x.permute(0, 2, 3, 1), self.positive_weight, self.positive_bias)).permute(0, 3, 1, 2)
+        if self.force_identity:
+            return x
+
         return self.threshold_layer.apply_threshold(
             F.linear(x.permute(0, 2, 3, 1), self.positive_weight, self.bias),
             self.activation_P, 0
@@ -45,10 +50,14 @@ class LUI(nn.Module):
     @property
     def P_(self):
         # return self.threshold_layer.P_
+        if self.force_identity:
+            return 1
         return self.softplus_layer(self.threshold_layer.P_)
 
     @property
     def positive_P(self):
+        if self.force_identity:
+            return 1
         return self.softplus_layer(self.P_)
 
     @property
@@ -70,10 +79,14 @@ class LUI(nn.Module):
 
     @property
     def positive_weight(self):
+        if self.force_identity:
+            return torch.ones_like(self.weight, requires_grad=False)
         return self.softplus_layer(self.weight)
 
     @property
     def bias(self):
+        if self.force_identity:
+            return torch.zeros_like(self.bias_raw, requires_grad=False)
         return -self.softplus_layer(self.bias_raw) -.5
 
 
@@ -115,6 +128,8 @@ class LUI(nn.Module):
     @property
     def activation_P(self):
         # return self.threshold_layer.P_
+        if self.force_identity:
+            return torch.ones_like(self.threshold_layer.P_, requires_grad=False)
         return self.softplus_layer(self.threshold_layer.P_) + 1
 
     @staticmethod

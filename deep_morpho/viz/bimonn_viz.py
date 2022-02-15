@@ -146,16 +146,6 @@ class BimonnVizualiser:
             # add bises
             for coord_selem_idx, chin in enumerate(range(n_per_group)):
                 coord_selem = coords_selem[coord_selem_idx]
-                # selem = self.model.layers[layer_idx].normalized_weights[chout, chin].detach().cpu().numpy()
-                # key_selem = f"selem_layer_{layer_idx}_chout_{chout}_chin_{chin}"
-
-                # cur_elt = ElementImage(
-                #     selem,
-                #     imshow_kwargs={"cmap": "gray", "interpolation": "nearest", "vmin": 0, "vmax": 1},
-                #     xy_coords_mean=(0, coord_selem)
-                # )
-
-                # subgroup.add_element(cur_elt, key=key_selem)
                 link_lui_elt = self.add_bise_to_group(subgroup, layer_idx, chout, chin, coord_selem)
                 input_lui_elements.append(link_lui_elt)
 
