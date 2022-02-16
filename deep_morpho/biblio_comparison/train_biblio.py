@@ -7,8 +7,6 @@ import torch
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 from deep_morpho.datasets.mnist_dataset import MnistMorphoDataset
 
 
@@ -219,7 +217,6 @@ if __name__ == '__main__':
 
     code_saver.delete_temporary_file()
 
-    # results = pd.concat(results)
 
     log_console(f'{len(bugged)} Args Bugged: ', bugged, logger=console_logger)
     log_console(f'{len(all_args)} args done in {format_time(time() - start_all)} ', logger=console_logger)

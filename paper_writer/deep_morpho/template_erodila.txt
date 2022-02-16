@@ -1,0 +1,134 @@
+     \begin{tabular}{ | c | c | c | c | c | c | c | c | c | c |}
+        \hline
+        Dataset & \multicolumn{3}{c|}{Diskorect}  & \multicolumn{3}{c|}{MNIST} & \multicolumn{3}{c|}{Inverted MNIST} \\
+        \hline
+        Operation & Disk & Stick & Cross & Disk & Stick & Cross  & Disk & Stick & Cross \\
+        \hline
+        Target
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_disk7.png}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_hstick7.png}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_dcross7.png}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results2/true_disk5.png}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results2/true_hstick5.png}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results2/true_dcross5.png}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results2/true_disk5.png}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results2/true_hstick5.png}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results2/true_dcross5.png}
+        \end{minipage}
+        \\        
+        \hline
+        Dilation $\dil{}{}$
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_dilation_disk.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_diskorect_dilation_disk}$}}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_dilation_stick.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_diskorect_dilation_stick}$}}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_dilation_cross.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_diskorect_dilation_cross}$}}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_dilation_disk.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_mnist_dilation_disk}$}}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_dilation_stick.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_mnist_dilation_stick}$}}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_dilation_cross.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_mnist_dilation_cross}$}}
+        \end{minipage}
+                & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_dilation_disk.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_inverted_mnist_dilation_disk}$}}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_dilation_stick.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_inverted_mnist_dilation_stick}$}}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_dilation_cross.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_inverted_mnist_dilation_cross}$}}
+        \end{minipage}
+        
+        \\       
+        \hline
+        Erosion $\ero{}{}$
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_erosion_disk.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_diskorect_erosion_disk}$}}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_erosion_stick.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_diskorect_erosion_stick}$}}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_erosion_cross.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_diskorect_erosion_cross}$}}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_erosion_disk.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_mnist_erosion_disk}$}}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_erosion_stick.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_mnist_erosion_stick}$}}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_erosion_cross.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_mnist_erosion_cross}$}}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_erosion_disk.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_inverted_mnist_erosion_disk}$}}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_erosion_stick.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_inverted_mnist_erosion_stick}$}}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_erosion_cross.png}
+          \vspace{-1cm}
+          \center{{\tiny ${ERROR_inverted_mnist_erosion_cross}$}}
+        \end{minipage}
+        \\
+        \hline
+      \end{tabular}

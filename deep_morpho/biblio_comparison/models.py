@@ -54,6 +54,10 @@ class UnfoldingLayer(nn.Module):
     def ndim(self):
         return len(self.kernel_size)
 
+    @property
+    def weights(self):
+        return self.weight
+
 
 class LMorph(UnfoldingLayer):
     """ We implement the Lmorph layer described in https://arxiv.org/pdf/2102.10038.pdf

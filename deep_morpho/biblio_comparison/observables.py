@@ -33,7 +33,7 @@ class PlotWeights(ObservableLayers):
         weights = layer.weight
         trainer.logger.experiment.add_figure(
             f"weights/layer_{layer_idx}",
-            self.get_figure_weights(weights),
+            self.get_figure_weights(weights, title=f'param={layer.P.item():.2f}'),
             trainer.global_step
         )
 
@@ -51,10 +51,11 @@ class PlotWeights(ObservableLayers):
         return self.last_weights
 
     @staticmethod
-    def get_figure_weights(weights):
+    def get_figure_weights(weights, title=''):
         weights = weights.cpu().detach()
         weights_normed = max_min_norm(weights)
         figure = plt.figure(figsize=(8, 8))
+        plt.title(title)
         plt.imshow(weights_normed, interpolation='nearest', cmap=plt.cm.gray)
         plt.colorbar()
         # plt.clim(0, 1)

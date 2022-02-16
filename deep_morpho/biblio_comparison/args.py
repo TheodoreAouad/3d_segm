@@ -17,7 +17,7 @@ all_args['n_try'] = [0]
 # all_args['n_try'] = range(1, 11)
 
 all_args['experiment_name'] = [
-    "concurrent"
+    "concurrent/sandbox/1"
 ]
 
 #########################
@@ -83,15 +83,15 @@ all_args['kernel_size'] = [
 ##################
 
 all_args['model'] = [
-    "lmorph",
-    # "smorph",
+    # "lmorph",
+    "smorph",
 ]
 all_args['optimizer'] = [optim.Adam]
 all_args['batch_size'] = [32]
 all_args['learning_rate'] = [1e-2]
 all_args_lsmorph = (
-    # dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect})) +
-    dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist})) +
+    dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect})) +
+    # dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist})) +
     []
 )
 
