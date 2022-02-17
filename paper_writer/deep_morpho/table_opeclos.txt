@@ -32,120 +32,120 @@
         & \begin{minipage}{.12\linewidth}
           \includegraphics[width=\textwidth]{selem_results/true_dcross7.png}
         \end{minipage}
-        \\        
+        \\
         \hline
         Opening $\circ$
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_disk1.png} 
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_disk2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.072}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_stick1.png}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_stick2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.000}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_cross1.png}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_cross2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.002}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_disk1.png} 
-          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_disk2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.008}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_stick1.png}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_stick2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.000}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_cross1.png}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_cross2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.001}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_disk1.png} 
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_disk2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.006}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_stick1.png}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_stick2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.001}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_cross1.png}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_cross2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.012}$}}
-        \end{minipage}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_disk1.png}\textcolor{red}{$\times$}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_disk2.png}\textcolor{red}{$\times$}
+          \vspace{-1cm}\center{{\tiny ${0.072}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_stick1.png}\textcolor{green}{\checkmark}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_stick2.png}\textcolor{green}{\checkmark}
+          \vspace{-1cm}\center{{\tiny ${0.000}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_cross1.png}\textcolor{green}{\checkmark}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_cross2.png}\textcolor{green}{\checkmark}
+          \vspace{-1cm}\center{{\tiny ${0.002}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_disk1.png}\textcolor{red}{$\times$}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_disk2.png}\textcolor{green}{\checkmark}
+          \vspace{-1cm}\center{{\tiny ${0.008}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_stick1.png}\textcolor{green}{\checkmark}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_stick2.png}\textcolor{green}{\checkmark}
+          \vspace{-1cm}\center{{\tiny ${0.000}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_cross1.png}\textcolor{red}{$\times$}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_cross2.png}\textcolor{green}{\checkmark}
+          \vspace{-1cm}\center{{\tiny ${0.001}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_disk1.png}\textcolor{red}{$\times$}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_disk2.png}\textcolor{red}{$\times$}
+          \vspace{-1cm}\center{{\tiny ${0.006}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_stick1.png}\textcolor{green}{\checkmark}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_stick2.png}\textcolor{red}{$\times$}
+          \vspace{-1cm}\center{{\tiny ${0.001}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_cross1.png}\textcolor{red}{$\times$}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_cross2.png}\textcolor{red}{$\times$}
+          \vspace{-1cm}\center{{\tiny ${0.012}$}}
+        \end{subfigure}
         \\
         \hline
         Closing $\bullet$
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_disk1.png}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_disk2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.038}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_stick1.png}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_stick2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.000}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_cross1.png}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_cross2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.000}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_disk1.png}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_disk2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.009}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_stick1.png}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_stick2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.001}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_cross1.png}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_cross2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.020}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_disk1.png}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_disk2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.009}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_stick1.png}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_stick2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.000}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_cross1.png}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_cross2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${0.000}$}}
-        \end{minipage}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_disk1.png}\textcolor{red}{$\times$}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_disk2.png}\textcolor{red}{$\times$}
+          \vspace{-1cm}\center{{\tiny ${0.038}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_stick1.png}\textcolor{green}{\checkmark}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_stick2.png}\textcolor{green}{\checkmark}
+          \vspace{-1cm}\center{{\tiny ${0.000}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_cross1.png}\textcolor{green}{\checkmark}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_cross2.png}\textcolor{red}{$\times$}
+          \vspace{-1cm}\center{{\tiny ${0.000}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_disk1.png}\textcolor{red}{$\times$}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_disk2.png}\textcolor{red}{$\times$}
+          \vspace{-1cm}\center{{\tiny ${0.009}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_stick1.png}\textcolor{green}{\checkmark}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_stick2.png}\textcolor{red}{$\times$}
+          \vspace{-1cm}\center{{\tiny ${0.001}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_cross1.png}\textcolor{red}{$\times$}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_cross2.png}\textcolor{red}{$\times$}
+          \vspace{-1cm}\center{{\tiny ${0.020}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_disk1.png}\textcolor{red}{$\times$}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_disk2.png}\textcolor{red}{$\times$}
+          \vspace{-1cm}\center{{\tiny ${0.009}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_stick1.png}\textcolor{green}{\checkmark}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_stick2.png}\textcolor{green}{\checkmark}
+          \vspace{-1cm}\center{{\tiny ${0.000}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_cross1.png}\textcolor{green}{\checkmark}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_cross2.png}\textcolor{green}{\checkmark}
+          \vspace{-1cm}\center{{\tiny ${0.000}$}}
+        \end{subfigure}
         \\
         \hline
       \end{tabular}

@@ -17,7 +17,7 @@ all_args['n_try'] = [0]
 # all_args['n_try'] = range(1, 11)
 
 all_args['experiment_name'] = [
-    "concurrent/sandbox/1"
+    "ICIP_2022/biblio/0"
 ]
 
 #########################
@@ -46,12 +46,10 @@ all_args['random_gen_args'] = [
     # {'size': (50, 50), 'n_shapes': 30, 'max_shape': (15, 15), 'p_invert': 0.5, 'n_holes': 15, 'max_shape_holes': (7, 7)}
 
 ]
-all_args['mnist_args'] = [
-    {"threshold": 30, "size": (50, 50), "invert_input_proba": 1}
-]
+
 all_args['n_inputs'] = [
-    # 1_000_000,
-    100_000,
+    1_000_000,
+    # 100_000,
     # 70000,
 ]
 all_args['train_test_split'] = [(1, 1, 0)]
@@ -65,7 +63,7 @@ all_args['num_workers'] = [
     # 0,
 ]
 all_args['freq_imgs'] = [300]
-all_args['n_epochs'] = [5]
+all_args['n_epochs'] = [20]
 
 
 # MODEL ARGS
@@ -87,11 +85,16 @@ all_args['model'] = [
     "smorph",
 ]
 all_args['optimizer'] = [optim.Adam]
-all_args['batch_size'] = [32]
-all_args['learning_rate'] = [1e-2]
+all_args['batch_size'] = [256]
+all_args['learning_rate'] = [1e-3*2]
+
+all_args['mnist_args'] = [
+    {"threshold": 30, "size": (50, 50), "invert_input_proba": 0}
+]
+
 all_args_lsmorph = (
-    dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect})) +
-    # dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist})) +
+    # dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect})) +
+    dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist})) +
     []
 )
 
@@ -103,6 +106,9 @@ all_args['model'] = ["adaptative"]
 all_args['optimizer'] = [optim.SGD]
 all_args['learning_rate'] = [10]
 all_args['batch_size'] = [64]
+
+
+
 all_args_adaptative = (
     dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist})) +
     dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect})) +
@@ -142,3 +148,5 @@ for idx, args in enumerate(all_args):
 
     if args['dataset_type'] == "mnist":
         args['n_inputs'] = 70_000
+        if args['mnist_args']['invert_input_proba'] == 1:
+            args['experiment_subname'] = f"inverted_{args['experiment_subname']}"

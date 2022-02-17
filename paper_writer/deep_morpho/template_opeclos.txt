@@ -32,120 +32,120 @@
         & \begin{minipage}{.12\linewidth}
           \includegraphics[width=\textwidth]{selem_results/true_dcross7.png}
         \end{minipage}
-        \\        
+        \\
         \hline
         Opening $\circ$
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_disk1.png} 
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_disk2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_diskorect_opening_disk}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_stick1.png}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_stick2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_diskorect_opening_stick}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_cross1.png}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_cross2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_diskorect_opening_cross}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_disk1.png} 
-          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_disk2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_mnist_opening_disk}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_stick1.png}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_stick2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_mnist_opening_stick}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_cross1.png}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_cross2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_mnist_opening_cross}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_disk1.png} 
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_disk2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_inverted_mnist_opening_disk}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_stick1.png}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_stick2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_inverted_mnist_opening_stick}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_cross1.png}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_cross2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_inverted_mnist_opening_cross}$}}
-        \end{minipage}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_disk1.png}CONVERGED0_diskorect_opening_disk
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_disk2.png}CONVERGED1_diskorect_opening_disk
+          \vspace{-1cm}\center{{\tiny ${ERROR_diskorect_opening_disk}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_stick1.png}CONVERGED0_diskorect_opening_stick
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_stick2.png}CONVERGED1_diskorect_opening_stick
+          \vspace{-1cm}\center{{\tiny ${ERROR_diskorect_opening_stick}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_cross1.png}CONVERGED0_diskorect_opening_cross
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_opening_cross2.png}CONVERGED1_diskorect_opening_cross
+          \vspace{-1cm}\center{{\tiny ${ERROR_diskorect_opening_cross}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_disk1.png}CONVERGED0_mnist_opening_disk
+          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_disk2.png}CONVERGED1_mnist_opening_disk
+          \vspace{-1cm}\center{{\tiny ${ERROR_mnist_opening_disk}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_stick1.png}CONVERGED0_mnist_opening_stick
+          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_stick2.png}CONVERGED1_mnist_opening_stick
+          \vspace{-1cm}\center{{\tiny ${ERROR_mnist_opening_stick}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_cross1.png}CONVERGED0_mnist_opening_cross
+          \includegraphics[width=\textwidth]{selem_results3/mnist_opening_cross2.png}CONVERGED1_mnist_opening_cross
+          \vspace{-1cm}\center{{\tiny ${ERROR_mnist_opening_cross}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_disk1.png}CONVERGED0_inverted_mnist_opening_disk
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_disk2.png}CONVERGED1_inverted_mnist_opening_disk
+          \vspace{-1cm}\center{{\tiny ${ERROR_inverted_mnist_opening_disk}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_stick1.png}CONVERGED0_inverted_mnist_opening_stick
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_stick2.png}CONVERGED1_inverted_mnist_opening_stick
+          \vspace{-1cm}\center{{\tiny ${ERROR_inverted_mnist_opening_stick}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_cross1.png}CONVERGED0_inverted_mnist_opening_cross
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_opening_cross2.png}CONVERGED1_inverted_mnist_opening_cross
+          \vspace{-1cm}\center{{\tiny ${ERROR_inverted_mnist_opening_cross}$}}
+        \end{subfigure}
         \\
         \hline
         Closing $\bullet$
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_disk1.png}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_disk2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_diskorect_closing_disk}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_stick1.png}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_stick2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_diskorect_closing_stick}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_cross1.png}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_cross2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_diskorect_closing_cross}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_disk1.png}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_disk2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_mnist_closing_disk}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_stick1.png}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_stick2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_mnist_closing_stick}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_cross1.png}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_cross2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_mnist_closing_cross}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_disk1.png}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_disk2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_inverted_mnist_closing_disk}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_stick1.png}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_stick2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_inverted_mnist_closing_stick}$}}
-        \end{minipage}
-        & \begin{minipage}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_cross1.png}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_cross2.png}
-          \vspace{-1cm}
-          \center{{\tiny ${ERROR_inverted_mnist_closing_cross}$}}
-        \end{minipage}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_disk1.png}CONVERGED0_diskorect_closing_disk
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_disk2.png}CONVERGED1_diskorect_closing_disk
+          \vspace{-1cm}\center{{\tiny ${ERROR_diskorect_closing_disk}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_stick1.png}CONVERGED0_diskorect_closing_stick
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_stick2.png}CONVERGED1_diskorect_closing_stick
+          \vspace{-1cm}\center{{\tiny ${ERROR_diskorect_closing_stick}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_cross1.png}CONVERGED0_diskorect_closing_cross
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_closing_cross2.png}CONVERGED1_diskorect_closing_cross
+          \vspace{-1cm}\center{{\tiny ${ERROR_diskorect_closing_cross}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_disk1.png}CONVERGED0_mnist_closing_disk
+          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_disk2.png}CONVERGED1_mnist_closing_disk
+          \vspace{-1cm}\center{{\tiny ${ERROR_mnist_closing_disk}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_stick1.png}CONVERGED0_mnist_closing_stick
+          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_stick2.png}CONVERGED1_mnist_closing_stick
+          \vspace{-1cm}\center{{\tiny ${ERROR_mnist_closing_stick}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_cross1.png}CONVERGED0_mnist_closing_cross
+          \includegraphics[width=\textwidth]{selem_results3/mnist_closing_cross2.png}CONVERGED1_mnist_closing_cross
+          \vspace{-1cm}\center{{\tiny ${ERROR_mnist_closing_cross}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_disk1.png}CONVERGED0_inverted_mnist_closing_disk
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_disk2.png}CONVERGED1_inverted_mnist_closing_disk
+          \vspace{-1cm}\center{{\tiny ${ERROR_inverted_mnist_closing_disk}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_stick1.png}CONVERGED0_inverted_mnist_closing_stick
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_stick2.png}CONVERGED1_inverted_mnist_closing_stick
+          \vspace{-1cm}\center{{\tiny ${ERROR_inverted_mnist_closing_stick}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_cross1.png}CONVERGED0_inverted_mnist_closing_cross
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_closing_cross2.png}CONVERGED1_inverted_mnist_closing_cross
+          \vspace{-1cm}\center{{\tiny ${ERROR_inverted_mnist_closing_cross}$}}
+        \end{subfigure}
         \\
         \hline
       \end{tabular}
