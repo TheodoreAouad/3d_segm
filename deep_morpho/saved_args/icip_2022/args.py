@@ -18,7 +18,7 @@ all_args['n_try'] = [0]
 # all_args['n_try'] = range(1, 11)
 
 all_args['experiment_name'] = [
-    'ICIP_2022/sandbox/7/',
+    'ICIP_2022/sandbox/0/',
     # "test",
 ]
 
@@ -156,9 +156,9 @@ all_args_inverted_mnist = dict_cross(all_args)
 
 
 all_args = (
-    # all_args_diskorect +
+    all_args_diskorect +
     # all_args_mnist +
-    all_args_inverted_mnist +
+    # all_args_inverted_mnist +
     []
 )
 
@@ -187,7 +187,7 @@ for idx, args in enumerate(all_args):
 
     if args['dataset_type'] == "diskorect":
         if args['morp_operation'].name in ['erosion', "dilation"]:
-            args['n_inputs'] = 1_000_000
+            args['n_inputs'] = 2_000_000
             args['learning_rate'] = 1e-2
         args['n_epochs'] = 1
         args["random_gen_args"] = args["random_gen_args"].copy()

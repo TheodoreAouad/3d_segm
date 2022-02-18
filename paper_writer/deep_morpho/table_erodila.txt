@@ -104,10 +104,10 @@
         Erosion $\ero{}{}$
         & \hspace{-0.4cm}
         \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_erosion_disk.png}\textcolor{red}{$\times$}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_erosion_disk.png}\textcolor{green}{\checkmark}
           
           \vspace{-0.6cm}
-          \center{{\tiny ${0.003}$}}
+          \center{{\tiny ${0.000}$}}
         \end{subfigure}
         & \hspace{-0.4cm}
         \begin{subfigure}{.12\linewidth}

@@ -2,7 +2,7 @@ tb_path,dataset,operation,selem,dice,convergence_dice_test,convergence_dice_trai
 deep_morpho/results/ICIP_2022/sandbox/4/diskorect/dilation/bisel/version_0,diskorect,dilation,disk,1.0,,547,,2600.0,
 deep_morpho/results/ICIP_2022/sandbox/4/diskorect/dilation/bisel/version_1,diskorect,dilation,stick,1.0,,550,,800.0,
 deep_morpho/results/ICIP_2022/sandbox/4/diskorect/dilation/bisel/version_2,diskorect,dilation,cross,1.0,,567,,,
-deep_morpho/results/ICIP_2022/sandbox/4/diskorect/erosion/bisel/version_0,diskorect,erosion,disk,0.99738705,,3906,,,
+deep_morpho/results/ICIP_2022/sandbox/4/diskorect/erosion/bisel/version_0,diskorect,erosion,disk,1.0,,3985,,4000.0,
 deep_morpho/results/ICIP_2022/sandbox/4/diskorect/erosion/bisel/version_1,diskorect,erosion,stick,1.0,,440,,500.0,
 deep_morpho/results/ICIP_2022/sandbox/4/diskorect/erosion/bisel/version_2,diskorect,erosion,cross,1.0,,1245,,1400.0,
 deep_morpho/results/ICIP_2022/sandbox/4/diskorect/opening/bisel/version_0,diskorect,opening,disk,0.9279607,,11718,,,

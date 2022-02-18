@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 
 PATH_METRICS = "deep_morpho/metric_results/results.csv"
-# TEMPLATE_PATH = 'paper_writer/deep_morpho/template_erodila.txt'
-TEMPLATE_PATH = 'paper_writer/deep_morpho/template_opeclos.txt'
+TEMPLATE_PATH = 'paper_writer/deep_morpho/template_erodila.txt'
+# TEMPLATE_PATH = 'paper_writer/deep_morpho/template_opeclos.txt'
 assert 'template' in TEMPLATE_PATH
 
 df = pd.read_csv(PATH_METRICS)
