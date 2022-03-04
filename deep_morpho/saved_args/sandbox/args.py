@@ -20,8 +20,8 @@ all_args['experiment_name'] = [
     # 'Bimonn_exp_45_sandbox_disk'
     # 'Bimonn_exp_46/multi_closing'
     # 'Bimonn_exp_46_sandbox'
-    'Bimonn_exp_48',
-    # "test_plotmodels"
+    # 'Bimonn_exp_48',
+    "test_closest_selem"
 ]
 
 
@@ -29,7 +29,7 @@ all_args['experiment_name'] = [
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
-    "mnist",
+    # "mnist",
     'diskorect',
 ]
 all_args['preprocessing'] = [  # for axspa roi
@@ -44,12 +44,10 @@ all_args['in_ram'] = [
     True,
 ]
 all_args['random_gen_fn'] = [
-    # get_random_rotated_diskorect,
     get_random_diskorect_channels
 ]
 all_args['random_gen_args'] = [
     {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
-    # {'size': (50, 50), 'n_shapes': 30, 'max_shape': (15, 15), 'p_invert': 0.5, 'n_holes': 15, 'max_shape_holes': (7, 7)}
 
 ]
 all_args['mnist_args'] = [
@@ -57,8 +55,6 @@ all_args['mnist_args'] = [
 ]
 all_args['n_inputs'] = [
     1_000_000,
-    # 100_000,
-    # 70000,
 ]
 all_args['train_test_split'] = [(1, 1, 0)]
 
@@ -120,6 +116,7 @@ all_args['init_weight_mode'] = [
     "conv"
 ]
 all_args['activation_P'] = [1]
+all_args['force_lui_identity'] = [False]
 all_args['constant_activation_P'] = [True]
 all_args['constant_P_lui'] = [False]
 all_args['constant_weight_P'] = [True]

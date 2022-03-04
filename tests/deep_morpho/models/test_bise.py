@@ -1,7 +1,12 @@
 import torch
+import numpy as np
 
 from deep_morpho.models import BiSE
 from general.structuring_elements import disk
+
+
+def softplus_inverse(x):
+    return torch.log(torch.exp(x) - 1)
 
 
 class TestBiSE:
@@ -18,20 +23,46 @@ class TestBiSE:
         inpt = torch.rand((1, 1, 50, 50))
         layer(inpt)
 
+    @staticmethod
+    def test_bise_set_bias():
+        layer = BiSE((7, 7))
+        bias = torch.rand((1,)) - 2
+        layer.set_bias(bias)
+        assert layer.bias == bias
 
     @staticmethod
     def test_bise_erosion_check():
         layer = BiSE((7, 7), threshold_mode='sigmoid')
         weight = disk(3)
         layer.conv.weight.data[0] = torch.FloatTensor(100*(weight - 0.5))
-        layer.conv.bias.data = -torch.FloatTensor([weight.sum() - 1/2])
-        assert layer.is_erosion_by(layer._normalized_weight, layer.bias, weight, v1=0.003, v2=0.997)
-
+        layer.set_bias(-torch.FloatTensor([weight.sum() - 1/2]))
+        assert layer.is_erosion_by(layer._normalized_weight[0, 0], layer.bias, weight, v1=0.003, v2=0.997)
 
     @staticmethod
     def test_bise_dilation_check():
         layer = BiSE((7, 7), threshold_mode='sigmoid')
         weight = disk(3)
         layer.conv.weight.data[0] = torch.FloatTensor(10*(weight - 0.5))
-        layer.conv.bias.data = -torch.FloatTensor([1/2])
-        assert layer.is_dilation_by(layer._normalized_weight, layer.bias, weight, v1=0.003, v2=0.997)
+        layer.set_bias(-torch.FloatTensor([1/2]))
+        assert layer.is_dilation_by(layer._normalized_weight[0, 0], layer.bias, weight, v1=0.003, v2=0.997)
+
+    @staticmethod
+    def test_bise_erosion_init():
+        weight = disk(3)
+        layer = BiSE.bise_from_selem(weight, 'erosion')
+        assert layer.is_erosion_by(layer._normalized_weight[0, 0], layer.bias, weight)
+
+    @staticmethod
+    def test_bise_dilation_init():
+        weight = disk(3)
+        layer = BiSE.bise_from_selem(weight, 'dilation')
+        assert layer.is_dilation_by(layer._normalized_weight[0, 0], layer.bias, weight)
+
+    @staticmethod
+    def test_bise_find_selem_and_operation_chan():
+        weight = disk(3)
+        for original_op in ['erosion', 'dilation']:
+            layer = BiSE.bise_from_selem(weight, original_op)
+            selem, operation = layer.find_selem_and_operation_chan(0)
+            assert (selem == weight).all()
+            assert operation == original_op

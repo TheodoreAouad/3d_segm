@@ -8,9 +8,11 @@ import pytorch_lightning as pl
 import torch.nn as nn
 from torch.utils.tensorboard.summary import custom_scalars
 import matplotlib.pyplot as plt
+import numpy as np
 
 from .observable_layers import ObservableLayers, ObservableLayersChans
 from general.nn.observables import Observable
+from general.utils import save_json
 
 from ..models import COBiSE, BiSE
 
@@ -273,5 +275,70 @@ class ShowLUISetBinary(ObservableLayersChans):
             fig = self.set_fig(C, operation)
             fig.savefig(join(final_dir, f"layer_{layer_idx}_chout_{chan_output}.png"))
             saved.append(fig)
+
+        return saved
+
+
+class ShowClosestSelemBinary(ObservableLayersChans):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.last_elts = {}
+        self.last_selems = {}
+        self.freq_idx2 = 0
+
+    def on_train_batch_end_layers_chans(
+        self,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        dataloader_idx: int,
+        layer: "nn.Module",
+        layer_idx: int,
+        chan_input: int,
+        chan_output: int,
+    ):
+        selem, operation, distance = layer.bises[chan_input].find_closest_selem_and_operation_chan(chan_output, v1=0, v2=1)
+
+        trainer.logger.experiment.add_scalar(f"comparative/closest_binary_dist/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}", distance, trainer.global_step)
+
+        fig = self.selem_fig(selem, f"{operation} dist {distance:.2f}")
+        trainer.logger.experiment.add_figure(f"closest_selem/binary/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}", fig, trainer.global_step)
+        self.last_elts[str((layer_idx, chan_input, chan_output))] = {"operation": operation, "distance": str(distance)}
+        self.last_selems[(layer_idx, chan_input, chan_output)] = selem
+
+
+    @staticmethod
+    def selem_fig(selem, title):
+        fig = plt.figure(figsize=(3, 3))
+        plt.imshow(selem, interpolation="nearest", vmin=0, vmax=1)
+        plt.title(title)
+        return fig
+
+
+    def save(self, save_path: str):
+        final_dir = join(save_path, self.__class__.__name__)
+        numpy_dir = join(final_dir, "selem_npy")
+        png_dir = join(final_dir, "selem_png")
+        pathlib.Path(numpy_dir).mkdir(exist_ok=True, parents=True)
+        pathlib.Path(png_dir).mkdir(exist_ok=True, parents=True)
+
+        saved = []
+
+        for (layer_idx, chan_input, chan_output), selem in self.last_selems.items():
+            filename = f"layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}"
+
+            elts = self.last_elts[str((layer_idx, chan_input, chan_output))]
+            operation, distance = elts['operation'], elts['distance']
+
+            fig = self.selem_fig(selem, f"{operation} dist {distance}")
+            fig.savefig(join(png_dir, f"{filename}.png"))
+            saved.append(fig)
+            np.save(join(numpy_dir, f'{filename}.npy'), selem.astype(np.uint8))
+
+        save_json(self.last_elts, join(final_dir, "operation_distance.json"))
+        saved.append(self.last_elts)
 
         return saved

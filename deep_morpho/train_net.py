@@ -18,6 +18,7 @@ from deep_morpho.datasets.multi_rect_dataset import InputOutputGeneratorDataset,
 from deep_morpho.datasets.axspa_roi_dataset import AxspaROIDataset, AxspaROISimpleDataset
 from deep_morpho.models import LightningBiMoNN, BiSE, COBiSE, BiSEC, COBiSEC
 import deep_morpho.observables as obs
+from deep_morpho.observables.check_morp_op import ShowClosestSelemBinary
 from general.nn.observables import CalculateAndLogMetrics
 from general.utils import format_time, log_console, create_logger, save_yaml
 from general.nn.utils import train_val_test_split
@@ -105,10 +106,11 @@ def main(args, logger):
         "ConvergenceMetrics": obs.ConvergenceMetrics(metrics),
         # "ShowSelemAlmostBinary": obs.ShowSelemAlmostBinary(freq=args['freq_imgs']),
         "ShowSelemBinary": obs.ShowSelemBinary(freq=args['freq_imgs']),
+        "ShowClosestSelemBinary": obs.ShowClosestSelemBinary(freq=args['freq_imgs']),
         "ShowLUISetBinary": obs.ShowLUISetBinary(freq=args['freq_imgs']),
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         "ConvergenceBinary": obs.ConvergenceBinary(freq=100),
-        "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs'])
+        "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs']),
     }
 
     observables = list(observables_dict.values())

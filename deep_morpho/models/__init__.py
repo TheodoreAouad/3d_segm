@@ -8,3 +8,4 @@ from .lightning_cobise import *
 from .lightning_pconv import *
 from .lightning_bimonn import *
 from .lui import *
+from .softplus import *

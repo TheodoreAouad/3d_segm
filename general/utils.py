@@ -447,7 +447,6 @@ def read_obj_file(path: str) -> (np.ndarray, np.ndarray):
     verts = []
     faces = []
     with open(path, "r") as f:
-#         lines = f.readlines()
         lines = f.read().splitlines()
 
     for line in lines:

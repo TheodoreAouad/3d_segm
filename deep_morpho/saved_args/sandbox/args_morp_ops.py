@@ -16,13 +16,8 @@ selems = []
 # morp_operations.append(ParallelMorpOperations.white_tophat(('disk', 3)))
 
 
-morp_operations.append(ParallelMorpOperations.closing(('disk', 3)))
-morp_operations.append(ParallelMorpOperations.closing(('hstick', 7)))
-morp_operations.append(ParallelMorpOperations.closing(('vstick', 7)))
-morp_operations.append(ParallelMorpOperations.closing(('scross', 7)))
-morp_operations.append(ParallelMorpOperations.closing(('dcross', 7)))
-morp_operations.append(ParallelMorpOperations.closing(('square', 7)))
-# morp_operations.append(ParallelMorpOperations.closing(('disk', 3)))
+
+morp_operations.append(ParallelMorpOperations.dilation(('disk', 3)))
 
 
 # for op in [
