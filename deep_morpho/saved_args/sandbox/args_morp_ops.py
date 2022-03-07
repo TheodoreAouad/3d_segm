@@ -17,7 +17,7 @@ selems = []
 
 
 
-morp_operations.append(ParallelMorpOperations.dilation(('disk', 3)))
+morp_operations.append(ParallelMorpOperations.erosion(('disk', 3)))
 
 
 # for op in [

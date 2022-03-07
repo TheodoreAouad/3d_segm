@@ -1,13 +1,19 @@
-class A:
+from time import time
+import torch
 
-    def _a(self=None, path):
-        print('_a')
-    
-    def a(self=None):
-        A._a(self)
+n_iteration = int(1e7)
 
+a = torch.rand(50) > .5
+b = torch.rand(50) > .5
 
-a = A()
+t1 = time()
+for _ in range(n_iteration):
+    a & b
+print(time() - t1)
 
-a.a()
-A.a()
+a = a.float()
+b = b.float()
+t1 = time()
+for _ in range(n_iteration):
+    a + b
+print(time() - t1)

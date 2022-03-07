@@ -3,6 +3,7 @@ import numpy as np
 
 from deep_morpho.models import BiSE
 from general.structuring_elements import disk
+from general.array_morphology import array_erosion, array_dilation
 
 
 def softplus_inverse(x):
@@ -21,6 +22,12 @@ class TestBiSE:
     def test_bise_forward():
         layer = BiSE((7, 7), threshold_mode='sigmoid')
         inpt = torch.rand((1, 1, 50, 50))
+        layer(inpt)
+
+    @staticmethod
+    def test_bise_forward_multi_channels():
+        layer = BiSE((7, 7), out_channels=5)
+        inpt = torch.rand(10, 1, 50, 50)
         layer(inpt)
 
     @staticmethod
@@ -66,3 +73,66 @@ class TestBiSE:
             selem, operation = layer.find_selem_and_operation_chan(0)
             assert (selem == weight).all()
             assert operation == original_op
+
+    @staticmethod
+    def test_bise_forward_binary_dilation():
+        weight = disk(3)
+        layer = BiSE.bise_from_selem(weight, 'dilation')
+
+        inpt = torch.randint(0, 2, (50, 50)).float()
+        output = layer.forward_binary(inpt[None, None, ...]).detach().cpu().numpy()
+        target = array_dilation(inpt, weight)
+
+        assert np.abs(output - target).sum() == 0
+
+    @staticmethod
+    def test_bise_forward_binary_erosion():
+        weight = disk(3)
+        layer = BiSE.bise_from_selem(weight, 'erosion')
+
+        inpt = torch.randint(0, 2, (50, 50)).float()
+        output = layer.forward_binary(inpt[None, None, ...]).detach().cpu().numpy()
+        target = array_erosion(inpt, weight)
+
+        assert np.abs(output - target).sum() == 0
+
+    @staticmethod
+    def test_bise_binary_mode_dilation():
+        weight = disk(3)
+        layer = BiSE.bise_from_selem(weight, 'dilation')
+
+        inpt = torch.randint(0, 2, (50, 50)).float()
+
+        layer.binary()
+        output = layer(inpt[None, None, ...]).detach().cpu().numpy()
+        target = array_dilation(inpt, weight)
+
+        assert np.abs(output - target).sum() == 0
+
+    @staticmethod
+    def test_bise_binary_mode_erosion():
+        weight = disk(3)
+        layer = BiSE.bise_from_selem(weight, 'erosion')
+
+        inpt = torch.randint(0, 2, (50, 50)).float()
+        layer.binary()
+        output = layer(inpt[None, None, ...]).detach().cpu().numpy()
+        target = array_erosion(inpt, weight)
+
+        assert np.abs(output - target).sum() == 0
+
+
+    @staticmethod
+    def test_bise_binary_forward_multi_channels():
+        layer = BiSE((7, 7), out_channels=5)
+        inpt = torch.rand(10, 1, 50, 50)
+        output = layer.forward_binary(inpt).detach().cpu().numpy()
+        assert np.isin(output, [0, 1]).all()
+
+
+    @staticmethod
+    def test_bise_binary_mode():
+        layer = BiSE((7, 7), out_channels=5)
+        layer.binary()
+        layer.binary(False)
+        assert layer.binary_mode == False

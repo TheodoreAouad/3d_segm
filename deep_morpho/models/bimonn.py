@@ -7,9 +7,10 @@ from .bise import BiSE, BiSEC
 from .dilation_sum_layer import MaxPlusAtom
 from .cobise import COBiSE, COBiSEC
 from .bisel import BiSEL
+from .binary_nn import BinaryNN
 
 
-class BiMoNN(nn.Module):
+class BiMoNN(BinaryNN):
 
     def __init__(
         self,

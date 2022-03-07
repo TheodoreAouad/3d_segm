@@ -5,9 +5,10 @@ import torch.nn as nn
 
 from .bise import BiSE
 from .lui import LUI
+from .binary_nn import BinaryNN
 
 
-class BiSEL(nn.Module):
+class BiSEL(BinaryNN):
 
     def __init__(
         self,

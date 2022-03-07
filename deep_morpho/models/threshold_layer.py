@@ -15,6 +15,7 @@ class ThresholdLayer(nn.Module):
         threshold_name: str = '',
         bias: float = 0,
         constant_P: bool = False,
+        binary_mode: bool = False,
     ):
         super().__init__()
         self.n_channels = n_channels
@@ -22,6 +23,7 @@ class ThresholdLayer(nn.Module):
         self.threshold_name = threshold_name
         self.threshold_fn = threshold_fn
         self.bias = bias
+        self.binary_mode = binary_mode
 
         if isinstance(P_, nn.Parameter):
             self.P_ = P_
@@ -30,12 +32,18 @@ class ThresholdLayer(nn.Module):
         if constant_P:
             self.P_.requires_grad = False
 
-    def forward(self, x):
+    def forward(self, x, binary_mode=None):
         # print((x + self.bias).shape)
         # print(self.P_.view(*([len(self.P_)] + [1 for _ in range(x.ndim - 1)])).shape)
         # return self.threshold_fn(
         #     (x + self.bias) * self.P_.view(*([1 for _ in range(self.axis_channels)] + [len(self.P_)] + [1 for _ in range(self.axis_channels, x.ndim - 1)]))
         # )
+        if binary_mode is None:
+            binary_mode = self.binary_mode
+
+        if binary_mode:
+            return x > 0
+
         return self.apply_threshold(x, self.P_, self.bias)
 
     def apply_threshold(self, x, P_, bias):

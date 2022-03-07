@@ -48,7 +48,8 @@ class PlotPreds(Observable):
             preds: 'Any',
     ) -> None:
         if self.idx['train'] % self.freq["train"] == 0:
-            idx = random.choice(range(len(batch[0])))
+            # idx = random.choice(range(len(batch[0])))
+            idx = 0
             img, target = batch[0][idx], batch[1][idx]
             pred = preds[idx]
             fig = self.plot_three(*[k.cpu().detach().numpy() for k in [img, pred, target]], title='train')
@@ -74,23 +75,6 @@ class PlotPreds(Observable):
         for chan in range(target.shape[0]):
             axs[2, chan].imshow(target[chan], cmap='gray', vmin=0, vmax=1)
             axs[2, chan].set_title(f'target_{chan}')
-
-        return fig
-
-    @staticmethod
-    def plot_channels(img, pred, target):
-        ncols = max(img.shape[-1], 2)
-        fig, axs = plt.subplots(2, ncols, figsize=(ncols*7, 2*7))
-
-        for chan in range(img.shape[-1]):
-            axs[0, chan].imshow(img[..., chan], cmap='gray')
-            axs[0, chan].set_title(f'input_{chan}')
-
-        axs[1, 0].imshow(pred, cmap='gray', vmin=0, vmax=1)
-        axs[1, 0].set_title('pred')
-
-        axs[1, 1].imshow(target, cmap='gray')
-        axs[1, 1].set_title('target')
 
         return fig
 

@@ -10,10 +10,13 @@ from torch import Tensor
 from .threshold_layer import dispatcher
 from .complementation_layer import ComplementationLayer
 from .softplus import Softplus
+from .binary_nn import BinaryNN
 from general.utils import set_borders_to
 
 
-class BiSE(nn.Module):
+class BiSE(BinaryNN):
+
+    operation_code = {"erosion": 0, "dilation": 1}
 
     def __init__(
         self,
@@ -64,14 +67,38 @@ class BiSE(nn.Module):
         self.init_weights()
 
 
+        self.closest_selem = np.zeros((*self.kernel_size, out_channels)).astype(bool)
+        self.closest_operation = np.zeros(out_channels)
+        self.closest_selem_dist = np.zeros(out_channels)
+
+        self.learned_selem = np.zeros((*self.kernel_size, out_channels)).astype(bool)
+        self.learned_operation = np.zeros(out_channels)
+        self.is_activated = np.zeros(out_channels).astype(bool)
+
+        self.update_learned_selems()
+
+    def update_learned_selems(self):
+        for chan in range(self.out_channels):
+            self.find_closest_selem_and_operation_chan(chan)
+            self.find_selem_and_operation_chan(chan)
+
+    def binary(self, mode: bool = True):
+        if mode:
+            self.update_learned_selems()
+        return super().binary(mode)
+
     @staticmethod
     def bise_from_selem(selem: np.ndarray, operation: str, threshold_mode: str = "tanh", weight_P=10, **kwargs):
-        net = BiSE(kernel_size=selem.shape, threshold_mode=threshold_mode, **kwargs)
         assert set(np.unique(selem)).issubset([0, 1])
+        net = BiSE(kernel_size=selem.shape, threshold_mode=threshold_mode, out_channels=1, **kwargs)
+
         net.set_weights((torch.tensor(selem) - .5)[None, None, ...])
         net._weight_P.data = torch.FloatTensor([weight_P])
         bias_value = -.5 if operation == "dilation" else -float(selem.sum()) + .5
         net.set_bias(torch.FloatTensor([bias_value]))
+
+        net.update_learned_selems()
+
         return net
 
     @staticmethod
@@ -107,6 +134,9 @@ class BiSE(nn.Module):
         return self.weight_threshold_layer.threshold_fn(x)
 
     def forward(self, x: Tensor) -> Tensor:
+        if self.binary_mode:
+            return self.forward_binary(x)
+
         output = self.conv._conv_forward(x, self._normalized_weight, self.bias, )
         output = self.activation_threshold_layer(output)
 
@@ -114,6 +144,35 @@ class BiSE(nn.Module):
             return self.mask_output(output)
 
         return output
+
+    def forward_binary(self, x: Tensor) -> Tensor:
+        """
+        Replaces the BiSE with the closest learned operation.
+        """
+        weights, bias = self.get_binary_weights_and_bias()
+        output = (self.conv._conv_forward(x, weights, bias, ) > 0).float()
+
+        if self.do_mask_output:
+            return self.mask_output(output)
+
+        return output
+
+    def get_binary_weights_and_bias(self) -> Tuple[Tensor, Tensor]:
+        """
+        Get the closest learned selems as well as the bias corresponding to the operation (dilation or erosion).
+        """
+        weights = torch.zeros_like(self.weight)
+        bias = torch.zeros_like(self.bias)
+
+        weights[self.is_activated, 0] = torch.FloatTensor(self.learned_selem[..., self.is_activated].transpose(2, 0, 1)).to(weights.device)
+        weights[~self.is_activated, 0] = torch.FloatTensor(self.closest_selem[..., ~self.is_activated].transpose(2, 0, 1)).to(bias.device)
+
+        dil_key = self.operation_code['dilation']
+        ero_key = self.operation_code['erosion']
+        bias[self.closest_operation == dil_key] = -0.5
+        bias[self.closest_operation == ero_key] = -weights[self.closest_operation == ero_key].sum((1, 2, 3)) + 0.5
+
+        return weights, bias
 
     def mask_output(self, output):
         masker = set_borders_to(torch.ones(output.shape[-2:], requires_grad=False), border=np.array(self.kernel_size) // 2)[None, None, ...]
@@ -193,7 +252,6 @@ class BiSE(nn.Module):
     def find_closest_selem_for_operation_chan(self, idx: int, operation: str, v1: float = 0, v2: float = 1):
         """
         We find the selem for either a dilation or an erosion. In theory, there is at most one selem that works.
-        We verify this theory.
 
         Args:
             operation (str): 'dilation' or 'erosion', the operation we want to check for
@@ -201,8 +259,8 @@ class BiSE(nn.Module):
             v2 (float): the upper value of the almost binary (input not in ]v1, v2[)
 
         Returns:
-            np.ndarray if a selem is found
-            None if none is found
+            np.ndarray: the closest selem
+            float: the distance to the constraint space
         """
         weights = self._normalized_weight[idx, 0]
         weight_values = weights.unique().detach().cpu().numpy()
@@ -235,7 +293,11 @@ class BiSE(nn.Module):
             if new_dist < final_dist:
                 final_dist = new_dist
                 final_selem = new_selem
-                final_operation = operation
+                final_operation = operation  # str array has 1 character
+
+        self.closest_selem[..., idx] = final_selem.astype(bool)
+        self.closest_operation[idx] = self.operation_code[final_operation]
+        self.closest_selem_dist[idx] = final_dist
         return final_selem, final_operation, final_dist
 
 
@@ -260,7 +322,12 @@ class BiSE(nn.Module):
         for operation in ['dilation', 'erosion']:
             selem = self.find_selem_for_operation_chan(idx, operation, v1=v1, v2=v2)
             if selem is not None:
+                self.learned_selem[..., idx] = selem.astype(bool)
+                self.learned_operation[idx] = self.operation_code[operation]  # str array has 1 character
+                self.is_activated[idx] = True
                 return selem, operation
+
+        self.is_activated[idx] = False
         return None, None
 
     def get_outputs_bounds(self, v1: float = 0, v2: float = 1):
@@ -336,7 +403,7 @@ class BiSE(nn.Module):
     def set_bias(self, new_bias: torch.Tensor) -> torch.Tensor:
         assert self.bias.shape == new_bias.shape
         # self.conv.bias.data = new_bias
-        assert (new_bias < 0.5).all()
+        assert (new_bias <= -0.5).all()
         self.conv.bias.data = self.softplus_layer.forward_inverse(-new_bias - 0.5)
         return new_bias
 
