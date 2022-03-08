@@ -1,11 +1,11 @@
 import numpy as np
-from matplotlib.patches import Polygon
 
-from general.nn.viz import ElementGrouper, ElementArrow, ElementImage, ElementSymbolDilation, ElementSymbolErosion, ElementCircle
+from general.nn.viz import ElementGrouper, ElementImage, ElementSymbolDilation, ElementSymbolErosion, ElementCircle
+from deep_morpho.models import BiSE
 
 
 MAX_WIDTH_COEF = 1
-
+BISE_INVERT_CODE = {v:k for (k, v) in BiSE.operation_code.items()}
 
 class ElementBiseWeightsChan(ElementImage):
 
@@ -26,56 +26,26 @@ class ElementBiseWeightsChan(ElementImage):
 class ElementBiseSelemChan(ElementGrouper):
     operation_elements_dict = {'dilation': ElementSymbolDilation, "erosion": ElementSymbolErosion}
 
-    def __init__(self, model, chout=0, v1=0, v2=1, *args, **kwargs):
+    def __init__(self, model, chout=0, learned=True, v1=0, v2=1, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.model = model
         self.chout = chout
+        self.learned = learned
         self.v1 = v1
         self.v2 = v2
         self.kernel_shape = self.model.weight.shape[-2:]
 
-        selem, operation = self.model.find_selem_and_operation_chan(self.chout, self.v1, self.v2)
-
-        if selem is None:
+        if self.learned and not model.is_activated[chout]:
             self.selem_element = ElementCircle(radius=self.kernel_shape[-1] / 2, **kwargs)
             self.operation_element = None
-
         else:
+            selem = model.closest_selem[..., chout]
+            operation = BISE_INVERT_CODE[model.closest_operation[chout]]
+
             self.selem_element = ElementImage(selem, imshow_kwargs={"interpolation": "nearest"}, **kwargs)
             self.operation_element = self.operation_elements_dict[operation](
-                radius=2, xy_coords_mean=self.selem_element.xy_coords_mean + np.array([0, self.kernel_shape[-1] / 2 + 2])
+                radius=2, xy_coords_mean=self.selem_element.xy_coords_mean + np.array([0, self.kernel_shape[-1] / 2 + 1])
             )
             self.add_element(self.operation_element, key="operation")
+
         self.add_element(self.selem_element, key="selem")
-
-    # def add_to_canva(self, canva: "Canva"):
-    #     self.selem_element.add_to_canva(canva)
-    #     if self.operation_element is not None:
-    #         self.operation_element.add_to_canva(canva)
-
-
-# class ElementBise(Element):
-
-#     def __init__(self, model, input_elements, imshow_kwargs={}, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self.model = model
-#         self.input_elements = input_elements
-#         self.imshow_kwargs = imshow_kwargs
-
-#         self.imshow_kwargs['color'] = self.imshow_kwargs.get('color', 'k')
-
-#     def add_to_canva(self, canva: "Canva"):
-#         canva.ax.add_patch(Polygon(np.stack([
-#             self.xy_coords_botleft, self.xy_coords_topleft, self.xy_coords_midright
-#         ]), closed=True, fill=False, **self.imshow_kwargs))
-#         self.link_input_lui(canva)
-
-
-#     def link_input_lui(self, canva, max_width_coef=MAX_WIDTH_COEF):
-#         coefs = self.model.positive_weight[0].detach().cpu().numpy()
-#         coefs = coefs / coefs.max()
-
-#         for elt_idx, elt in enumerate(self.input_elements):
-#             canva.add_element(ElementArrow.link_elements(
-#                 elt, self, width=coefs[elt_idx] * max_width_coef,
-#             ))

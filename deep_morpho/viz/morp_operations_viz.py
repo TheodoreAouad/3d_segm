@@ -103,9 +103,9 @@ class MorpOperationsVizualiser:
 
             # add aggregations
             aggreg = self.model.operation_names[layer_idx][group_idx][-1]
-            width, height = LUI_RADIUS_FACTOR * np.array(self.model.max_selem_shape[layer_idx])
+            width, height = LUI_RADIUS_FACTOR * np.array([self.model.max_selem_shape[layer_idx]]*2)
             subgroup.add_element(self.operation_elements[aggreg](
-                xy_coords_mean=(LUI_HORIZONTAL_FACTOR * self.model.max_selem_shape[layer_idx][1], (coords_selem).mean()),
+                xy_coords_mean=(LUI_HORIZONTAL_FACTOR * self.model.max_selem_shape[layer_idx], (coords_selem).mean()),
                 width=width, height=height,
                 imshow_kwargs={"color": "k"}
             ), key=f"aggregation_layer_{layer_idx}_chout_{group_idx}")

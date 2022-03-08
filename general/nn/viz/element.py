@@ -157,6 +157,9 @@ class ElementGrouper(Element):
     def __len__(self):
         return len(self.elements)
 
+    def __getitem__(self, idx):
+        return self.elements[idx]
+
     @property
     def xy_coords_botleft(self):
         if len(self.elements) == 0:

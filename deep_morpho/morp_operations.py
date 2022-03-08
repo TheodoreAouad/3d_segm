@@ -293,7 +293,7 @@ class ParallelMorpOperations:
 
             for key in alls.keys():
                 alls[key].append(layers[key])
-            max_selem_shape.append(cur_max_shape)
+            max_selem_shape.append(max(cur_max_shape))
 
         self.operations = alls['op_fn']
         self.operation_names = alls['op_names']

@@ -1,19 +1,12 @@
-from time import time
-import torch
+class A:
+    def a(self):
+        print('A')
 
-n_iteration = int(1e7)
+class B:
+    def b(self):
+        print('B')
 
-a = torch.rand(50) > .5
-b = torch.rand(50) > .5
-
-t1 = time()
-for _ in range(n_iteration):
-    a & b
-print(time() - t1)
-
-a = a.float()
-b = b.float()
-t1 = time()
-for _ in range(n_iteration):
-    a + b
-print(time() - t1)
+class C(A, B):
+    def __init__(self) -> None:
+        self.a()
+        super().__init__()

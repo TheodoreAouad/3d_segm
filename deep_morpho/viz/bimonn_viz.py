@@ -61,7 +61,7 @@ class BimonnVizualiser:
             for chin, elt in enumerate(prev_elements):
                 for chout in range(self.model.out_channels[layer_idx]):
                     self.canva.add_element(ElementArrow.link_elements(
-                        elt, group.elements[f"group_layer_{layer_idx}_chout_{chout}"].elements[f"selem_layer_{layer_idx}_chout_{chout}_chin_{chin}"]
+                        elt, group[f"group_layer_{layer_idx}_chout_{chout}"][f"selem_layer_{layer_idx}_chout_{chout}_chin_{chin}"]
                     ))
 
             if layer_idx == -1:
