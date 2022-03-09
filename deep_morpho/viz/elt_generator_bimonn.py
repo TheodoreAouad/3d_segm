@@ -2,7 +2,7 @@ from .element_bise import ElementBiseSelemChan, ElementBiseWeightsChan
 
 from general.nn.viz import ElementArrow
 from .element_generator import EltGenerator
-from .element_lui2 import ElementLui, ElementLuiClosest
+from .element_lui import ElementLui, ElementLuiClosest
 
 
 

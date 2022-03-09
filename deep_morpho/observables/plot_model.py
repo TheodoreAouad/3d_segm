@@ -27,15 +27,20 @@ class PlotBimonn(Observable):
 
         if self.freq_idx % self.freq == 0:
 
-            vizualiser = BimonnVizualiser(pl_module.model, mode="weight")
+            vizualiser = BimonnVizualiser(pl_module.model, mode="weights")
             fig = vizualiser.get_fig(figsize=self.figsize)
-            trainer.logger.experiment.add_figure("model/weight", fig, trainer.global_step)
+            trainer.logger.experiment.add_figure("model/weights", fig, trainer.global_step)
             self.last_figs['weights'] = fig
 
-            vizualiser = BimonnVizualiser(pl_module.model, mode="selem")
+            vizualiser = BimonnVizualiser(pl_module.model, mode="learned")
             fig = vizualiser.get_fig(figsize=self.figsize)
-            trainer.logger.experiment.add_figure("model/selem", fig, trainer.global_step)
-            self.last_figs['selems'] = fig
+            trainer.logger.experiment.add_figure("model/learned", fig, trainer.global_step)
+            self.last_figs['learned'] = fig
+
+            vizualiser = BimonnVizualiser(pl_module.model, mode="closest")
+            fig = vizualiser.get_fig(figsize=self.figsize)
+            trainer.logger.experiment.add_figure("model/closest", fig, trainer.global_step)
+            self.last_figs['closest'] = fig
 
         self.freq_idx += 1
 
@@ -48,6 +53,6 @@ class PlotBimonn(Observable):
         pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
 
         for key, fig in self.last_figs.items():
-            fig.savefig(join(save_path, f"learned_{key}.png"))
+            fig.savefig(join(save_path, f"model_{key}.png"))
 
         return self.last_figs
