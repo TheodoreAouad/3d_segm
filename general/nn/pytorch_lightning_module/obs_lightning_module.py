@@ -1,5 +1,7 @@
+from functools import reduce
+
 from pytorch_lightning import LightningModule
-from typing import Any, List, Optional, Callable, Dict
+from typing import Any, List, Optional, Callable, Dict, Union
 from ..observables.observable import Observable
 from pytorch_lightning.utilities.types import EPOCH_OUTPUT
 
@@ -77,11 +79,12 @@ class NetLightning(ObsLightningModule):
             self,
             model: "nn.Module",
             learning_rate: float,
-            loss: Callable,
+            loss: Union[Callable, Dict],
             optimizer: Callable,
             output_dir: str,
             optimizer_args: Dict = {},
             observables: Optional[List[Observable]] = [],
+            reduce_loss_fn: Callable = lambda x: reduce(lambda a, b: a + b, x),
     ):
 
         super().__init__(observables)
@@ -103,25 +106,47 @@ class NetLightning(ObsLightningModule):
         x, y = batch
         predictions = self.forward(x)
 
-        loss = self.loss(predictions, y)
-        self.log('loss/train_loss', loss)
+        outputs = self.compute_loss(state="training", ypred=predictions, ytrue=y)
 
-        return {'loss': loss}, predictions
+        # return {'loss': loss}, predictions
+        return outputs, predictions
 
     def obs_validation_step(self, batch, batch_idx):
         x, y = batch
         predictions = self.forward(x)
 
-        loss = self.loss(predictions, y)
-        self.log('loss/val_loss', loss)
+        outputs = self.compute_loss(state="validation", ypred=predictions, ytrue=y)
 
-        return {'val_loss': loss}, predictions
+        # return {'val_loss': loss}, predictions
+        return outputs, predictions
 
     def obs_test_step(self, batch, batch_idx):
         x, y = batch
         predictions = self.forward(x)
 
-        loss = self.loss(predictions, y)
-        self.log('loss/test_loss', loss)
+        outputs = self.compute_loss(state="test", ypred=predictions, ytrue=y)
 
-        return {'test_loss': loss}, predictions
+        # return {'test_loss': loss}, predictions
+        return outputs, predictions
+
+    def compute_loss(self, state, ypred, ytrue):
+        values = {}
+        if isinstance(self.loss, dict):
+            for key, loss_fn in self.loss.items():
+                values[key] = loss_fn(ypred, ytrue)
+
+            if "loss" in self.loss.keys():
+                i = 0
+                while f"loss_{i}" in self.loss.keys():
+                    i += 1
+                values[f"loss_{i}"] = values["loss"]
+
+            values["loss"] = self.reduce_loss_fn(values.items())
+
+        else:
+            values["loss"] = self.loss(ypred, ytrue)
+
+        for key, value in values.items():
+            self.log(f"loss/{state}/{key}", value)
+
+        return values

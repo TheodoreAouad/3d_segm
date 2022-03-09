@@ -111,7 +111,7 @@ def main(args, logger):
         "BinaryModeMetric": obs.BinaryModeMetric(metrics, freq=args['freq_imgs']),
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         "ConvergenceBinary": obs.ConvergenceBinary(freq=100),
-        "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs']),
+        "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 10)),
     }
 
     observables = list(observables_dict.values())

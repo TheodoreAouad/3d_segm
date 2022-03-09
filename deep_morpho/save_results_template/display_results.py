@@ -18,27 +18,48 @@ class DisplayResults:
 
     def write_results(self, results, changing_args):
         results_html = ''
+
+        # Arguments
         results_html += (
             f"<div>"
             f"<h3>{results['tb_path']}</h3>"  # tb
             f"<p>{dict({k: results['args'][k] for k in changing_args})}</p>"  # args
         )
 
+        # Weights
         if "normalized_weights" in results.keys():
             results_html += ''.join([f"<span>{plot_to_html(fig)}</span>" for fig in results['normalized_weights']])
 
         if "target_selem" in results.keys():
             results_html += ''.join([f"<span>{plot_to_html(fig)}</span>" for fig in results['target_selem']])
 
+        # Target Operation
+        results_html += "Target Operation"
         results_html += f"<span>{plot_to_html(results['target_operation'])}</span>"
-        results_html += f"<span>{plot_to_html(results['learned_selems_viz'])}</span>"
-        results_html += f"<span>{plot_to_html(results['learned_weights_viz'])}</span>"
 
-        results_html += (
-            f"<p>dice={results['dice']}  baseline={results['baseline_dice']}  step until convergence (dice)={results['convergence_dice']}</p>"
-            "<p>learned selems: "
-        )
 
+        # Learned model
+        results_html += "Learned Selems"
+        results_html += f"<span>{plot_to_html(results['model_learned_viz'])}</span>"
+
+        results_html += "Closest Selems"
+        results_html += f"<span>{plot_to_html(results['model_closest_viz'])}</span>"
+
+        results_html += "Learned Weights"
+        results_html += f"<span>{plot_to_html(results['model_weights_viz'])}</span>"
+
+
+        # Metrics
+        results_html += f"<p>dice={results['dice']}  baseline={results['baseline_dice']}"
+        if "binary_mode_dice" in results.keys():
+            results_html += f" binary mode={results['binary_mode_dice']}"
+        results_html += "</p>"
+
+        results_html += f"<p>step until convergence (dice)={results['convergence_dice']}</p>"
+
+
+        # Zoom on learned selems
+        results_html += "<p>learned selems: "
         results_html += ' '.join([
             f"layer {layer_idx} chin {chin} chout {chout} <span>{plot_to_html(fig)}</span> cvg={results['convergence_layer'][layer_idx, chin, chout]}"
             for (layer_idx, chin, chout), fig in results['learned_selem'].items()])
@@ -126,6 +147,16 @@ class DisplayResults:
         return res
 
     @staticmethod
+    def update_results_BinaryModeMetric(path):
+        res = {}
+
+        file_binary_mode = join(path, "metrics.json")
+        if os.path.exists(file_binary_mode):
+            res['binary_mode_dice'] = load_json(file_binary_mode)["dice"]
+
+        return res
+
+    @staticmethod
     def update_results_CalculateAndLogMetrics(path):
         res = {}
 
@@ -179,16 +210,18 @@ class DisplayResults:
 
         path_fig = join(tb_path, "observables", "PlotModel")
         if os.path.exists(path_fig):
-            res['learned_weights_viz'] = load_png_as_fig(join(path_fig, "learned_weights.png"))
-            res['learned_selems_viz'] = load_png_as_fig(join(path_fig, "learned_selems.png"))
+            res['model_weights_viz'] = load_png_as_fig(join(path_fig, "model_weights.png"))
+            res['model_learned_viz'] = load_png_as_fig(join(path_fig, "model_learned.png"))
+            res['model_closest_viz'] = load_png_as_fig(join(path_fig, "model_closest.png"))
 
         else:
             from deep_morpho.models import LightningBiMoNN
             from deep_morpho.viz import BimonnVizualiser
             file_ckpt = os.listdir(join(tb_path, "checkpoints"))[0]
             model = LightningBiMoNN.load_from_checkpoint(join(tb_path, "checkpoints", file_ckpt)).model
-            res['learned_weights_viz'] = BimonnVizualiser(model, mode="weight").get_fig()
-            res['learned_selems_viz'] = BimonnVizualiser(model, mode="selem").get_fig()
+            res['model_weights_viz'] = BimonnVizualiser(model, mode="weights").get_fig()
+            res['model_learned_viz'] = BimonnVizualiser(model, mode="learned").get_fig()
+            res['model_closest_viz'] = BimonnVizualiser(model, mode="closest").get_fig()
 
         return res
 
@@ -227,6 +260,7 @@ class DisplayResults:
 
         for obs_name in [
             # "PlotWeightsBiSE",
+            "BinaryModeMetric",
             "PlotParametersBiSE",
             "ConvergenceBinary",
             "InputAsPredMetric",

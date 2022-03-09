@@ -11,7 +11,7 @@ class BinaryNN(nn.Module):
         r"""Sets the module in binary mode.
 
         Args:
-            mode (bool): whether to set training mode (``True``) or evaluation
+            mode (bool): whether to set binary mode (``True``) or evaluation
                          mode (``False``). Default: ``True``.
 
         Returns:

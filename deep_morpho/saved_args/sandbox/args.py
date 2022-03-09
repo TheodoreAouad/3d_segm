@@ -21,7 +21,8 @@ all_args['experiment_name'] = [
     # 'Bimonn_exp_46/multi_closing'
     # 'Bimonn_exp_46_sandbox'
     # 'Bimonn_exp_48',
-    "test_closest_selem"
+    # "Bimonn_exp_49/sandbox"
+    "test_new_regu"
 ]
 
 
@@ -117,7 +118,7 @@ all_args['init_weight_mode'] = [
 ]
 all_args['activation_P'] = [1]
 all_args['force_lui_identity'] = [False]
-all_args['constant_activation_P'] = [True]
+all_args['constant_activation_P'] = [False]
 all_args['constant_P_lui'] = [False]
 all_args['constant_weight_P'] = [True]
 all_args['threshold_mode'] = [

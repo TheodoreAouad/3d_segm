@@ -1,4 +1,5 @@
 from typing import List
+import pathlib
 
 import numpy as np
 
@@ -196,3 +197,12 @@ class SkeletonMorpViz:
         if n_per_group == 1:
             return np.zeros(1)
         return np.linspace(0, height_group, 2*n_per_group + 1)[1::2]
+
+    def save_fig(self, savepath: str, **kwargs):
+        pathlib.Path(savepath).parent.mkdir(exist_ok=True, parents=True)
+        self.draw(**kwargs)
+        self.canva.fig.savefig(savepath)
+
+    def get_fig(self, **kwargs):
+        self.draw(**kwargs)
+        return self.canva.fig

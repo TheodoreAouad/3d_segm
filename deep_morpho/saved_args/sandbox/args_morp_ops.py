@@ -17,23 +17,24 @@ selems = []
 
 
 
-morp_operations.append(ParallelMorpOperations.erosion(('disk', 3)))
+# morp_operations.append(ParallelMorpOperations.erosion(('disk', 3)))
 
 
-# for op in [
-#     'disk',
-#     'hstick', 'vstick', 'scross', 'dcross', 'square'
-# ]:
-#     size1 = 5
-    # size2 = 7
-#     if op == "disk":
+for op in [
+    'disk', "hstick", "dcross",
+    # 'hstick', 'vstick', 'scross', 'dcross', 'square'
+]:
+    # size1 = 5
+    size2 = 7
+    if op == "disk":
 #         size1 = size1 // 2
-#         size2 = size2 // 2
+        size2 = size2 // 2
 
-#     morp_operations.append(ParallelMorpOperations.dilation((op, size1)))
-#     morp_operations.append(ParallelMorpOperations.erosion((op, size1)))
+    # morp_operations.append(ParallelMorpOperations.dilation((op, size2)))
+    # morp_operations.append(ParallelMorpOperations.erosion((op, size2)))
     # morp_operations.append(ParallelMorpOperations.closing((op, size2), name=op))
-#     morp_operations.append(ParallelMorpOperations.closing((op, size2)))
+    morp_operations.append(ParallelMorpOperations.closing((op, size2)))
+    morp_operations.append(ParallelMorpOperations.opening((op, size2)))
 # morp_operations.append(ParallelMorpOperations.dilation(('disk', 2)))
 # morp_operations.append(ParallelMorpOperations.dilation(('disk', 2)))
 
