@@ -1,6 +1,7 @@
 from .element_bise import ElementBiseSelemChan, ElementBiseWeightsChan
 
 from general.nn.viz import ElementArrow
+from .element_arrow_no import ElementArrowNo
 from .element_generator import EltGenerator
 from .element_lui import ElementLui, ElementLuiClosest
 
@@ -59,11 +60,10 @@ class EltGeneratorLui(EltGenerator):
         )
 
 
-class EltGeneratorConnectLuiBise(EltGenerator):
+class EltGeneratorConnectLuiBiseBase(EltGenerator):
 
-    def __init__(self, binary_mode: bool = False, max_width_coef=1):
+    def __init__(self, max_width_coef=1):
         super().__init__()
-        self.binary_mode = binary_mode
         self.max_width_coef = max_width_coef
 
     def generate(self, group, layer_idx, chout, chin):
@@ -72,7 +72,20 @@ class EltGeneratorConnectLuiBise(EltGenerator):
 
         width = self.infer_width(lui_elt, chin)
 
-        return ElementArrow.link_elements(bise_elt, lui_elt, width=width)
+        activation_P = bise_elt.model.activation_P[chout]
+        if activation_P > 0:
+            return ElementArrow.link_elements(bise_elt, lui_elt, width=width)
+        return ElementArrow.link_elements(bise_elt, lui_elt, height_circle=bise_elt.shape, width=width)
+
+    def infer_width(self, lui_elt, chin):
+        raise NotImplementedError
+
+
+class EltGeneratorConnectLuiBise(EltGeneratorConnectLuiBiseBase):
+
+    def __init__(self, binary_mode, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.binary_mode = binary_mode
 
     def infer_width(self, lui_elt, chin):
         model= lui_elt.model
@@ -86,19 +99,7 @@ class EltGeneratorConnectLuiBise(EltGenerator):
         return coefs[chin]
 
 
-class EltGeneratorConnectLuiBiseClosest(EltGenerator):
-
-    def __init__(self, max_width_coef=1):
-        super().__init__()
-        self.max_width_coef = max_width_coef
-
-    def generate(self, group, layer_idx, chout, chin):
-        bise_elt = group[f"bise_layer_{layer_idx}_chout_{chout}_chin_{chin}"]
-        lui_elt = group[f"lui_layer_{layer_idx}_chout_{chout}"]["coefs"]
-
-        width = self.infer_width(lui_elt, chin)
-
-        return ElementArrow.link_elements(bise_elt, lui_elt, width=width)
+class EltGeneratorConnectLuiBiseClosest(EltGeneratorConnectLuiBiseBase):
 
     def infer_width(self, lui_elt, chin):
         model= lui_elt.model

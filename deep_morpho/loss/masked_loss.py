@@ -3,7 +3,7 @@ import torch.nn as nn
 
 class LossMaskedBorder(nn.Module):
 
-    def __init__(self, loss, border):
+    def __init__(self, loss, border, **kwargs):
         super().__init__()
         self.loss = loss
         self.border = border

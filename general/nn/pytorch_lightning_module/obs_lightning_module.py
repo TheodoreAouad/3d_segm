@@ -1,7 +1,7 @@
 from functools import reduce
 
 from pytorch_lightning import LightningModule
-from typing import Any, List, Optional, Callable, Dict, Union
+from typing import Any, List, Optional, Callable, Dict, Union, Tuple
 from ..observables.observable import Observable
 from pytorch_lightning.utilities.types import EPOCH_OUTPUT
 
@@ -79,25 +79,51 @@ class NetLightning(ObsLightningModule):
             self,
             model: "nn.Module",
             learning_rate: float,
-            loss: Union[Callable, Dict],
+            loss: Union[Callable, Tuple[Callable, Dict], Dict[str, Union[Callable, Tuple[Callable, Dict]]]],
             optimizer: Callable,
-            output_dir: str,
             optimizer_args: Dict = {},
             observables: Optional[List[Observable]] = [],
             reduce_loss_fn: Callable = lambda x: reduce(lambda a, b: a + b, x),
     ):
+        """ Basic class for a neural network framework using pytorch lightning, with the predictions available
+        for the callbacs.
+
+        Args:
+            model (nn.Module): the module we want to train
+            learning_rate (float): learning rate of the optimizer
+            loss : if a callable is given, loss will be this callable. We can also give a constructor and the arguments.
+                If the constructor is given, then the model will also be given as argument. This can be used for losses
+                using arguments of the model (e.g. regularization loss on weights). Finally, we can also give a
+                dictionary if multiple losses are needed.
+                >>> loss = nn.MSELoss()
+                >>> loss = (nn.MSELoss, {size_average=True})
+                >>> loss = {"mse": (nn.MSELoss, {size_average=True}), "regu": (MyReguLoss, {"lambda_": lambda_})}
+            optimizer (Callable): the constructor of the optimizer used to upgrade the parameters using their gradient
+            optimizer_args (dict): the init arguments of the constructor of the optimizer, minus the learning rate
+            observables (list): list of observables that we want to follow
+            reduce_loss_fn (Callable): if we have multiple loss, tells how we want to aggregate all losses
+        """
 
         super().__init__(observables)
         self.model = model
         self.learning_rate = learning_rate
-        self.loss = loss
+        self.loss = self.configure_loss(loss)
         self.optimizer = optimizer
         self.optimizer_args = optimizer_args
-        self.output_dir = output_dir
+        self.reduce_loss_fn = reduce_loss_fn
         # self.save_hyperparameters()
 
     def forward(self, x):
         return self.model(x)
+
+    def configure_loss(self, loss):
+        if isinstance(loss, dict):
+            return {k: self.configure_loss(v) for (k, v) in loss.items()}
+
+        if isinstance(loss, tuple):
+            return loss[0](model=self.model, **loss[1])
+
+        return loss
 
     def configure_optimizers(self):
         return self.optimizer(self.parameters(), lr=self.learning_rate, **self.optimizer_args)
@@ -141,7 +167,7 @@ class NetLightning(ObsLightningModule):
                     i += 1
                 values[f"loss_{i}"] = values["loss"]
 
-            values["loss"] = self.reduce_loss_fn(values.items())
+            values["loss"] = self.reduce_loss_fn(values.values())
 
         else:
             values["loss"] = self.loss(ypred, ytrue)

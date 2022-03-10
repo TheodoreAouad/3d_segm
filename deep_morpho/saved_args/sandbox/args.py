@@ -1,15 +1,16 @@
 import numpy as np
-import torch.nn as nn
 import torch.optim as optim
-import torchvision.transforms as transforms
 
-from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect, get_random_diskorect_channels
-from deep_morpho.loss import MaskedMSELoss
+from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
+from deep_morpho.loss import MaskedMSELoss, QuadraticBoundRegularization, LinearBoundRegularization
 from general.utils import dict_cross
-from general.nn.loss import DiceLoss
 from .args_morp_ops import morp_operations
 
-loss_dict = {"MaskedMSELoss": MaskedMSELoss}
+loss_dict = {
+    "MaskedMSELoss": MaskedMSELoss,
+    "quadratic": QuadraticBoundRegularization,
+    "linear": LinearBoundRegularization,
+}
 
 all_args = {}
 
@@ -22,7 +23,7 @@ all_args['experiment_name'] = [
     # 'Bimonn_exp_46_sandbox'
     # 'Bimonn_exp_48',
     # "Bimonn_exp_49/sandbox"
-    "test_new_regu"
+    "Bimonn_exp_50/sandbox/3"
 ]
 
 
@@ -55,7 +56,7 @@ all_args['mnist_args'] = [
     {"threshold": 30, "size": (50, 50), "invert_input_proba": 1}
 ]
 all_args['n_inputs'] = [
-    1_000_000,
+    3_000_000,
 ]
 all_args['train_test_split'] = [(1, 1, 0)]
 
@@ -67,11 +68,16 @@ all_args['learning_rate'] = [
 ]
 
 # if max_plus, then the loss is MSELoss
-all_args['loss'] = [
+all_args['loss_data'] = [
     # nn.BCELoss(),
     # nn.BCEWithLogitsLoss(),
     "MaskedMSELoss",
     # DiceLoss(),
+]
+all_args['loss_regu'] = [
+    "quadratic",
+    # "linear",
+    # "None",
 ]
 all_args['optimizer'] = [
     optim.Adam,
@@ -114,9 +120,9 @@ all_args['channels'] = [
 all_args['init_weight_mode'] = [
     # "identity",
     # "normal_identity",
-    "conv"
+    "conv_0.5"
 ]
-all_args['activation_P'] = [1]
+all_args['activation_P'] = [0]
 all_args['force_lui_identity'] = [False]
 all_args['constant_activation_P'] = [False]
 all_args['constant_P_lui'] = [False]
@@ -124,7 +130,10 @@ all_args['constant_weight_P'] = [True]
 all_args['threshold_mode'] = [
     # 'arctan',
     # 'sigmoid',
-    'tanh',
+    {
+        "weight": 'identity',
+        "activation": 'tanh',
+    }
     # 'erf',
     # "identity",
     # {"activation": "sigmoid", "weight": "identity", "complementation": "clamp"}
@@ -132,13 +141,6 @@ all_args['threshold_mode'] = [
 all_args["alpha_init"] = [0]
 
 all_args['share_weights'] = [False]
-all_args['do_thresh_penalization'] = [False]
-all_args['args_thresh_penalization'] = [{
-    'coef': .005,
-    'degree': 4,
-    'detach_weights': True,
-}]
-all_args['first_batch_pen'] = [1]
 
 all_args = dict_cross(all_args)
 #
@@ -150,7 +152,7 @@ for idx, args in enumerate(all_args):
         args['experiment_subname'] = 'axspa_roi'
         args['freq_imgs'] = 10
         args['n_atoms'] = len(args['channels']) - 1
-        args['loss'] = loss_dict[args['loss']](border=(0, 0))
+        args['loss_data'] = loss_dict[args['loss_data']](border=(0, 0))
 
     if args['dataset_type'] == "mnist":
         args['freq_imgs'] = 300
@@ -162,9 +164,10 @@ for idx, args in enumerate(all_args):
 
 
         if args["kernel_size"] == "adapt":
-            args["kernel_size"] = args["morp_operation"].selems[0][0][0].shape[0]
+            # args["kernel_size"] = args["morp_operation"].selems[0][0][0].shape[0]
+            args["kernel_size"] = int(max(args['morp_operation'].max_selem_shape))
 
-        args['loss'] = loss_dict[args['loss']](border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]))
+        args['loss_data'] = loss_dict[args['loss_data']](border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]))
         args['experiment_subname'] = f"{args['dataset_type']}/{args['morp_operation'].name}"
 
         if args['channels'] == 'adapt':
@@ -191,3 +194,8 @@ for idx, args in enumerate(all_args):
 
     if args['atomic_element'] == "max_plus":
         args['loss'] = MaskedMSELoss()
+
+    args['loss'] = {"loss_data": args['loss_data']}
+    if args['loss_regu'] != "None":
+        args['loss_regu'] = (loss_dict[args['loss_regu']], {"lower_bound": 0, "upper_bound": 1})
+        args['loss']['loss_regu'] = args['loss_regu']

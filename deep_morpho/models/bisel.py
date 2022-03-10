@@ -21,17 +21,24 @@ class BiSEL(BinaryNN):
         **bise_kwargs
     ):
         super().__init__()
-
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = kernel_size
-        self.threshold_mode = threshold_mode
+        self.threshold_mode = self._init_threshold_mode(threshold_mode)
         self.constant_P_lui = constant_P_lui
         self.bise_kwargs = bise_kwargs
         self.lui_kwargs = lui_kwargs
 
         self.bises = self._init_bises()
         self.luis = self._init_luis()
+
+    @staticmethod
+    def _init_threshold_mode(threshold_mode):
+        if isinstance(threshold_mode, str):
+            threshold_mode = {k: threshold_mode.lower() for k in ["weight", "activation"]}
+        elif not isinstance(threshold_mode, dict):
+            raise NotImplementedError(f"threshold_mode type {type(threshold_mode)} not supported.")
+        return threshold_mode
 
     def _init_bises(self):
         bises = []
@@ -44,13 +51,12 @@ class BiSEL(BinaryNN):
             bises.append(layer)
         return bises
 
-
     def _init_luis(self):
         luis = []
         for idx in range(self.out_channels):
             layer = LUI(
                 chan_inputs=self.in_channels,
-                threshold_mode=self.threshold_mode,
+                threshold_mode=self.threshold_mode['activation'],
                 chan_outputs=1,
                 constant_P=self.constant_P_lui,
                 **self.lui_kwargs

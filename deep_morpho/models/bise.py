@@ -1,4 +1,4 @@
-from typing import Tuple, Union
+from typing import Tuple, Union, Dict
 import warnings
 
 import numpy as np
@@ -22,7 +22,7 @@ class BiSE(BinaryNN):
         self,
         kernel_size: Tuple,
         weight_P: float = 1,
-        threshold_mode: str = "sigmoid",
+        threshold_mode: Union[Dict[str, str], str] = "sigmoid",
         activation_P: float = 10,
         constant_activation_P: bool = False,
         constant_weight_P: bool = False,
@@ -112,6 +112,8 @@ class BiSE(BinaryNN):
             self.set_weights(self._init_normal_identity(self.kernel_size, self.out_channels))
         elif self.init_weight_mode == "identity":
             self._init_as_identity()
+        elif self.init_weight_mode == "conv_0.5":
+            self.set_weights(self.weight + 0.5)
         else:
             warnings.warn(f"init weight mode {self.init_weight_mode} not recognized. Classical conv init used.")
             pass
@@ -151,6 +153,7 @@ class BiSE(BinaryNN):
         """
         weights, bias = self.get_binary_weights_and_bias()
         output = (self.conv._conv_forward(x, weights, bias, ) > 0).float()
+        # output = (self.conv._conv_forward(x, weights, bias, ) > 0).float()
 
         if self.do_mask_output:
             return self.mask_output(output)

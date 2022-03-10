@@ -135,11 +135,7 @@ def main(args, logger):
         learning_rate=args['learning_rate'],
         loss=args['loss'],
         optimizer=args['optimizer'],
-        output_dir="deep_morpho/results",
         observables=observables,
-        do_thresh_penalization=args['do_thresh_penalization'],
-        args_thresh_penalization=args['args_thresh_penalization'],
-        first_batch_pen=args['first_batch_pen'],
     )
     if isinstance(model.model.layers[0], (BiSE, COBiSE, BiSEC, COBiSEC)):
         ys = model.model.layers[0].activation_threshold_fn(xs).detach()

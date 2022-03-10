@@ -1,29 +1,23 @@
 import torch.nn as nn
 
-from deep_morpho.models import BiMoNN
 
+class BoundRegularization(nn.Module):
 
-
-def extract_params_to_normalize(model):
-    for bisel_layer in model.layers:
-        yield bisel_layer.normalized_weight
-
-
-class QuadraticNormRegularization(nn.Module):
-
-    def __init__(self, model, lower_bound=0, upper_bound=1):
+    def __init__(self, model, lambda_=1, lower_bound=0, upper_bound=1, **kwargs):
         super().__init__()
-        assert isinstance(model, BiMoNN)
         self.model = model
-        self.parameters = extract_params_to_normalize(model)
+        self.lambda_ = lambda_
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
 
-    def forward(self):
+    def get_params_from_model(self):
+        raise NotImplementedError
+
+    def forward(self, *args, **kwargs):
         loss = 0
-        for weights in self.parameters:
+        for weights in self.get_params_from_model():
             loss += self.penalize_weight(weights)
-        return loss
+        return self.lambda_ * loss
 
     def penalize_weight(self, weights):
         return (
@@ -32,7 +26,30 @@ class QuadraticNormRegularization(nn.Module):
         )
 
     def lower_bound_pen(self, x):
+        raise NotImplementedError
+
+    def upper_bound_pen(self, x):
+        raise NotImplementedError
+
+
+class BimonnBoundRegularization(BoundRegularization):
+    def get_params_from_model(self):
+        return [bisel_layer.normalized_weight for bisel_layer in self.model.layers]
+
+
+class QuadraticBoundRegularization(BimonnBoundRegularization):
+
+    def lower_bound_pen(self, x):
         return x ** 2
 
     def upper_bound_pen(self, x):
         return (x - 1) ** 2
+
+
+class LinearBoundRegularization(BimonnBoundRegularization):
+
+    def lower_bound_pen(self, x):
+        return -x
+
+    def upper_bound_pen(self, x):
+        return x - 1

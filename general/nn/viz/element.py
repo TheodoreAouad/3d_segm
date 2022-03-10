@@ -1,4 +1,5 @@
 from typing import Tuple
+from collections import OrderedDict
 
 import numpy as np
 from matplotlib.patches import Rectangle
@@ -103,7 +104,7 @@ class Element:
 class ElementGrouper(Element):
 
     def __init__(self, elements=dict(), *args, **kwargs):
-        self.elements = dict()
+        self.elements = OrderedDict()
         super().__init__(shape=None, xy_coords_botleft=None, *args, **kwargs)
         for key, element in elements.items():
             self.add_element(element, key=key)

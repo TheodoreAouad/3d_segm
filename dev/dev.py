@@ -1,12 +1,9 @@
-class A:
-    def a(self):
-        print('A')
+def gen(l):
+    i = 0
+    while i < 5:
+        yield l[i]
+        i += 1
 
-class B:
-    def b(self):
-        print('B')
 
-class C(A, B):
-    def __init__(self) -> None:
-        self.a()
-        super().__init__()
+
+l = [[0], [1], [2], [2], ]
