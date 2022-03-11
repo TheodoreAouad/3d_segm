@@ -62,8 +62,9 @@ class EltGeneratorLui(EltGenerator):
 
 class EltGeneratorConnectLuiBiseBase(EltGenerator):
 
-    def __init__(self, max_width_coef=1):
+    def __init__(self, model, max_width_coef=1):
         super().__init__()
+        self.model = model
         self.max_width_coef = max_width_coef
 
     def generate(self, group, layer_idx, chout, chin):
@@ -75,7 +76,7 @@ class EltGeneratorConnectLuiBiseBase(EltGenerator):
         activation_P = bise_elt.model.activation_P[chout]
         if activation_P > 0:
             return ElementArrow.link_elements(bise_elt, lui_elt, width=width)
-        return ElementArrow.link_elements(bise_elt, lui_elt, height_circle=bise_elt.shape, width=width)
+        return ElementArrowNo.link_elements(bise_elt, lui_elt, height_circle=max(self.model.kernel_size[layer_idx])*0.7, width=width)
 
     def infer_width(self, lui_elt, chin):
         raise NotImplementedError

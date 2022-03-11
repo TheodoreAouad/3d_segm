@@ -121,6 +121,21 @@ class TestBiSE:
 
         assert np.abs(output - target).sum() == 0
 
+    @staticmethod
+    def test_bise_binary_mode_complementation():
+        weight = np.zeros((3, 3)).astype(np.float32)
+        weight[1, 1] = 1
+        layer = BiSE.bise_from_selem(weight, 'erosion')
+        layer.activation_threshold_layer.P_.requires_grad = False
+        layer.activation_threshold_layer.P_[0] *= -1
+
+        inpt = torch.randint(0, 2, (50, 50)).float()
+        layer.binary()
+        output = layer(inpt[None, None, ...]).detach().cpu().numpy()
+        target = 1 - array_erosion(inpt, weight)
+
+        assert np.abs(output - target).sum() == 0
+
 
     @staticmethod
     def test_bise_binary_forward_multi_channels():

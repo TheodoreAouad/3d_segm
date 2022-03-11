@@ -23,8 +23,11 @@ class ElementArrowNo(ElementGrouper):
         link2="adapt",
         length_includes_head=True, width=.1, **kwargs
     ):
-        arrow_elt = ElementArrow.link_elements(elt1, elt2, key=key, link1=link1, link2=link2, length_includes_head=length_includes_head)
-        xy_coords_mean = arrow_elt.mean()
+        arrow_elt = ElementArrow.link_elements(
+            elt1, elt2, key=key, link1=link1, link2=link2, 
+            length_includes_head=length_includes_head, width=width, **kwargs
+        )
+        xy_coords_mean = arrow_elt.barycentre
         no_elt = ElementNO(xy_coords_mean=xy_coords_mean, width=height_circle)
 
         return ElementArrowNo(arrow_elt, no_elt)

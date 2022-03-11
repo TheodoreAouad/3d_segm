@@ -152,7 +152,7 @@ class BiSE(BinaryNN):
         Replaces the BiSE with the closest learned operation.
         """
         weights, bias = self.get_binary_weights_and_bias()
-        output = (self.conv._conv_forward(x, weights, bias, ) > 0).float()
+        output = (self.activation_P[None, :, None, None] * self.conv._conv_forward(x, weights, bias, ) > 0).float()
         # output = (self.conv._conv_forward(x, weights, bias, ) > 0).float()
 
         if self.do_mask_output:

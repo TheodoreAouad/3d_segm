@@ -18,21 +18,21 @@ class BimonnVizualiser(SkeletonMorpViz):
             kwargs.update({
                 "elt_generator_bise": EltGeneratorBise(model),
                 "elt_generator_lui": EltGeneratorLui(model),
-                "elt_generator_connections": EltGeneratorConnectLuiBise(binary_mode=False),
+                "elt_generator_connections": EltGeneratorConnectLuiBise(model=model, binary_mode=False),
             })
 
         elif mode == "learned":
             kwargs.update({
                 "elt_generator_bise": EltGeneratorBiseBinary(model, learned=True),
                 "elt_generator_lui": EltGeneratorLui(model),
-                "elt_generator_connections": EltGeneratorConnectLuiBise(binary_mode=True),
+                "elt_generator_connections": EltGeneratorConnectLuiBise(model=model, binary_mode=True),
             })
 
         elif mode == "closest":
             kwargs.update({
                 "elt_generator_bise": EltGeneratorBiseBinary(model, learned=False),
                 "elt_generator_lui": EltGeneratorLui(model, learned=False),
-                "elt_generator_connections": EltGeneratorConnectLuiBiseClosest(),
+                "elt_generator_connections": EltGeneratorConnectLuiBiseClosest(model=model, ),
             })
 
         super().__init__(in_channels=model.in_channels, out_channels=model.out_channels, **kwargs)

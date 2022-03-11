@@ -12,9 +12,9 @@ else:
 morp_operations = []
 selems = []
 
-# morp_operations.append(ParallelMorpOperations.black_tophat(('disk', 3)))
-# morp_operations.append(ParallelMorpOperations.black_tophat(('hstick', 7)))
-# morp_operations.append(ParallelMorpOperations.black_tophat(('dcross', 7)))
+morp_operations.append(ParallelMorpOperations.black_tophat(('disk', 3)))
+morp_operations.append(ParallelMorpOperations.black_tophat(('hstick', 7)))
+morp_operations.append(ParallelMorpOperations.black_tophat(('dcross', 7)))
 # morp_operations.append(ParallelMorpOperations.white_tophat(('disk', 3)))
 
 
@@ -28,21 +28,21 @@ selems = []
 # morp_operations.append(ParallelMorpOperations.dilation(('dcross', 7)))
 
 
-for op in [
-    'disk', "hstick", "dcross",
-    # 'hstick', 'vstick', 'scross', 'dcross', 'square'
-]:
-    # size1 = 5
-    size2 = 7
-    if op == "disk":
-#         size1 = size1 // 2
-        size2 = size2 // 2
+# for op in [
+#     'disk', "hstick", "dcross",
+#     # 'hstick', 'vstick', 'scross', 'dcross', 'square'
+# ]:
+#     # size1 = 5
+#     size2 = 7
+#     if op == "disk":
+# #         size1 = size1 // 2
+#         size2 = size2 // 2
 
-    morp_operations.append(ParallelMorpOperations.dilation((op, size2)))
-    morp_operations.append(ParallelMorpOperations.erosion((op, size2)))
-    morp_operations.append(ParallelMorpOperations.closing((op, size2)))
-    morp_operations.append(ParallelMorpOperations.opening((op, size2)))
-# morp_operations.append(ParallelMorpOperations.dilation(('disk', 2)))
+#     morp_operations.append(ParallelMorpOperations.dilation((op, size2)))
+#     morp_operations.append(ParallelMorpOperations.erosion((op, size2)))
+#     morp_operations.append(ParallelMorpOperations.closing((op, size2)))
+#     morp_operations.append(ParallelMorpOperations.opening((op, size2)))
+# # morp_operations.append(ParallelMorpOperations.dilation(('disk', 2)))
 # morp_operations.append(ParallelMorpOperations.dilation(('disk', 2)))
 
 # morp_operations.append(ParallelMorpOperations.complementation(size=5))

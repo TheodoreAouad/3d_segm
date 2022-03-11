@@ -1,10 +1,11 @@
 import numpy as np
 
-from general.nn.viz.element_arrow import ElementArrow
 
 from .element_generator import EltGenerator
+from .element_arrow_no import ElementArrowNo
 from general.nn.viz import (
-    ElementGrouper, ElementImage, ElementSymbolDilation, ElementSymbolErosion, ElementSymbolIntersection, ElementSymbolUnion
+    ElementGrouper, ElementImage, ElementSymbolDilation, ElementArrow,
+    ElementSymbolErosion, ElementSymbolIntersection, ElementSymbolUnion
 )
 
 
@@ -76,10 +77,17 @@ class EltGeneratorConnectorMorpOp(EltGenerator):
         selem_chans = self.model.selem_args[layer_idx][chout][-1]
         selem_chans = range(self.model.in_channels[layer_idx]) if selem_chans == "all" else selem_chans
 
+        bise_elt = group[f"bise_layer_{layer_idx}_chout_{chout}_chin_{chin}"]["selem"]
+        lui_elt = group[f"lui_layer_{layer_idx}_chout_{chout}"]
+
         if chin not in selem_chans:
             return None
 
+        if self.model.do_complementation[layer_idx][chout][chin]:
+            return ElementArrowNo.link_elements(bise_elt, lui_elt, height_circle=self.model.max_selem_shape[layer_idx]*0.7)
+
+
         return ElementArrow.link_elements(
-            group[f"bise_layer_{layer_idx}_chout_{chout}_chin_{chin}"]["selem"],
-            group[f"lui_layer_{layer_idx}_chout_{chout}"]
+            bise_elt,
+            lui_elt
         )

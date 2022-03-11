@@ -14,5 +14,5 @@ class ElementNO(Element):
 
     def add_to_canva(self, canva: "Canva"):
         return plot_NO_on_ax(
-            canva.ax, self.xy_coords_mean, width=self.radius, draw_circle=self.draw_circle, space_prop=self.space_prop, **self.imshow_kwargs
+            canva.ax, self.xy_coords_mean, width=self.width, draw_circle=self.draw_circle, space_prop=self.space_prop, **self.imshow_kwargs
         )
