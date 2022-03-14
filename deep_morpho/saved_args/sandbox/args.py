@@ -196,6 +196,11 @@ for idx, args in enumerate(all_args):
         args['loss'] = MaskedMSELoss()
 
     args['loss'] = {"loss_data": args['loss_data']}
+
+    if isinstance(args['threshold_mode'], str) or args['threshold_mode']['weights'] == "identity":
+        args['loss_regu'] = "None"
+
+
     if args['loss_regu'] != "None":
         args['loss_regu'] = (loss_dict[args['loss_regu']], {"lower_bound": 0, "upper_bound": 1})
         args['loss']['loss_regu'] = args['loss_regu']

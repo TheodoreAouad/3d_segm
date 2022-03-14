@@ -12,9 +12,9 @@ else:
 morp_operations = []
 selems = []
 
-morp_operations.append(ParallelMorpOperations.black_tophat(('disk', 3)))
-morp_operations.append(ParallelMorpOperations.black_tophat(('hstick', 7)))
-morp_operations.append(ParallelMorpOperations.black_tophat(('dcross', 7)))
+morp_operations.append(ParallelMorpOperations.white_tophat(('disk', 3)))
+morp_operations.append(ParallelMorpOperations.white_tophat(('hstick', 7)))
+morp_operations.append(ParallelMorpOperations.white_tophat(('dcross', 7)))
 # morp_operations.append(ParallelMorpOperations.white_tophat(('disk', 3)))
 
 

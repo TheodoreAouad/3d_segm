@@ -42,7 +42,7 @@ class ElementBiseSelemChan(ElementGrouper):
             selem = model.closest_selem[..., chout]
             operation = BISE_INVERT_CODE[model.closest_operation[chout]]
 
-            self.selem_element = ElementImage(selem, imshow_kwargs={"interpolation": "nearest"}, **kwargs)
+            self.selem_element = ElementImage(selem, imshow_kwargs={"interpolation": "nearest", "vmin": 0, "vmax": 1}, **kwargs)
             self.operation_element = self.operation_elements_dict[operation](
                 radius=2, xy_coords_mean=self.selem_element.xy_coords_mean + np.array([0, self.kernel_shape[-1] / 2 + 1])
             )
