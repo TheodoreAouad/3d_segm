@@ -23,7 +23,8 @@ all_args['experiment_name'] = [
     # 'Bimonn_exp_46_sandbox'
     # 'Bimonn_exp_48',
     # "Bimonn_exp_49/sandbox"
-    "Bimonn_exp_50/sandbox/3"
+    "Bimonn_exp_50/sandbox/4"
+    # "Bimonn_exp_51/sandbox/0"
 ]
 
 
@@ -197,7 +198,7 @@ for idx, args in enumerate(all_args):
 
     args['loss'] = {"loss_data": args['loss_data']}
 
-    if isinstance(args['threshold_mode'], str) or args['threshold_mode']['weights'] == "identity":
+    if isinstance(args['threshold_mode'], str) or args['threshold_mode']['weight'] != "identity":
         args['loss_regu'] = "None"
 
 

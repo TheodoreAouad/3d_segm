@@ -92,8 +92,11 @@ class BiSE(BinaryNN):
         assert set(np.unique(selem)).issubset([0, 1])
         net = BiSE(kernel_size=selem.shape, threshold_mode=threshold_mode, out_channels=1, **kwargs)
 
-        net.set_weights((torch.tensor(selem) - .5)[None, None, ...])
-        net._weight_P.data = torch.FloatTensor([weight_P])
+        if threshold_mode == "identity":
+            net.set_weights(torch.FloatTensor(selem)[None, None, ...])
+        else:
+            net.set_weights((torch.tensor(selem) - .5)[None, None, ...])
+            net._weight_P.data = torch.FloatTensor([weight_P])
         bias_value = -.5 if operation == "dilation" else -float(selem.sum()) + .5
         net.set_bias(torch.FloatTensor([bias_value]))
 
@@ -182,9 +185,9 @@ class BiSE(BinaryNN):
         return output * masker.to(output.device)
 
     @staticmethod
-    def distance_to_bounds(bias_fn, normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> float:
+    def distance_to_bounds(bound_fn, normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> float:
         assert np.isin(np.unique(S), [0, 1]).all(), "S must be binary matrix"
-        lb, ub = bias_fn(normalized_weights=normalized_weights, S=S, v1=v1, v2=v2)
+        lb, ub = bound_fn(normalized_weights=normalized_weights, S=S, v1=v1, v2=v2)
         dist_lb = lb + bias  # if dist_lb < 0 : lower bound respected
         dist_ub = -bias - ub  # if dist_ub < 0 : upper bound respected
         return max(dist_lb, dist_ub, 0)
@@ -213,13 +216,13 @@ class BiSE(BinaryNN):
     def bias_bounds_erosion(normalized_weights: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> Tuple[float, float]:
         S = S.astype(bool)
         W = normalized_weights.cpu().detach().numpy()
-        return W.sum() - (1 - v1) * W[S].min(), v2 * W[S].sum()
+        return W[W > 0].sum() - (1 - v1) * W[S].min(), v2 * W[S & (W > 0)].sum() + W[W < 0].sum()
 
     @staticmethod
     def bias_bounds_dilation(normalized_weights: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> Tuple[float, float]:
         S = S.astype(bool)
         W = normalized_weights.cpu().detach().numpy()
-        return W[~S].sum() + v1 * W[S].sum(), v2 * W[S].min()
+        return W[(~S) & (W > 0)].sum() + v1 * W[S & (W > 0)].sum(), v2 * W[S].min() + W[W < 0].sum()
 
     def find_selem_for_operation_chan(self, idx: int, operation: str, v1: float = 0, v2: float = 1):
         """

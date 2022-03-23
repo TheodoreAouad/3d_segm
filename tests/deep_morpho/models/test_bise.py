@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import pytest
 
 from deep_morpho.models import BiSE
 from general.structuring_elements import disk
@@ -9,6 +10,17 @@ from general.array_morphology import array_erosion, array_dilation
 def softplus_inverse(x):
     return torch.log(torch.exp(x) - 1)
 
+
+# # @pytest.mark.parametrize("threshold_mode", ["identity", "tanh"])
+# def test_bise_forward_binary_dilation(threshold_mode):
+#     weight = disk(3)
+#     layer = BiSE.bise_from_selem(weight, 'dilation', threshold_mode=threshold_mode)
+
+#     inpt = torch.randint(0, 2, (50, 50)).float()
+#     output = layer.forward_binary(inpt[None, None, ...]).detach().cpu().numpy()
+#     target = array_dilation(inpt, weight)
+
+#     assert np.abs(output - target).sum() == 0
 
 class TestBiSE:
 
@@ -66,6 +78,19 @@ class TestBiSE:
         assert layer.is_dilation_by(layer._normalized_weight[0, 0], layer.bias, weight)
 
     @staticmethod
+    def test_bise_conv_erosion_init():
+        weight = disk(3)
+        layer = BiSE.bise_from_selem(weight, 'erosion', threshold_mode="identity")
+        assert layer.is_erosion_by(layer._normalized_weight[0, 0], layer.bias, weight)
+
+    @staticmethod
+    def test_bise_conv_dilation_init():
+        weight = disk(3)
+        layer = BiSE.bise_from_selem(weight, 'dilation', threshold_mode="identity")
+        assert layer.is_dilation_by(layer._normalized_weight[0, 0], layer.bias, weight)
+
+
+    @staticmethod
     def test_bise_find_selem_and_operation_chan():
         weight = disk(3)
         for original_op in ['erosion', 'dilation']:
@@ -75,9 +100,10 @@ class TestBiSE:
             assert operation == original_op
 
     @staticmethod
-    def test_bise_forward_binary_dilation():
+    @pytest.mark.parametrize("threshold_mode", ["identity", "tanh"])
+    def test_bise_forward_binary_dilation(threshold_mode):
         weight = disk(3)
-        layer = BiSE.bise_from_selem(weight, 'dilation')
+        layer = BiSE.bise_from_selem(weight, 'dilation', threshold_mode=threshold_mode)
 
         inpt = torch.randint(0, 2, (50, 50)).float()
         output = layer.forward_binary(inpt[None, None, ...]).detach().cpu().numpy()
@@ -86,9 +112,10 @@ class TestBiSE:
         assert np.abs(output - target).sum() == 0
 
     @staticmethod
-    def test_bise_forward_binary_erosion():
+    @pytest.mark.parametrize("threshold_mode", ["identity", "tanh"])
+    def test_bise_forward_binary_erosion(threshold_mode):
         weight = disk(3)
-        layer = BiSE.bise_from_selem(weight, 'erosion')
+        layer = BiSE.bise_from_selem(weight, 'erosion', threshold_mode=threshold_mode)
 
         inpt = torch.randint(0, 2, (50, 50)).float()
         output = layer.forward_binary(inpt[None, None, ...]).detach().cpu().numpy()
@@ -97,9 +124,10 @@ class TestBiSE:
         assert np.abs(output - target).sum() == 0
 
     @staticmethod
-    def test_bise_binary_mode_dilation():
+    @pytest.mark.parametrize("threshold_mode", ["identity", "tanh"])
+    def test_bise_binary_mode_dilation(threshold_mode):
         weight = disk(3)
-        layer = BiSE.bise_from_selem(weight, 'dilation')
+        layer = BiSE.bise_from_selem(weight, 'dilation', threshold_mode=threshold_mode)
 
         inpt = torch.randint(0, 2, (50, 50)).float()
 
@@ -110,9 +138,10 @@ class TestBiSE:
         assert np.abs(output - target).sum() == 0
 
     @staticmethod
-    def test_bise_binary_mode_erosion():
+    @pytest.mark.parametrize("threshold_mode", ["identity", "tanh"])
+    def test_bise_binary_mode_erosion(threshold_mode):
         weight = disk(3)
-        layer = BiSE.bise_from_selem(weight, 'erosion')
+        layer = BiSE.bise_from_selem(weight, 'erosion', threshold_mode=threshold_mode)
 
         inpt = torch.randint(0, 2, (50, 50)).float()
         layer.binary()
@@ -122,9 +151,10 @@ class TestBiSE:
         assert np.abs(output - target).sum() == 0
 
     @staticmethod
-    def test_bise_binary_mode_complementation():
+    @pytest.mark.parametrize("threshold_mode", ["identity", "tanh"])
+    def test_bise_binary_mode_complementation(threshold_mode):
         weight = disk(2)
-        layer = BiSE.bise_from_selem(weight, 'dilation')
+        layer = BiSE.bise_from_selem(weight, 'dilation', threshold_mode=threshold_mode)
         layer.activation_threshold_layer.P_.requires_grad = False
         layer.activation_threshold_layer.P_[0] *= -1
 
