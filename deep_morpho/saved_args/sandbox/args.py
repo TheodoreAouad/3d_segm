@@ -23,8 +23,8 @@ all_args['experiment_name'] = [
     # 'Bimonn_exp_46_sandbox'
     # 'Bimonn_exp_48',
     # "Bimonn_exp_49/sandbox"
-    "Bimonn_exp_50/sandbox/4"
-    # "Bimonn_exp_51/sandbox/0"
+    # "Bimonn_exp_50/sandbox/4"
+    "Bimonn_exp_51/sandbox/1"
 ]
 
 
@@ -64,8 +64,8 @@ all_args['train_test_split'] = [(1, 1, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-2,
-    # 1,
+    # 1e-2,
+    1,
 ]
 
 # if max_plus, then the loss is MSELoss
@@ -76,13 +76,13 @@ all_args['loss_data'] = [
     # DiceLoss(),
 ]
 all_args['loss_regu'] = [
-    "quadratic",
+    # "quadratic",
     # "linear",
-    # "None",
+    "None",
 ]
 all_args['optimizer'] = [
-    optim.Adam,
-    # optim.SGD
+    # optim.Adam,
+    optim.SGD
 ]
 all_args['batch_size'] = [256]
 all_args['num_workers'] = [

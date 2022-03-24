@@ -13,10 +13,12 @@ def plot_to_base64(figure):
     return base64.b64encode(my_stringIObytes.read()).decode()
 
 
-def plot_to_html(figure):
+def plot_to_html(figure, close_fig=True):
     if figure is None:
         return ""
     base64_fig = plot_to_base64(figure)
+    if close_fig:
+        plt.close(figure)
     return f"<img src='data:image/png;base64, {base64_fig}'>"
 
 

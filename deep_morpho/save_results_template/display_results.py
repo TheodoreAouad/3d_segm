@@ -27,11 +27,11 @@ class DisplayResults:
         )
 
         # Weights
-        if "normalized_weights" in results.keys():
-            results_html += ''.join([f"<span>{plot_to_html(fig)}</span>" for fig in results['normalized_weights']])
+        # if "normalized_weights" in results.keys():
+        #     results_html += ''.join([f"<span>{plot_to_html(fig)}</span>" for fig in results['normalized_weights']])
 
-        if "target_selem" in results.keys():
-            results_html += ''.join([f"<span>{plot_to_html(fig)}</span>" for fig in results['target_selem']])
+        # if "target_selem" in results.keys():
+        #     results_html += ''.join([f"<span>{plot_to_html(fig)}</span>" for fig in results['target_selem']])
 
         # Target Operation
         results_html += "Target Operation"
@@ -50,9 +50,9 @@ class DisplayResults:
 
 
         # Metrics
-        results_html += f"<p>dice={results['dice']}  baseline={results['baseline_dice']}"
+        results_html += f"<p>dice={results['dice']} || baseline={results['baseline_dice']}"
         if "binary_mode_dice" in results.keys():
-            results_html += f" binary mode={results['binary_mode_dice']}"
+            results_html += f" || binary mode={results['binary_mode_dice']}"
         results_html += "</p>"
 
         results_html += f"<p>step until convergence (dice)={results['convergence_dice']}</p>"
@@ -64,8 +64,59 @@ class DisplayResults:
             f"layer {layer_idx} chin {chin} chout {chout} <span>{plot_to_html(fig)}</span> cvg={results['convergence_layer'][layer_idx, chin, chout]}"
             for (layer_idx, chin, chout), fig in results['learned_selem'].items()])
 
-        results_html += "</p></div>"
+        results_html += "</p>"
+
+        # Zoom on weights
+        results_html += "<p>weights: "
+        results_html += ' '.join([
+            f"layer {layer_idx} chin {chin} chout {chout} <span>{plot_to_html(fig)}</span>"
+            for (layer_idx, chin, chout), fig in results['normalized_weights'].items()])
+
+        results_html += "</p>"
+
+
+        results_html += "</div>"
         return results_html
+
+    def write_all_results(self, results_dict, changing_args):
+        results_html = ""
+
+        for i, results in enumerate(results_dict):
+            results_html += self.write_results(results, changing_args)
+
+        return results_html
+
+    def write_table(self, results, changing_args):
+        table_html = ""
+
+        table_html += f"<td>{results['tb_path']}</td>"
+        for arg in changing_args:
+            table_html += f"<td>{results['args'][arg]}</td>"
+        table_html += f"<td>{float(results['dice']):.2f}</td>"
+        table_html += f"<td>{float(results['baseline_dice']):.2f}</td>"
+        table_html += f"<td>{float(results['binary_mode_dice']):.2f}</td>"
+        table_html += f"<td>{results['convergence_dice']}</td>"
+
+        return table_html
+
+    def write_all_tables(self, results_dict, changing_args):
+        table_html = "<table>"
+
+        table_html += "<thread><thead><tr>"
+        table_html += "<th>path</th>"
+        for arg in changing_args + ['dice', 'baseline dice', 'binary mode dice', "convergence dice"]:
+            table_html += f"<th>{arg}</th>"
+        table_html += "</tr></thead></thread>"
+
+        table_html += "<tbody>"
+        for i, results in enumerate(results_dict):
+            table_html += "<tr>"
+            table_html += self.write_table(results, changing_args)
+            table_html += "</tr>"
+        table_html += "</tbody>"
+
+        table_html += "</table>"
+        return table_html
 
     def write_html_from_dict_deep_morpho(self, results_dict: List[Dict], save_path: str, title: str = "",):
         html = html_template()
@@ -74,10 +125,8 @@ class DisplayResults:
 
         global_args, changing_args = detect_identical_values([results['args'] for results in results_dict])
 
-        results_html = ""
-
-        for i, results in enumerate(results_dict):
-            results_html += self.write_results(results, changing_args)
+        table_html = self.write_all_tables(results_dict, changing_args)
+        results_html = self.write_all_results(results_dict, changing_args)
 
 
         html = html.format(
@@ -85,6 +134,7 @@ class DisplayResults:
             tb_paths=tb_paths,
             global_args=global_args,
             changing_args=changing_args,
+            table=table_html,
             results=results_html,
         )
 
@@ -97,18 +147,18 @@ class DisplayResults:
     def update_results_PlotWeightsBiSE(path):
         res = {}
 
-        weights = []
-        normalized_weights = []
         if os.path.exists(path):
+            weights = {}
+            normalized_weights = {}
             for file_ in os.listdir(path):
-                fig_path = join(path, file_)
-                if "normalized" in file_:
-                    normalized_weights.append(load_png_as_fig(fig_path))
-                else:
-                    weights.append(load_png_as_fig(fig_path))
+                if re.search(r"^weights", file_):
+                    layer_idx, chin, chout = [int(s) for s in re.findall(r'weights_layer_(\d+)_chin_(\d+)_chout_(\d+).png', file_)[0]]
+                    weights[layer_idx, chin, chout] = load_png_as_fig(join(path, file_))
+                elif re.search(r"^normalized_weights", file_):
+                    layer_idx, chin, chout = [int(s) for s in re.findall(r'normalized_weights_layer_(\d+)_chin_(\d+)_chout_(\d+).png', file_)[0]]
+                    normalized_weights[layer_idx, chin, chout] = load_png_as_fig(join(path, file_))
             res['weights'] = weights
             res['normalized_weights'] = normalized_weights
-
         return res
 
     @staticmethod
@@ -239,7 +289,7 @@ class DisplayResults:
             "args": [None],
             "tb_path": None,
             "weights": None,
-            "normalized_weights": [None],
+            "normalized_weights": {},
             "bias": None,
             "dice": None,
             "baseline_dice": None,
@@ -259,7 +309,7 @@ class DisplayResults:
             res['args'] = load_args(join(tb_path, 'args.yaml'))
 
         for obs_name in [
-            # "PlotWeightsBiSE",
+            "PlotWeightsBiSE",
             "BinaryModeMetric",
             "PlotParametersBiSE",
             "ConvergenceBinary",
