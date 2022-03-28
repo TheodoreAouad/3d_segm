@@ -23,6 +23,6 @@ def dataloader_resolution(df, dataset, dataset_args={}, shuffle=True, *args, **k
 
     for resolution in df['resolution'].unique():
         data = dataset(df[df['resolution'] == resolution], **dataset_args)
-        data_loader.append(DataLoader(data, *args, **kwargs))
+        data_loader.append(DataLoader(data, shuffle=shuffle, *args, **kwargs))
 
     return ComposeDataloaders(data_loader, shuffle=shuffle)

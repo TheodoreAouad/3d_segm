@@ -2,12 +2,13 @@ import numpy as np
 import torch.optim as optim
 
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
-from deep_morpho.loss import MaskedMSELoss, QuadraticBoundRegularization, LinearBoundRegularization
+from deep_morpho.loss import MaskedMSELoss, MaskedDiceLoss, QuadraticBoundRegularization, LinearBoundRegularization
 from general.utils import dict_cross
 from .args_morp_ops import morp_operations
 
 loss_dict = {
     "MaskedMSELoss": MaskedMSELoss,
+    "MaskedDiceLoss": MaskedDiceLoss,
     "quadratic": QuadraticBoundRegularization,
     "linear": LinearBoundRegularization,
 }
@@ -24,16 +25,16 @@ all_args['experiment_name'] = [
     # 'Bimonn_exp_48',
     # "Bimonn_exp_49/sandbox"
     # "Bimonn_exp_50/sandbox/4"
-    "Bimonn_exp_51/sandbox/1"
+    "Bimonn_exp_52/sandbox/0"
 ]
 
 
 # DATA ARGS
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
-    # 'axspa_roi',
+    'axspa_roi',
     # "mnist",
-    'diskorect',
+    # 'diskorect',
 ]
 all_args['preprocessing'] = [  # for axspa roi
     None,
@@ -59,21 +60,21 @@ all_args['mnist_args'] = [
 all_args['n_inputs'] = [
     3_000_000,
 ]
-all_args['train_test_split'] = [(1, 1, 0)]
+all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    # 1e-2,
-    1,
+    1e-1,
+    # 1,
 ]
 
 # if max_plus, then the loss is MSELoss
 all_args['loss_data'] = [
     # nn.BCELoss(),
     # nn.BCEWithLogitsLoss(),
-    "MaskedMSELoss",
-    # DiceLoss(),
+    # "MaskedMSELoss",
+    "MaskedDiceLoss",
 ]
 all_args['loss_regu'] = [
     # "quadratic",
@@ -81,10 +82,10 @@ all_args['loss_regu'] = [
     "None",
 ]
 all_args['optimizer'] = [
-    # optim.Adam,
-    optim.SGD
+    optim.Adam,
+    # optim.SGD
 ]
-all_args['batch_size'] = [256]
+all_args['batch_size'] = [32]
 all_args['num_workers'] = [
     20,
     # 0,
@@ -108,15 +109,15 @@ all_args['atomic_element'] = [
     # "max_plus",
 ]
 all_args['kernel_size'] = [
-    # 7,
-    "adapt",
+    41,
+    # "adapt",
 ]
 all_args['channels'] = [
-    'adapt',
-    # [
+    # 'adapt',
+    [
         # 1,  # input
-    #     2, 2, 2, 1,
-    # ]
+        2, 1,
+    ]
 ]
 all_args['init_weight_mode'] = [
     # "identity",

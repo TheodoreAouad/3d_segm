@@ -10,9 +10,16 @@ from general.nn.dataloaders import dataloader_resolution
 
 class AxspaROIDataset(Dataset):
 
-    def __init__(self, data, preprocessing=transforms.ToTensor()):
+    def __init__(self, data, preprocessing=transforms.ToTensor(), unique_resolution=True):
         self.data = data
+        if unique_resolution:
+            self.keep_only_one_res()
         self.preprocessing = preprocessing
+
+
+    def keep_only_one_res(self):
+        max_res = self.data['resolution'].value_counts(sort=True, ascending=False).index[0]
+        self.data = self.data[self.data['resolution'] == max_res]
 
 
     def __getitem__(self, idx):
@@ -54,13 +61,12 @@ class AxspaROIDataset(Dataset):
 
 class AxspaROISimpleDataset(Dataset):
 
-    def __init__(self, data, morp_operations: ParallelMorpOperations = None, preprocessing=None):
+    def __init__(self, data, morp_operations: ParallelMorpOperations = None, preprocessing=None, ):
         self.data = data
         self.preprocessing = preprocessing
         if morp_operations is None:
             morp_operations = self.get_default_morp_operation()
         self.morp_operations = morp_operations
-
 
     def __getitem__(self, idx):
         input_ = np.load(self.data['path_segm'].iloc[idx])

@@ -11,7 +11,7 @@ from .load_args import load_args
 
 
 class DisplayResults:
-
+    hrefs = {}
 
     def __init__(self):
         pass
@@ -21,8 +21,8 @@ class DisplayResults:
 
         # Arguments
         results_html += (
-            f"<div>"
-            f"<h3>{results['tb_path']}</h3>"  # tb
+            f"<details id='{results['tb_path'].replace('/', '_')}' open>"
+            f"<summary><h3 style='display: contents;'>{results['tb_path']}</h3></summary>"  # tb
             f"<p>{dict({k: results['args'][k] for k in changing_args})}</p>"  # args
         )
 
@@ -75,7 +75,7 @@ class DisplayResults:
         results_html += "</p>"
 
 
-        results_html += "</div>"
+        results_html += "</details>"
         return results_html
 
     def write_all_results(self, results_dict, changing_args):
@@ -89,7 +89,7 @@ class DisplayResults:
     def write_table(self, results, changing_args):
         table_html = ""
 
-        table_html += f"<td>{results['tb_path']}</td>"
+        table_html += f"<td><a href='#{results['tb_path'].replace('/', '_')}'>{results['tb_path']}</a></td>"
         for arg in changing_args:
             table_html += f"<td>{results['args'][arg]}</td>"
         table_html += f"<td>{float(results['dice']):.2f}</td>"

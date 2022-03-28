@@ -52,6 +52,8 @@ def get_dataloader(args):
     elif args['dataset_type'] == 'axspa_roi':
         data = pd.read_csv(args['dataset_path'])
         prop_train, prop_val, prop_test = args['train_test_split']
+        max_res = data['resolution'].value_counts(sort=True, ascending=False).index[0]
+        data = data[data['resolution'] == max_res]
         trainloader, valloader, testloader = AxspaROISimpleDataset.get_train_val_test_loader(
             *train_val_test_split(
                 data,

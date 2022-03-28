@@ -25,7 +25,7 @@ TB_PATHS = (
     []
 )
 
-SAVE_PATH = 'html_pages/weights_raw.html'
+SAVE_PATH = 'html_pages/test.html'
 TITLE = 'test_page'
 
 # Version BiSES
