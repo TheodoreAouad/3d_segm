@@ -5,6 +5,7 @@ from typing import Any
 
 from pytorch_lightning.utilities.types import STEP_OUTPUT
 import pytorch_lightning as pl
+import torch
 import torch.nn as nn
 from torch.utils.tensorboard.summary import custom_scalars
 import matplotlib.pyplot as plt
@@ -197,7 +198,8 @@ class ShowSelemBinary(ObservableLayersChans):
         chan_input: int,
         chan_output: int,
     ):
-        selem, operation = layer.bises[chan_input].find_selem_and_operation_chan(chan_output, v1=0, v2=1)
+        with torch.no_grad():
+            selem, operation = layer.bises[chan_input].find_selem_and_operation_chan(chan_output, v1=0, v2=1)
         if selem is None:
             return
 
@@ -246,7 +248,8 @@ class ShowLUISetBinary(ObservableLayersChans):
         layer_idx=int,
         chan_output=int,
     ):
-        C, operation = layer.luis[chan_output].find_set_and_operation_chan(0, v1=None, v2=None)
+        with torch.no_grad():
+            C, operation = layer.luis[chan_output].find_set_and_operation_chan(0, v1=None, v2=None)
         if C is None:
             return
 
@@ -300,7 +303,8 @@ class ShowClosestSelemBinary(ObservableLayersChans):
         chan_input: int,
         chan_output: int,
     ):
-        selem, operation, distance = layer.bises[chan_input].find_closest_selem_and_operation_chan(chan_output, v1=0, v2=1)
+        with torch.no_grad():
+            selem, operation, distance = layer.bises[chan_input].find_closest_selem_and_operation_chan(chan_output, v1=0, v2=1)
 
         trainer.logger.experiment.add_scalar(f"comparative/closest_binary_dist/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}", distance, trainer.global_step)
 

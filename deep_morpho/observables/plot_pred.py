@@ -5,6 +5,7 @@ import random
 
 from pytorch_lightning.utilities.types import STEP_OUTPUT
 import pytorch_lightning as pl
+import torch
 import matplotlib.pyplot as plt
 
 from general.nn.observables import Observable
@@ -48,13 +49,14 @@ class PlotPreds(Observable):
             preds: 'Any',
     ) -> None:
         if self.idx['train'] % self.freq["train"] == 0:
-            # idx = random.choice(range(len(batch[0])))
-            idx = 0
-            img, target = batch[0][idx], batch[1][idx]
-            pred = preds[idx]
-            fig = self.plot_three(*[k.cpu().detach().numpy() for k in [img, pred, target]], title='train')
-            trainer.logger.experiment.add_figure("preds/train/input_pred_target", fig, trainer.global_step)
-            self.saved_fig['train'] = fig
+            with torch.no_grad():
+                # idx = random.choice(range(len(batch[0])))
+                idx = 0
+                img, target = batch[0][idx], batch[1][idx]
+                pred = preds[idx]
+                fig = self.plot_three(*[k.cpu().detach().numpy() for k in [img, pred, target]], title='train')
+                trainer.logger.experiment.add_figure("preds/train/input_pred_target", fig, trainer.global_step)
+                self.saved_fig['train'] = fig
 
         self.idx['train'] += 1
 

@@ -15,8 +15,8 @@ loss_dict = {
 
 all_args = {}
 
-all_args['n_try'] = [0]
-# all_args['n_try'] = range(1, 11)
+# all_args['n_try'] = [0]
+all_args['n_try'] = range(1, 11)
 
 all_args['experiment_name'] = [
     # 'Bimonn_exp_45_sandbox_disk'
@@ -24,16 +24,17 @@ all_args['experiment_name'] = [
     # 'Bimonn_exp_46_sandbox'
     # 'Bimonn_exp_48',
     # "Bimonn_exp_49/sandbox"
-    # "Bimonn_exp_50/sandbox/4"
-    "Bimonn_exp_52/sandbox/0"
+    "Bimonn_exp_51/sandbox/multi/1"
+    # "Bimonn_exp_51/sandbox/5"
+    # "Bimonn_exp_52/sandbox/0"
 ]
 
 
 # DATA ARGS
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
-    'axspa_roi',
-    # "mnist",
+    # 'axspa_roi',
+    "mnist",
     # 'diskorect',
 ]
 all_args['preprocessing'] = [  # for axspa roi
@@ -55,17 +56,18 @@ all_args['random_gen_args'] = [
 
 ]
 all_args['mnist_args'] = [
-    {"threshold": 30, "size": (50, 50), "invert_input_proba": 1}
+    {"threshold": 30, "size": (50, 50), "invert_input_proba": 0}
 ]
 all_args['n_inputs'] = [
-    3_000_000,
+    # 3_000_000,
+    200_000,
 ]
 all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-1,
+    1e-2,
     # 1,
 ]
 
@@ -73,11 +75,11 @@ all_args['learning_rate'] = [
 all_args['loss_data'] = [
     # nn.BCELoss(),
     # nn.BCEWithLogitsLoss(),
-    # "MaskedMSELoss",
-    "MaskedDiceLoss",
+    "MaskedMSELoss",
+    # "MaskedDiceLoss",
 ]
 all_args['loss_regu'] = [
-    # "quadratic",
+    # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
     # "linear",
     "None",
 ]
@@ -85,7 +87,7 @@ all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
-all_args['batch_size'] = [32]
+all_args['batch_size'] = [256]
 all_args['num_workers'] = [
     20,
     # 0,
@@ -109,15 +111,15 @@ all_args['atomic_element'] = [
     # "max_plus",
 ]
 all_args['kernel_size'] = [
-    41,
-    # "adapt",
+    # 41,
+    "adapt",
 ]
 all_args['channels'] = [
-    # 'adapt',
-    [
-        # 1,  # input
-        2, 1,
-    ]
+    'adapt',
+    # [
+    #     # 1,  # input
+    #     2, 1,
+    # ]
 ]
 all_args['init_weight_mode'] = [
     # "identity",
@@ -204,5 +206,5 @@ for idx, args in enumerate(all_args):
 
 
     if args['loss_regu'] != "None":
-        args['loss_regu'] = (loss_dict[args['loss_regu']], {"lower_bound": 0, "upper_bound": 1})
+        args['loss_regu'] = (loss_dict[args['loss_regu'][0]], args['loss_regu'][1])
         args['loss']['loss_regu'] = args['loss_regu']

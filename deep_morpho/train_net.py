@@ -105,6 +105,7 @@ def main(args, logger):
         #     selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50
         # ) if args['dataset_type'] == 'diskorect' else obs.Observable(),
         "PlotGradientBise": obs.PlotGradientBise(freq=args['freq_imgs']),
+        # "ExplosiveWeightGradientWatcher": obs.ExplosiveWeightGradientWatcher(freq=1, threshold=0.5),
         "ConvergenceMetrics": obs.ConvergenceMetrics(metrics),
         # "ShowSelemAlmostBinary": obs.ShowSelemAlmostBinary(freq=args['freq_imgs']),
         "ShowSelemBinary": obs.ShowSelemBinary(freq=args['freq_imgs']),

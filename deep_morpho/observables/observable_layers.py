@@ -44,6 +44,53 @@ class ObservableLayers(Observable):
             )
 
 
+    def on_train_batch_end_with_preds(
+        self,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        preds: Any,
+    ) -> None:
+        """Called when the train batch ends."""
+        layers = self._get_layers(pl_module)
+        if self.freq_idx % self.freq == 0:
+            for layer_idx, layer in enumerate(layers):
+                self.on_train_batch_end_with_preds_layers(
+                    trainer, pl_module, outputs, batch, batch_idx, preds, layer, layer_idx,
+                )
+        self.freq_idx += 1
+        for layer_idx, layer in enumerate(layers):
+            self.on_train_batch_end_with_preds_layers_always(
+                trainer, pl_module, outputs, batch, batch_idx, preds, layer, layer_idx
+            )
+
+    def on_train_batch_end_with_preds_layers(
+        self,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        preds: Any,
+        layer: "nn.Module",
+        layer_idx: int,
+    ):
+        pass
+
+    def on_train_batch_end_with_preds_layers_always(
+        self,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        preds: Any,
+        layer: "nn.Module",
+        layer_idx: int,
+    ):
+        pass
 
     def on_train_batch_end_layers(
         self,
@@ -214,14 +261,150 @@ class ObservableLayersChans(ObservableLayers):
 
     def on_train_batch_end_layers_chan_output_always(
         self,
-        trainer='pl.Trainer',
-        pl_module='pl.LightningModule',
-        outputs="STEP_OUTPUT",
-        batch="Any",
-        batch_idx=int,
-        dataloader_idx=int,
-        layer="nn.Module",
-        layer_idx=int,
-        chan_output=int,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        dataloader_idx: int,
+        layer: "nn.Module",
+        layer_idx: int,
+        chan_output: int,
+    ):
+        pass
+
+
+    def on_train_batch_end_with_preds_layers(
+        self,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        preds: Any,
+        layer: "nn.Module",
+        layer_idx: int,
+    ):
+        if isinstance(layer, BiSEL):
+            for chan_output in range(layer.out_channels):
+                self.on_train_batch_end_with_preds_layers_chan_output(
+                    trainer=trainer,
+                    pl_module=pl_module,
+                    outputs=outputs,
+                    batch=batch,
+                    batch_idx=batch_idx,
+                    preds=preds,
+                    layer=layer,
+                    layer_idx=layer_idx,
+                    chan_output=chan_output,
+                )
+                for chan_input in range(layer.in_channels):
+                    self.on_train_batch_end_with_preds_layers_chans(
+                        trainer=trainer,
+                        pl_module=pl_module,
+                        outputs=outputs,
+                        batch=batch,
+                        batch_idx=batch_idx,
+                        preds=preds,
+                        layer=layer,
+                        layer_idx=layer_idx,
+                        chan_input=chan_input,
+                        chan_output=chan_output,
+                    )
+
+    def on_train_batch_end_with_preds_layers_chans(
+        self,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        preds: Any,
+        layer: "nn.Module",
+        layer_idx: int,
+        chan_input: int,
+        chan_output: int,
+    ):
+        pass
+
+    def on_train_batch_end_with_preds_layers_chan_output(
+        self,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        preds: Any,
+        layer: "nn.Module",
+        layer_idx: int,
+        chan_output: int,
+    ):
+        pass
+
+
+    def on_train_batch_end_with_preds_layers_always(
+        self,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        preds: Any,
+        layer: "nn.Module",
+        layer_idx: int,
+    ):
+        if isinstance(layer, BiSEL):
+            for chan_output in range(layer.out_channels):
+                self.on_train_batch_end_with_preds_layers_chan_output_always(
+                    trainer=trainer,
+                    pl_module=pl_module,
+                    outputs=outputs,
+                    batch=batch,
+                    batch_idx=batch_idx,
+                    preds=preds,
+                    layer=layer,
+                    layer_idx=layer_idx,
+                    chan_output=chan_output,
+                )
+                for chan_input in range(layer.in_channels):
+                    self.on_train_batch_end_with_preds_layers_chans_always(
+                        trainer=trainer,
+                        pl_module=pl_module,
+                        outputs=outputs,
+                        batch=batch,
+                        batch_idx=batch_idx,
+                        preds=preds,
+                        layer=layer,
+                        layer_idx=layer_idx,
+                        chan_input=chan_input,
+                        chan_output=chan_output,
+                    )
+
+    def on_train_batch_end_with_preds_layers_chans_always(
+        self,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        preds: Any,
+        layer: "nn.Module",
+        layer_idx: int,
+        chan_input: int,
+        chan_output: int,
+    ):
+        pass
+
+    def on_train_batch_end_with_preds_layers_chan_output_always(
+        self,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        preds: Any,
+        layer: "nn.Module",
+        layer_idx: int,
+        chan_output: int,
     ):
         pass
