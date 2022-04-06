@@ -15,8 +15,8 @@ loss_dict = {
 
 all_args = {}
 
-# all_args['n_try'] = [0]
-all_args['n_try'] = range(1, 11)
+all_args['n_try'] = [0]
+# all_args['n_try'] = range(1, 11)
 
 all_args['experiment_name'] = [
     # 'Bimonn_exp_45_sandbox_disk'
@@ -24,17 +24,17 @@ all_args['experiment_name'] = [
     # 'Bimonn_exp_46_sandbox'
     # 'Bimonn_exp_48',
     # "Bimonn_exp_49/sandbox"
-    "Bimonn_exp_51/sandbox/multi/1"
+    # "Bimonn_exp_51/sandbox/multi/1"
     # "Bimonn_exp_51/sandbox/5"
-    # "Bimonn_exp_52/sandbox/0"
+    "Bimonn_exp_52/sandbox/2"
 ]
 
 
 # DATA ARGS
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
-    # 'axspa_roi',
-    "mnist",
+    'axspa_roi',
+    # "mnist",
     # 'diskorect',
 ]
 all_args['preprocessing'] = [  # for axspa roi
@@ -67,7 +67,7 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-2,
+    1e-1,
     # 1,
 ]
 
@@ -75,8 +75,8 @@ all_args['learning_rate'] = [
 all_args['loss_data'] = [
     # nn.BCELoss(),
     # nn.BCEWithLogitsLoss(),
-    "MaskedMSELoss",
-    # "MaskedDiceLoss",
+    # "MaskedMSELoss",
+    "MaskedDiceLoss",
 ]
 all_args['loss_regu'] = [
     # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
@@ -87,13 +87,13 @@ all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
-all_args['batch_size'] = [256]
+all_args['batch_size'] = [64]
 all_args['num_workers'] = [
     20,
     # 0,
 ]
 all_args['freq_imgs'] = [300]
-all_args['n_epochs'] = [20]
+all_args['n_epochs'] = [40]
 
 
 # MODEL ARGS
@@ -111,11 +111,14 @@ all_args['atomic_element'] = [
     # "max_plus",
 ]
 all_args['kernel_size'] = [
-    # 41,
-    "adapt",
+    7
+    # "adapt",
 ]
 all_args['channels'] = [
-    'adapt',
+    # 'adapt',
+    [
+        2, 2, 2, 2, 2, 2, 2, 1
+    ]
     # [
     #     # 1,  # input
     #     2, 1,
