@@ -17,7 +17,7 @@ class ObservableLayers(Observable):
         super().__init__(*args, **kwargs)
         self.layers = layers
         self.freq = freq
-        self.freq_idx = 0
+        self.freq_idx = {"on_train_batch_end": 0, "on_train_batch_end_with_preds": 0}
         self.layer_name = layer_name
 
 
@@ -32,12 +32,12 @@ class ObservableLayers(Observable):
     ) -> None:
         """Called when the train batch ends."""
         layers = self._get_layers(pl_module)
-        if self.freq_idx % self.freq == 0:
+        if self.freq_idx["on_train_batch_end"] % self.freq == 0:
             for layer_idx, layer in enumerate(layers):
                 self.on_train_batch_end_layers(
                     trainer, pl_module, outputs, batch, batch_idx, dataloader_idx, layer, layer_idx
                 )
-        self.freq_idx += 1
+        self.freq_idx["on_train_batch_end"] += 1
         for layer_idx, layer in enumerate(layers):
             self.on_train_batch_end_layers_always(
                 trainer, pl_module, outputs, batch, batch_idx, dataloader_idx, layer, layer_idx
@@ -55,12 +55,12 @@ class ObservableLayers(Observable):
     ) -> None:
         """Called when the train batch ends."""
         layers = self._get_layers(pl_module)
-        if self.freq_idx % self.freq == 0:
+        if self.freq_idx["on_train_batch_end_with_preds"] % self.freq == 0:
             for layer_idx, layer in enumerate(layers):
                 self.on_train_batch_end_with_preds_layers(
                     trainer, pl_module, outputs, batch, batch_idx, preds, layer, layer_idx,
                 )
-        self.freq_idx += 1
+        self.freq_idx["on_train_batch_end_with_preds"] += 1
         for layer_idx, layer in enumerate(layers):
             self.on_train_batch_end_with_preds_layers_always(
                 trainer, pl_module, outputs, batch, batch_idx, preds, layer, layer_idx

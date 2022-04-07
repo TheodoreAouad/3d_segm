@@ -25,7 +25,10 @@ selems = []
 # morp_operations.append(ParallelMorpOperations.opening(('dcross', 7)))
 # morp_operations.append(ParallelMorpOperations.dilation(('disk', 3)))
 # morp_operations.append(ParallelMorpOperations.dilation(('hstick', 7)))
-morp_operations.append(ParallelMorpOperations.erosion(('disk', 3)))
+
+morp_operations.append(ParallelMorpOperations.closing(('disk', 3)))
+morp_operations.append(ParallelMorpOperations.closing(('hstick', 7)))
+morp_operations.append(ParallelMorpOperations.closing(('dcross', 7)))
 
 
 # for op in [

@@ -21,3 +21,18 @@ def erf_threshold(x):
 def clamp_threshold(x, s1=0, s2=1):
     return x.clamp(s1, s2)
 
+
+def arctan_threshold_inverse(y):
+    return torch.tan((y - 1/2) * pi)
+
+
+def tanh_threshold_inverse(y):
+    return torch.atanh((y - 1/2) * 2)
+
+
+def sigmoid_threshold_inverse(y):
+    return torch.logit(y)
+
+
+def softplus_threshold_inverse(y, beta=1):
+    return 1 / beta * torch.log(torch.exp(beta * y) - 1)

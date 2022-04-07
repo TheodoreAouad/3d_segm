@@ -26,16 +26,18 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_49/sandbox"
     # "Bimonn_exp_51/sandbox/multi/1"
     # "Bimonn_exp_51/sandbox/5"
-    "Bimonn_exp_52/sandbox/2"
+    # "Bimonn_exp_52/sandbox/2"
+    # "Bimonn_exp_53/sandbox/softplus"
+    "Bimonn_exp_53/sandbox/0"
 ]
 
 
 # DATA ARGS
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
-    'axspa_roi',
+    # 'axspa_roi',
     # "mnist",
-    # 'diskorect',
+    'diskorect',
 ]
 all_args['preprocessing'] = [  # for axspa roi
     None,
@@ -67,7 +69,7 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-1,
+    1e-2,
     # 1,
 ]
 
@@ -111,14 +113,14 @@ all_args['atomic_element'] = [
     # "max_plus",
 ]
 all_args['kernel_size'] = [
-    7
-    # "adapt",
+    # 7
+    "adapt",
 ]
 all_args['channels'] = [
-    # 'adapt',
-    [
-        2, 2, 2, 2, 2, 2, 2, 1
-    ]
+    'adapt',
+    # [
+    #     2, 2, 2, 2, 2, 2, 2, 1
+    # ]
     # [
     #     # 1,  # input
     #     2, 1,
@@ -138,7 +140,9 @@ all_args['threshold_mode'] = [
     # 'arctan',
     # 'sigmoid',
     {
-        "weight": 'identity',
+        "weight": 'softplus',
+        # "weight": 'identity',
+        # "weight": 'tanh',
         "activation": 'tanh',
     }
     # 'erf',
@@ -175,7 +179,7 @@ for idx, args in enumerate(all_args):
             args["kernel_size"] = int(max(args['morp_operation'].max_selem_shape))
 
         args['loss_data'] = loss_dict[args['loss_data']](border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]))
-        args['experiment_subname'] = f"{args['dataset_type']}/{args['morp_operation'].name}"
+        args['experiment_subname'] = f"{args['threshold_mode']['weight']}/{args['dataset_type']}/{args['morp_operation'].name}"
 
         if args['channels'] == 'adapt':
             args['channels'] = args['morp_operation'].in_channels + [args['morp_operation'].out_channels[-1]]

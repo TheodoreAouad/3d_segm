@@ -93,9 +93,9 @@ class BiSE(BinaryNN):
         net = BiSE(kernel_size=selem.shape, threshold_mode=threshold_mode, out_channels=1, **kwargs)
 
         if threshold_mode == "identity":
-            net.set_weights(torch.FloatTensor(selem)[None, None, ...])
+            net.set_normalized_weights(torch.FloatTensor(selem)[None, None, ...])
         else:
-            net.set_weights((torch.tensor(selem) - .5)[None, None, ...])
+            net.set_normalized_weights((torch.tensor(selem) - .5)[None, None, ...])
             net._weight_P.data = torch.FloatTensor([weight_P])
         bias_value = -.5 if operation == "dilation" else -float(selem.sum()) + .5
         net.set_bias(torch.FloatTensor([bias_value]))
@@ -112,11 +112,11 @@ class BiSE(BinaryNN):
 
     def init_weights(self):
         if self.init_weight_mode == "normal_identity":
-            self.set_weights(self._init_normal_identity(self.kernel_size, self.out_channels))
+            self.set_normalized_weights(self._init_normal_identity(self.kernel_size, self.out_channels))
         elif self.init_weight_mode == "identity":
             self._init_as_identity()
         elif self.init_weight_mode == "conv_0.5":
-            self.set_weights(self.weight + 0.5)
+            self.set_normalized_weights(self.weight + 0.5)
         else:
             warnings.warn(f"init weight mode {self.init_weight_mode} not recognized. Classical conv init used.")
             pass
@@ -405,6 +405,9 @@ class BiSE(BinaryNN):
         assert self.weight.shape == new_weights.shape, f"Weights must be of same shape {self.weight.shape}"
         self.conv.weight.data = new_weights
         return new_weights
+
+    def set_normalized_weights(self, new_weights: torch.Tensor) -> torch.Tensor:
+        return self.set_weights(self.weight_threshold_layer.forward_inverse(new_weights))
 
     def set_bias(self, new_bias: torch.Tensor) -> torch.Tensor:
         assert self.bias.shape == new_bias.shape

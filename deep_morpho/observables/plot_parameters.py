@@ -83,7 +83,7 @@ class PlotWeightsBiSE(ObservableLayersChans):
     def get_figure_normalized_weights(weights, bias, activation_P):
         weights = weights.cpu().detach()
         figure = plt.figure(figsize=(8, 8))
-        plt.title(f"bias={bias.item()}  act_P={activation_P.item()}")
+        plt.title(f"bias={bias.item():.3f}  act_P={activation_P.item():.3f}  sum={weights.sum():.3f}")
         plt.imshow(weights, interpolation='nearest', cmap=plt.cm.gray)
         plt.colorbar()
         plt.clim(0, 1)

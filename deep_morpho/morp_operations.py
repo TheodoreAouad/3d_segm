@@ -462,6 +462,22 @@ class ParallelMorpOperations:
             ]
         )
 
+    @staticmethod
+    def hit_or_miss_transform(selem1, selem2, *args, **kwargs):
+        identity = ('dilation', ('disk', 0), False)
+        return ParallelMorpOperations(
+            name='hit_or_miss_transform',
+            operations=[
+                [
+                    [identity, 'union'],
+                    [identity, 'union'],
+                ],
+                [
+                    [('erosion', selem1, False), ('dilation', selem2, True), 'intersection']
+                ]
+            ]
+        )
+
     @property
     def ui_arrays(self):
         ui_ars = []
