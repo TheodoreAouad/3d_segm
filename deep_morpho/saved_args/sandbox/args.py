@@ -15,6 +15,8 @@ loss_dict = {
 
 all_args = {}
 
+all_args['batch_seed'] = [0]
+
 all_args['n_try'] = [0]
 # all_args['n_try'] = range(1, 11)
 
@@ -28,7 +30,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_51/sandbox/5"
     # "Bimonn_exp_52/sandbox/2"
     # "Bimonn_exp_53/sandbox/softplus"
-    "Bimonn_exp_53/sandbox/0"
+    # "Bimonn_exp_53/sandbox/0"
+    "test_reproducibility"
 ]
 
 
@@ -36,7 +39,7 @@ all_args['experiment_name'] = [
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
-    # "mnist",
+    "mnist",
     'diskorect',
 ]
 all_args['preprocessing'] = [  # for axspa roi
@@ -54,6 +57,7 @@ all_args['random_gen_fn'] = [
     get_random_diskorect_channels
 ]
 all_args['random_gen_args'] = [
+    # {'size': (50, 50), 'n_shapes': 2, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
     {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
 
 ]
@@ -62,7 +66,7 @@ all_args['mnist_args'] = [
 ]
 all_args['n_inputs'] = [
     # 3_000_000,
-    200_000,
+    25_000,
 ]
 all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
@@ -91,11 +95,11 @@ all_args['optimizer'] = [
 ]
 all_args['batch_size'] = [64]
 all_args['num_workers'] = [
-    20,
-    # 0,
+    # 20,
+    0,
 ]
-all_args['freq_imgs'] = [300]
-all_args['n_epochs'] = [40]
+all_args['freq_imgs'] = [50]
+all_args['n_epochs'] = [1]
 
 
 # MODEL ARGS

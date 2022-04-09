@@ -10,8 +10,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from deep_morpho.datasets.mnist_dataset import MnistMorphoDataset
-
-
+from deep_morpho.utils import set_seed
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
 from deep_morpho.datasets.multi_rect_dataset import InputOutputGeneratorDataset, MultiRectDataset
@@ -43,8 +42,9 @@ def get_dataloader(args):
                 random_gen_fn=args['random_gen_fn'],
                 random_gen_args=args['random_gen_args'],
                 morp_operation=args['morp_operation'],
+                seed=args['seed'],
                 device=device,
-                num_workers=args['num_workers']
+                num_workers=args['num_workers'],
             )
             valloader = None
             testloader = None
@@ -84,11 +84,16 @@ def get_dataloader(args):
 
 
 def main(args, logger):
+    args['seed'] = set_seed(args['batch_seed'])
+    with open(join(logger.log_dir, "seed.txt"), "w") as f:
+        f.write(f"{args['seed']}")
 
     trainloader, valloader, testloader = get_dataloader(args)
     metrics = {'dice': lambda y_true, y_pred: masked_dice(y_true, y_pred, border=(args['kernel_size'] // 2, args['kernel_size'] // 2), threshold=.5).mean()}
 
     observables_dict = {
+        # "SetSeed": obs.SetSeed(args['batch_seed']),
+        "RandomObservable": obs.RandomObservable(),
         "SaveLoss": obs.SaveLoss(),
         "CalculateAndLogMetric": CalculateAndLogMetrics(
             metrics=metrics,
@@ -223,9 +228,11 @@ def main(args, logger):
         # progress_bar_refresh_rate=10,
         callbacks=observables.copy(),
         log_every_n_steps=10,
+        deterministic=True,
+        num_sanity_val_steps=1,
     )
 
-    trainer.fit(model, trainloader, valloader)
+    trainer.fit(model, trainloader, valloader,)
 
     for observable in observables:
         observable.save(join(trainer.log_dir, 'observables'))
@@ -257,6 +264,7 @@ if __name__ == '__main__':
         logger = TensorBoardLogger("deep_morpho/results", name=name, default_hp_metric=False)
         code_saver.save_in_final_file(join(logger.log_dir, 'code'))
         save_yaml(args, join(logger.log_dir, 'args.yaml'))
+
 
         console_logger = create_logger(
             f'args_{args_idx}', all_logs_path=join(logger.log_dir, 'all_logs.log'), error_path=join(logger.log_dir, 'error_logs.log')

@@ -26,16 +26,18 @@ class InputOutputGeneratorDataset(Dataset):
             morp_operation: SequentialMorpOperations,
             device: str = "cpu",
             len_dataset: int = 1000,
+            seed: int = None,
     ):
         self.random_gen_fn = random_gen_fn
         self.random_gen_args = random_gen_args
         self.device = device
         self.len_dataset = len_dataset
         self.morp_fn = morp_operation
+        self.rng = np.random.default_rng(seed)
 
 
     def __getitem__(self, idx):
-        input_ = self.random_gen_fn(**self.random_gen_args)
+        input_ = self.random_gen_fn(rng_float=self.rng.random, rng_int=self.rng.integers, **self.random_gen_args,)
         target = self.morp_fn(input_).float()
         input_ = torch.tensor(input_).float()
 
@@ -51,9 +53,9 @@ class InputOutputGeneratorDataset(Dataset):
         return self.len_dataset
 
     @staticmethod
-    def get_loader(batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, device='cpu', **kwargs):
+    def get_loader(batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, seed=None, device='cpu', **kwargs):
         return DataLoader(
-            InputOutputGeneratorDataset(random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device, len_dataset=n_inputs, ),
+            InputOutputGeneratorDataset(random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device, len_dataset=n_inputs, seed=seed),
             batch_size=batch_size, **kwargs
         )
 

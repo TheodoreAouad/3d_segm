@@ -1,3 +1,7 @@
+import random
+import torch
+import numpy as np
+
 from sklearn.model_selection import train_test_split
 
 
@@ -13,3 +17,21 @@ def train_val_test_split(*arrays, train_size=None, val_size=None, test_size=None
         )
 
     return train_split, val_split, test_split
+
+
+def set_seed(seed=None):
+    if seed is None:
+        seed = np.random.randint(2**32)
+    # seed setting
+    torch.manual_seed(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+
+    # disabling benchmark that uses the best algorithm for current run
+    torch.backends.cudnn.benchmark = False
+
+    # use only torch deterministic algorithms
+    # torch.use_deterministic_algorithms(True)
+    torch.backends.cudnn.deterministic = True
+
+    return seed

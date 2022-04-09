@@ -1,16 +1,29 @@
 from typing import Tuple
 
 import numpy as np
+import random
 from PIL import Image, ImageDraw
 from numba import njit
 from general.numba_utils import numba_randint, numba_rand, numba_rand_shape_2d
 from general.utils import set_borders_to
 
 
+def rand_shape_2d(shape, rng_float=lambda shape: np.random.rand(shape[0], shape[1])):
+    return rng_float(shape)
+
+
+def straight_rect(width, height):
+    return np.array([(0, 0), (width, 0), (width, height), (0, height), (0, 0)])
+
+
 @njit
 def numba_straight_rect(width, height):
     return np.array([(0, 0), (width, 0), (width, height), (0, height), (0, 0)])
 
+
+def rotation_matrix(theta):
+    return np.array([[np.cos(theta), -np.sin(theta)],
+                     [np.sin(theta), np.cos(theta)]])
 
 @njit
 def numba_rotation_matrix(theta):
@@ -35,10 +48,18 @@ def numba_invert_proba(ar: np.ndarray, p_invert: float) -> np.ndarray:
     return ar
 
 
+def invert_proba(ar, p_invert: float, rng_float) -> np.ndarray:
+    if rng_float() < p_invert:
+        return 1 - ar
+    return ar
+
+
 def get_rect(x, y, width, height, angle):
-    rect = numba_straight_rect(width, height)
+    rect = straight_rect(width, height)
+    # rect = numba_straight_rect(width, height)
     theta = (np.pi / 180.0) * angle
-    R = numba_rotation_matrix(theta)
+    R = rotation_matrix(theta)
+    # R = numba_rotation_matrix(theta)
     offset = np.array([x, y])
     transformed_rect = np.dot(rect, R) + offset
     # transformed_rect = numba_transform_rect(rect.astype(float), R.astype(float), offset.astype(float))
@@ -65,26 +86,34 @@ def draw_ellipse(draw, center, radius, fill_value=1):
 
 def get_random_rotated_diskorect(
     size: Tuple, n_shapes: int = 30, max_shape: Tuple[int] = (15, 15), p_invert: float = 0.5,
-        border=(4, 4), n_holes: int = 15, max_shape_holes: Tuple[int] = (5, 5), noise_proba=0.05, **kwargs
+        border=(4, 4), n_holes: int = 15, max_shape_holes: Tuple[int] = (5, 5), noise_proba=0.05, 
+        rng_float=np.random.rand, rng_int=np.random.randint, **kwargs
 ):
     diskorect = np.zeros(size)
     img = Image.fromarray(diskorect)
     draw = ImageDraw.Draw(img)
 
     def draw_shape(max_shape, fill_value):
-        x = numba_randint(0, size[0] - 2)
-        y = numba_randint(0, size[0] - 2)
+        # x = numba_randint(0, size[0] - 2)
+        x = rng_int(0, size[0] - 2)
+        # y = numba_randint(0, size[0] - 2)
+        y = rng_int(0, size[0] - 2)
 
-        if np.random.rand() < .5:
-            W = numba_randint(1, max_shape[0])
-            L = numba_randint(1, max_shape[1])
+        if rng_float() < .5:
+            # W = numba_randint(1, max_shape[0])
+            W = rng_int(1, max_shape[0])
+            # L = numba_randint(1, max_shape[1])
+            L = rng_int(1, max_shape[1])
 
-            angle = numba_rand() * 45
+            # angle = numba_rand() * 45
+            angle = rng_float() * 45
             draw_poly(draw, get_rect(x, y, W, L, angle), fill_value=fill_value)
 
         else:
-            rx = numba_randint(1, max_shape[0]//2)
-            ry = numba_randint(1, max_shape[1]//2)
+            # rx = numba_randint(1, max_shape[0]//2)
+            rx = rng_int(1, max_shape[0]//2)
+            # ry = numba_randint(1, max_shape[1]//2)
+            ry = rng_int(1, max_shape[1]//2)
             draw_ellipse(draw, np.array([x, y]), (rx, ry), fill_value=fill_value)
 
     for _ in range(n_shapes):
@@ -94,8 +123,10 @@ def get_random_rotated_diskorect(
         draw_shape(max_shape=max_shape_holes, fill_value=0)
 
     diskorect = np.asarray(img) + 0
-    diskorect[numba_rand_shape_2d(*diskorect.shape) < noise_proba] = 1
-    diskorect = numba_invert_proba(diskorect, p_invert)
+    diskorect[rand_shape_2d(diskorect.shape, rng_float=rng_float) < noise_proba] = 1
+    diskorect = invert_proba(diskorect, p_invert, rng_float=rng_float)
+    # diskorect[numba_rand_shape_2d(*diskorect.shape) < noise_proba] = 1
+    # diskorect = numba_invert_proba(diskorect, p_invert)
 
     diskorect = set_borders_to(diskorect, border, value=0)
     # diskorect[:border[0], :] = 0
