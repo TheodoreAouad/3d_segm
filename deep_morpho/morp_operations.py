@@ -478,6 +478,34 @@ class ParallelMorpOperations:
             ]
         )
 
+    @staticmethod
+    def remove_isolated_points():
+        selem1 = np.zeros((3, 3))
+        selem1[1, 1] = 1
+
+        selem2 = np.ones((3, 3))
+        selem2[1:-1, 1:-1] = 0
+
+        identity = ('dilation', ('identity', 3), False)
+        return ParallelMorpOperations(
+            name='remove_isolated_points',
+            operations=[
+                [
+                    [identity, 'union'],
+                    [identity, 'union'],
+                    [identity, 'union'],
+                    [identity, 'union'],
+                ],
+                [
+                    [identity, ('erosion', selem1, True), identity, identity, ('intersection', [0, 1])],
+                    [identity, identity, identity, ('dilation', selem2, False), ('intersection', [2, 3])],
+                ],
+                [
+                    [identity, identity, 'union']
+                ]
+            ]
+        )
+
     @property
     def ui_arrays(self):
         ui_ars = []

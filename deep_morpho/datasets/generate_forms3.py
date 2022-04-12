@@ -9,7 +9,10 @@ from general.utils import set_borders_to
 
 
 def rand_shape_2d(shape, rng_float=lambda shape: np.random.rand(shape[0], shape[1])):
-    return rng_float(shape)
+    try:
+        return rng_float(shape)
+    except TypeError:
+        return rng_float(*shape)
 
 
 def straight_rect(width, height):
