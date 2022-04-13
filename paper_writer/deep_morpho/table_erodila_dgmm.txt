@@ -1,0 +1,96 @@
+\newcommand{\dileroelt}[4]{
+    \begin{minipage}{.12\linewidth}
+        \ifstrequal{#2}{ok}{
+          \center{\textcolor{blue}{\checkmark}}
+          }{
+            \center{\textcolor{red}{$\times$}}
+        }
+          \includegraphics[width=\textwidth]{#1}
+          $\R ~~ #3$
+          $\mathbb{B} ~~ #4$
+    \end{minipage}
+}        
+
+
+     \begin{tabular}{ | c | c | c | c | c | c | c | c | c | c |}
+        \hline
+        Dataset & \multicolumn{3}{c|}{Diskorect}  & \multicolumn{3}{c|}{MNIST} & \multicolumn{3}{c|}{Inverted MNIST} \\
+        \hline
+        Operation & Disk & Stick & Cross & Disk & Stick & Cross  & Disk & Stick & Cross \\
+        \hline
+        Target
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth,left]{selem_results/true_disk7.eps}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_hstick7.eps}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_dcross7.eps}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_disk5.eps}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_hstick5.eps}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_dcross5.eps}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_disk5.eps}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_hstick5.eps}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_dcross5.eps}
+        \end{minipage}
+        \\        
+        \hline
+        Dilation $\dil{}{}$
+        & 
+        \dileroelt{selem_results/diskorect_dilation_disk.eps}{ok}{0.000}{0.000}
+        & 
+        \dileroelt{selem_results/diskorect_dilation_hstick.eps}{ok}{0.000}{0.000}
+        & 
+        \dileroelt{selem_results/diskorect_dilation_dcross.eps}{ok}{0.000}{0.000}
+        & 
+        \dileroelt{selem_results/mnist_dilation_disk.eps}{ok}{0.000}{0.000}
+        & 
+        \dileroelt{selem_results/mnist_dilation_hstick.eps}{ok}{0.000}{0.000}
+        & 
+        \dileroelt{selem_results/mnist_dilation_dcross.eps}{ko}{0.000}{0.000}
+        & 
+        \dileroelt{selem_results/inverted_mnist_dilation_disk.eps}{ok}{0.000}{0.000}
+        & 
+        \dileroelt{selem_results/inverted_mnist_dilation_hstick.eps}{ok}{0.000}{0.000}
+        & 
+        \dileroelt{selem_results/inverted_mnist_dilation_dcross.eps}{ko}{0.000}{0.000}
+                
+        \\       
+        \hline
+        Erosion $\ero{}{}$
+        & 
+        \dileroelt{selem_results/diskorect_erosion_disk.eps}{ko}{0.000}{0.000}
+        & 
+        \dileroelt{selem_results/diskorect_erosion_hstick.eps}{ok}{0.000}{0.000}
+        & 
+        \dileroelt{selem_results/diskorect_erosion_dcross.eps}{ok}{0.000}{0.000}
+        & 
+        \dileroelt{selem_results/mnist_erosion_disk.eps}{ok}{0.001}{0.000}
+        & 
+        \dileroelt{selem_results/mnist_erosion_hstick.eps}{ok}{0.000}{0.000}
+        & 
+        \dileroelt{selem_results/mnist_erosion_dcross.eps}{ko}{0.000}{0.000}
+        & 
+        \dileroelt{selem_results/inverted_mnist_erosion_disk.eps}{ko}{0.000}{0.004}
+        & 
+        \dileroelt{selem_results/inverted_mnist_erosion_hstick.eps}{ok}{0.001}{0.001}
+        & 
+        \dileroelt{selem_results/inverted_mnist_erosion_dcross.eps}{ok}{0.000}{0.000}
+        \\
+        \hline
+      \end{tabular}
+
+

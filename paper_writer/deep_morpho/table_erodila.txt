@@ -37,66 +37,66 @@
         Dilation $\dil{}{}$
         & \hspace{-0.4cm}
         \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_dilation_disk.png}\textcolor{green}{\checkmark}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_dilation_disk.png}ok
           
           \vspace{-0.6cm}
           \center{{\tiny ${0.000}$}}
         \end{subfigure}
         & \hspace{-0.4cm}
         \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_dilation_stick.png}\textcolor{green}{\checkmark}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_dilation_stick.png}CONVERGED0_diskorect_dilation_stick
+          
+          \vspace{-0.6cm}
+          \center{{\tiny ${ERROR_diskorect_dilation_stick}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_dilation_cross.png}CONVERGED0_diskorect_dilation_cross
+          
+          \vspace{-0.6cm}
+          \center{{\tiny ${ERROR_diskorect_dilation_cross}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_dilation_disk.png}ok
           
           \vspace{-0.6cm}
           \center{{\tiny ${0.000}$}}
         \end{subfigure}
         & \hspace{-0.4cm}
         \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_dilation_cross.png}\textcolor{red}{$\times$}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_dilation_stick.png}CONVERGED0_mnist_dilation_stick
           
           \vspace{-0.6cm}
-          \center{{\tiny ${0.000}$}}
+          \center{{\tiny ${ERROR_mnist_dilation_stick}$}}
         \end{subfigure}
         & \hspace{-0.4cm}
         \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_dilation_disk.png}\textcolor{red}{$\times$}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_dilation_cross.png}CONVERGED0_mnist_dilation_cross
           
           \vspace{-0.6cm}
-          \center{{\tiny ${0.000}$}}
-        \end{subfigure}
-        & \hspace{-0.4cm}
-        \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_dilation_stick.png}\textcolor{green}{\checkmark}
-          
-          \vspace{-0.6cm}
-          \center{{\tiny ${0.000}$}}
-        \end{subfigure}
-        & \hspace{-0.4cm}
-        \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_dilation_cross.png}\textcolor{red}{$\times$}
-          
-          \vspace{-0.6cm}
-          \center{{\tiny ${0.000}$}}
+          \center{{\tiny ${ERROR_mnist_dilation_cross}$}}
         \end{subfigure}
                 & \hspace{-0.4cm}
                 \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_dilation_disk.png}\textcolor{red}{$\times$}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_dilation_disk.png}ok
           
           \vspace{-0.6cm}
           \center{{\tiny ${0.000}$}}
         \end{subfigure}
         & \hspace{-0.4cm}
         \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_dilation_stick.png}\textcolor{green}{\checkmark}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_dilation_stick.png}CONVERGED0_inverted_mnist_dilation_stick
           
           \vspace{-0.6cm}
-          \center{{\tiny ${0.000}$}}
+          \center{{\tiny ${ERROR_inverted_mnist_dilation_stick}$}}
         \end{subfigure}
         & \hspace{-0.4cm}
         \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_dilation_cross.png}\textcolor{red}{$\times$}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_dilation_cross.png}CONVERGED0_inverted_mnist_dilation_cross
           
           \vspace{-0.6cm}
-          \center{{\tiny ${0.000}$}}
+          \center{{\tiny ${ERROR_inverted_mnist_dilation_cross}$}}
         \end{subfigure}
         
         \\       
@@ -104,66 +104,66 @@
         Erosion $\ero{}{}$
         & \hspace{-0.4cm}
         \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_erosion_disk.png}\textcolor{green}{\checkmark}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_erosion_disk.png}ko
           
           \vspace{-0.6cm}
           \center{{\tiny ${0.000}$}}
         \end{subfigure}
         & \hspace{-0.4cm}
         \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_erosion_stick.png}\textcolor{green}{\checkmark}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_erosion_stick.png}CONVERGED0_diskorect_erosion_stick
+          
+          \vspace{-0.6cm}
+          \center{{\tiny ${ERROR_diskorect_erosion_stick}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/diskorect_erosion_cross.png}CONVERGED0_diskorect_erosion_cross
+          
+          \vspace{-0.6cm}
+          \center{{\tiny ${ERROR_diskorect_erosion_cross}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_erosion_disk.png}ok
+          
+          \vspace{-0.6cm}
+          \center{{\tiny ${0.001}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_erosion_stick.png}CONVERGED0_mnist_erosion_stick
+          
+          \vspace{-0.6cm}
+          \center{{\tiny ${ERROR_mnist_erosion_stick}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/mnist_erosion_cross.png}CONVERGED0_mnist_erosion_cross
+          
+          \vspace{-0.6cm}
+          \center{{\tiny ${ERROR_mnist_erosion_cross}$}}
+        \end{subfigure}
+        & \hspace{-0.4cm}
+        \begin{subfigure}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_erosion_disk.png}ko
           
           \vspace{-0.6cm}
           \center{{\tiny ${0.000}$}}
         \end{subfigure}
         & \hspace{-0.4cm}
         \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/diskorect_erosion_cross.png}\textcolor{green}{\checkmark}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_erosion_stick.png}CONVERGED0_inverted_mnist_erosion_stick
           
           \vspace{-0.6cm}
-          \center{{\tiny ${0.000}$}}
+          \center{{\tiny ${ERROR_inverted_mnist_erosion_stick}$}}
         \end{subfigure}
         & \hspace{-0.4cm}
         \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_erosion_disk.png}\textcolor{red}{$\times$}
+          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_erosion_cross.png}CONVERGED0_inverted_mnist_erosion_cross
           
           \vspace{-0.6cm}
-          \center{{\tiny ${0.000}$}}
-        \end{subfigure}
-        & \hspace{-0.4cm}
-        \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_erosion_stick.png}\textcolor{green}{\checkmark}
-          
-          \vspace{-0.6cm}
-          \center{{\tiny ${0.000}$}}
-        \end{subfigure}
-        & \hspace{-0.4cm}
-        \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/mnist_erosion_cross.png}\textcolor{red}{$\times$}
-          
-          \vspace{-0.6cm}
-          \center{{\tiny ${0.000}$}}
-        \end{subfigure}
-        & \hspace{-0.4cm}
-        \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_erosion_disk.png}\textcolor{red}{$\times$}
-          
-          \vspace{-0.6cm}
-          \center{{\tiny ${0.000}$}}
-        \end{subfigure}
-        & \hspace{-0.4cm}
-        \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_erosion_stick.png}\textcolor{green}{\checkmark}
-          
-          \vspace{-0.6cm}
-          \center{{\tiny ${0.000}$}}
-        \end{subfigure}
-        & \hspace{-0.4cm}
-        \begin{subfigure}{.12\linewidth}
-          \includegraphics[width=\textwidth]{selem_results3/inverted_mnist_erosion_cross.png}\textcolor{red}{$\times$}
-          
-          \vspace{-0.6cm}
-          \center{{\tiny ${0.000}$}}
+          \center{{\tiny ${ERROR_inverted_mnist_erosion_cross}$}}
         \end{subfigure}
         \\
         \hline

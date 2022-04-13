@@ -18,7 +18,7 @@ def load_args(path: str) -> Dict:
         "n_atoms",
         "atomic_element",
         "kernel_size",
-        "init_weight_identity",
+        "init_weight_mode",
         "activation_P",
         "constant_activation_P",
         "constant_weight_P",
@@ -36,6 +36,7 @@ def load_args(path: str) -> Dict:
     # args['loss'] = parse_yaml_dict_loss(yaml_str)
     args['optimizer'] = parse_yaml_dict_optimizer(yaml_str)
     args['operations'] = parse_yaml_dict_operations(yaml_str)
+    args['loss_data'] = parse_yaml_dict_loss_data(yaml_str)
 
     for key in all_keys_line:
         args[key] = parse_yaml_dict_key_line(yaml_str, key)
@@ -61,6 +62,10 @@ def parse_yaml_dict_key_line(yaml_str: str, key: str) -> Any:
 
 def parse_yaml_dict_loss(yaml_str: str) -> Any:
     return regex_find_or_none(r"\n?loss[^\n]+\.(\w+)\n", yaml_str)
+
+
+def parse_yaml_dict_loss_data(yaml_str: str) -> Any:
+    return regex_find_or_none(r"\n? loss_data[^\n]+\.(\w+)\n", yaml_str)
 
 
 def parse_yaml_dict_optimizer(yaml_str: str) -> Any:

@@ -23,3 +23,10 @@ class RandomObservable(Observable):
         trainer.logger.experiment.add_scalar('random/numpy', np.random.rand(), trainer.global_step)
         trainer.logger.experiment.add_scalar('random/random', random.random(), trainer.global_step)
         trainer.logger.experiment.add_scalar('random/torch', torch.rand(1), trainer.global_step)
+
+
+class CheckSeed(Observable):
+    def on_batch_start(self, trainer, *args, **kwargs):
+        trainer.logger.experiment.add_scalar('random/numpy', np.random.rand(), trainer.global_step)
+        trainer.logger.experiment.add_scalar('random/random', random.random(), trainer.global_step)
+        trainer.logger.experiment.add_scalar('random/torch', torch.rand(1), trainer.global_step)

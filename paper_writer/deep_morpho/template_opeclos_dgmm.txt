@@ -1,0 +1,99 @@
+\newcommand{\opecloselt}[6]{
+    \begin{minipage}{.12\linewidth}
+        \ifstrequal{#3}{ok}{
+          \center{\textcolor{blue}{\checkmark}}
+          }{
+            \center{\textcolor{red}{$\times$}}
+        }
+          \includegraphics[width=\textwidth]{#1}
+        
+         \ifstrequal{#4}{ok}{
+          \center{\textcolor{blue}{\checkmark}}
+          }{
+            \center{\textcolor{red}{$\times$}}
+        }
+          \includegraphics[width=\textwidth]{#2}
+          $\R ~~ #5$
+          $\mathbb{B} ~~ #6$
+    \end{minipage}
+}        
+
+          \begin{tabular}{ | c | c | c | c | c | c | c | c | c | c |}
+        \hline
+        Dataset & \multicolumn{3}{c|}{Diskorect}  & \multicolumn{3}{c|}{MNIST} & \multicolumn{3}{c|}{Inverted MNIST} \\
+        \hline
+        Operation & Disk & Stick & Cross & Disk & Stick & Cross & Disk & Stick & Cross \\
+        \hline
+        Target
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_disk7.eps}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_hstick7.eps}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_dcross7.eps}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_disk7.eps}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_hstick7.eps}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_dcross7.eps}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_disk7.eps}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_hstick7.eps}
+        \end{minipage}
+        & \begin{minipage}{.12\linewidth}
+          \includegraphics[width=\textwidth]{selem_results/true_dcross7.eps}
+        \end{minipage}
+        \\
+        \hline
+        Opening $\ope{}{}$
+        & 
+        \opecloselt{selem_results/diskorect_opening_disk1.eps}{selem_results/diskorect_opening_disk2.eps}{CONVERGED0_diskorect_opening_disk}{CONVERGED1_diskorect_opening_disk}{ERROR_diskorect_opening_disk}{ERROR_binary_diskorect_opening_disk}
+        & 
+        \opecloselt{selem_results/diskorect_opening_hstick1.eps}{selem_results/diskorect_opening_hstick2.eps}{CONVERGED0_diskorect_opening_hstick}{CONVERGED1_diskorect_opening_hstick}{ERROR_diskorect_opening_hstick}{ERROR_binary_diskorect_opening_hstick}
+        & 
+        \opecloselt{selem_results/diskorect_opening_dcross1.eps}{selem_results/diskorect_opening_dcross2.eps}{CONVERGED0_diskorect_opening_dcross}{CONVERGED1_diskorect_opening_dcross}{ERROR_diskorect_opening_dcross}{ERROR_binary_diskorect_opening_dcross}
+        & 
+        \opecloselt{selem_results/mnist_opening_disk1.eps}{selem_results/mnist_opening_disk2.eps}{CONVERGED0_mnist_opening_disk}{CONVERGED1_mnist_opening_disk}{ERROR_mnist_opening_disk}{ERROR_binary_mnist_opening_disk}
+        & 
+        \opecloselt{selem_results/mnist_opening_hstick1.eps}{selem_results/mnist_opening_hstick2.eps}{CONVERGED0_mnist_opening_hstick}{CONVERGED1_mnist_opening_hstick}{ERROR_mnist_opening_hstick}{ERROR_binary_mnist_opening_hstick}
+        & 
+        \opecloselt{selem_results/mnist_opening_dcross1.eps}{selem_results/mnist_opening_dcross2.eps}{CONVERGED0_mnist_opening_dcross}{CONVERGED1_mnist_opening_dcross}{ERROR_mnist_opening_dcross}{ERROR_binary_mnist_opening_dcross}
+        & 
+        \opecloselt{selem_results/inverted_mnist_opening_disk1.eps}{selem_results/inverted_mnist_opening_disk2.eps}{CONVERGED0_inverted_mnist_opening_disk}{CONVERGED1_inverted_mnist_opening_disk}{ERROR_inverted_mnist_opening_disk}{ERROR_binary_inverted_mnist_opening_disk}
+        & 
+        \opecloselt{selem_results/inverted_mnist_opening_hstick1.eps}{selem_results/inverted_mnist_opening_hstick2.eps}{CONVERGED0_inverted_mnist_opening_hstick}{CONVERGED1_inverted_mnist_opening_hstick}{ERROR_inverted_mnist_opening_hstick}{ERROR_binary_inverted_mnist_opening_hstick}
+        & 
+        \opecloselt{selem_results/inverted_mnist_opening_dcross1.eps}{selem_results/inverted_mnist_opening_dcross2.eps}{CONVERGED0_inverted_mnist_opening_dcross}{CONVERGED1_inverted_mnist_opening_dcross}{ERROR_inverted_mnist_opening_dcross}{ERROR_binary_inverted_mnist_opening_dcross}
+        \\
+        \hline
+        Closing $\clos{}{}$
+        & 
+        \opecloselt{selem_results/diskorect_closing_disk1.eps}{selem_results/diskorect_closing_disk2.eps}{CONVERGED0_diskorect_closing_disk}{CONVERGED1_diskorect_closing_disk}{ERROR_diskorect_closing_disk}{ERROR_binary_diskorect_closing_disk}
+        & 
+        \opecloselt{selem_results/diskorect_closing_hstick1.eps}{selem_results/diskorect_closing_hstick2.eps}{CONVERGED0_diskorect_closing_hstick}{CONVERGED1_diskorect_closing_hstick}{ERROR_diskorect_closing_hstick}{ERROR_binary_diskorect_closing_hstick}
+        & 
+        \opecloselt{selem_results/diskorect_closing_dcross1.eps}{selem_results/diskorect_closing_dcross2.eps}{CONVERGED0_diskorect_closing_dcross}{CONVERGED1_diskorect_closing_dcross}{ERROR_diskorect_closing_dcross}{ERROR_binary_diskorect_closing_dcross}
+        & 
+        \opecloselt{selem_results/mnist_closing_disk1.eps}{selem_results/mnist_closing_disk2.eps}{CONVERGED0_mnist_closing_disk}{CONVERGED1_mnist_closing_disk}{ERROR_mnist_closing_disk}{ERROR_binary_mnist_closing_disk}
+        & 
+        \opecloselt{selem_results/mnist_closing_hstick1.eps}{selem_results/mnist_closing_hstick2.eps}{CONVERGED0_mnist_closing_hstick}{CONVERGED1_mnist_closing_hstick}{ERROR_mnist_closing_hstick}{ERROR_binary_mnist_closing_hstick}
+        & 
+        \opecloselt{selem_results/mnist_closing_dcross1.eps}{selem_results/mnist_closing_dcross2.eps}{CONVERGED0_mnist_closing_dcross}{CONVERGED1_mnist_closing_dcross}{ERROR_mnist_closing_dcross}{ERROR_binary_mnist_closing_dcross}
+        & 
+        \opecloselt{selem_results/inverted_mnist_closing_disk1.eps}{selem_results/inverted_mnist_closing_disk2.eps}{CONVERGED0_inverted_mnist_closing_disk}{CONVERGED1_inverted_mnist_closing_disk}{ERROR_inverted_mnist_closing_disk}{ERROR_binary_inverted_mnist_closing_disk}
+        & 
+        \opecloselt{selem_results/inverted_mnist_closing_hstick1.eps}{selem_results/inverted_mnist_closing_hstick2.eps}{CONVERGED0_inverted_mnist_closing_hstick}{CONVERGED1_inverted_mnist_closing_hstick}{ERROR_inverted_mnist_closing_hstick}{ERROR_binary_inverted_mnist_closing_hstick}
+        &
+        \opecloselt{selem_results/inverted_mnist_closing_dcross1.eps}{selem_results/inverted_mnist_closing_dcross2.eps}{CONVERGED0_inverted_mnist_closing_dcross}{CONVERGED1_inverted_mnist_closing_dcross}{ERROR_inverted_mnist_closing_dcross}{ERROR_binary_inverted_mnist_closing_dcross}
+        \\
+        \hline
+      \end{tabular}

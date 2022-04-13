@@ -28,17 +28,17 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_53/sandbox/softplus"
     # "Bimonn_exp_53/sandbox/0"
     # "test_reproducibility"
-    # "DGMM_2022/sandbox/1"
-    "Bimonn_exp_54/sandbox/0",
+    "DGMM_2022/sandbox/1"
+    # "Bimonn_exp_54/sandbox/0",
 ]
 
 
 # DATA ARGS
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
-    # 'axspa_roi',
+    'axspa_roi',
     # "mnist",
-    'diskorect',
+    # 'diskorect',
 ]
 all_args['preprocessing'] = [  # for axspa roi
     None,
@@ -72,12 +72,12 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-2,
+    1e-1,
     # 1,
 ]
 
 # if max_plus, then the loss is MSELoss
-all_args['loss_data'] = [
+all_args['loss_data_str'] = [
     # nn.BCELoss(),
     # "MaskedBCELoss",
     # "MaskedMSELoss",
@@ -98,7 +98,7 @@ all_args['num_workers'] = [
     # 0,
 ]
 all_args['freq_imgs'] = [300]
-all_args['n_epochs'] = [3]
+all_args['n_epochs'] = [6]
 
 
 # MODEL ARGS
@@ -116,17 +116,17 @@ all_args['atomic_element'] = [
     # "max_plus",
 ]
 all_args['kernel_size'] = [
-    # 7
-    "adapt",
+    7,
+    # "adapt",
 ]
 all_args['channels'] = [
-    'adapt',
-    # [
-    #     2, 2, 2, 2, 2, 2, 2, 1
-    # ]
+    # 'adapt',
+    [
+        2, 2, 2, 2, 2, 2, 1
+    ]
     # [
     #     # 1,  # input
-    #     2, 1,
+    #     2, 2, 1,
     # ]
 ]
 all_args['init_weight_mode'] = [
@@ -170,7 +170,7 @@ for idx, args in enumerate(all_args):
         args['experiment_subname'] = 'axspa_roi'
         args['freq_imgs'] = 10
         args['n_atoms'] = len(args['channels']) - 1
-        args['loss_data'] = loss_dict[args['loss_data']](border=(0, 0))
+        args['loss_data'] = loss_dict[args['loss_data_str']](border=(0, 0))
 
 
 
@@ -183,7 +183,7 @@ for idx, args in enumerate(all_args):
             # args["kernel_size"] = args["morp_operation"].selems[0][0][0].shape[0]
             args["kernel_size"] = int(max(args['morp_operation'].max_selem_shape))
 
-        args['loss_data'] = loss_dict[args['loss_data']](border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]))
+        args['loss_data'] = loss_dict[args['loss_data_str']](border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]))
         args['experiment_subname'] = f"{args['threshold_mode']['weight']}/{args['dataset_type']}/{args['morp_operation'].name}"
 
         if args['channels'] == 'adapt':

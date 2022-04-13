@@ -1,8 +1,9 @@
 def html_template():
+      # <link href="/hdd/aouadt/these/projets/3d_segm/deep_morpho/save_results_template/html_template.css" rel="stylesheet">
     return """
     <!DOCTYPE html>
     <html>
-      <link href="/hdd/aouadt/these/projets/3d_segm/deep_morpho/save_results_template/html_template.css" rel="stylesheet">
+      <style>{css_file}</style>
       <head>
         <title>{title}</title>
       </head>

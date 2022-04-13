@@ -1,0 +1,19 @@
+\newcommand{\tophatelt}[2]{
+    \begin{minipage}{.05\linewidth}
+          $\R ~ #1$
+          $\mathbb{B} ~ #2$
+    \end{minipage}
+}        
+
+    \begin{tabular}{| c | c | c | c | c | c | c | c | c | c |}
+    \hline
+         Dataset & \multicolumn{3}{c|}{Diskorect}  & \multicolumn{3}{c|}{MNIST} & \multicolumn{3}{c|}{Inverted MNIST} \\
+        \hline
+        Operation & Disk & Stick & Cross & Disk & Stick & Cross & Disk & Stick & Cross \\
+        \hline
+        White tophat $\whitehat{}{}$ & \tophatelt{0.82}{0.28}  & \tophatelt{0.97}{0.33}  & \tophatelt{0.81}{0.80}  & \tophatelt{0.00}{0.40}  & \tophatelt{0.06}{0.32}  & \tophatelt{0.78}{0.65}  & \tophatelt{0.00}{0.12}  & \tophatelt{0.13}{0.14}  & \tophatelt{0.22}{0.21} \\
+        \hline
+        Black tophat $\blackhat{}{}$ & \tophatelt{1.00}{0.31}  & \tophatelt{1.00}{0.82}  & \tophatelt{1.00}{1.00}  & \tophatelt{0.00}{0.00}  & \tophatelt{0.38}{0.00}  & \tophatelt{0.00}{0.00}  & \tophatelt{0.98}{0.76}  & \tophatelt{1.00}{0.29}  & \tophatelt{1.00}{0.26} \\
+        \hline
+    \end{tabular}
+

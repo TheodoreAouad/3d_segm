@@ -22,7 +22,7 @@ def plot_to_html(figure, close_fig=True):
     return f"<img src='data:image/png;base64, {base64_fig}'>"
 
 
-def detect_identical_values(all_args: List[Dict]) -> (List[str], List[str]):
+def detect_identical_values(all_args: List[Dict]) -> (Dict, List[str]):
     """
     Given a list of dicts, gives the keys where the values are the same.
     """
@@ -39,7 +39,7 @@ def detect_identical_values(all_args: List[Dict]) -> (List[str], List[str]):
         if not bad_key:
             same_values.append(key)
 
-    return same_values, list(set(all_args[0].keys()).difference(same_values))
+    return {k: all_args[0][k] for k in same_values}, list(set(all_args[0].keys()).difference(same_values))
 
 
 def load_png_as_fig(path: str, **kwargs):

@@ -13,16 +13,20 @@ from .load_args import load_args
 class DisplayResults:
     hrefs = {}
 
-    def __init__(self):
-        pass
+    def __init__(self, css_file='deep_morpho/save_results_template/html_template.css'):
+        if isinstance(css_file, str):
+            with open('deep_morpho/save_results_template/html_template.css', 'r') as f:
+                self.css_content = f.read()
+        else:
+            self.css_content = ''
 
-    def write_results(self, results, changing_args):
+    def write_results(self, i, results, changing_args):
         results_html = ''
 
         # Arguments
         results_html += (
             f"<details id='{results['tb_path'].replace('/', '_')}' open>"
-            f"<summary><h3 style='display: contents;'>{results['tb_path']}</h3></summary>"  # tb
+            f"<summary><h3 style='display: contents;'>{i+1} - {results['tb_path']}</h3></summary>"  # tb
             f"<p>{dict({k: results['args'][k] for k in changing_args})}</p>"  # args
         )
 
@@ -82,13 +86,14 @@ class DisplayResults:
         results_html = ""
 
         for i, results in enumerate(results_dict):
-            results_html += self.write_results(results, changing_args)
+            results_html += self.write_results(i, results, changing_args)
 
         return results_html
 
-    def write_table(self, results, changing_args):
+    def write_table(self, i, results, changing_args):
         table_html = ""
 
+        table_html += f"<td>{i+1}</td>"
         table_html += f"<td><a href='#{results['tb_path'].replace('/', '_')}'>{results['tb_path']}</a></td>"
         for arg in changing_args:
             table_html += f"<td>{results['args'][arg]}</td>"
@@ -103,6 +108,7 @@ class DisplayResults:
         table_html = "<table>"
 
         table_html += "<thread><thead><tr>"
+        table_html += "<th>nb</th>"
         table_html += "<th>path</th>"
         for arg in changing_args + ['dice', 'baseline dice', 'binary mode dice', "convergence dice"]:
             table_html += f"<th>{arg}</th>"
@@ -111,7 +117,7 @@ class DisplayResults:
         table_html += "<tbody>"
         for i, results in enumerate(results_dict):
             table_html += "<tr>"
-            table_html += self.write_table(results, changing_args)
+            table_html += self.write_table(i, results, changing_args)
             table_html += "</tr>"
         table_html += "</tbody>"
 
@@ -130,6 +136,7 @@ class DisplayResults:
 
 
         html = html.format(
+            css_file=self.css_content,
             title=title,
             tb_paths=tb_paths,
             global_args=global_args,
