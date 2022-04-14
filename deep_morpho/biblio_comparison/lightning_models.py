@@ -12,7 +12,6 @@ class LightningLMorph(NetLightning):
         learning_rate: float,
         loss: Callable,
         optimizer: Callable,
-        output_dir: str,
         optimizer_args: Dict = {},
         observables: List["Observable"] = [],
     ):
@@ -21,7 +20,6 @@ class LightningLMorph(NetLightning):
             learning_rate=learning_rate,
             loss=loss,
             optimizer=optimizer,
-            output_dir=output_dir,
             optimizer_args=optimizer_args,
             observables=observables,
         )
@@ -36,7 +34,6 @@ class LightningSMorph(NetLightning):
         learning_rate: float,
         loss: Callable,
         optimizer: Callable,
-        output_dir: str,
         optimizer_args: Dict = {},
         observables: List["Observable"] = [],
     ):
@@ -45,7 +42,6 @@ class LightningSMorph(NetLightning):
             learning_rate=learning_rate,
             loss=loss,
             optimizer=optimizer,
-            output_dir=output_dir,
             optimizer_args=optimizer_args,
             observables=observables,
         )
@@ -60,7 +56,6 @@ class LightningAdaptativeMorphologicalLayer(NetLightning):
         learning_rate: float,
         loss: Callable,
         optimizer: Callable,
-        output_dir: str,
         optimizer_args: Dict = {},
         observables: List["Observable"] = [],
     ):
@@ -69,7 +64,6 @@ class LightningAdaptativeMorphologicalLayer(NetLightning):
             learning_rate=learning_rate,
             loss=loss,
             optimizer=optimizer,
-            output_dir=output_dir,
             optimizer_args=optimizer_args,
             observables=observables,
         )

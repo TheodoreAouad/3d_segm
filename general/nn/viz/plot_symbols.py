@@ -1,5 +1,5 @@
 import numpy as np
-from matplotlib.patches import Arc
+from matplotlib.patches import Arc, Ellipse
 
 
 def get_radius_union_intersection(height, prop_arc):
@@ -8,6 +8,8 @@ def get_radius_union_intersection(height, prop_arc):
 
 def _plot_union_intersection_on_ax(op, ax, center, width=1, height=1, prop_arc=.3, draw_circle=True, **kwargs):
     kwargs['color'] = kwargs.get('color', 'k')
+    fill = kwargs.get('fill', True)
+    fill_color = kwargs.get('fill_color', 'white')
 
     center = np.array(center)
 
@@ -19,15 +21,18 @@ def _plot_union_intersection_on_ax(op, ax, center, width=1, height=1, prop_arc=.
     elif op == 'union':
         arc = Arc(center - np.array([0, height / 2]), width, height=prop_arc * height, theta1=180, theta2=0, **kwargs)
 
-    ax.plot(*segm1, **kwargs)
-    ax.plot(*segm2, **kwargs)
-
-    ax.add_patch(arc, )
 
     if draw_circle:
         circle_center = np.array([center[0], center[1]])
         radius = get_radius_union_intersection(height, prop_arc)
+        if fill:
+            ax.add_patch(Ellipse(circle_center, width=radius, height=radius, fill=True, color=fill_color))
         ax.add_patch(Arc(circle_center, width=radius, height=radius, theta1=0, theta2=360, **kwargs))
+
+    ax.plot(*segm1, **kwargs)
+    ax.plot(*segm2, **kwargs)
+
+    ax.add_patch(arc, )
 
     return ax
 

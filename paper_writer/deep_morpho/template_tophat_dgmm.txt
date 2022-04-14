@@ -1,8 +1,9 @@
 \newcommand{\tophatelt}[2]{
-    \begin{minipage}{.07\linewidth}
-          $\R ~ #1$
-          $\mathbb{B} ~ #2$
-    \end{minipage}
+    %\begin{minipage}{.07\linewidth}
+    %      $\R ~ #1$
+    %      $\mathbb{B} ~ #2$
+    %\end{minipage}
+    \makecell{$\R ~ #1$ \\ $\mathbb{B} ~ #2$}
 }        
 
     \begin{tabular}{| c | c | c | c | c | c | c | c | c | c |}
@@ -10,6 +11,14 @@
          Dataset & \multicolumn{3}{c|}{Diskorect}  & \multicolumn{3}{c|}{MNIST} & \multicolumn{3}{c|}{Inverted MNIST} \\
         \hline
         Operation & Disk & Stick & Cross & Disk & Stick & Cross & Disk & Stick & Cross \\
+        \hline
+        Dilation $\dil{}{}$ & \tophatelt{DICE_diskorect_dilation_disk}{DICE_binary_diskorect_dilation_disk}  & \tophatelt{DICE_diskorect_dilation_hstick}{DICE_binary_diskorect_dilation_hstick}  & \tophatelt{DICE_diskorect_dilation_dcross}{DICE_binary_diskorect_dilation_dcross}  & \tophatelt{DICE_mnist_dilation_disk}{DICE_binary_mnist_dilation_disk}  & \tophatelt{DICE_mnist_dilation_hstick}{DICE_binary_mnist_dilation_hstick}  & \tophatelt{DICE_mnist_dilation_dcross}{DICE_binary_mnist_dilation_dcross}  & \tophatelt{DICE_inverted_mnist_dilation_disk}{DICE_binary_inverted_mnist_dilation_disk}  & \tophatelt{DICE_inverted_mnist_dilation_hstick}{DICE_binary_inverted_mnist_dilation_hstick}  & \tophatelt{DICE_inverted_mnist_dilation_dcross}{DICE_binary_inverted_mnist_dilation_dcross} \\
+        \hline
+        Erosion $\ero{}{}$ & \tophatelt{DICE_diskorect_erosion_disk}{DICE_binary_diskorect_erosion_disk}  & \tophatelt{DICE_diskorect_erosion_hstick}{DICE_binary_diskorect_erosion_hstick}  & \tophatelt{DICE_diskorect_erosion_dcross}{DICE_binary_diskorect_erosion_dcross}  & \tophatelt{DICE_mnist_erosion_disk}{DICE_binary_mnist_erosion_disk}  & \tophatelt{DICE_mnist_erosion_hstick}{DICE_binary_mnist_erosion_hstick}  & \tophatelt{DICE_mnist_erosion_dcross}{DICE_binary_mnist_erosion_dcross}  & \tophatelt{DICE_inverted_mnist_erosion_disk}{DICE_binary_inverted_mnist_erosion_disk}  & \tophatelt{DICE_inverted_mnist_erosion_hstick}{DICE_binary_inverted_mnist_erosion_hstick}  & \tophatelt{DICE_inverted_mnist_erosion_dcross}{DICE_binary_inverted_mnist_erosion_dcross} \\
+        \hline
+        Opening $\whitehat{}{}$ & \tophatelt{DICE_diskorect_opening_disk}{DICE_binary_diskorect_opening_disk}  & \tophatelt{DICE_diskorect_opening_hstick}{DICE_binary_diskorect_opening_hstick}  & \tophatelt{DICE_diskorect_opening_dcross}{DICE_binary_diskorect_opening_dcross}  & \tophatelt{DICE_mnist_opening_disk}{DICE_binary_mnist_opening_disk}  & \tophatelt{DICE_mnist_opening_hstick}{DICE_binary_mnist_opening_hstick}  & \tophatelt{DICE_mnist_opening_dcross}{DICE_binary_mnist_opening_dcross}  & \tophatelt{DICE_inverted_mnist_opening_disk}{DICE_binary_inverted_mnist_opening_disk}  & \tophatelt{DICE_inverted_mnist_opening_hstick}{DICE_binary_inverted_mnist_opening_hstick}  & \tophatelt{DICE_inverted_mnist_opening_dcross}{DICE_binary_inverted_mnist_opening_dcross} \\
+        \hline
+        Closing $\whitehat{}{}$ & \tophatelt{DICE_diskorect_closing_disk}{DICE_binary_diskorect_closing_disk}  & \tophatelt{DICE_diskorect_closing_hstick}{DICE_binary_diskorect_closing_hstick}  & \tophatelt{DICE_diskorect_closing_dcross}{DICE_binary_diskorect_closing_dcross}  & \tophatelt{DICE_mnist_closing_disk}{DICE_binary_mnist_closing_disk}  & \tophatelt{DICE_mnist_closing_hstick}{DICE_binary_mnist_closing_hstick}  & \tophatelt{DICE_mnist_closing_dcross}{DICE_binary_mnist_closing_dcross}  & \tophatelt{DICE_inverted_mnist_closing_disk}{DICE_binary_inverted_mnist_closing_disk}  & \tophatelt{DICE_inverted_mnist_closing_hstick}{DICE_binary_inverted_mnist_closing_hstick}  & \tophatelt{DICE_inverted_mnist_closing_dcross}{DICE_binary_inverted_mnist_closing_dcross} \\
         \hline
         White tophat $\whitehat{}{}$ & \tophatelt{DICE_diskorect_white_tophat_disk}{DICE_binary_diskorect_white_tophat_disk}  & \tophatelt{DICE_diskorect_white_tophat_hstick}{DICE_binary_diskorect_white_tophat_hstick}  & \tophatelt{DICE_diskorect_white_tophat_dcross}{DICE_binary_diskorect_white_tophat_dcross}  & \tophatelt{DICE_mnist_white_tophat_disk}{DICE_binary_mnist_white_tophat_disk}  & \tophatelt{DICE_mnist_white_tophat_hstick}{DICE_binary_mnist_white_tophat_hstick}  & \tophatelt{DICE_mnist_white_tophat_dcross}{DICE_binary_mnist_white_tophat_dcross}  & \tophatelt{DICE_inverted_mnist_white_tophat_disk}{DICE_binary_inverted_mnist_white_tophat_disk}  & \tophatelt{DICE_inverted_mnist_white_tophat_hstick}{DICE_binary_inverted_mnist_white_tophat_hstick}  & \tophatelt{DICE_inverted_mnist_white_tophat_dcross}{DICE_binary_inverted_mnist_white_tophat_dcross} \\
         \hline

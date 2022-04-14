@@ -8,6 +8,7 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
 import numpy as np
 from deep_morpho.datasets.mnist_dataset import MnistMorphoDataset
+from deep_morpho.utils import set_seed
 
 
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
@@ -48,6 +49,7 @@ def get_dataloader(args):
                 random_gen_fn=args['random_gen_fn'],
                 random_gen_args=args['random_gen_args'],
                 morp_operation=args['morp_operation'],
+                seed=args['seed'],
                 device=device,
                 num_workers=args['num_workers']
             )
@@ -73,11 +75,15 @@ def get_dataloader(args):
 
 
 def main(args, logger):
+    args['seed'] = set_seed(args['batch_seed'])
+    with open(join(logger.log_dir, "seed.txt"), "w") as f:
+        f.write(f"{args['seed']}")
 
     trainloader, valloader, testloader = get_dataloader(args)
     metrics = {'dice': lambda y_true, y_pred: masked_dice(y_true, y_pred, border=(args['kernel_size'] // 2, args['kernel_size'] // 2), threshold=.5).mean()}
 
     observables_dict = {
+        "RandomObservable": obs.RandomObservable(),
         "SaveLoss": obs.SaveLoss(),
         "CalculateAndLogMetric": CalculateAndLogMetrics(
             metrics=metrics,
@@ -104,7 +110,6 @@ def main(args, logger):
         learning_rate=args['learning_rate'],
         loss=args['loss'],
         optimizer=args['optimizer'],
-        output_dir="deep_morpho/results",
         observables=observables,
     )
 

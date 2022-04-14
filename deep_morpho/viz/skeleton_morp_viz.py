@@ -42,7 +42,7 @@ class SkeletonMorpViz:
         return 2 * (
             np.array(self.in_channels) *
             np.array(self.out_channels) *
-            self.max_selem_shape
+            np.maximum(self.max_selem_shape, 5)
         ).max()
 
     def __len__(self):

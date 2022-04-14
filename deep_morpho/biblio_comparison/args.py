@@ -13,11 +13,14 @@ from .lightning_models import LightningLMorph, LightningSMorph, LightningAdaptat
 
 all_args = {}
 
+all_args['batch_seed'] = [None]
+
+
 all_args['n_try'] = [0]
 # all_args['n_try'] = range(1, 11)
 
 all_args['experiment_name'] = [
-    "ICIP_2022/biblio/0"
+    "DGMM_2022/biblio/test_repro"
 ]
 
 #########################
@@ -63,7 +66,7 @@ all_args['num_workers'] = [
     # 0,
 ]
 all_args['freq_imgs'] = [300]
-all_args['n_epochs'] = [20]
+all_args['n_epochs'] = [5]
 
 
 # MODEL ARGS
@@ -81,15 +84,16 @@ all_args['kernel_size'] = [
 ##################
 
 all_args['model'] = [
-    # "lmorph",
-    "smorph",
+    "lmorph",
+    # "smorph",
 ]
 all_args['optimizer'] = [optim.Adam]
 all_args['batch_size'] = [256]
 all_args['learning_rate'] = [1e-3*2]
 
 all_args['mnist_args'] = [
-    {"threshold": 30, "size": (50, 50), "invert_input_proba": 0}
+    # {"threshold": 30, "size": (50, 50), "invert_input_proba": 0}
+    {"threshold": 30, "size": (50, 50), "invert_input_proba": 1}
 ]
 
 all_args_lsmorph = (

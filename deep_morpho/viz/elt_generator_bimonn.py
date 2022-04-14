@@ -74,7 +74,7 @@ class EltGeneratorConnectLuiBiseBase(EltGenerator):
         width = self.infer_width(lui_elt, chin)
 
         activation_P = bise_elt.model.activation_P[chout]
-        if activation_P > 0:
+        if activation_P > 0 or width == 0:
             return ElementArrow.link_elements(bise_elt, lui_elt, width=width)
         return ElementArrowNo.link_elements(bise_elt, lui_elt, height_circle=max(self.model.kernel_size[layer_idx])*0.7, width=width)
 

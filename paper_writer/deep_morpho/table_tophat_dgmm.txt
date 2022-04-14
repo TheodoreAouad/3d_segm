@@ -1,8 +1,9 @@
 \newcommand{\tophatelt}[2]{
-    \begin{minipage}{.05\linewidth}
-          $\R ~ #1$
-          $\mathbb{B} ~ #2$
-    \end{minipage}
+    %\begin{minipage}{.07\linewidth}
+    %      $\R ~ #1$
+    %      $\mathbb{B} ~ #2$
+    %\end{minipage}
+    \makecell{$\R ~ #1$ \\ $\mathbb{B} ~ #2$}
 }        
 
     \begin{tabular}{| c | c | c | c | c | c | c | c | c | c |}
@@ -11,9 +12,17 @@
         \hline
         Operation & Disk & Stick & Cross & Disk & Stick & Cross & Disk & Stick & Cross \\
         \hline
-        White tophat $\whitehat{}{}$ & \tophatelt{0.82}{0.28}  & \tophatelt{0.97}{0.33}  & \tophatelt{0.81}{0.80}  & \tophatelt{0.00}{0.40}  & \tophatelt{0.06}{0.32}  & \tophatelt{0.78}{0.65}  & \tophatelt{0.00}{0.12}  & \tophatelt{0.13}{0.14}  & \tophatelt{0.22}{0.21} \\
+        Dilation $\dil{}{}$ & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}} \\
         \hline
-        Black tophat $\blackhat{}{}$ & \tophatelt{1.00}{0.31}  & \tophatelt{1.00}{0.82}  & \tophatelt{1.00}{1.00}  & \tophatelt{0.00}{0.00}  & \tophatelt{0.38}{0.00}  & \tophatelt{0.00}{0.00}  & \tophatelt{0.98}{0.76}  & \tophatelt{1.00}{0.29}  & \tophatelt{1.00}{0.26} \\
+        Erosion $\ero{}{}$ & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}} \\
+        \hline
+        Opening $\whitehat{}{}$ & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{0.99}}  & \tophatelt{\mathbf{1.00}}{\mathbf{0.99}}  & \tophatelt{\mathbf{0.99}}{\mathbf{0.93}}  & \tophatelt{\mathbf{1.00}}{\mathbf{0.98}}  & \tophatelt{\mathbf{0.99}}{\mathbf{0.90}} \\
+        \hline
+        Closing $\whitehat{}{}$ & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{0.92}}{\mathbf{0.87}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{0.66}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{\mathbf{1.00}}{\mathbf{0.91}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}} \\
+        \hline
+        White tophat $\whitehat{}{}$ & \tophatelt{\mathbf{0.82}}{0.28}  & \tophatelt{\mathbf{0.97}}{0.33}  & \tophatelt{\mathbf{0.81}}{0.80}  & \tophatelt{0.00}{0.40}  & \tophatelt{0.06}{0.32}  & \tophatelt{0.78}{0.65}  & \tophatelt{0.00}{0.12}  & \tophatelt{0.13}{0.14}  & \tophatelt{0.22}{0.21} \\
+        \hline
+        Black tophat $\blackhat{}{}$ & \tophatelt{\mathbf{1.00}}{0.31}  & \tophatelt{\mathbf{1.00}}{\mathbf{0.82}}  & \tophatelt{\mathbf{1.00}}{\mathbf{1.00}}  & \tophatelt{0.00}{0.00}  & \tophatelt{0.38}{0.00}  & \tophatelt{0.00}{0.00}  & \tophatelt{\mathbf{0.98}}{0.76}  & \tophatelt{\mathbf{1.00}}{0.29}  & \tophatelt{\mathbf{1.00}}{0.26} \\
         \hline
     \end{tabular}
 

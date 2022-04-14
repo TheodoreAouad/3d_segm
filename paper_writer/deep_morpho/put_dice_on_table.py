@@ -29,8 +29,17 @@ for idx in range(len(df)):
     template = template.replace(f'ERROR_{dataset}_{op}_{selem}', f'{1 - dice:.3f}')
     template = template.replace(f'ERROR_binary_{dataset}_{op}_{selem}', f'{1 - dice_binary:.3f}')
 
-    template = template.replace(f'DICE_{dataset}_{op}_{selem}', f'{dice:.2f}')
-    template = template.replace(f'DICE_binary_{dataset}_{op}_{selem}', f'{dice_binary:.2f}')
+    dice_str = f'{dice:.2f}'
+    if dice >= 0.8:
+        dice_str = '\mathbf{' + dice_str + '}'
+
+    dice_binary_str = f'{dice_binary:.2f}'
+    if dice_binary >= 0.8:
+        dice_binary_str = '\mathbf{' + dice_binary_str + '}'
+
+
+    template = template.replace(f'DICE_{dataset}_{op}_{selem}', dice_str)
+    template = template.replace(f'DICE_binary_{dataset}_{op}_{selem}', dice_binary_str)
 
 
 
