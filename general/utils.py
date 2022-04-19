@@ -5,6 +5,7 @@ import logging
 import os
 from os.path import join
 import re
+import pickle
 
 import json
 import yaml
@@ -14,6 +15,17 @@ from scipy import ndimage
 from skimage.morphology import disk, dilation, erosion, label
 from skimage.transform import warp
 from sklearn.model_selection import ParameterGrid
+
+
+def save_pickle(obj: object, path: str):
+    with open(path, "wb") as f:
+        pickle.dump(obj, f)
+
+
+def load_pickle(path: str):
+    with open(path, "rb") as f:
+        data = pickle.load(f)
+    return data
 
 
 def list_dir_joined(folder: str):

@@ -28,7 +28,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_53/sandbox/softplus"
     # "Bimonn_exp_53/sandbox/0"
     # "test_reproducibility"
-    "DGMM_2022/sandbox/1"
+    # "DGMM_2022/sandbox/1"
+    "test"
     # "Bimonn_exp_54/sandbox/0",
 ]
 

@@ -2,7 +2,6 @@ from typing import Dict, Callable, List
 
 from .bimonn import BiMoNN
 from general.nn.pytorch_lightning_module.obs_lightning_module import NetLightning
-from ..loss import ThresholdPenalization
 
 
 class LightningBiMoNN(NetLightning):

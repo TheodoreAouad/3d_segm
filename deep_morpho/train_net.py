@@ -19,7 +19,7 @@ from deep_morpho.models import LightningBiMoNN, BiSE, COBiSE, BiSEC, COBiSEC
 import deep_morpho.observables as obs
 from deep_morpho.observables.check_morp_op import ShowClosestSelemBinary
 from general.nn.observables import CalculateAndLogMetrics
-from general.utils import format_time, log_console, create_logger, save_yaml
+from general.utils import format_time, log_console, create_logger, save_yaml, save_pickle
 from general.nn.utils import train_val_test_split
 from deep_morpho.metrics import masked_dice
 from deep_morpho.args import all_args
@@ -264,6 +264,7 @@ if __name__ == '__main__':
         logger = TensorBoardLogger("deep_morpho/results", name=name, default_hp_metric=False)
         code_saver.save_in_final_file(join(logger.log_dir, 'code'))
         save_yaml(args, join(logger.log_dir, 'args.yaml'))
+        save_pickle(args, join(logger.log_dir, 'args.pkl'))
 
 
         console_logger = create_logger(
