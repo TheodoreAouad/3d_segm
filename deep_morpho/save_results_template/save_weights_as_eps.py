@@ -12,17 +12,20 @@ from deep_morpho.models import LightningBiMoNN
 
 # TB_PATHS = (
 #     # sorted(list_dir_joined('deep_morpho/results/Bimonn_exp_32/dilation_size_7x7_bise')) +
-#     # sorted(list_dir_joined('deep_morpho/results/Bimonn_exp_32/erosion_size_7x7_bise')) + 
+#     # sorted(list_dir_joined('deep_morpho/results/Bimonn_exp_32/erosion_size_7x7_bise')) +
 #     # sorted(list_dir_joined('deep_morpho/results/Bimonn_exp_32/opening_size_7x7_bise')) +
-#     # sorted(list_dir_joined('deep_morpho/results/Bimonn_exp_32/closing_size_7x7_bise')) 
+#     # sorted(list_dir_joined('deep_morpho/results/Bimonn_exp_32/closing_size_7x7_bise'))
 #     # sorted(list_dir_joined('deep_morpho/results/Bimonn_exp_46/opening_bisel'))
 #     sum([sorted(list_dir_joined(f'deep_morpho/results/ICIP_2022/sandbox/4/diskorect/{op}/bisel')) for op in ['dilation', 'erosion', 'opening', 'closing']], start=[]) +
 #     sum([sorted(list_dir_joined(f'deep_morpho/results/ICIP_2022/sandbox/5/inverted_mnist/{op}/bisel')) for op in ['dilation', 'erosion', 'opening', 'closing']], start=[]) +
 #     sum([sorted(list_dir_joined(f'deep_morpho/results/ICIP_2022/sandbox/5/mnist/{op}/bisel')) for op in ['dilation', 'erosion', 'opening', 'closing']], start=[])
 # )
 
-PATH_OUT = "deep_morpho/weights_eps/dgmm_2022"
+EXT = "png"
+# EXT = "eps"
+PATH_OUT = f"deep_morpho/weights_{EXT}/dgmm_2022"
 pathlib.Path(PATH_OUT).mkdir(exist_ok=True, parents=True)
+pathlib.Path(PATH_OUT.replace("weights", "binarized")).mkdir(exist_ok=True, parents=True)
 
 
 def save_img(ar, savepath):
@@ -68,12 +71,17 @@ for dataset in ['diskorect', 'mnist', 'inverted_mnist']:
             path_weights = os.listdir(join(tb_path, "checkpoints"))[0]
 
             model = LightningBiMoNN.load_from_checkpoint(join(tb_path, 'checkpoints', path_weights))
+            selem1, operation, distance = model.model.layer1.bises[0].find_closest_selem_and_operation_chan(0, v1=0, v2=1)
+
 
             save_img(
                 model.model.layer1.normalized_weight.detach().cpu()[0, 0].numpy(),
-                join(PATH_OUT, f"{dataset}_{op}_{selem}.eps")
+                join(PATH_OUT, f"{dataset}_{op}_{selem}.{EXT}")
             )
-
+            save_img(
+                selem1,
+                join(PATH_OUT, f"{dataset}_{op}_{selem}.{EXT}").replace("weights", "binarized")
+            )
 
         for op in ['opening', 'closing']:
         # pathlib.Path(join(PATH_OUT, dataset, op)).mkdir(exist_ok=True, parents=True)
@@ -83,11 +91,23 @@ for dataset in ['diskorect', 'mnist', 'inverted_mnist']:
 
             model = LightningBiMoNN.load_from_checkpoint(join(tb_path, 'checkpoints', path_weights))
 
+            selem1, _, _ = model.model.layer1.bises[0].find_closest_selem_and_operation_chan(0, v1=0, v2=1)
+            selem2, _, _ = model.model.layer2.bises[0].find_closest_selem_and_operation_chan(0, v1=0, v2=1)
+
             save_img(
                 model.model.layer1.normalized_weight.detach().cpu()[0, 0].numpy(),
-                join(PATH_OUT, f"{dataset}_{op}_{selem}1.eps")
+                join(PATH_OUT, f"{dataset}_{op}_{selem}1.{EXT}")
             )
             save_img(
                 model.model.layer2.normalized_weight.detach().cpu()[0, 0].numpy(),
-                join(PATH_OUT, f"{dataset}_{op}_{selem}2.eps")
+                join(PATH_OUT, f"{dataset}_{op}_{selem}2.{EXT}")
+            )
+
+            save_img(
+                selem1,
+                join(PATH_OUT, f"{dataset}_{op}_{selem}1.{EXT}").replace("weights", "binarized")
+            )
+            save_img(
+                selem2,
+                join(PATH_OUT, f"{dataset}_{op}_{selem}2.{EXT}").replace("weights", "binarized")
             )

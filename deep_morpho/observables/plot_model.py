@@ -53,6 +53,6 @@ class PlotBimonn(Observable):
         pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
 
         for key, fig in self.last_figs.items():
-            fig.savefig(join(save_path, f"model_{key}.png"))
+            fig.savefig(join(final_dir, f"model_{key}.png"))
 
         return self.last_figs

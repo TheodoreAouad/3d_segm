@@ -262,10 +262,10 @@ class DisplayResults:
         return res
 
     @staticmethod
-    def update_results_PlotModel(tb_path):
+    def update_results_PlotBimonn(tb_path):
         res = {}
 
-        path_fig = join(tb_path, "observables", "PlotModel")
+        path_fig = join(tb_path, "observables", "PlotBimonn")
         if os.path.exists(path_fig):
             res['model_weights_viz'] = load_png_as_fig(join(path_fig, "model_weights.png"))
             res['model_learned_viz'] = load_png_as_fig(join(path_fig, "model_learned.png"))
@@ -329,7 +329,7 @@ class DisplayResults:
 
         # res.update(self.update_results_target_SE(join(tb_path, "target_SE")))
         res.update(self.update_results_target_operation(join(tb_path, "morp_operations")))
-        res.update(self.update_results_PlotModel(tb_path))
+        res.update(self.update_results_PlotBimonn(tb_path))
 
         return res
 

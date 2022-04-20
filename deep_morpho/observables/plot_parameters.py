@@ -67,6 +67,8 @@ class PlotWeightsBiSE(ObservableLayersChans):
         pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
         for layer_idx, layer_dict in enumerate(self.last_weights):
             for key, weight in layer_dict.items():
+                if key not in ["normalized_weights", "weights"]:
+                    continue
                 for chan_output in range(weight.shape[0]):
                     for chan_input in range(weight.shape[1]):
                         if key == "normalized_weights":
