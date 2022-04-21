@@ -7,6 +7,7 @@ import numpy as np
 
 
 from general.utils import list_dir_joined
+from deep_morpho.viz import BimonnVizualiser
 from deep_morpho.models import LightningBiMoNN
 
 
@@ -43,29 +44,28 @@ tb_path_dict = dict(
     **{str(('diskorect', 'closing', 'disk')): 'deep_morpho/results/DGMM_2022/sandbox/0/softplus/diskorect/closing/version_0'},
     **{str(('diskorect', 'closing', 'hstick')): 'deep_morpho/results/DGMM_2022/sandbox/1/softplus/diskorect/closing/version_2'},
     **{str(('diskorect', 'closing', 'dcross')): 'deep_morpho/results/DGMM_2022/sandbox/0/softplus/diskorect/closing/version_2'},
-    # [[('diskorect', 'black_tophat', selem): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/diskorect/black_tophat/version_{nb}' for selem, nb in zip(selems, [0, 5, 10])]},
-    # [[('diskorect', 'white_tophat', selem): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/diskorect/white_tophat/version_{nb}' for selem, nb in zip(selems, [18, 19, 2])]},
+    **{str(('diskorect', 'black_tophat', selem)): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/diskorect/black_tophat/version_{nb}' for selem, nb in zip(selems, [0, 5, 10])},
+    **{str(('diskorect', 'white_tophat', selem)): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/diskorect/white_tophat/version_{nb}' for selem, nb in zip(selems, [18, 19, 2])},
     # MNIST
     **{str(('mnist', 'dilation', selem)): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/mnist/dilation/version_{nb}' for selem, nb in zip(selems, [0, 1, 2])},
     **{str(('mnist', 'erosion', selem)): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/mnist/erosion/version_{nb}' for selem, nb in zip(selems, [0, 1, 2])},
     **{str(('mnist', 'opening', selem)): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/mnist/opening/version_{nb}' for selem, nb in zip(selems, [4, 1, 2])},
     **{str(('mnist', 'closing', selem)): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/mnist/closing/version_{nb}' for selem, nb in zip(selems, [0, 9, 6])},
-    # [[('mnist', 'black_tophat', selem): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/mnist/black_tophat/version_{nb}' for selem, nb in zip(selems, [0, 1, 2])]},
-    # # [[('mnist', 'white_tophat', selem): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/mnist/white_tophat/version_{nb}' for selem, nb in zip(selems, [0, 1, 2])]},
+    **{str(('mnist', 'black_tophat', selem)): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/mnist/black_tophat/version_{nb}' for selem, nb in zip(selems, [0, 1, 2])},
+    **{str(('mnist', 'white_tophat', selem)): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/mnist/white_tophat/version_{nb}' for selem, nb in zip(selems, [0, 1, 2])},
     # INVERTED MNIST
     **{str(('inverted_mnist', 'dilation', selem)): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/inverted_mnist/dilation/version_{nb}' for selem, nb in zip(selems, [0, 1, 2])},
     **{str(('inverted_mnist', 'erosion', selem)): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/inverted_mnist/erosion/version_{nb}' for selem, nb in zip(selems, [0, 1, 2])},
     **{str(('inverted_mnist', 'opening', selem)): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/inverted_mnist/opening/version_{nb}' for selem, nb in zip(selems, [3, 1, 4])},
     **{str(('inverted_mnist', 'closing', selem)): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/inverted_mnist/closing/version_{nb}' for selem, nb in zip(selems, [5, 4, 2])},
-    # [[('inverted_mnist', 'black_tophat', selem):, f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/inverted_mnist/black_tophat/version_{nb}' for selem, nb in zip(selems, [0, 1, 2])},
-    # [[('inverted_mnist', 'white_tophat', selem):, f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/inverted_mnist/white_tophat/version_{nb}' for selem, nb in zip(selems, [0, 1, 2])},
+    **{str(('inverted_mnist', 'black_tophat', selem)): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/inverted_mnist/black_tophat/version_{nb}' for selem, nb in zip(selems, [0, 1, 2])},
+    **{str(('inverted_mnist', 'white_tophat', selem)): f'deep_morpho/results/DGMM_2022/sandbox/1/softplus/inverted_mnist/white_tophat/version_{nb}' for selem, nb in zip(selems, [0, 1, 2])},
 )
 
 # DILATION
 for dataset in ['diskorect', 'mnist', 'inverted_mnist']:
     for selem in ['disk', 'hstick', 'dcross']:
         for op in ['dilation', 'erosion']:
-        # pathlib.Path(join(PATH_OUT, dataset, op)).mkdir(exist_ok=True, parents=True)
 
             tb_path = tb_path_dict[str((dataset, op, selem))]
             path_weights = os.listdir(join(tb_path, "checkpoints"))[0]
@@ -84,7 +84,6 @@ for dataset in ['diskorect', 'mnist', 'inverted_mnist']:
             )
 
         for op in ['opening', 'closing']:
-        # pathlib.Path(join(PATH_OUT, dataset, op)).mkdir(exist_ok=True, parents=True)
 
             tb_path = tb_path_dict[str((dataset, op, selem))]
             path_weights = os.listdir(join(tb_path, "checkpoints"))[0]
@@ -111,3 +110,12 @@ for dataset in ['diskorect', 'mnist', 'inverted_mnist']:
                 selem2,
                 join(PATH_OUT, f"{dataset}_{op}_{selem}2.{EXT}").replace("weights", "binarized")
             )
+
+        for op in ['black_tophat', 'white_tophat']:
+            tb_path = tb_path_dict[str((dataset, op, selem))]
+            path_weights = os.listdir(join(tb_path, "checkpoints"))[0]
+
+            model = LightningBiMoNN.load_from_checkpoint(join(tb_path, 'checkpoints', path_weights))
+
+            BimonnVizualiser(model.model, mode="weights").save_fig(join(PATH_OUT, f"{dataset}_{op}_{selem}.{EXT}"))
+            BimonnVizualiser(model.model, mode="closest").save_fig(join(PATH_OUT, f"{dataset}_{op}_{selem}.{EXT}").replace("weights", "binarized"))

@@ -1,5 +1,6 @@
 from typing import List
 import pathlib
+import matplotlib.pyplot as plt
 
 import numpy as np
 
@@ -198,10 +199,12 @@ class SkeletonMorpViz:
             return np.zeros(1)
         return np.linspace(0, height_group, 2*n_per_group + 1)[1::2]
 
-    def save_fig(self, savepath: str, **kwargs):
+    def save_fig(self, savepath: str, close_fig=True, **kwargs):
         pathlib.Path(savepath).parent.mkdir(exist_ok=True, parents=True)
         self.draw(**kwargs)
-        self.canva.fig.savefig(savepath)
+        self.canva.fig.savefig(savepath, bbox_inches='tight', pad_inches=0)
+        if close_fig:
+            plt.close(self.canva.fig)
 
     def get_fig(self, **kwargs):
         self.draw(**kwargs)
