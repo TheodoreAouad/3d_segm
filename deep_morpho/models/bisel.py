@@ -1,7 +1,6 @@
 from typing import Union, Tuple, Dict
 
 import torch
-import torch.nn as nn
 
 from .bise import BiSE
 from .lui import LUI
@@ -81,6 +80,24 @@ class BiSEL(BinaryNN):
 
         return lui_res
 
+    def forward_save(self, x):
+        output = {}
+
+        bise_res2 = torch.cat([
+            layer(x[:, chan_input:chan_input+1, ...])[:, None, ...] for chan_input, layer in enumerate(self.bises)
+        ], axis=1)
+        lui_res = torch.cat([
+            layer(bise_res2[:, :, chan_output, ...]) for chan_output, layer in enumerate(self.luis)
+        ], axis=1)
+
+        for chan_output in range(len(self.luis)):
+            output[chan_output] = lui_res[:, chan_output, ...]
+            for chan_input in range(len(self.bises)):
+                output[chan_input, chan_output] = bise_res2[:, chan_input, chan_output, ...]
+
+        output['output'] = lui_res
+
+        return output
 
     @property
     def weight(self) -> torch.Tensor:

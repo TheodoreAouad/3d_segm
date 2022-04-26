@@ -6,7 +6,6 @@ import torch.nn as nn
 
 from deep_morpho.models.bisel import BiSEL
 from general.nn.observables import Observable
-from ..models.lightning_bise import LightningBiSE, LightningBiSEC
 
 
 class ObservableLayers(Observable):
@@ -126,11 +125,6 @@ class ObservableLayers(Observable):
         if hasattr(pl_module.model, self.layer_name):
             return getattr(pl_module.model, self.layer_name)
 
-        if isinstance(pl_module, LightningBiSE):
-            return [pl_module.model]
-
-        if isinstance(pl_module, LightningBiSEC):
-            return [pl_module.model]
 
         raise NotImplementedError('Cannot automatically select layers for model. Give them manually.')
 

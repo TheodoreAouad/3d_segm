@@ -22,3 +22,6 @@ class BinaryNN(nn.Module):
             if isinstance(module, BinaryNN):
                 module.binary(mode)
         return self
+
+    def forward_save(self, x):
+        return {'output': self.forward(x)}

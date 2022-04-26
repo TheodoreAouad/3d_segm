@@ -1,6 +1,5 @@
 from typing import List, Tuple, Union, Dict
 
-import torch.nn as nn
 import numpy as np
 
 from .bise import BiSE, BiSEC
@@ -62,6 +61,23 @@ class BiMoNN(BinaryNN):
         output = self.layers[0](x)
         for layer in self.layers[1:]:
             output = layer(output)
+        return output
+
+    def forward_save(self, x):
+        """ Saves all intermediary outputs.
+        Args:
+            x (torch.Tensor): input images of size (batch_size, channel, width, height)
+
+        Returns:
+            list: list of dict. list[layer][output_lui_channel], list[layer][output_bisel_inchan, output_bisel_outchan]
+        """
+        output = {"input": x}
+        cur = self.layers[0].forward_save(x)
+        output[0] = cur
+        for layer_idx, layer in enumerate(self.layers[1:], start=1):
+            cur = layer.forward_save(cur['output'])
+            output[layer_idx] = cur
+        output["output"] = cur["output"]
         return output
 
     def get_bise_selems(self) -> Tuple[Dict[int, np.ndarray], Dict[int, str]]:
