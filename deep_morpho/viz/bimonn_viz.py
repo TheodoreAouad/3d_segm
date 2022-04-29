@@ -9,6 +9,9 @@ from .elt_generator_bimonn_forward_save import (
     EltGeneratorBiseForwardSave, EltGeneratorLuiForwardSave, EltGeneratorConnectLuiBiseForwardSave,
     EltGeneratorInitForwardSave, EltGeneratorConnectLuiBiseClosestForwardSave
 )
+from .elt_generator_bimonn_histogram import (
+    EltGeneratorBiseHistogram, EltGeneratorLuiHistogram, EltGeneratorInitHistogram
+)
 from .elt_generator_init import EltGeneratorInitCircle
 
 
@@ -80,3 +83,37 @@ class BimonnForwardVizualiser(SkeletonMorpViz):
     @property
     def max_selem_shape(self):
         return [self.input.shape[-1] for _ in range(len(self.model))]
+
+
+class BimonnHistogramVizualiser(SkeletonMorpViz):
+
+    def __init__(self, model, inpt, dpi=100, mode: str = "float", **kwargs):
+        self.model = model
+        self.dpi = dpi
+
+        assert mode in ["float", "binary"]
+        self.mode = mode
+        if mode == "float":
+            self.model.binary(False)
+            kwargs["elt_generator_connections"] = EltGeneratorConnectLuiBiseForwardSave(model=model)
+        else:
+            self.model.binary(True)
+            kwargs["elt_generator_connections"] = EltGeneratorConnectLuiBiseClosestForwardSave(model=model)
+
+        self.all_outputs = model.forward_save(inpt)
+
+        kwargs.update({
+            "elt_generator_bise": EltGeneratorBiseHistogram(self.all_outputs, dpi=dpi),
+            "elt_generator_lui": EltGeneratorLuiHistogram(self.all_outputs, dpi=dpi),
+            "elt_generator_init": EltGeneratorInitHistogram(self.all_outputs, dpi=dpi)
+        })
+
+        super().__init__(in_channels=model.in_channels, out_channels=model.out_channels, **kwargs)
+
+    @property
+    def input(self):
+        return self.all_outputs["input"]
+
+    @property
+    def max_selem_shape(self):
+        return [max(EltGeneratorBiseHistogram.default_figsize * self.dpi) for _ in range(len(self.model))]

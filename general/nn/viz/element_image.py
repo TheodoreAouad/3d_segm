@@ -20,7 +20,7 @@ class ElementImage(Element):
 
     @property
     def shape(self):
-        return np.array(self.image.shape)
+        return np.array(self.image.shape)[:2]
 
     @property
     def image(self):
