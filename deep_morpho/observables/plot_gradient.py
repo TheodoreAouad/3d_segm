@@ -43,8 +43,9 @@ class GradientWatcher(ObservableLayersChans):
 
 class PlotGradientBise(GradientWatcher):
 
-    def __init__(self, *args, freq: int = 100, **kwargs):
+    def __init__(self, *args, freq: int = 100, plot_figure=True, **kwargs):
         super().__init__(*args, freq=freq, **kwargs)
+        self.plot_figure = plot_figure
 
     def on_train_batch_end_layers_chans(
         self,
@@ -61,11 +62,12 @@ class PlotGradientBise(GradientWatcher):
     ):
         if layer.bises[chan_input].weight.grad is not None:
             grad_weights = layer.bises[chan_input].weight.grad[chan_output][0]
-            trainer.logger.experiment.add_figure(
-                f"weights_gradient/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
-                self.get_figure_gradient(grad_weights),
-                trainer.global_step
-            )
+            if self.plot_figure:
+                trainer.logger.experiment.add_figure(
+                    f"weights_gradient/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
+                    self.get_figure_gradient(grad_weights),
+                    trainer.global_step
+                )
             trainer.logger.experiment.add_histogram(
                 f"weights_gradient_hist/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
                 grad_weights,

@@ -1,4 +1,4 @@
-from deep_morpho.datasets.mnist_dataset import MnistMorphoDataset
+from deep_morpho.datasets.mnist_dataset import MnistMorphoDataset, MnistClassifDataset
 from deep_morpho.morp_operations import ParallelMorpOperations
 
 
@@ -12,7 +12,7 @@ class TestMnistMorphoDataset:
     @staticmethod
     def test_dataloader():
         dataloader = MnistMorphoDataset.get_loader(
-            batch_size=20, first_idx=0, n_inputs=1000, training=True,
+            batch_size=20, first_idx=0, n_inputs=1000, train=True,
             morp_operation=ParallelMorpOperations.erosion(('disk', 3)),
         )
         for batch in dataloader:
@@ -41,5 +41,21 @@ class TestMnistMorphoDataset:
                 [('dilation', ('dstick', 7), False), 'union'],
             ],
         ])
-        dataset = MnistMorphoDataset(n_inputs=10000, morp_operation=ParallelMorpOperations.erosion(('disk', 3)))
+        dataset = MnistMorphoDataset(n_inputs=10000, morp_operation=morp_operation)
         dataset[0]
+
+
+class TestMnistClassifDataset:
+
+    @staticmethod
+    def test_init_dataset():
+        dataset = MnistClassifDataset(n_inputs=10000)
+        dataset[0]
+
+    @staticmethod
+    def test_dataloader():
+        dataloader = MnistClassifDataset.get_loader(
+            batch_size=20, first_idx=0, n_inputs=1000, train=True,
+        )
+        for batch in dataloader:
+            pass

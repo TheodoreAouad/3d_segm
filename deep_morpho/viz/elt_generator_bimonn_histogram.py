@@ -20,12 +20,12 @@ class EltGeneratorHistogramBase(EltGenerator):
     def get_tensor_data(self, layer_idx=None, chin=None, chout=None, chan=None):
         raise NotImplementedError
 
-    def generate(self, layer_idx=None, chin=None, chout=None, chan=None, xy_coords_mean=None, **kwargs):
+    def generate(self, layer_idx=None, chin=None, chout=None, chan=None, xy_coords_mean=None, height=None, **kwargs):
         data = self.get_tensor_data(layer_idx, chin, chout, chan).cpu().detach().view(-1).numpy()
         return ElementHistogram(
             data,
             dpi=self.dpi, hist_kwargs=self.hist_kwargs,
-            imshow_kwargs={"cmap": "gray", "vmin": 0, "vmax": 1}, xy_coords_mean=xy_coords_mean, **kwargs)
+            imshow_kwargs={"cmap": "gray", "vmin": 0, "vmax": 1}, xy_coords_mean=xy_coords_mean, size=None, **kwargs)
 
 
 class EltGeneratorBiseHistogram(EltGeneratorHistogramBase):

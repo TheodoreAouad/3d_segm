@@ -40,7 +40,7 @@ class BiMoNN(BinaryNN):
         self.bises_idx = []
         self.bisecs_idx = []
         self.bisels_idx = []
-        for idx in range(len(self)):
+        for idx in range(len(self.kernel_size)):
             layer = self._make_layer(idx)
             self.layers.append(layer)
             setattr(self, f'layer{idx+1}', layer)
@@ -99,7 +99,7 @@ class BiMoNN(BinaryNN):
         return selems, operations
 
     def __len__(self):
-        return len(self.kernel_size)
+        return len(self.layers)
 
     @staticmethod
     def _init_kernel_size(kernel_size: List[Union[Tuple, int]]):
@@ -121,7 +121,7 @@ class BiMoNN(BinaryNN):
         if isinstance(atomic_element, list):
             return [s.lower() for s in atomic_element]
 
-        return [atomic_element.lower() for _ in range(len(self))]
+        return [atomic_element.lower() for _ in range(len(self.kernel_size))]
 
     def _init_attr(self, attr_name, attr_value):
         if attr_name == "kernel_size":
@@ -137,7 +137,7 @@ class BiMoNN(BinaryNN):
         if isinstance(attr_value, list):
             return attr_value
 
-        return [attr_value for _ in range(len(self))]
+        return [attr_value for _ in range(len(self.kernel_size))]
 
     def bises_kwargs_idx(self, idx):
         return dict(
@@ -231,3 +231,48 @@ class BiMoNN(BinaryNN):
             "init_bias_value", "init_weight_mode", "alpha_init", "init_value", "share_weights",
             "constant_weight_P", "constant_P_lui", "channels", "lui_kwargs",
         ]
+
+
+
+class BiMoNNClassifier(BiMoNN):
+
+    def __init__(
+        self,
+        kernel_size: List[Union[Tuple, int]],
+        n_classes: int,
+        input_size: Tuple[int],
+        final_bisel_kwargs: Dict = None,
+        *args,
+        **kwargs
+    ):
+        super().__init__(*args, kernel_size=kernel_size, **kwargs)
+        self.bisel_kwargs = self.bisels_kwargs_idx(0) if final_bisel_kwargs is None else final_bisel_kwargs
+        self.bisel_kwargs["in_channels"] = self.out_channels[-1]
+        self.bisel_kwargs["out_channels"] = n_classes
+        self.bisel_kwargs["kernel_size"] = input_size
+        self.bisel_kwargs["padding"] = 0
+        self.bisel_kwargs["lui_kwargs"]["force_identity"] = True
+        self.classification_layer = BiSEL(**self.bisel_kwargs)
+
+        self.in_channels.append(self.out_channels[-1])
+        self.out_channels.append(n_classes)
+        self.kernel_size.append(input_size)
+
+        self.layers.append(self.classification_layer)
+        self.bisels_idx.append(len(self.layers) - 1)
+
+    def forward(self, x):
+        output = super().forward(x)
+        batch_size = output.shape[0]
+        output = output.squeeze()
+        if batch_size == 1:
+            output = output.unsqueeze(0)
+        return output
+
+    def forward_save(self, x):
+        output = super().forward_save(x)
+        batch_size = output["output"].shape[0]
+        output["output"] = output["output"].squeeze()
+        if batch_size == 1:
+            output["output"] = output["output"].unsqueeze(0)
+        return output

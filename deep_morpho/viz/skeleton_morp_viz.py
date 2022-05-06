@@ -104,14 +104,15 @@ class SkeletonMorpViz:
         for chout, coord_group in enumerate(coords_group):
 
             coords_selem = self._get_coords_selem(height_group, in_channels)
+            height_selem = self._get_height_selem(coords_selem, in_channels, height_group)
             subgroup = ElementGrouper()
 
             # add bises
             for chin, coord_selem in enumerate(coords_selem):
-                self.add_bise_to_group(subgroup, layer_idx, chout, chin, coord_selem)
+                self.add_bise_to_group(subgroup, layer_idx, chout, chin, coord_selem, height_selem)
 
             # add lui layers
-            self.add_lui_to_group(subgroup, layer_idx, chout, coords_selem.mean())
+            self.add_lui_to_group(subgroup, layer_idx, chout, coords_selem.mean(), height_selem)
 
             # add connections between lui and bises
             for chin in range(in_channels):
@@ -140,11 +141,11 @@ class SkeletonMorpViz:
 
         return group
 
-    def add_bise_to_group(self, group, layer_idx, chout, chin, coord_selem) -> Element:
+    def add_bise_to_group(self, group, layer_idx, chout, chin, coord_selem, height) -> Element:
         """ Add bise to the group. Returns the element to link to the LUI.
         """
         elt = self.elt_generator_bise.generate(
-            layer_idx=layer_idx, chin=chin, chout=chout, xy_coords_mean=np.array([0, coord_selem])
+            layer_idx=layer_idx, chin=chin, chout=chout, xy_coords_mean=np.array([0, coord_selem]), height=height,
         )
 
         if elt is None:
@@ -155,13 +156,14 @@ class SkeletonMorpViz:
 
         return group
 
-    def add_lui_to_group(self, group, layer_idx, chout, coord_lui) -> Element:
+    def add_lui_to_group(self, group, layer_idx, chout, coord_lui, height) -> Element:
         # Move the part of the shape with the LUI element?
-        shape = self.lui_radius_factor * np.array([self.max_selem_shape[layer_idx], self.max_selem_shape[layer_idx]])
+        shape = self.lui_radius_factor * np.array([height, height])
+        # shape = self.lui_radius_factor * np.array([self.max_selem_shape[layer_idx], self.max_selem_shape[layer_idx]])
         elt = self.elt_generator_lui.generate(
             layer_idx=layer_idx,
             chout=chout,
-            xy_coords_mean=(self.lui_horizontal_factor * self.max_selem_shape[layer_idx], coord_lui),
+            xy_coords_mean=(self.lui_horizontal_factor * height, coord_lui),
             shape=shape,
         )
 
@@ -189,10 +191,16 @@ class SkeletonMorpViz:
 
         return group
 
-    def _get_height_group(self, coords_group, n_groups):
+    def _get_height(self, coords, n_groups, shrinking_factor, box_height):
         if n_groups > 1:
-            return (coords_group[1] - coords_group[0])*.7
-        return self.box_height
+            return (coords[1] - coords[0]) * shrinking_factor
+        return box_height
+
+    def _get_height_group(self, coords_group, n_groups):
+        return self._get_height(coords_group, n_groups, .7, self.box_height)
+
+    def _get_height_selem(self, coords_selem, n_selems, height_group):
+        return self._get_height(coords_selem, n_selems, .95, height_group)
 
     def _get_coords_selem(self, height_group, n_per_group):
         if n_per_group == 1:

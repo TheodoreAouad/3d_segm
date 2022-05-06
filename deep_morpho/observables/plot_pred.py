@@ -88,3 +88,80 @@ class PlotPreds(Observable):
                 self.saved_fig[state].savefig(join(final_dir, f"input_pred_target_{state}.png"))
 
         return self.saved_fig
+
+
+class PlotPredsClassif(Observable):
+
+    def __init__(self, freq: Dict = {"train": 100, "val": 10}, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.freq = freq
+        self.idx = {"train": 0, "val": 0}
+        self.saved_fig = {"train": None, "val": None}
+
+    def on_validation_batch_end_with_preds(
+        self,
+        trainer: pl.Trainer,
+        pl_module: pl.LightningModule,
+        outputs: STEP_OUTPUT,
+        batch: Any,
+        batch_idx: int,
+        preds: Any
+    ) -> None:
+        if self.idx['val'] % self.freq['val'] == 0:
+            idx = 0
+            img, target = batch[0][idx], batch[1][idx]
+            pred = preds[idx]
+            fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [img, pred, target]], title=f'val | epoch {trainer.current_epoch}')
+            trainer.logger.experiment.add_figure("preds/val/input_pred_target", fig, self.idx['val'])
+            self.saved_fig['val'] = fig
+
+        self.idx['val'] += 1
+
+
+    def on_train_batch_end_with_preds(
+            self,
+            trainer: 'pl.Trainer',
+            pl_module: 'pl.LightningModule',
+            outputs: 'STEP_OUTPUT',
+            batch: 'Any',
+            batch_idx: int,
+            preds: 'Any',
+    ) -> None:
+        if self.idx['train'] % self.freq["train"] == 0:
+            with torch.no_grad():
+                # idx = random.choice(range(len(batch[0])))
+                idx = 0
+                img, target = batch[0][idx], batch[1][idx]
+                pred = preds[idx]
+                fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [img, pred, target]], title='train')
+                trainer.logger.experiment.add_figure("preds/train/input_pred_target", fig, trainer.global_step)
+                self.saved_fig['train'] = fig
+
+        self.idx['train'] += 1
+
+    @staticmethod
+    def plot_pred(img, pred, target, title=''):
+        fig, axs = plt.subplots(1, 2, figsize=(8, 4))
+        n_classes = len(pred)
+
+        axs[0].imshow(img[0])
+        axs[0].set_title(target.argmax())
+
+        colors = ["red" for _ in range(n_classes)]
+        colors[pred.argmax()] = "green"
+
+        axs[1].barh(range(n_classes), pred[0], tick_label=range(n_classes), color=colors)
+        axs[1].set_xlim(0, 1)
+
+        fig.suptitle(title)
+
+        return fig
+
+    def save(self, save_path: str):
+        for state in ['train', 'val']:
+            if self.saved_fig[state] is not None:
+                final_dir = join(save_path, self.__class__.__name__)
+                pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
+                self.saved_fig[state].savefig(join(final_dir, f"input_pred_target_{state}.png"))
+
+        return self.saved_fig

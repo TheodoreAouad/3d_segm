@@ -29,9 +29,10 @@ class BiSE(BinaryNN):
         shared_weights: torch.tensor = None,
         shared_weight_P: torch.tensor = None,
         init_bias_value: float = -2,
-        init_weight_mode: str = "normal_identity",
+        init_weight_mode: str = "conv_0.5",
         out_channels: int = 1,
         do_mask_output: bool = False,
+        padding=None,
         *args,
         **kwargs
     ):
@@ -42,12 +43,13 @@ class BiSE(BinaryNN):
         self.kernel_size = self._init_kernel_size(kernel_size)
         self.init_weight_mode = init_weight_mode
         self.do_mask_output = do_mask_output
+        self.padding = self.kernel_size[0] // 2 if padding is None else padding
         self.conv = nn.Conv2d(
             in_channels=1,
             out_channels=out_channels,
             kernel_size=self.kernel_size,
             # padding="same",
-            padding=self.kernel_size[0]//2,
+            padding=self.padding,
             padding_mode='replicate',
             *args,
             **kwargs
@@ -77,9 +79,16 @@ class BiSE(BinaryNN):
 
         self.update_learned_selems()
 
-    def update_learned_selems(self):
+    def update_closest_selems(self):
         for chan in range(self.out_channels):
             self.find_closest_selem_and_operation_chan(chan)
+
+    def update_binary_selems(self):
+        self.update_closest_selems()
+        self.update_binary_selems()
+
+    def update_learned_selems(self):
+        for chan in range(self.out_channels):
             self.find_selem_and_operation_chan(chan)
 
     def binary(self, mode: bool = True):

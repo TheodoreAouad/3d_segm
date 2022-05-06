@@ -13,9 +13,9 @@ class EltGeneratorBise(EltGenerator):
         super().__init__()
         self.bimonn_model = bimonn_model
 
-    def generate(self, layer_idx, chin, chout, xy_coords_mean, **kwargs):
+    def generate(self, layer_idx, chin, chout, xy_coords_mean, height, **kwargs):
         bise_layer = self.bimonn_model.layers[layer_idx].bises[chin]
-        return ElementBiseWeightsChan(model=bise_layer, chout=chout, xy_coords_mean=xy_coords_mean, **kwargs)
+        return ElementBiseWeightsChan(model=bise_layer, chout=chout, xy_coords_mean=xy_coords_mean, size=height, **kwargs)
 
 
 class EltGeneratorBiseBinary(EltGenerator):
@@ -27,11 +27,14 @@ class EltGeneratorBiseBinary(EltGenerator):
         self.bimonn_model = bimonn_model
         self.learned = learned
 
-    def generate(self, layer_idx, chin, chout, xy_coords_mean, **kwargs):
+    def generate(self, layer_idx, chin, chout, xy_coords_mean, height, **kwargs):
         bise_layer = self.bimonn_model.layers[layer_idx].bises[chin]
-        bise_layer.update_learned_selems()
+        if self.learned:
+            bise_layer.update_learned_selems()
+        else:
+            bise_layer.update_closest_selems()
 
-        return ElementBiseSelemChan(model=bise_layer, learned=self.learned, chout=chout, xy_coords_mean=xy_coords_mean, **kwargs)
+        return ElementBiseSelemChan(model=bise_layer, learned=self.learned, chout=chout, xy_coords_mean=xy_coords_mean, size=height, **kwargs)
 
 
 
@@ -76,7 +79,8 @@ class EltGeneratorConnectLuiBiseBase(EltGenerator):
         activation_P = bise_elt.model.activation_P[chout]
         if activation_P > 0 or width == 0:
             return ElementArrow.link_elements(bise_elt, lui_elt, width=width)
-        return ElementArrowNo.link_elements(bise_elt, lui_elt, height_circle=max(self.model.kernel_size[layer_idx])*0.7, width=width)
+        return ElementArrowNo.link_elements(bise_elt, lui_elt, width=width)
+        # return ElementArrowNo.link_elements(bise_elt, lui_elt, height_circle=max(self.model.kernel_size[layer_idx])*0.7, width=width)
 
     def infer_width(self, lui_elt, chin):
         raise NotImplementedError

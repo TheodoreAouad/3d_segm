@@ -22,7 +22,7 @@ from general.nn.observables import CalculateAndLogMetrics
 from general.utils import format_time, log_console, create_logger, save_yaml, save_pickle
 from general.nn.utils import train_val_test_split
 from deep_morpho.metrics import masked_dice
-from deep_morpho.args import all_args
+from deep_morpho.args_segm import all_args
 from general.code_saver import CodeSaver
 
 

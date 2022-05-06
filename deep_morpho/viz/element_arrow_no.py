@@ -18,7 +18,8 @@ class ElementArrowNo(ElementGrouper):
         elt1: Element,
         elt2: Element,
         key=None,
-        height_circle=10,
+        height_circle=None,
+        height_circle_rate=.15,
         link1="adapt",
         link2="adapt",
         length_includes_head=True, width=.1, **kwargs
@@ -27,6 +28,8 @@ class ElementArrowNo(ElementGrouper):
             elt1, elt2, key=key, link1=link1, link2=link2, 
             length_includes_head=length_includes_head, width=width, **kwargs
         )
+        if height_circle is None:
+            height_circle = height_circle_rate * max(arrow_elt.shape)
         xy_coords_mean = arrow_elt.barycentre
         no_elt = ElementNO(xy_coords_mean=xy_coords_mean, width=height_circle)
 

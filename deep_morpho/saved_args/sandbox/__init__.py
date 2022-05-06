@@ -1,1 +1,1 @@
-from .args import all_args
+from .args_segm import all_args as args_segm

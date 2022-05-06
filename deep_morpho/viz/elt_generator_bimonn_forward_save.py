@@ -9,9 +9,9 @@ class EltGeneratorBiseForwardSave(EltGenerator):
         super().__init__()
         self.all_outputs = all_outputs
 
-    def generate(self, layer_idx, chin, chout, xy_coords_mean, **kwargs):
+    def generate(self, layer_idx, chin, chout, xy_coords_mean, height, **kwargs):
         img = self.all_outputs[layer_idx][chin, chout][0].cpu().detach().numpy()
-        return ElementImage(img, imshow_kwargs={"cmap": "gray", "vmin": 0, "vmax": 1}, xy_coords_mean=xy_coords_mean, **kwargs)
+        return ElementImage(img, imshow_kwargs={"cmap": "gray", "vmin": 0, "vmax": 1}, xy_coords_mean=xy_coords_mean, size=None, **kwargs)
 
 
 class EltGeneratorLuiForwardSave(EltGenerator):
