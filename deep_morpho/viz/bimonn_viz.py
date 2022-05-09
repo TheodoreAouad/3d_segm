@@ -42,10 +42,10 @@ class BimonnVizualiser(SkeletonMorpViz):
                 "elt_generator_connections": EltGeneratorConnectLuiBiseClosest(model=model, ),
             })
 
-        super().__init__(in_channels=model.in_channels, out_channels=model.out_channels, **kwargs)
-        self.elt_generator_init = EltGeneratorInitCircle(
-            radius=self.box_height / (2 * model.in_channels[0]),
+        super().__init__(
+            in_channels=model.in_channels, out_channels=model.out_channels, **kwargs
         )
+        self.elt_generator_init = EltGeneratorInitCircle()
 
     @property
     def max_selem_shape(self):
@@ -54,7 +54,7 @@ class BimonnVizualiser(SkeletonMorpViz):
 
 class BimonnForwardVizualiser(SkeletonMorpViz):
 
-    def __init__(self, model, inpt, mode: str = "float", **kwargs):
+    def __init__(self, model, inpt, mode: str = "float", lui_horizontal_factor: float = 1.7, **kwargs):
         self.model = model
 
         assert mode in ["float", "binary"]
@@ -74,7 +74,7 @@ class BimonnForwardVizualiser(SkeletonMorpViz):
             "elt_generator_init": EltGeneratorInitForwardSave(self.all_outputs)
         })
 
-        super().__init__(in_channels=model.in_channels, out_channels=model.out_channels, **kwargs)
+        super().__init__(in_channels=model.in_channels, out_channels=model.out_channels, lui_horizontal_factor=lui_horizontal_factor, **kwargs)
 
     @property
     def input(self):
@@ -87,7 +87,7 @@ class BimonnForwardVizualiser(SkeletonMorpViz):
 
 class BimonnHistogramVizualiser(SkeletonMorpViz):
 
-    def __init__(self, model, inpt, dpi=100, mode: str = "float", **kwargs):
+    def __init__(self, model, inpt, dpi=100, mode: str = "float", lui_horizontal_factor: float = 1.7, **kwargs):
         self.model = model
         self.dpi = dpi
 
@@ -108,7 +108,9 @@ class BimonnHistogramVizualiser(SkeletonMorpViz):
             "elt_generator_init": EltGeneratorInitHistogram(self.all_outputs, dpi=dpi)
         })
 
-        super().__init__(in_channels=model.in_channels, out_channels=model.out_channels, **kwargs)
+        super().__init__(
+            in_channels=model.in_channels, out_channels=model.out_channels, lui_horizontal_factor=lui_horizontal_factor, **kwargs
+        )
 
     @property
     def input(self):

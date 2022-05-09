@@ -59,9 +59,9 @@ def main(args, logger):
         "PlotPredsClassif": obs.PlotPredsClassif(freq={'train': 50, 'val': 50}),
         # "InputAsPredMetric": obs.InputAsPredMetric(metrics),
         "CountInputs": obs.CountInputs(),
-        "PlotParametersBiSE": obs.PlotParametersBiSE(freq=1),
+        "PlotParametersBiSE": obs.PlotParametersBiSE(freq=5),
         # "PlotWeightsBiSE": obs.PlotWeightsBiSE(freq=args['freq_imgs']),
-        "PlotLUIParametersBiSEL": obs.PlotLUIParametersBiSEL(),
+        "PlotLUIParametersBiSEL": obs.PlotLUIParametersBiSEL(freq=5),
         "WeightsHistogramBiSE": obs.WeightsHistogramBiSE(freq=args['freq_imgs']),
         # "CheckMorpOperation": obs.CheckMorpOperation(
         #     selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50
@@ -70,15 +70,15 @@ def main(args, logger):
         # "ExplosiveWeightGradientWatcher": obs.ExplosiveWeightGradientWatcher(freq=1, threshold=0.5),
         "ConvergenceMetrics": obs.ConvergenceMetrics(metrics),
         # "ShowSelemAlmostBinary": obs.ShowSelemAlmostBinary(freq=args['freq_imgs']),
-        "ShowSelemBinary": obs.ShowSelemBinary(freq=args['freq_imgs']),
+        # "ShowSelemBinary": obs.ShowSelemBinary(freq=args['freq_imgs']),
         # "ShowClosestSelemBinary": obs.ShowClosestSelemBinary(freq=args['freq_imgs']),
         # "ShowLUISetBinary": obs.ShowLUISetBinary(freq=args['freq_imgs']),
         # "BinaryModeMetric": obs.BinaryModeMetric(metrics, freq=args['freq_imgs']),
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         "ConvergenceBinary": obs.ConvergenceBinary(freq=100),
         "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5), do_plot={"weights": True, "learned": True, "closest": False,}),
-        "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}),
-        "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False})
+        "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),
+        "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600)
     }
 
     observables = list(observables_dict.values())

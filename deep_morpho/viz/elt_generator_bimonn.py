@@ -1,5 +1,6 @@
-from .element_bise import ElementBiseSelemChan, ElementBiseWeightsChan
+import numpy as np
 
+from .element_bise import ElementBiseSelemChan, ElementBiseWeightsChan
 from general.nn.viz import ElementArrow
 from .element_arrow_no import ElementArrowNo
 from .element_generator import EltGenerator
@@ -46,7 +47,7 @@ class EltGeneratorLui(EltGenerator):
         self.imshow_kwargs = imshow_kwargs
         self.learned = learned
 
-    def generate(self, layer_idx, chout, xy_coords_mean, shape):
+    def generate(self, layer_idx, chout, xy_coords_mean, height):
         lui_layer = self.bimonn_model.layers[layer_idx].luis[chout]
         lui_layer.update_learned_sets()
 
@@ -58,7 +59,7 @@ class EltGeneratorLui(EltGenerator):
         return constructor(
             lui_layer,
             xy_coords_mean=xy_coords_mean,
-            shape=shape,
+            shape=np.array([height, height]),
             imshow_kwargs=self.imshow_kwargs,
         )
 

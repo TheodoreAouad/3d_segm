@@ -9,11 +9,12 @@ from deep_morpho.viz.bimonn_viz import BimonnForwardVizualiser, BimonnHistogramV
 
 class PlotBimonnForward(Observable):
 
-    def __init__(self, freq: int = 300, figsize=None, do_plot={"float": True, "binary": True}, *args, **kwargs):
+    def __init__(self, freq: int = 300, figsize=None, dpi=None, do_plot={"float": True, "binary": True}, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.freq = freq
         self.freq_idx = 0
         self.figsize = figsize
+        self.dpi = dpi
         self.do_plot = do_plot
 
         self.last_figs = {}
@@ -38,7 +39,7 @@ class PlotBimonnForward(Observable):
                             pl_module.model.binary(False)
 
                         vizualiser = BimonnForwardVizualiser(pl_module.model, mode=key, inpt=inpt)
-                        fig = vizualiser.get_fig(figsize=self.figsize)
+                        fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
                         trainer.logger.experiment.add_figure(f"forward/{key}", fig, trainer.global_step)
                         self.last_figs[key] = fig
 
@@ -61,11 +62,12 @@ class PlotBimonnForward(Observable):
 
 class PlotBimonnHistogram(Observable):
 
-    def __init__(self, freq: int = 300, figsize=None, do_plot={"float": True, "binary": True}, *args, **kwargs):
+    def __init__(self, freq: int = 300, figsize=None, dpi=None, do_plot={"float": True, "binary": True}, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.freq = freq
         self.freq_idx = 0
         self.figsize = figsize
+        self.dpi = dpi
         self.do_plot = do_plot
 
         self.last_figs = {}
@@ -90,7 +92,7 @@ class PlotBimonnHistogram(Observable):
                             pl_module.model.binary(False)
 
                         vizualiser = BimonnHistogramVizualiser(pl_module.model, mode=key, inpt=inpt)
-                        fig = vizualiser.get_fig(figsize=self.figsize)
+                        fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
                         trainer.logger.experiment.add_figure(f"histogram/{key}", fig, trainer.global_step)
                         self.last_figs[key] = fig
 

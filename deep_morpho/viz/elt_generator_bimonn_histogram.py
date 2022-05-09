@@ -25,7 +25,9 @@ class EltGeneratorHistogramBase(EltGenerator):
         return ElementHistogram(
             data,
             dpi=self.dpi, hist_kwargs=self.hist_kwargs,
-            imshow_kwargs={"cmap": "gray", "vmin": 0, "vmax": 1}, xy_coords_mean=xy_coords_mean, size=None, **kwargs)
+            imshow_kwargs={"cmap": "gray", "vmin": 0, "vmax": 1}, xy_coords_mean=xy_coords_mean, size=height, borders=False,
+            **kwargs
+        )
 
 
 class EltGeneratorBiseHistogram(EltGeneratorHistogramBase):

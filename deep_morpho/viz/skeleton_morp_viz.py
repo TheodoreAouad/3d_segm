@@ -21,7 +21,7 @@ class SkeletonMorpViz:
         max_selem_shape=10,
         lui_radius_factor=1,
         lui_horizontal_factor=3,
-        first_layer_horizontal_factor=3,
+        first_layer_horizontal_factor=1.7,
         next_layer_horizontal_factor=1,
     ):
         self.in_channels = in_channels
@@ -40,11 +40,11 @@ class SkeletonMorpViz:
         self.box_height = self._infer_box_height()
 
     def _infer_box_height(self):
-        return 2 * (
+        return float(2 * (
             np.array(self.in_channels) *
             np.array(self.out_channels) *
             np.maximum(self.max_selem_shape, 5)
-        ).max()
+        ).max())
 
     def __len__(self):
         return len(self.in_channels)
@@ -82,9 +82,10 @@ class SkeletonMorpViz:
         layer_group = ElementGrouper()
         n_elts = self.in_channels[0]
         coords = self._get_coords_selem(self.box_height, n_elts)
+        height = self._get_height_init(coords)
 
         for chan, coord in enumerate(coords):
-            self.add_init_chin_to_group(group=layer_group, chan=chan, coord=coord,)
+            self.add_init_chin_to_group(group=layer_group, chan=chan, coord=coord, height=height)
 
         return layer_group, [layer_group.elements[f"input_chan_{elt_idx}"] for elt_idx in range(n_elts)]
 
@@ -99,12 +100,12 @@ class SkeletonMorpViz:
 
         # coords_group = np.linspace(0, self.box_height, 2*out_channels + 1)[1::2]
         coords_group = self._get_coords_selem(self.box_height, out_channels)
-        height_group = self._get_height_group(coords_group, out_channels)
+        height_group = self._get_height_group(coords_group)
 
         for chout, coord_group in enumerate(coords_group):
 
             coords_selem = self._get_coords_selem(height_group, in_channels)
-            height_selem = self._get_height_selem(coords_selem, in_channels, height_group)
+            height_selem = self._get_height_selem(coords_selem, height_group)
             subgroup = ElementGrouper()
 
             # add bises
@@ -128,9 +129,9 @@ class SkeletonMorpViz:
             layer_group.elements[f"group_layer_{layer_idx}_chout_{chout}"].elements[f"lui_layer_{layer_idx}_chout_{chout}"]
             for chout in range(out_channels)]
 
-    def add_init_chin_to_group(self, group, chan, coord):
+    def add_init_chin_to_group(self, group, chan, coord, height):
         elt = self.elt_generator_init.generate(
-            chan=chan, xy_coords_mean=np.array([0, coord])
+            chan=chan, xy_coords_mean=np.array([0, coord]), height=height,
         )
 
         if elt is None:
@@ -158,13 +159,14 @@ class SkeletonMorpViz:
 
     def add_lui_to_group(self, group, layer_idx, chout, coord_lui, height) -> Element:
         # Move the part of the shape with the LUI element?
-        shape = self.lui_radius_factor * np.array([height, height])
+        height = self.lui_radius_factor * height
+        # height = self.lui_radius_factor * np.array([height, height])
         # shape = self.lui_radius_factor * np.array([self.max_selem_shape[layer_idx], self.max_selem_shape[layer_idx]])
         elt = self.elt_generator_lui.generate(
             layer_idx=layer_idx,
             chout=chout,
             xy_coords_mean=(self.lui_horizontal_factor * height, coord_lui),
-            shape=shape,
+            height=height,
         )
 
         if elt is None:
@@ -191,16 +193,20 @@ class SkeletonMorpViz:
 
         return group
 
-    def _get_height(self, coords, n_groups, shrinking_factor, box_height):
+    def _get_height(self, coords, shrinking_factor, box_height):
+        n_groups = len(coords)
         if n_groups > 1:
             return (coords[1] - coords[0]) * shrinking_factor
         return box_height
 
-    def _get_height_group(self, coords_group, n_groups):
-        return self._get_height(coords_group, n_groups, .7, self.box_height)
+    def _get_height_group(self, coords_group):
+        return self._get_height(coords_group, .7, self.box_height)
 
-    def _get_height_selem(self, coords_selem, n_selems, height_group):
-        return self._get_height(coords_selem, n_selems, .95, height_group)
+    def _get_height_selem(self, coords_selem, height_group):
+        return self._get_height(coords_selem, .95, height_group)
+
+    def _get_height_init(self, coords):
+        return self._get_height(coords, .7, self.box_height * .3)
 
     def _get_coords_selem(self, height_group, n_per_group):
         if n_per_group == 1:
