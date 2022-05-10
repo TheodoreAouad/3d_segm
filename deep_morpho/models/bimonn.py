@@ -15,7 +15,7 @@ class BiMoNN(BinaryNN):
         self,
         kernel_size: List[Union[Tuple, int]],
         channels: List[int],
-        atomic_element: Union[str, List[str]] = 'bise',
+        atomic_element: Union[str, List[str]] = 'bisel',
         weight_P: Union[float, List[float]] = 1,
         threshold_mode: Union[Union[str, dict], List[Union[str, dict]]] = "tanh",
         activation_P: Union[float, List[float]] = 10,

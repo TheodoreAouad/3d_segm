@@ -125,7 +125,8 @@ class BiSE(BinaryNN):
         elif self.init_weight_mode == "identity":
             self._init_as_identity()
         elif self.init_weight_mode == "conv_0.5":
-            self.set_normalized_weights(self.weight + 0.5)
+            self.set_normalized_weights(self.weight + 0.3)
+            # self.set_normalized_weights(self.weight + 0.5)
         else:
             warnings.warn(f"init weight mode {self.init_weight_mode} not recognized. Classical conv init used.")
             pass
