@@ -14,8 +14,9 @@ class BiSEL(BinaryNN):
         in_channels: int,
         out_channels: int,
         kernel_size: Union[int, Tuple],
-        threshold_mode: str = 'sigmoid',
+        threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh"},
         constant_P_lui: bool = False,
+        init_bias_value: float = 0.5,
         lui_kwargs: Dict = {},
         **bise_kwargs
     ):
@@ -27,6 +28,7 @@ class BiSEL(BinaryNN):
         self.constant_P_lui = constant_P_lui
         self.bise_kwargs = bise_kwargs
         self.lui_kwargs = lui_kwargs
+        self.init_bias_value = init_bias_value
 
         self.bises = self._init_bises()
         self.luis = self._init_luis()
@@ -44,7 +46,7 @@ class BiSEL(BinaryNN):
         for idx in range(self.in_channels):
             layer = BiSE(
                 out_channels=self.out_channels, kernel_size=self.kernel_size,
-                threshold_mode=self.threshold_mode, **self.bise_kwargs
+                threshold_mode=self.threshold_mode, init_bias_value=self.init_bias_value, **self.bise_kwargs
             )
             setattr(self, f'bise_{idx}', layer)
             bises.append(layer)
@@ -58,6 +60,7 @@ class BiSEL(BinaryNN):
                 threshold_mode=self.threshold_mode['activation'],
                 chan_outputs=1,
                 constant_P=self.constant_P_lui,
+                init_bias_value=self.init_bias_value,
                 **self.lui_kwargs
             )
             setattr(self, f'lui_{idx}', layer)

@@ -1,3 +1,5 @@
+from enum import Enum
+import warnings
 from typing import Tuple
 
 import torch
@@ -10,6 +12,11 @@ from .binary_nn import BinaryNN
 from .softplus import Softplus
 
 
+class InitLuiEnum(Enum):
+    NORMAL = 1
+    KAIMING_UNIFORM = 2
+
+
 class LUI(BinaryNN):
 
     operation_code = {"union": 0, "intersection": 1}
@@ -19,9 +26,10 @@ class LUI(BinaryNN):
         threshold_mode: str,
         chan_inputs: int,
         chan_outputs: int,
+        init_bias_value: float = 0.5,
         P_: float = 1,
         constant_P: bool = False,
-        init_mode: str = "normal",
+        init_mode: InitLuiEnum = InitLuiEnum.KAIMING_UNIFORM,
         force_identity: bool = False,
     ):
         super().__init__()
@@ -30,17 +38,24 @@ class LUI(BinaryNN):
         self.constant_P = constant_P
         self.chan_inputs = chan_inputs
         self.chan_outputs = chan_outputs
+        self.init_bias_value = init_bias_value
         self.init_mode = init_mode
         self.force_identity = force_identity
+
+        if self.chan_inputs == self.chan_outputs == 1:
+            self.force_identity = True
 
         self.threshold_layer = dispatcher[self.threshold_mode](P_=P_, constant_P=self.constant_P, n_channels=chan_outputs)
         self.linear = nn.Linear(chan_inputs, chan_outputs)
         self.softplus_layer = Softplus()
 
-        with torch.no_grad():
-            if init_mode == "normal":
-                self.init_normal_coefs(mean=0, std=1)
-                self.init_normal_bias(mean=0, std=1)
+        # with torch.no_grad():
+        #     if init_mode == "normal":
+        #         self.init_normal_coefs(mean=0.5, std=0.3)
+        #         self.init_normal_bias(mean=0.5, std=0.3)
+
+        self.init_coefs()
+        self.init_bias()
 
         self.closest_set = np.zeros((self.chan_outputs, self.chan_inputs)).astype(bool)
         self.closest_operation = np.zeros(self.chan_outputs)
@@ -52,6 +67,23 @@ class LUI(BinaryNN):
 
         self.update_learned_sets()
 
+
+    def init_coefs(self):
+        if self.force_identity:
+            return
+        if self.init_mode == InitLuiEnum.NORMAL:
+            self.init_normal_coefs(mean=0.5, std=0.3)
+            # self.init_normal_bias(mean=0.5, std=0.3)
+        elif self.init_mode == InitLuiEnum.KAIMING_UNIFORM:
+            self.set_positive_weights(self.weight + 2)
+        else:
+            warnings.warn(f"init weight mode {self.init_mode} not recognized. Classical linear init used.")
+
+    def init_bias(self):
+        if self.force_identity:
+            return
+        self.set_positive_bias(torch.zeros_like(self.bias) - self.init_bias_value * self.coefs.mean(1) * self.coefs.shape[1])
+        # self.set_positive_bias(torch.zeros_like(self.bias) - 1)
 
     def update_learned_sets(self):
         for chan in range(self.chan_outputs):
@@ -172,7 +204,7 @@ class LUI(BinaryNN):
 
     def set_positive_bias(self, new_bias: torch.Tensor) -> torch.Tensor:
         assert self.bias.shape == new_bias.shape
-        assert (new_bias <= -0.5).all()
+        assert (new_bias <= -0.5).all(), new_bias
         self.linear.bias.data = self.softplus_layer.forward_inverse(-new_bias - 0.5)
         return new_bias
 
@@ -183,19 +215,19 @@ class LUI(BinaryNN):
 
     def init_normal_coefs(self, mean, std):
         new_weights = torch.randn(self.linear.weight.shape) * std + mean
-        self.set_weights(new_weights)
+        self.set_positive_weights(torch.maximum(new_weights, torch.zeros_like(new_weights)))
         return new_weights
 
     def init_normal_bias(self, mean, std):
         new_bias = -self.softplus_layer(torch.randn(self.linear.bias.shape) * std + mean)
-        self.set_bias(new_bias)
+        self.set_positive_bias(torch.maximum(new_bias, torch.zeros_like(new_bias)))
         return new_bias
 
-    def init_coefs(self):
-        self.linear.weight.fill_(1)
+    # def init_coefs(self):
+    #     self.linear.weight.fill_(1)
 
-    def init_bias(self):
-        self.linear.bias.fill_(-.5)
+    # def init_bias(self):
+    #     self.linear.bias.fill_(-.5)
 
     @property
     def activation_P(self):

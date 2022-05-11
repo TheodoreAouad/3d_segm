@@ -17,7 +17,7 @@ class MorpOperationsVizualiser(SkeletonMorpViz):
             **kwargs
         )
         self.elt_generator_init = EltGeneratorInitCircle(
-            radius=self.box_height / (2 * model.in_channels[0]),
+            # radius=self.box_height / (2 * model.in_channels[0]),
         )
 
     @property

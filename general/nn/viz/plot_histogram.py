@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def get_hist_as_array(x, dpi=128, figure_kwargs={}, **kwargs):
+def get_hist_as_array(x, dpi=128, figure_kwargs={}, fontsize=20, **kwargs):
     """Returns an image array containing the plotted histogram.
 
     Args:
@@ -18,6 +18,8 @@ def get_hist_as_array(x, dpi=128, figure_kwargs={}, **kwargs):
     figure_kwargs['dpi'] = dpi
     fig, ax = plt.subplots(**figure_kwargs)
     ax.hist(x, **kwargs)
+    ax.set_title(f'mean={x.mean():.2f} std={x.std():.2f}', fontsize=fontsize)
+    ax.grid("on")
 
     return get_figure_as_array(fig)
 

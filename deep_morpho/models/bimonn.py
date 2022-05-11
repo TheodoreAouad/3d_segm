@@ -17,12 +17,13 @@ class BiMoNN(BinaryNN):
         channels: List[int],
         atomic_element: Union[str, List[str]] = 'bisel',
         weight_P: Union[float, List[float]] = 1,
-        threshold_mode: Union[Union[str, dict], List[Union[str, dict]]] = "tanh",
-        activation_P: Union[float, List[float]] = 10,
+        # threshold_mode: Union[Union[str, dict], List[Union[str, dict]]] = "tanh",
+        threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh"},
+        activation_P: Union[float, List[float]] = 0,
         constant_activation_P: Union[bool, List[bool]] = False,
         constant_weight_P: Union[bool, List[bool]] = False,
-        init_bias_value: Union[float, List[float]] = -2,
-        init_weight_mode: Union[bool, List[bool]] = True,
+        init_bias_value: Union[float, List[float]] = 0.5,
+        init_weight_mode: Union[bool, List[bool]] = "conv_0.5",
         alpha_init: Union[float, List[float]] = 0,
         init_value: Union[float, List[float]] = -2,
         share_weights: Union[bool, List[bool]] = True,
@@ -246,12 +247,15 @@ class BiMoNNClassifier(BiMoNN):
         **kwargs
     ):
         super().__init__(*args, kernel_size=kernel_size, **kwargs)
+        if isinstance(input_size, int):
+            input_size = (input_size, input_size)
+
         self.bisel_kwargs = self.bisels_kwargs_idx(0) if final_bisel_kwargs is None else final_bisel_kwargs
         self.bisel_kwargs["in_channels"] = self.out_channels[-1]
         self.bisel_kwargs["out_channels"] = n_classes
         self.bisel_kwargs["kernel_size"] = input_size
         self.bisel_kwargs["padding"] = 0
-        self.bisel_kwargs["lui_kwargs"]["force_identity"] = True
+        # self.bisel_kwargs["lui_kwargs"]["force_identity"] = True
         self.classification_layer = BiSEL(**self.bisel_kwargs)
 
         self.in_channels.append(self.out_channels[-1])

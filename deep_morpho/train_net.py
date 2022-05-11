@@ -14,10 +14,9 @@ from deep_morpho.utils import set_seed
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
 from deep_morpho.datasets.multi_rect_dataset import InputOutputGeneratorDataset, MultiRectDataset
-from deep_morpho.datasets.axspa_roi_dataset import AxspaROIDataset, AxspaROISimpleDataset
+from deep_morpho.datasets.axspa_roi_dataset import AxspaROISimpleDataset
 from deep_morpho.models import LightningBiMoNN, BiSE, COBiSE, BiSEC, COBiSEC
 import deep_morpho.observables as obs
-from deep_morpho.observables.check_morp_op import ShowClosestSelemBinary
 from general.nn.observables import CalculateAndLogMetrics
 from general.utils import format_time, log_console, create_logger, save_yaml, save_pickle
 from general.nn.utils import train_val_test_split
@@ -29,25 +28,25 @@ from general.code_saver import CodeSaver
 def get_dataloader(args):
 
     if args['dataset_type'] == 'diskorect':
-        if (args['dataset_path'] is not None) and (args['dataset_path'] != 'generate'):
-            dataloader = MultiRectDataset.get_loader(
-                batch_size=args['batch_size'], dataset_path=args['dataset_path'], do_load_in_ram=args['in_ram'],
-                morp_operation=args['morp_operation'], logger=console_logger, n_inputs=args['n_inputs'],
-                num_workers=args['num_workers']
-            )
-        else:
-            trainloader = InputOutputGeneratorDataset.get_loader(
-                batch_size=args['batch_size'],
-                n_inputs=args['n_inputs'],
-                random_gen_fn=args['random_gen_fn'],
-                random_gen_args=args['random_gen_args'],
-                morp_operation=args['morp_operation'],
-                seed=args['seed'],
-                device=device,
-                num_workers=args['num_workers'],
-            )
-            valloader = None
-            testloader = None
+        # if (args['dataset_path'] is not None) and (args['dataset_path'] != 'generate'):
+        #     dataloader = MultiRectDataset.get_loader(
+        #         batch_size=args['batch_size'], dataset_path=args['dataset_path'], do_load_in_ram=args['in_ram'],
+        #         morp_operation=args['morp_operation'], logger=console_logger, n_inputs=args['n_inputs'],
+        #         num_workers=args['num_workers']
+        #     )
+        # else:
+        trainloader = InputOutputGeneratorDataset.get_loader(
+            batch_size=args['batch_size'],
+            n_inputs=args['n_inputs'],
+            random_gen_fn=args['random_gen_fn'],
+            random_gen_args=args['random_gen_args'],
+            morp_operation=args['morp_operation'],
+            seed=args['seed'],
+            device=device,
+            num_workers=args['num_workers'],
+        )
+        valloader = None
+        testloader = None
 
     elif args['dataset_type'] == 'axspa_roi':
         data = pd.read_csv(args['dataset_path'])
@@ -126,6 +125,7 @@ def main(args, logger):
 
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
 
+    init_bias_value = next(iter(trainloader))[0].mean()
     model = LightningBiMoNN(
         model_args={
             "kernel_size": [args['kernel_size'] for _ in range(args['n_atoms'])],
@@ -139,6 +139,7 @@ def main(args, logger):
             "init_weight_mode": args["init_weight_mode"],
             "alpha_init": args["alpha_init"],
             "lui_kwargs": {"force_identity": args['force_lui_identity']},
+            "init_bias_value": init_bias_value
         },
         learning_rate=args['learning_rate'],
         loss=args['loss'],
@@ -173,8 +174,8 @@ def main(args, logger):
             ] for layer_idx in range(len(model.model.layers))
             for chan_output in range(model.model.layers[layer_idx].out_channels)
         },
-        **{f"metrics_batch/dice_train": torch.tensor([np.nan])},
-        **{f"convergence/metric_dice_train": torch.tensor([np.nan])},
+        **{"metrics_batch/dice_train": torch.tensor([np.nan])},
+        **{"convergence/metric_dice_train": torch.tensor([np.nan])},
     )
 
     if args['atomic_element'] in ['bisec', 'cobisec']:
@@ -244,7 +245,7 @@ if __name__ == '__main__':
 
     code_saver = CodeSaver(
         src_path=os.getcwd(),
-        temporary_path="deep_morpho/results",
+        temporary_path="deep_morpho/results/results_tensorboards",
         ignore_patterns=("*__pycache__*", "*results*", "data", "*.ipynb", '.git', 'ssm'),
     )
 
@@ -261,10 +262,10 @@ if __name__ == '__main__':
 
         # name += f"_{args['atomic_element']}"
 
-        logger = TensorBoardLogger("deep_morpho/results", name=name, default_hp_metric=False)
+        logger = TensorBoardLogger("deep_morpho/results/results_tensorboards", name=name, default_hp_metric=False)
         code_saver.save_in_final_file(join(logger.log_dir, 'code'))
         save_yaml(args, join(logger.log_dir, 'args.yaml'))
-        save_pickle(args, join(logger.log_dir, 'args.pkl'))
+        # save_pickle(args, join(logger.log_dir, 'args.pkl'))
 
 
         console_logger = create_logger(

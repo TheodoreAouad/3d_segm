@@ -19,7 +19,7 @@ all_args['n_try'] = [0]
 # all_args['n_try'] = range(1, 11)
 
 all_args['experiment_name'] = [
-    "test_classif"
+    "Bimonn_exp_55/sandbox/1"
 ]
 
 
@@ -87,7 +87,7 @@ all_args['init_weight_mode'] = [
     # "normal_identity",
     "conv_0.5"
 ]
-all_args['activation_P'] = [0]
+all_args['activation_P'] = [1]
 all_args['force_lui_identity'] = [False]
 all_args['constant_activation_P'] = [False]
 all_args['constant_P_lui'] = [False]

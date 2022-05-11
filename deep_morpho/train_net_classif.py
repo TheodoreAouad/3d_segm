@@ -85,6 +85,8 @@ def main(args, logger):
 
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
 
+    init_bias_value = next(iter(trainloader))[0].mean()
+    print(init_bias_value)
     model = LightningBiMoNNClassifier(
         model_args={
             "kernel_size": [args['kernel_size'] for _ in range(args['n_atoms'])],
@@ -99,6 +101,7 @@ def main(args, logger):
             "constant_weight_P": args['constant_weight_P'],
             "init_weight_mode": args["init_weight_mode"],
             "alpha_init": args["alpha_init"],
+            "init_bias_value": init_bias_value,
             "lui_kwargs": {"force_identity": args['force_lui_identity']},
         },
         learning_rate=args['learning_rate'],
@@ -143,13 +146,14 @@ def main(args, logger):
 
     trainer = Trainer(
         max_epochs=args['n_epochs'],
-        gpus=1 if torch.cuda.is_available() else 0,
+        gpus=1 if device != "cpu" else 0,
         logger=logger,
-        # progress_bar_refresh_rate=10,
+        # # progress_bar_refresh_rate=10,
         callbacks=observables.copy(),
         log_every_n_steps=10,
         deterministic=True,
         num_sanity_val_steps=1,
+        # accelerator=device,
     )
 
     trainer.fit(model, trainloader, valloader,)
@@ -171,6 +175,7 @@ if __name__ == '__main__':
     code_saver.save_in_temporary_file()
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    # device = 'cpu'
     print(device)
     bugged = []
     results = []

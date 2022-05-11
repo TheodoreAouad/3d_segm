@@ -42,4 +42,4 @@ class EltGeneratorLuiHistogram(EltGeneratorHistogramBase):
 
 class EltGeneratorInitHistogram(EltGeneratorHistogramBase):
     def get_tensor_data(self, layer_idx=None, chin=None, chout=None, chan=None):
-        return self.all_outputs["input"][chan]
+        return self.all_outputs["input"][:, chan]

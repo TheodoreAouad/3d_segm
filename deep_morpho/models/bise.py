@@ -22,13 +22,13 @@ class BiSE(BinaryNN):
         self,
         kernel_size: Tuple,
         weight_P: float = 1,
-        threshold_mode: Union[Dict[str, str], str] = "sigmoid",
+        threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh"},
         activation_P: float = 10,
         constant_activation_P: bool = False,
         constant_weight_P: bool = False,
         shared_weights: torch.tensor = None,
         shared_weight_P: torch.tensor = None,
-        init_bias_value: float = -2,
+        init_bias_value: float = 0.5,
         init_weight_mode: str = "conv_0.5",
         out_channels: int = 1,
         do_mask_output: bool = False,
@@ -44,6 +44,8 @@ class BiSE(BinaryNN):
         self.init_weight_mode = init_weight_mode
         self.do_mask_output = do_mask_output
         self.padding = self.kernel_size[0] // 2 if padding is None else padding
+        self.init_bias_value = init_bias_value
+
         self.conv = nn.Conv2d(
             in_channels=1,
             out_channels=out_channels,
@@ -63,10 +65,12 @@ class BiSE(BinaryNN):
         self.weight_threshold_layer = dispatcher[self.weight_threshold_mode](P_=self.weight_P, constant_P=constant_weight_P, n_channels=out_channels, axis_channels=0)
         self.activation_threshold_layer = dispatcher[self.activation_threshold_mode](P_=activation_P, constant_P=constant_activation_P, n_channels=out_channels, axis_channels=1)
 
-        with torch.no_grad():
-            self.conv.bias.fill_(init_bias_value)
+        # with torch.no_grad():
+        #     self.conv.bias.fill_(init_bias_value)
 
         self.init_weights()
+        self.init_bias()
+        # self.set_bias(torch.zeros_like(self.bias) + self.init_bias_value)
 
 
         self.closest_selem = np.zeros((*self.kernel_size, out_channels)).astype(bool)
@@ -125,11 +129,14 @@ class BiSE(BinaryNN):
         elif self.init_weight_mode == "identity":
             self._init_as_identity()
         elif self.init_weight_mode == "conv_0.5":
-            self.set_normalized_weights(self.weight + 0.3)
-            # self.set_normalized_weights(self.weight + 0.5)
+            # self.set_normalized_weights(self.weight + 5)
+            self.set_normalized_weights(self.weight + 1)
         else:
             warnings.warn(f"init weight mode {self.init_weight_mode} not recognized. Classical conv init used.")
             pass
+
+    def init_bias(self):
+        self.set_bias(torch.zeros_like(self.bias) - self.init_bias_value * self._normalized_weights.mean((1, 2, 3)) * torch.tensor(self._normalized_weights.shape[1:]).prod())
 
     @staticmethod
     def _init_normal_identity(kernel_size, chan_output, std=0.3, mean=1):
@@ -422,7 +429,7 @@ class BiSE(BinaryNN):
     def set_bias(self, new_bias: torch.Tensor) -> torch.Tensor:
         assert self.bias.shape == new_bias.shape
         # self.conv.bias.data = new_bias
-        assert (new_bias <= -0.5).all()
+        assert (new_bias <= -0.5).all(), new_bias
         self.conv.bias.data = self.softplus_layer.forward_inverse(-new_bias - 0.5)
         return new_bias
 

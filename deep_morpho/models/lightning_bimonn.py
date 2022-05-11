@@ -14,6 +14,7 @@ class LightningBiMoNN(NetLightning):
         optimizer: Callable,
         optimizer_args: Dict = {},
         observables: List["Observable"] = [],
+        **kwargs
     ):
         super().__init__(
             model=BiMoNN(**model_args),
@@ -22,6 +23,7 @@ class LightningBiMoNN(NetLightning):
             optimizer=optimizer,
             optimizer_args=optimizer_args,
             observables=observables,
+            **kwargs
         )
 
         self.save_hyperparameters()
@@ -37,6 +39,7 @@ class LightningBiMoNNClassifier(NetLightning):
         optimizer: Callable,
         optimizer_args: Dict = {},
         observables: List["Observable"] = [],
+        **kwargs
     ):
         super().__init__(
             model=BiMoNNClassifier(**model_args),
@@ -45,6 +48,7 @@ class LightningBiMoNNClassifier(NetLightning):
             optimizer=optimizer,
             optimizer_args=optimizer_args,
             observables=observables,
+            **kwargs
         )
 
         self.save_hyperparameters()

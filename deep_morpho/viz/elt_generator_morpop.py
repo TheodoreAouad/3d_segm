@@ -17,7 +17,7 @@ class EltGeneratorErodila(EltGenerator):
         self.selem_imshow_kwargs = selem_imshow_kwargs
         self.op_imshow_kwargs = op_imshow_kwargs
 
-    def generate(self, layer_idx, chin, chout, xy_coords_mean,):
+    def generate(self, layer_idx, chin, chout, xy_coords_mean, height):
         selem = self.model.selems[layer_idx][chout][chin]
         op_name = self.model.operation_names[layer_idx][chout][chin]
         elt = ElementGrouper()
@@ -51,7 +51,7 @@ class EltGeneratorAggregation(EltGenerator):
         self.model = model
         self.imshow_kwargs = imshow_kwargs
 
-    def generate(self, layer_idx, chout, xy_coords_mean, shape):
+    def generate(self, layer_idx, chout, xy_coords_mean, height):
         operation = self.model.operation_names[layer_idx][chout][-1]
 
         if operation == "union":
@@ -61,7 +61,7 @@ class EltGeneratorAggregation(EltGenerator):
 
         return constructor(
             xy_coords_mean=xy_coords_mean,
-            width=shape[0] / 2, height=shape[1] / 2,
+            width=height / 2, height=height / 2,
             imshow_kwargs=self.imshow_kwargs
         )
 

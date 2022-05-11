@@ -84,6 +84,7 @@ class NetLightning(ObsLightningModule):
             optimizer_args: Dict = {},
             observables: Optional[List[Observable]] = [],
             reduce_loss_fn: Callable = lambda x: reduce(lambda a, b: a + b, x),
+            **kwargs
     ):
         """ Basic class for a neural network framework using pytorch lightning, with the predictions available
         for the callbacs.
@@ -104,7 +105,7 @@ class NetLightning(ObsLightningModule):
             reduce_loss_fn (Callable): if we have multiple loss, tells how we want to aggregate all losses
         """
 
-        super().__init__(observables)
+        super().__init__(observables, **kwargs)
         self.model = model
         self.learning_rate = learning_rate
         self.loss = self.configure_loss(loss)

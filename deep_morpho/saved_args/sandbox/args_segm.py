@@ -29,7 +29,7 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_53/sandbox/0"
     # "test_reproducibility"
     # "DGMM_2022/sandbox/1"
-    "test"
+    "Bimonn_exp_55/sandbox/0"
     # "Bimonn_exp_54/sandbox/0",
 ]
 
@@ -37,9 +37,9 @@ all_args['experiment_name'] = [
 # DATA ARGS
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
-    'axspa_roi',
+    # 'axspa_roi',
     # "mnist",
-    # 'diskorect',
+    'diskorect',
 ]
 all_args['preprocessing'] = [  # for axspa roi
     None,
@@ -93,7 +93,7 @@ all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
-all_args['batch_size'] = [64]
+all_args['batch_size'] = [256]
 all_args['num_workers'] = [
     20,
     # 0,
@@ -117,14 +117,14 @@ all_args['atomic_element'] = [
     # "max_plus",
 ]
 all_args['kernel_size'] = [
-    7,
-    # "adapt",
+    # 7,
+    "adapt",
 ]
 all_args['channels'] = [
-    # 'adapt',
-    [
-        2, 2, 2, 2, 2, 2, 1
-    ]
+    'adapt',
+    # [
+    #     2, 2, 2, 2, 2, 2, 1
+    # ]
     # [
     #     # 1,  # input
     #     2, 2, 1,
