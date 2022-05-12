@@ -136,7 +136,12 @@ class BiSE(BinaryNN):
             pass
 
     def init_bias(self):
-        self.set_bias(torch.zeros_like(self.bias) - self.init_bias_value * self._normalized_weights.mean((1, 2, 3)) * torch.tensor(self._normalized_weights.shape[1:]).prod())
+        self.set_bias(
+            torch.zeros_like(self.bias) -
+            self.init_bias_value *  # input layer mean
+            self._normalized_weights.mean((1, 2, 3)) *  # weights mean
+            torch.tensor(self._normalized_weights.shape[1:]).prod()  # number of parameters
+        )
 
     @staticmethod
     def _init_normal_identity(kernel_size, chan_output, std=0.3, mean=1):
