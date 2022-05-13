@@ -22,9 +22,10 @@ class BiMoNN(BinaryNN):
         activation_P: Union[float, List[float]] = 0,
         constant_activation_P: Union[bool, List[bool]] = False,
         constant_weight_P: Union[bool, List[bool]] = False,
-        init_bias_value_bise: Union[float, List[float]] = 0.5,
-        init_bias_value_lui: Union[float, List[float]] = 0.5,
-        init_weight_mode: Union[bool, List[bool]] = "conv_0.5",
+        init_bias_value_bise: Union[float, List[float]] = 1,
+        init_bias_value_lui: Union[float, List[float]] = 1,
+        input_mean: Union[float, List[float]] = .5,
+        init_weight_mode: Union[bool, List[bool]] = "custom",
         alpha_init: Union[float, List[float]] = 0,
         init_value: Union[float, List[float]] = -2,
         share_weights: Union[bool, List[bool]] = True,
@@ -119,10 +120,10 @@ class BiMoNN(BinaryNN):
         self.channels = channels
         return self.channels
 
-    def _init_bias_value_bise(self, init_bias_value: Union[float, List[float]]):
-        if isinstance(init_bias_value, list):
-            return init_bias_value
-        return [init_bias_value] + [0.5 for _ in range(1, len(self.kernel_size))]
+    def _init_input_mean(self, input_mean: Union[float, List[float]]):
+        if isinstance(input_mean, list):
+            return input_mean
+        return [input_mean] + [0.5 for _ in range(1, len(self.kernel_size))]
 
     def _init_atomic_element(self, atomic_element: Union[str, List[str]]):
         if isinstance(atomic_element, list):
@@ -141,8 +142,8 @@ class BiMoNN(BinaryNN):
         if attr_name == "channels":
             return self._init_channels(attr_value)
 
-        if attr_name == "init_bias_value_bise":
-            return self._init_bias_value_bise(attr_value)
+        if attr_name == "input_mean":
+            return self._init_input_mean(attr_value)
 
         if isinstance(attr_value, list):
             return attr_value
@@ -187,7 +188,7 @@ class BiMoNN(BinaryNN):
         return [
             'kernel_size', 'weight_P', 'threshold_mode', 'activation_P',
             'init_bias_value', 'init_weight_mode', 'out_channels', "constant_activation_P",
-            "constant_weight_P"
+            "constant_weight_P", "input_mean",
         ]
 
     @property
@@ -241,7 +242,7 @@ class BiMoNN(BinaryNN):
         return [
             "kernel_size", "atomic_element", "weight_P", "threshold_mode", "activation_P", "constant_activation_P",
             "init_bias_value_bise", "init_bias_value_lui", "init_weight_mode", "alpha_init", "init_value", "share_weights",
-            "constant_weight_P", "constant_P_lui", "channels", "lui_kwargs",
+            "constant_weight_P", "constant_P_lui", "channels", "lui_kwargs", "input_mean",
         ]
 
 
@@ -266,7 +267,7 @@ class BiMoNNClassifier(BiMoNN):
         self.bisel_kwargs["out_channels"] = n_classes
         self.bisel_kwargs["kernel_size"] = input_size
         self.bisel_kwargs["padding"] = 0
-        self.bisel_kwargs["init_bias_value_bise"] = 0.5
+        # self.bisel_kwargs["init_bias_value_bise"] = 0.5
         # self.bisel_kwargs["lui_kwargs"]["force_identity"] = True
         self.classification_layer = BiSEL(**self.bisel_kwargs)
 

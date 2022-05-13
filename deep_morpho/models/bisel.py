@@ -18,6 +18,7 @@ class BiSEL(BinaryNN):
         constant_P_lui: bool = False,
         init_bias_value_bise: float = 0.5,
         init_bias_value_lui: float = 0.5,
+        input_mean: float = 0.5,
         lui_kwargs: Dict = {},
         **bise_kwargs
     ):
@@ -31,6 +32,7 @@ class BiSEL(BinaryNN):
         self.lui_kwargs = lui_kwargs
         self.init_bias_value_bise = init_bias_value_bise
         self.init_bias_value_lui = init_bias_value_lui
+        self.input_mean = input_mean
 
         self.bises = self._init_bises()
         self.luis = self._init_luis()
@@ -48,7 +50,8 @@ class BiSEL(BinaryNN):
         for idx in range(self.in_channels):
             layer = BiSE(
                 out_channels=self.out_channels, kernel_size=self.kernel_size,
-                threshold_mode=self.threshold_mode, init_bias_value=self.init_bias_value_bise, **self.bise_kwargs
+                threshold_mode=self.threshold_mode, init_bias_value=self.init_bias_value_bise, input_mean=self.input_mean,
+                **self.bise_kwargs
             )
             setattr(self, f'bise_{idx}', layer)
             bises.append(layer)
@@ -63,6 +66,7 @@ class BiSEL(BinaryNN):
                 chan_outputs=1,
                 constant_P=self.constant_P_lui,
                 init_bias_value=self.init_bias_value_lui,
+                input_mean=0.5,
                 **self.lui_kwargs
             )
             setattr(self, f'lui_{idx}', layer)

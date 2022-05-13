@@ -64,7 +64,7 @@ all_args['num_workers'] = [
     # 0,
 ]
 all_args['freq_imgs'] = [300]
-all_args['n_epochs'] = [1]
+all_args['n_epochs'] = [10]
 
 
 # MODEL ARGS
@@ -85,13 +85,17 @@ all_args['channels'] = [
 all_args['init_weight_mode'] = [
     # "identity",
     # "normal_identity",
-    "conv_0.5"
+    # "conv_0.5"
+    "custom"
 ]
-all_args['activation_P'] = [1]
+all_args['activation_P'] = [5]
 all_args['force_lui_identity'] = [False]
 all_args['constant_activation_P'] = [False]
 all_args['constant_P_lui'] = [False]
 all_args['constant_weight_P'] = [True]
+all_args['init_bias_value_bise'] = [1]
+all_args['init_bias_value_lui'] = [1]
+
 all_args['threshold_mode'] = [
     # 'arctan',
     # 'sigmoid',

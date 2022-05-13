@@ -57,19 +57,19 @@ class PlotBimonnForward(Observable):
     ) -> None:
         with torch.no_grad():
             # inpt = batch[0][0].unsqueeze(0)
-            # if self.freq_idx % self.freq == 0:
-            #     for key, do_key in self.do_plot.items():
-            #         if do_key:
-            #             if key == "binary":
-            #                 pl_module.model.binary(True)
-            #             else:
-            #                 pl_module.model.binary(False)
+            if self.freq_idx % self.freq == 0:
+                self.plot_model(trainer, pl_module, batch, "forward")
+                # for key, do_key in self.do_plot.items():
+                #     if do_key:
+                #         if key == "binary":
+                #             pl_module.model.binary(True)
+                #         else:
+                #             pl_module.model.binary(False)
 
-            #             vizualiser = BimonnForwardVizualiser(pl_module.model, mode=key, inpt=inpt)
-            #             fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
-            #             trainer.logger.experiment.add_figure(f"forward/{key}", fig, trainer.global_step)
-            #             self.last_figs[key] = fig
-            self.plot_model(trainer, pl_module, batch, "forward")
+                #         vizualiser = BimonnForwardVizualiser(pl_module.model, mode=key, inpt=inpt)
+                #         fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
+                #         trainer.logger.experiment.add_figure(f"forward/{key}", fig, trainer.global_step)
+                #         self.last_figs[key] = fig
 
         self.freq_idx += 1
         # pl_module.model.binary(False)
@@ -82,8 +82,6 @@ class PlotBimonnForward(Observable):
         batch: "Any",
         title: str,
     ):
-        if trainer.global_step > 0:
-            return
         inpt = batch[0][0].unsqueeze(0).to(pl_module.device)
         for key, do_key in self.do_plot.items():
             if do_key:

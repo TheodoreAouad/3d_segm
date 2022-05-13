@@ -15,6 +15,7 @@ from .softplus import Softplus
 class InitLuiEnum(Enum):
     NORMAL = 1
     KAIMING_UNIFORM = 2
+    CUSTOM = 3
 
 
 class LUI(BinaryNN):
@@ -26,10 +27,11 @@ class LUI(BinaryNN):
         threshold_mode: str,
         chan_inputs: int,
         chan_outputs: int,
-        init_bias_value: float = 0.5,
+        init_bias_value: float = -0.7,
+        input_mean: float = 0.5,
         P_: float = 1,
         constant_P: bool = False,
-        init_mode: InitLuiEnum = InitLuiEnum.KAIMING_UNIFORM,
+        init_mode: InitLuiEnum = InitLuiEnum.CUSTOM,
         force_identity: bool = False,
     ):
         super().__init__()
@@ -41,6 +43,7 @@ class LUI(BinaryNN):
         self.init_bias_value = init_bias_value
         self.init_mode = init_mode
         self.force_identity = force_identity
+        self.input_mean = input_mean
 
         if self.chan_inputs == self.chan_outputs == 1:
             self.force_identity = True
@@ -68,6 +71,14 @@ class LUI(BinaryNN):
         self.update_learned_sets()
 
 
+    def init_coefs_and_bias(self):
+        if self.init_weight_mode == InitLuiEnum.CUSTOM:
+            self.init_bias()
+            self.init_coefs()
+        else:
+            self.init_coefs()
+            self.init_bias()
+
     def init_coefs(self):
         if self.force_identity:
             return
@@ -76,13 +87,22 @@ class LUI(BinaryNN):
             # self.init_normal_bias(mean=0.5, std=0.3)
         elif self.init_mode == InitLuiEnum.KAIMING_UNIFORM:
             self.set_positive_weights(self.weight + 2)
+        elif self.init_mode == InitLuiEnum.CUSTOM:
+            mean = self.init_bias_value / (self.input_mean * torch.tensor(self.weight.shape[1:]).prod())
+            std = .3
+            lb = mean * (1 - std)
+            ub = mean * (1 + std)
+            self.set_positive_weights(
+                torch.rand_like(self.weight) * (lb - ub) + ub
+            )
         else:
             warnings.warn(f"init weight mode {self.init_mode} not recognized. Classical linear init used.")
 
     def init_bias(self):
         if self.force_identity:
             return
-        self.set_positive_bias(torch.zeros_like(self.bias) - self.init_bias_value * self.coefs.mean(1) * self.coefs.shape[1])
+        self.set_positive_bias(torch.zeros_like(self.bias) - self.init_bias_value)
+        # self.set_positive_bias(torch.zeros_like(self.bias) - self.init_bias_value * self.coefs.mean(1) * self.coefs.shape[1])
         # self.set_positive_bias(torch.zeros_like(self.bias) - 1)
 
     def update_learned_sets(self):

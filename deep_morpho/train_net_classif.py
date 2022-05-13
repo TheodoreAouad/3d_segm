@@ -85,8 +85,8 @@ def main(args, logger):
 
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
 
-    init_bias_value = next(iter(trainloader))[0].mean()
-    print(init_bias_value)
+    input_mean = next(iter(trainloader))[0].mean()
+    print(input_mean)
     model = LightningBiMoNNClassifier(
         model_args={
             "kernel_size": [args['kernel_size'] for _ in range(args['n_atoms'])],
@@ -101,7 +101,9 @@ def main(args, logger):
             "constant_weight_P": args['constant_weight_P'],
             "init_weight_mode": args["init_weight_mode"],
             "alpha_init": args["alpha_init"],
-            "init_bias_value": init_bias_value,
+            "input_mean": input_mean,
+            "init_bias_value_bise": args['init_bias_value_bise'],
+            "init_bias_value_lui": args['init_bias_value_lui'],
             "lui_kwargs": {"force_identity": args['force_lui_identity']},
         },
         learning_rate=args['learning_rate'],

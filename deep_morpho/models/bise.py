@@ -28,7 +28,8 @@ class BiSE(BinaryNN):
         constant_weight_P: bool = False,
         shared_weights: torch.tensor = None,
         shared_weight_P: torch.tensor = None,
-        init_bias_value: float = 0.5,
+        init_bias_value: float = -0.7,
+        input_mean: float = 0.5,
         init_weight_mode: str = "conv_0.5",
         out_channels: int = 1,
         do_mask_output: bool = False,
@@ -45,6 +46,7 @@ class BiSE(BinaryNN):
         self.do_mask_output = do_mask_output
         self.padding = self.kernel_size[0] // 2 if padding is None else padding
         self.init_bias_value = init_bias_value
+        self.input_mean = input_mean
 
         self.conv = nn.Conv2d(
             in_channels=1,
@@ -68,8 +70,9 @@ class BiSE(BinaryNN):
         # with torch.no_grad():
         #     self.conv.bias.fill_(init_bias_value)
 
-        self.init_weights()
-        self.init_bias()
+        # self.init_weights()
+        # self.init_bias()
+        self.init_weights_and_bias()
         # self.set_bias(torch.zeros_like(self.bias) + self.init_bias_value)
 
 
@@ -123,6 +126,14 @@ class BiSE(BinaryNN):
             return (kernel_size, kernel_size)
         return kernel_size
 
+    def init_weights_and_bias(self):
+        if self.init_weight_mode == "custom":
+            self.init_bias()
+            self.init_weights()
+        else:
+            self.init_weights()
+            self.init_bias()
+
     def init_weights(self):
         if self.init_weight_mode == "normal_identity":
             self.set_normalized_weights(self._init_normal_identity(self.kernel_size, self.out_channels))
@@ -131,16 +142,27 @@ class BiSE(BinaryNN):
         elif self.init_weight_mode == "conv_0.5":
             # self.set_normalized_weights(self.weight + 5)
             self.set_normalized_weights(self.weight + 1)
+        elif self.init_weight_mode == "custom":
+            mean = self.init_bias_value / (self.input_mean * torch.tensor(self._normalized_weights.shape[1:]).prod())
+            std = .7
+            lb = mean * (1 - std)
+            ub = mean * (1 + std)
+            self.set_normalized_weights(
+                torch.rand_like(self.weights) * (lb - ub) + ub
+            )
         else:
             warnings.warn(f"init weight mode {self.init_weight_mode} not recognized. Classical conv init used.")
             pass
 
     def init_bias(self):
+        # self.set_bias(
+        #     torch.zeros_like(self.bias) -
+        #     self.init_bias_value *  # input layer mean
+        #     self._normalized_weights.mean((1, 2, 3)) *  # weights mean
+        #     torch.tensor(self._normalized_weights.shape[1:]).prod()  # number of parameters
+        # )
         self.set_bias(
-            torch.zeros_like(self.bias) -
-            self.init_bias_value *  # input layer mean
-            self._normalized_weights.mean((1, 2, 3)) *  # weights mean
-            torch.tensor(self._normalized_weights.shape[1:]).prod()  # number of parameters
+            torch.zeros_like(self.bias) - self.init_bias_value
         )
 
     @staticmethod
