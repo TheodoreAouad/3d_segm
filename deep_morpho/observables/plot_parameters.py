@@ -166,7 +166,7 @@ class PlotParametersBiSE(ObservableLayersChans):
         #         metrics[f"weights/bias_{layer_idx}_{bise_idx}"] = layer.bias
         #         last_params[f"bias_{bise_idx}"] = layer.bias.item()
 
-        metrics[f'params/weight_P/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}'] = layer.weight_P_bise[chan_output, chan_input]
+        # metrics[f'params/weight_P/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}'] = layer.weight_P_bise[chan_output, chan_input]
         metrics[f'params/activation_P/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}'] = layer.activation_P_bise[chan_output, chan_input]
         metrics[f'params/bias_bise/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}'] = layer.bias_bise[chan_output, chan_input]
 

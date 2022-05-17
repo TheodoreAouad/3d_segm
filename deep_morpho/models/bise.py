@@ -142,11 +142,22 @@ class BiSE(BinaryNN):
         elif self.init_weight_mode == "conv_0.5":
             # self.set_normalized_weights(self.weight + 5)
             self.set_normalized_weights(self.weight + 1)
-        elif self.init_weight_mode == "custom":
-            mean = self.init_bias_value / (self.input_mean * torch.tensor(self._normalized_weights.shape[1:]).prod())
+        elif self.init_weight_mode == "custom_heuristic":
+            nb_params = self._normalized_weights.shape[1:].prod()
+            mean = self.init_bias_value / (self.input_mean * torch.tensor(nb_params))
             std = .7
             lb = mean * (1 - std)
             ub = mean * (1 + std)
+            self.set_normalized_weights(
+                torch.rand_like(self.weights) * (lb - ub) + ub
+            )
+        elif self.init_weight_mode == "custom_constant":
+            p = 1
+            mean = self.init_bias_value / (self.input_mean * torch.tensor(nb_params))
+            sigma = (2 * nb_params - 4 * self.init_bias_value**2 * p ** 2) / (p ** 2 * nb_params ** 2)
+            diff = torch.sqrt(3 * sigma)
+            lb = mean - diff
+            ub = mean + diff
             self.set_normalized_weights(
                 torch.rand_like(self.weights) * (lb - ub) + ub
             )

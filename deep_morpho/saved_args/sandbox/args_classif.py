@@ -19,7 +19,8 @@ all_args['n_try'] = [0]
 # all_args['n_try'] = range(1, 11)
 
 all_args['experiment_name'] = [
-    "Bimonn_exp_55/sandbox/1"
+    "Bimonn_exp_55/classif/sandbox/0"
+    # "Bimonn_exp_55/classif/baseline"
 ]
 
 
@@ -39,7 +40,7 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-3,
+    1e-2,
     # 1,
 ]
 
@@ -80,7 +81,7 @@ all_args['kernel_size'] = [
     # "adapt",
 ]
 all_args['channels'] = [
-    [1, 6, 1]
+    [1, 3, 1]
 ]
 all_args['init_weight_mode'] = [
     # "identity",

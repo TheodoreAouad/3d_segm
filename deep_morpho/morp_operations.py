@@ -93,7 +93,8 @@ class SequentialMorpOperations:
             "=>".join([f'{fn.__name__}({arg})' for fn, arg in zip(self._selem_fn, self._selem_arg)])
         )
 
-
+import yaml
+yaml.load
 class ParallelMorpOperations:
     """
     Class to apply intersection / union of

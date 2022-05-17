@@ -147,11 +147,17 @@ class PlotPredsClassif(Observable):
         axs[0].imshow(img[0])
         axs[0].set_title(target.argmax())
 
-        colors = ["red" for _ in range(n_classes)]
-        colors[pred.argmax()] = "green"
+        pred_label = pred.argmax()
 
-        axs[1].barh(range(n_classes), pred[0], tick_label=range(n_classes), color=colors)
+        colors = ["red" for _ in range(n_classes)]
+        colors[pred_label] = "green"
+
+        axs[1].barh(range(n_classes), pred, tick_label=range(n_classes), color=colors)
         axs[1].set_xlim(0, 1)
+        axs[1].set_title(f'pred: {pred.argmax()}')
+
+        for idx, value in enumerate(pred):
+            axs[1].text(value.item(), idx, f'{value.item():.2f}')
 
         fig.suptitle(title)
 

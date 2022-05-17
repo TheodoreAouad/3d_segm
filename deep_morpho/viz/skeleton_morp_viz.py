@@ -200,7 +200,7 @@ class SkeletonMorpViz:
         return box_height
 
     def _get_height_group(self, coords_group):
-        return self._get_height(coords_group, .7, self.box_height)
+        return self._get_height(coords_group, .7, self.box_height * .4)
 
     def _get_height_selem(self, coords_selem, height_group):
         return self._get_height(coords_selem, .95, height_group)
