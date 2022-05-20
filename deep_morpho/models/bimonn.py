@@ -2,7 +2,7 @@ from typing import List, Tuple, Union, Dict
 
 import numpy as np
 
-from .bise import BiSE, BiSEC
+from .bise import BiSE, BiSEC, InitBiseEnum
 from .dilation_sum_layer import MaxPlusAtom
 from .cobise import COBiSE, COBiSEC
 from .bisel import BiSEL
@@ -25,7 +25,7 @@ class BiMoNN(BinaryNN):
         init_bias_value_bise: Union[float, List[float]] = 1,
         init_bias_value_lui: Union[float, List[float]] = 1,
         input_mean: Union[float, List[float]] = .5,
-        init_weight_mode: Union[bool, List[bool]] = "custom",
+        init_weight_mode: Union[bool, List[bool]] = InitBiseEnum.CUSTOM_CONSTANT,
         alpha_init: Union[float, List[float]] = 0,
         init_value: Union[float, List[float]] = -2,
         share_weights: Union[bool, List[bool]] = True,

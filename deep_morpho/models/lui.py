@@ -1,5 +1,5 @@
-from enum import Enum
-import warnings
+# from enum import Enum
+# import warnings
 from typing import Tuple
 
 import torch
@@ -10,12 +10,14 @@ import numpy as np
 from .threshold_layer import dispatcher
 from .binary_nn import BinaryNN
 from .softplus import Softplus
+from .bise import InitBiseEnum
 
 
-class InitLuiEnum(Enum):
-    NORMAL = 1
-    KAIMING_UNIFORM = 2
-    CUSTOM = 3
+# class InitBiseEnum(Enum):
+#     NORMAL = 1
+#     KAIMING_UNIFORM = 2
+#     CUSTOM_HEURISTIC = 3
+#     CUSTOM_CONSTANT = 4
 
 
 class LUI(BinaryNN):
@@ -31,7 +33,7 @@ class LUI(BinaryNN):
         input_mean: float = 0.5,
         P_: float = 1,
         constant_P: bool = False,
-        init_mode: InitLuiEnum = InitLuiEnum.CUSTOM,
+        init_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
         force_identity: bool = False,
     ):
         super().__init__()
@@ -72,7 +74,7 @@ class LUI(BinaryNN):
 
 
     def init_coefs_and_bias(self):
-        if self.init_weight_mode == InitLuiEnum.CUSTOM:
+        if self.init_weight_mode == InitBiseEnum.CUSTOM:
             self.init_bias()
             self.init_coefs()
         else:
@@ -82,21 +84,42 @@ class LUI(BinaryNN):
     def init_coefs(self):
         if self.force_identity:
             return
-        if self.init_mode == InitLuiEnum.NORMAL:
+        if self.init_mode == InitBiseEnum.NORMAL:
             self.init_normal_coefs(mean=0.5, std=0.3)
             # self.init_normal_bias(mean=0.5, std=0.3)
-        elif self.init_mode == InitLuiEnum.KAIMING_UNIFORM:
+        elif self.init_mode == InitBiseEnum.KAIMING_UNIFORM:
             self.set_positive_weights(self.weight + 2)
-        elif self.init_mode == InitLuiEnum.CUSTOM:
-            mean = self.init_bias_value / (self.input_mean * torch.tensor(self.weight.shape[1:]).prod())
-            std = .3
+        elif self.init_mode == InitBiseEnum.CUSTOM_HEURISTIC:
+            nb_params = torch.tensor(self.weight.shape[1:]).prod()
+            mean = self.init_bias_value / (self.input_mean * nb_params)
+            std = .5
             lb = mean * (1 - std)
             ub = mean * (1 + std)
             self.set_positive_weights(
                 torch.rand_like(self.weight) * (lb - ub) + ub
             )
+        elif self.init_mode == InitBiseEnum.CUSTOM_CONSTANT:
+            p = 1
+            nb_params = torch.tensor(self.weight.shape[1:]).prod()
+
+            if self.init_bias_value == "auto":
+                lb1 = 1/(2*p) * torch.sqrt(3/2 * nb_params)
+                lb2 = 1 / p * torch.sqrt(nb_params / 2)
+                self.init_bias_value = (lb1 + lb2) / 2
+            # else:
+            #     init_bias_value = self.init_bias_value
+
+            mean = self.init_bias_value / (self.input_mean * nb_params)
+            sigma = (2 * nb_params - 4 * self.init_bias_value**2 * p ** 2) / (p ** 2 * nb_params ** 2)
+            diff = torch.sqrt(3 * sigma)
+            lb = mean - diff
+            ub = mean + diff
+            self.set_positive_weights(
+                torch.rand_like(self.weights) * (lb - ub) + ub
+            )
         else:
-            warnings.warn(f"init weight mode {self.init_mode} not recognized. Classical linear init used.")
+            # warnings.warn(f"init weight mode {self.init_mode} not recognized. Classical linear init used.")
+            raise ValueError(f"init weight mode {self.init_mode} not recognized.")
 
     def init_bias(self):
         if self.force_identity:
@@ -218,7 +241,7 @@ class LUI(BinaryNN):
 
     def set_positive_weights(self, new_weights: torch.Tensor, eps=1e-5) -> torch.Tensor:
         assert self.weight.shape == new_weights.shape, f"Weights must be of same shape {self.weight.shape}"
-        assert (new_weights >= 0).all()
+        assert (new_weights >= 0).all(), new_weights
         self.linear.weight.data = self.softplus_layer.forward_inverse(new_weights + eps)
         return new_weights
 

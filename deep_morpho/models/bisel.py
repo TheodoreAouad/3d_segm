@@ -2,7 +2,7 @@ from typing import Union, Tuple, Dict
 
 import torch
 
-from .bise import BiSE
+from .bise import BiSE, InitBiseEnum
 from .lui import LUI
 from .binary_nn import BinaryNN
 
@@ -19,6 +19,7 @@ class BiSEL(BinaryNN):
         init_bias_value_bise: float = 0.5,
         init_bias_value_lui: float = 0.5,
         input_mean: float = 0.5,
+        init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
         lui_kwargs: Dict = {},
         **bise_kwargs
     ):
@@ -33,6 +34,7 @@ class BiSEL(BinaryNN):
         self.init_bias_value_bise = init_bias_value_bise
         self.init_bias_value_lui = init_bias_value_lui
         self.input_mean = input_mean
+        self.init_weight_mode = init_weight_mode
 
         self.bises = self._init_bises()
         self.luis = self._init_luis()
@@ -49,7 +51,7 @@ class BiSEL(BinaryNN):
         bises = []
         for idx in range(self.in_channels):
             layer = BiSE(
-                out_channels=self.out_channels, kernel_size=self.kernel_size,
+                out_channels=self.out_channels, kernel_size=self.kernel_size, init_weight_mode=self.init_weight_mode,
                 threshold_mode=self.threshold_mode, init_bias_value=self.init_bias_value_bise, input_mean=self.input_mean,
                 **self.bise_kwargs
             )
@@ -67,6 +69,7 @@ class BiSEL(BinaryNN):
                 constant_P=self.constant_P_lui,
                 init_bias_value=self.init_bias_value_lui,
                 input_mean=0.5,
+                init_mode=self.init_weight_mode,
                 **self.lui_kwargs
             )
             setattr(self, f'lui_{idx}', layer)

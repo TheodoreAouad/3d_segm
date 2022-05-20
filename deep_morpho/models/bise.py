@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Tuple, Union, Dict
 import warnings
 
@@ -12,6 +13,14 @@ from .complementation_layer import ComplementationLayer
 from .softplus import Softplus
 from .binary_nn import BinaryNN
 from general.utils import set_borders_to
+
+
+class InitBiseEnum(Enum):
+    NORMAL = 1
+    KAIMING_UNIFORM = 2
+    CUSTOM_HEURISTIC = 3
+    CUSTOM_CONSTANT = 4
+    IDENTITY = 5
 
 
 class BiSE(BinaryNN):
@@ -135,25 +144,34 @@ class BiSE(BinaryNN):
             self.init_bias()
 
     def init_weights(self):
-        if self.init_weight_mode == "normal_identity":
+        if self.init_weight_mode == InitBiseEnum.NORMAL:
             self.set_normalized_weights(self._init_normal_identity(self.kernel_size, self.out_channels))
-        elif self.init_weight_mode == "identity":
+        elif self.init_weight_mode == InitBiseEnum.IDENTITY:
             self._init_as_identity()
-        elif self.init_weight_mode == "conv_0.5":
+        elif self.init_weight_mode == InitBiseEnum.KAIMING_UNIFORM:
             # self.set_normalized_weights(self.weight + 5)
             self.set_normalized_weights(self.weight + 1)
-        elif self.init_weight_mode == "custom_heuristic":
-            nb_params = self._normalized_weights.shape[1:].prod()
-            mean = self.init_bias_value / (self.input_mean * torch.tensor(nb_params))
-            std = .7
+        elif self.init_weight_mode == InitBiseEnum.CUSTOM_HEURISTIC:
+            nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
+            mean = self.init_bias_value / (self.input_mean * nb_params)
+            std = .5
             lb = mean * (1 - std)
             ub = mean * (1 + std)
             self.set_normalized_weights(
                 torch.rand_like(self.weights) * (lb - ub) + ub
             )
-        elif self.init_weight_mode == "custom_constant":
+        elif self.init_weight_mode == InitBiseEnum.CUSTOM_CONSTANT:
             p = 1
-            mean = self.init_bias_value / (self.input_mean * torch.tensor(nb_params))
+            nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
+
+            if self.init_bias_value == "auto":
+                lb1 = 1/(2*p) * torch.sqrt(3/2 * nb_params)
+                lb2 = 1 / p * torch.sqrt(nb_params / 2)
+                self.init_bias_value = (lb1 + lb2) / 2
+            # else:
+            #     init_bias_value = self.init_bias_value
+
+            mean = self.init_bias_value / (self.input_mean * nb_params)
             sigma = (2 * nb_params - 4 * self.init_bias_value**2 * p ** 2) / (p ** 2 * nb_params ** 2)
             diff = torch.sqrt(3 * sigma)
             lb = mean - diff
@@ -162,8 +180,8 @@ class BiSE(BinaryNN):
                 torch.rand_like(self.weights) * (lb - ub) + ub
             )
         else:
-            warnings.warn(f"init weight mode {self.init_weight_mode} not recognized. Classical conv init used.")
-            pass
+            raise ValueError(f"init weight mode {self.init_weight_mode} not recognized.")
+
 
     def init_bias(self):
         # self.set_bias(
@@ -462,6 +480,7 @@ class BiSE(BinaryNN):
         return new_weights
 
     def set_normalized_weights(self, new_weights: torch.Tensor) -> torch.Tensor:
+        assert (new_weights >= 0).all(), new_weights
         return self.set_weights(self.weight_threshold_layer.forward_inverse(new_weights))
 
     def set_bias(self, new_bias: torch.Tensor) -> torch.Tensor:

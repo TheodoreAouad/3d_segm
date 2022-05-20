@@ -5,6 +5,7 @@ import torch.nn as nn
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
 from deep_morpho.loss import MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization
 from general.utils import dict_cross
+from deep_morpho.models import InitBiseEnum
 
 loss_dict = {
     "MSELoss": nn.MSELoss,
@@ -81,13 +82,14 @@ all_args['kernel_size'] = [
     # "adapt",
 ]
 all_args['channels'] = [
-    [1, 3, 1]
+    [1, 3, 3, 3, 1]
 ]
 all_args['init_weight_mode'] = [
     # "identity",
     # "normal_identity",
     # "conv_0.5"
-    "custom"
+    InitBiseEnum.CUSTOM_HEURISTIC
+    # InitBiseEnum.CUSTOM_CONSTANT
 ]
 all_args['activation_P'] = [5]
 all_args['force_lui_identity'] = [False]
@@ -127,6 +129,9 @@ for idx, args in enumerate(all_args):
     args['loss_data'] = loss_dict[args['loss_data_str']]()
     args['experiment_subname'] = f"{args['threshold_mode']['weight']}/{args['dataset_type']}"
 
+    if args["init_weight_mode"] == InitBiseEnum.CUSTOM_CONSTANT:
+        args['init_bias_value_bise'] = 'auto'
+        args['init_bias_value_lui'] = 'auto'
 
     if args['mnist_args']['invert_input_proba'] == 1:
         args['experiment_subname'] = args['experiment_subname'].replace('mnist', 'inverted_mnist')
