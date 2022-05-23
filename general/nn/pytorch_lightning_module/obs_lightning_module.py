@@ -1,4 +1,5 @@
 from functools import reduce
+from numpy import isin
 
 from pytorch_lightning import LightningModule
 from typing import Any, List, Optional, Callable, Dict, Union, Tuple
@@ -16,14 +17,15 @@ class ObsLightningModule(LightningModule):
         outputs, preds = self.obs_training_step(batch, batch_idx)
 
         for obs in self.observables:
-            obs.on_train_batch_end_with_preds(
-                self.trainer,
-                self.trainer.lightning_module,
-                outputs,
-                batch,
-                batch_idx,
-                preds
-            )
+            if isinstance(obs, Observable):
+                obs.on_train_batch_end_with_preds(
+                    self.trainer,
+                    self.trainer.lightning_module,
+                    outputs,
+                    batch,
+                    batch_idx,
+                    preds
+                )
 
         return outputs
 
@@ -31,28 +33,30 @@ class ObsLightningModule(LightningModule):
         outputs, preds = self.obs_validation_step(batch, batch_idx)
 
         for obs in self.observables:
-            obs.on_validation_batch_end_with_preds(
-                self.trainer,
-                self.trainer.lightning_module,
-                outputs,
-                batch,
-                batch_idx,
-                preds
-            )
+            if isinstance(obs, Observable):
+                obs.on_validation_batch_end_with_preds(
+                    self.trainer,
+                    self.trainer.lightning_module,
+                    outputs,
+                    batch,
+                    batch_idx,
+                    preds
+                )
         return outputs
 
     def test_step(self, batch: Any, batch_idx: int):
         outputs, preds = self.obs_test_step(batch, batch_idx)
 
         for obs in self.observables:
-            obs.on_test_batch_end_with_preds(
-                self.trainer,
-                self.trainer.lightning_module,
-                outputs,
-                batch,
-                batch_idx,
-                preds
-            )
+            if isinstance(obs, Observable):
+                obs.on_test_batch_end_with_preds(
+                    self.trainer,
+                    self.trainer.lightning_module,
+                    outputs,
+                    batch,
+                    batch_idx,
+                    preds
+                )
 
         return outputs
 

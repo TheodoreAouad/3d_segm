@@ -26,3 +26,9 @@ class SaveLoss(Observable):
         trainer.logger.experiment.add_scalars(
             "loss/train", {k: v for k, v in outputs.items() if 'loss' in k}, trainer.global_step
         )
+        trainer.logged_metrics.update(
+            **{f"loss/train/{k}": v for k, v in outputs.items() if 'loss' in k}
+        )
+        # for k, v in outputs.items():
+        #     if 'loss' in k:
+        #         trainer.log(f"loss/train/{k}", v)

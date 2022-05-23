@@ -4,6 +4,7 @@ import torch.optim as optim
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
 from deep_morpho.loss import MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization
 from general.utils import dict_cross
+from deep_morpho.models import InitBiseEnum
 from .args_morp_ops import morp_operations
 
 loss_dict = {
@@ -29,7 +30,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_53/sandbox/0"
     # "test_reproducibility"
     # "DGMM_2022/sandbox/1"
-    "Bimonn_exp_55/sandbox/0"
+    # "Bimonn_exp_55/sandbox/0"
+    "test_early_stopping"
     # "Bimonn_exp_54/sandbox/0",
 ]
 
@@ -133,13 +135,18 @@ all_args['channels'] = [
 all_args['init_weight_mode'] = [
     # "identity",
     # "normal_identity",
-    "conv_0.5"
+    # "conv_0.5"
+    InitBiseEnum.CUSTOM_HEURISTIC
+    # InitBiseEnum.CUSTOM_CONSTANT
 ]
 all_args['activation_P'] = [0]
 all_args['force_lui_identity'] = [False]
 all_args['constant_activation_P'] = [False]
 all_args['constant_P_lui'] = [False]
 all_args['constant_weight_P'] = [True]
+all_args['init_bias_value_bise'] = [1]
+all_args['init_bias_value_lui'] = [1]
+
 all_args['threshold_mode'] = [
     # 'arctan',
     # 'sigmoid',

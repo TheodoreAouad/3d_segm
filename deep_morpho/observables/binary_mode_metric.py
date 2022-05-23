@@ -50,6 +50,9 @@ class BinaryModeMetric(Observable):
                 trainer.logger.log_metrics(
                     {f"binary_mode/{metric_name}_{'train'}": metric}, trainer.global_step
                 )
+                trainer.logged_metrics.update(
+                    {f"binary_mode/{metric_name}_{'train'}": metric}
+                )
 
             img, pred, target = inputs[0], preds[0], targets[0]
             fig = self.plot_three(*[k.cpu().detach().numpy() for k in [img, pred, target]], title='train')

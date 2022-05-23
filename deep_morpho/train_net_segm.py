@@ -119,13 +119,16 @@ def main(args, logger):
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         "ConvergenceBinary": obs.ConvergenceBinary(freq=100),
         "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
+        # "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=20, mode="min"),
+        "BatchEarlyStoppingBinaryDice": obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
     }
 
     observables = list(observables_dict.values())
 
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
 
-    init_bias_value = next(iter(trainloader))[0].mean()
+    # init_bias_value = next(iter(trainloader))[0].mean()
+    input_mean = next(iter(trainloader))[0].mean()
     model = LightningBiMoNN(
         model_args={
             "kernel_size": [args['kernel_size'] for _ in range(args['n_atoms'])],
@@ -139,7 +142,9 @@ def main(args, logger):
             "init_weight_mode": args["init_weight_mode"],
             "alpha_init": args["alpha_init"],
             "lui_kwargs": {"force_identity": args['force_lui_identity']},
-            "init_bias_value": init_bias_value
+            "init_bias_value_bise": args['init_bias_value_bise'],
+            "init_bias_value_lui": args['init_bias_value_lui'],
+            "input_mean": input_mean,
         },
         learning_rate=args['learning_rate'],
         loss=args['loss'],

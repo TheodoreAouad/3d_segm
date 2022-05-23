@@ -12,3 +12,4 @@ from .plot_model import *
 from .binary_mode_metric import *
 from .set_seed import *
 from .plot_forward import *
+from .batch_early_stopping import *
