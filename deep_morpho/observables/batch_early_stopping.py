@@ -107,7 +107,9 @@ class BatchEarlyStopping(EarlyStopping):
                 f" Previous best value was {self.best_score:.3f}. Signaling Trainer to stop."
             )
             reason_code = ReasonCodeEnum.CHECK_FINITE
-        elif self.stopping_threshold is not None and self.monitor_op(current, self.stopping_threshold):
+        elif self.stopping_threshold is not None and (
+            self.monitor_op(current, self.stopping_threshold) or current == self.stopping_threshold
+        ):
             should_stop = True
             reason_str = (
                 "Stopping threshold reached:"

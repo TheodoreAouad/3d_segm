@@ -119,8 +119,10 @@ def main(args, logger):
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         "ConvergenceBinary": obs.ConvergenceBinary(freq=100),
         "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
-        # "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=20, mode="min"),
+        "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=200, mode="min"),
         "BatchEarlyStoppingBinaryDice": obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
+        "BatchReduceLrOnPlateau": obs.BatchReduceLrOnPlateau(patience=100, on_train=True),
+        "CheckLearningRate": obs.CheckLearningRate(freq=2),
     }
 
     observables = list(observables_dict.values())

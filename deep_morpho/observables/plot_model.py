@@ -28,30 +28,26 @@ class PlotBimonn(Observable):
     ) -> None:
 
         if self.freq_idx % self.freq == 0:
-            for key, do_key in self.do_plot.items():
-                if do_key:
-                    vizualiser = BimonnVizualiser(pl_module.model, mode=key)
-                    fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
-                    trainer.logger.experiment.add_figure(f"model/{key}", fig, trainer.global_step)
-                    self.last_figs[key] = fig        
-
-            # vizualiser = BimonnVizualiser(pl_module.model, mode="weights")
-            # fig = vizualiser.get_fig(figsize=self.figsize)
-            # trainer.logger.experiment.add_figure("model/weights", fig, trainer.global_step)
-            # self.last_figs['weights'] = fig
-
-            # vizualiser = BimonnVizualiser(pl_module.model, mode="learned")
-            # fig = vizualiser.get_fig(figsize=self.figsize)
-            # trainer.logger.experiment.add_figure("model/learned", fig, trainer.global_step)
-            # self.last_figs['learned'] = fig
-
-            # vizualiser = BimonnVizualiser(pl_module.model, mode="closest")
-            # fig = vizualiser.get_fig(figsize=self.figsize)
-            # trainer.logger.experiment.add_figure("model/closest", fig, trainer.global_step)
-            # self.last_figs['closest'] = fig
+            self.save_figs(trainer, pl_module)
+            # for key, do_key in self.do_plot.items():
+            #     if do_key:
+            #         vizualiser = BimonnVizualiser(pl_module.model, mode=key)
+            #         fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
+            #         trainer.logger.experiment.add_figure(f"model/{key}", fig, trainer.global_step)
+            #         self.last_figs[key] = fig
 
         self.freq_idx += 1
 
+    def on_train_end(self, trainer, pl_module):
+        self.save_figs(trainer, pl_module)
+
+    def save_figs(self, trainer, pl_module):
+        for key, do_key in self.do_plot.items():
+            if do_key:
+                vizualiser = BimonnVizualiser(pl_module.model, mode=key)
+                fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
+                trainer.logger.experiment.add_figure(f"model/{key}", fig, trainer.global_step)
+                self.last_figs[key] = fig
 
     def save(self, save_path: str):
         if len(self.last_figs) == 0:

@@ -374,6 +374,7 @@ class ParallelMorpOperations:
 
     @staticmethod
     def complementation(size: int, *args, **kwargs):
+        kwargs["name"] = kwargs.get("name", 'opening')
         return ParallelMorpOperations(
             name='complementation',
             operations=[[[('erosion', ('identity', size), True), 'union']]],
@@ -383,6 +384,7 @@ class ParallelMorpOperations:
 
     @staticmethod
     def identity(size: int, *args, **kwargs):
+        kwargs["name"] = kwargs.get("name", 'opening')
         return ParallelMorpOperations(
             name='complementation',
             operations=[[[('erosion', ('identity', size), False), 'union']]],
@@ -392,8 +394,8 @@ class ParallelMorpOperations:
 
     @staticmethod
     def erosion(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        kwargs["name"] = kwargs.get("name", 'erosion')
         return ParallelMorpOperations(
-            name='erosion',
             operations=[[[('erosion', selem, False), 'union']]],
             *args,
             **kwargs
@@ -401,8 +403,8 @@ class ParallelMorpOperations:
 
     @staticmethod
     def dilation(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        kwargs["name"] = kwargs.get("name", 'dilation')
         return ParallelMorpOperations(
-            name='dilation',
             operations=[[[('dilation', selem, False), 'union']]],
             *args,
             **kwargs
@@ -410,8 +412,7 @@ class ParallelMorpOperations:
 
     @staticmethod
     def opening(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
-        if "name" not in kwargs.keys():
-            kwargs["name"] = "opening"
+        kwargs["name"] = kwargs.get("name", 'opening')
         return ParallelMorpOperations(
             operations=[
                 [[('erosion', selem, False), 'union']],
@@ -423,8 +424,7 @@ class ParallelMorpOperations:
 
     @staticmethod
     def closing(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
-        if "name" not in kwargs.keys():
-            kwargs["name"] = "closing"
+        kwargs["name"] = kwargs.get("name", 'closing')
         return ParallelMorpOperations(
             operations=[
                 [[('dilation', selem, False), 'union']],
@@ -436,38 +436,40 @@ class ParallelMorpOperations:
 
     @staticmethod
     def white_tophat(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        kwargs["name"] = kwargs.get("name", 'white_tophat')
         identity = ('dilation', ('disk', 0), False)
         return ParallelMorpOperations(
-            name='white_tophat',
             operations=[
                 [
                     [identity, 'union'],
                     [('erosion', selem, False), 'union'],
                 ],
                 [[identity, ('dilation', selem, True), 'intersection']]
-            ]
+            ],
+            **kwargs
         )
 
     @staticmethod
     def black_tophat(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        kwargs["name"] = kwargs.get("name", 'black_tophat')
         identity1 = ('dilation', ('disk', 0), False)
         identity2 = ('dilation', ('disk', 0), True)
         return ParallelMorpOperations(
-            name='black_tophat',
             operations=[
                 [
                     [identity1, 'union'],
                     [('dilation', selem, False), 'union'],
                 ],
                 [[identity2, ('erosion', selem, False), 'intersection']]
-            ]
+            ],
+            **kwargs
         )
 
     @staticmethod
     def hit_or_miss_transform(selem1, selem2, *args, **kwargs):
+        kwargs["name"] = kwargs.get("name", 'hit_or_miss_transform')
         identity = ('dilation', ('disk', 0), False)
         return ParallelMorpOperations(
-            name='hit_or_miss_transform',
             operations=[
                 [
                     [identity, 'union'],
@@ -476,7 +478,8 @@ class ParallelMorpOperations:
                 [
                     [('erosion', selem1, False), ('dilation', selem2, True), 'intersection']
                 ]
-            ]
+            ],
+            **kwargs,
         )
 
     @staticmethod

@@ -19,8 +19,8 @@ all_args = {}
 
 all_args['batch_seed'] = [None]
 
-all_args['n_try'] = [0]
-# all_args['n_try'] = range(1, 11)
+# all_args['n_try'] = [0]
+all_args['n_try'] = range(1, 6)
 
 all_args['experiment_name'] = [
     # "Bimonn_exp_51/sandbox/multi/1"
@@ -31,7 +31,7 @@ all_args['experiment_name'] = [
     # "test_reproducibility"
     # "DGMM_2022/sandbox/1"
     # "Bimonn_exp_55/sandbox/0"
-    "test_early_stopping"
+    "Bimonn_exp_56/sandbox/0"
     # "Bimonn_exp_54/sandbox/0",
 ]
 
@@ -67,8 +67,8 @@ all_args['mnist_args'] = [
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
 all_args['n_inputs'] = [
-    # 3_000_000,
-    100_000,
+    3_000_000,
+    # 100_000,
 ]
 all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
