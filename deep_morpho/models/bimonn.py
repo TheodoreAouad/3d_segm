@@ -2,7 +2,7 @@ from typing import List, Tuple, Union, Dict
 
 import numpy as np
 
-from .bise import BiSE, BiSEC, InitBiseEnum
+from .bise import BiSE, BiSEC, InitBiseEnum, ClosestSelemEnum
 from .dilation_sum_layer import MaxPlusAtom
 from .cobise import COBiSE, COBiSEC
 from .bisel import BiSEL
@@ -30,6 +30,7 @@ class BiMoNN(BinaryNN):
         init_value: Union[float, List[float]] = -2,
         share_weights: Union[bool, List[bool]] = True,
         constant_P_lui: Union[bool, List[bool]] = False,
+        closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST,
         lui_kwargs: Union[Dict, List[Dict]] = {},
     ):
         super().__init__()
@@ -188,7 +189,7 @@ class BiMoNN(BinaryNN):
         return [
             'kernel_size', 'weight_P', 'threshold_mode', 'activation_P',
             'init_bias_value', 'init_weight_mode', 'out_channels', "constant_activation_P",
-            "constant_weight_P", "input_mean",
+            "constant_weight_P", "input_mean", "closest_selem_method",
         ]
 
     @property
@@ -242,7 +243,7 @@ class BiMoNN(BinaryNN):
         return [
             "kernel_size", "atomic_element", "weight_P", "threshold_mode", "activation_P", "constant_activation_P",
             "init_bias_value_bise", "init_bias_value_lui", "init_weight_mode", "alpha_init", "init_value", "share_weights",
-            "constant_weight_P", "constant_P_lui", "channels", "lui_kwargs", "input_mean",
+            "constant_weight_P", "constant_P_lui", "channels", "lui_kwargs", "input_mean", "closest_selem_method",
         ]
 
 

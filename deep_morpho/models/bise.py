@@ -23,6 +23,11 @@ class InitBiseEnum(Enum):
     IDENTITY = 5
 
 
+class ClosestSelemEnum(Enum):
+    MIN_DIST = 1
+    MAX_SECOND_DERIVATIVE = 2
+
+
 class BiSE(BinaryNN):
 
     operation_code = {"erosion": 0, "dilation": 1}
@@ -39,9 +44,10 @@ class BiSE(BinaryNN):
         shared_weight_P: torch.tensor = None,
         init_bias_value: float = -0.7,
         input_mean: float = 0.5,
-        init_weight_mode: str = "conv_0.5",
+        init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
         out_channels: int = 1,
         do_mask_output: bool = False,
+        closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST,
         padding=None,
         *args,
         **kwargs
@@ -56,6 +62,7 @@ class BiSE(BinaryNN):
         self.padding = self.kernel_size[0] // 2 if padding is None else padding
         self.init_bias_value = init_bias_value
         self.input_mean = input_mean
+        self.closest_selem_method = closest_selem_method
 
         self.conv = nn.Conv2d(
             in_channels=1,
@@ -180,7 +187,8 @@ class BiSE(BinaryNN):
                 torch.rand_like(self.weights) * (lb - ub) + ub
             )
         else:
-            raise ValueError(f"init weight mode {self.init_weight_mode} not recognized.")
+            # raise ValueError(f"init weight mode {self.init_weight_mode} not recognized.")
+            warnings.warn(f"init weight mode {self.init_weight_mode} not recognized.")
 
 
     def init_bias(self):
@@ -328,6 +336,21 @@ class BiSE(BinaryNN):
             return selem
         return None
 
+    def compute_selem_dist_for_operation_chan(self, idx: int, operation: str, v1: float = 0, v2: float = 1):
+        weights = self._normalized_weight[idx, 0]
+        weight_values = weights.unique().detach().cpu().numpy()
+        bias = self.bias[idx]
+        distance_fn = {'dilation': self.distance_to_dilation, 'erosion': self.distance_to_erosion}[operation]
+
+        dists = np.zeros_like(weight_values)
+        selems = []
+        for value_idx, value in enumerate(weight_values):
+            selem = (weights >= value).cpu().detach().numpy()
+            dists[value_idx] = distance_fn(weights, bias, selem, v1, v2)
+            selems.append(selem)
+
+        return selems, dists
+
     def find_closest_selem_for_operation_chan(self, idx: int, operation: str, v1: float = 0, v2: float = 1):
         """
         We find the selem for either a dilation or an erosion. In theory, there is at most one selem that works.
@@ -341,19 +364,26 @@ class BiSE(BinaryNN):
             np.ndarray: the closest selem
             float: the distance to the constraint space
         """
-        weights = self._normalized_weight[idx, 0]
-        weight_values = weights.unique().detach().cpu().numpy()
-        bias = self.bias[idx]
-        distance_fn = {'dilation': self.distance_to_dilation, 'erosion': self.distance_to_erosion}[operation]
+        # selems, dists = self.compute_selem_dist_for_operation_chan(idx=idx, operation=operation, v1=v1, v2=v2)
 
-        dists = np.zeros_like(weight_values)
-        selems = []
-        for value_idx, value in enumerate(weight_values):
-            selem = (weights >= value).cpu().detach().numpy()
-            dists[value_idx] = distance_fn(weights, bias, selem, v1, v2)
-            selems.append(selem)
+        # idx_min = dists.argmin()
+        # return selems[idx_min], dists[idx_min]
+        if self.closest_selem_method == ClosestSelemEnum.MIN_DIST:
+            return self.closest_selem_by_min_dists(idx, operation, v1, v2)
+
+        if self.closest_selem_method == ClosestSelemEnum.MAX_SECOND_DERIVATIVE:
+            return self.closest_selem_by_second_derivative(idx, operation, v1, v2)
+
+
+    def closest_selem_by_min_dists(self, idx, operation, v1, v2):
+        selems, dists = self.compute_selem_dist_for_operation_chan(idx=idx, operation=operation, v1=v1, v2=v2)
 
         idx_min = dists.argmin()
+        return selems[idx_min], dists[idx_min]
+
+    def closest_selem_by_second_derivative(self, idx, operation, v1, v2):
+        selems, dists = self.compute_selem_dist_for_operation_chan(idx=idx, operation=operation, v1=v1, v2=v2)
+        idx_min = (dists[2:] + dists[:-2] - 2 * dists[1:-1]).argmax() + 1
         return selems[idx_min], dists[idx_min]
 
     def find_closest_selem_and_operation_chan(self, idx: int, v1: float = 0, v2: float = 1) -> Tuple[np.ndarray, str, float]:

@@ -88,7 +88,7 @@ class LUI(BinaryNN):
             self.init_normal_coefs(mean=0.5, std=0.3)
             # self.init_normal_bias(mean=0.5, std=0.3)
         elif self.init_mode == InitBiseEnum.KAIMING_UNIFORM:
-            self.set_positive_weights(self.weight + 2)
+            self.set_positive_weights(self.weight + 1)
         elif self.init_mode == InitBiseEnum.CUSTOM_HEURISTIC:
             nb_params = torch.tensor(self.weight.shape[1:]).prod()
             mean = self.init_bias_value / (self.input_mean * nb_params)

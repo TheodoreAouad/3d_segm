@@ -4,7 +4,7 @@ import torch.optim as optim
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
 from deep_morpho.loss import MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization
 from general.utils import dict_cross
-from deep_morpho.models import InitBiseEnum
+from deep_morpho.models import InitBiseEnum, ClosestSelemEnum
 from .args_morp_ops import morp_operations
 
 loss_dict = {
@@ -17,6 +17,7 @@ loss_dict = {
 
 all_args = {}
 
+# all_args['batch_seed'] = [1932412903]
 all_args['batch_seed'] = [None]
 
 # all_args['n_try'] = [0]
@@ -31,7 +32,7 @@ all_args['experiment_name'] = [
     # "test_reproducibility"
     # "DGMM_2022/sandbox/1"
     # "Bimonn_exp_55/sandbox/0"
-    "Bimonn_exp_56/sandbox/0"
+    "Bimonn_exp_56/sandbox/3"
     # "Bimonn_exp_54/sandbox/0",
 ]
 
@@ -75,16 +76,16 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-1,
+    1e-2,
     # 1,
 ]
 
 # if max_plus, then the loss is MSELoss
 all_args['loss_data_str'] = [
     # nn.BCELoss(),
-    # "MaskedBCELoss",
+    "MaskedBCELoss",
     # "MaskedMSELoss",
-    "MaskedDiceLoss",
+    # "MaskedDiceLoss",
 ]
 all_args['loss_regu'] = [
     # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
@@ -102,6 +103,8 @@ all_args['num_workers'] = [
 ]
 all_args['freq_imgs'] = [300]
 all_args['n_epochs'] = [6]
+all_args['patience_loss'] = [2100]
+all_args['patience_reduce_lr'] = [700]
 
 
 # MODEL ARGS
@@ -136,8 +139,13 @@ all_args['init_weight_mode'] = [
     # "identity",
     # "normal_identity",
     # "conv_0.5"
+    # InitBiseEnum.KAIMING_UNIFORM
     InitBiseEnum.CUSTOM_HEURISTIC
     # InitBiseEnum.CUSTOM_CONSTANT
+]
+all_args['closest_selem_method'] = [
+    # ClosestSelemEnum.MIN_DIST
+    ClosestSelemEnum.MAX_SECOND_DERIVATIVE
 ]
 all_args['activation_P'] = [0]
 all_args['force_lui_identity'] = [False]

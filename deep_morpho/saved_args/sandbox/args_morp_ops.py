@@ -49,7 +49,9 @@ selems = []
 
 
 for op in [
-    'disk', "hstick", "dcross",
+    # 'disk', 
+    # "hstick", 
+    "dcross",
     # 'hstick', 'vstick', 'scross', 'dcross', 'square'
 ]:
     size = 7
@@ -61,7 +63,7 @@ for op in [
     # morp_operations.append(ParallelMorpOperations.closing((op, size), name=f"closing/{op}"))
     # morp_operations.append(ParallelMorpOperations.opening((op, size), name=f"opening/{op}"))
     morp_operations.append(ParallelMorpOperations.white_tophat((op, size), name=f"white_tophat/{op}"))
-    morp_operations.append(ParallelMorpOperations.black_tophat((op, size), name=f"black_tophat/{op}"))
+    # morp_operations.append(ParallelMorpOperations.black_tophat((op, size), name=f"black_tophat/{op}"))
 # # morp_operations.append(ParallelMorpOperations.dilation(('disk', 2)))
 # morp_operations.append(ParallelMorpOperations.dilation(('disk', 2)))
 
