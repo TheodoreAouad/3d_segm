@@ -20,8 +20,8 @@ all_args = {}
 # all_args['batch_seed'] = [1932412903]
 all_args['batch_seed'] = [None]
 
-# all_args['n_try'] = [0]
-all_args['n_try'] = range(1, 6)
+all_args['n_try'] = [0]
+# all_args['n_try'] = range(1, 6)
 
 all_args['experiment_name'] = [
     # "Bimonn_exp_51/sandbox/multi/1"
@@ -32,8 +32,9 @@ all_args['experiment_name'] = [
     # "test_reproducibility"
     # "DGMM_2022/sandbox/1"
     # "Bimonn_exp_55/sandbox/0"
-    "Bimonn_exp_56/sandbox/3"
+    # "Bimonn_exp_56/sandbox/3"
     # "Bimonn_exp_54/sandbox/0",
+    "Bimonn_exp_57/sandbox/0"
 ]
 
 
@@ -83,8 +84,8 @@ all_args['learning_rate'] = [
 # if max_plus, then the loss is MSELoss
 all_args['loss_data_str'] = [
     # nn.BCELoss(),
-    "MaskedBCELoss",
-    # "MaskedMSELoss",
+    # "MaskedBCELoss",
+    "MaskedMSELoss",
     # "MaskedDiceLoss",
 ]
 all_args['loss_regu'] = [
@@ -144,8 +145,8 @@ all_args['init_weight_mode'] = [
     # InitBiseEnum.CUSTOM_CONSTANT
 ]
 all_args['closest_selem_method'] = [
-    # ClosestSelemEnum.MIN_DIST
-    ClosestSelemEnum.MAX_SECOND_DERIVATIVE
+    ClosestSelemEnum.MIN_DIST
+    # ClosestSelemEnum.MAX_SECOND_DERIVATIVE
 ]
 all_args['activation_P'] = [0]
 all_args['force_lui_identity'] = [False]

@@ -1,6 +1,7 @@
 from typing import Union, Tuple, List, Callable, Any
-from matplotlib import pyplot as plt
+import copy
 
+from matplotlib import pyplot as plt
 import numpy as np
 import torch
 
@@ -93,8 +94,7 @@ class SequentialMorpOperations:
             "=>".join([f'{fn.__name__}({arg})' for fn, arg in zip(self._selem_fn, self._selem_arg)])
         )
 
-import yaml
-yaml.load
+
 class ParallelMorpOperations:
     """
     Class to apply intersection / union of
@@ -510,6 +510,22 @@ class ParallelMorpOperations:
             ]
         )
 
+    @staticmethod
+    def translation(tx: int, ty: int, *args, **kwargs):
+        kwargs["name"] = kwargs.get("name", "translation")
+        tx, ty = int(tx), int(ty)
+        final_shape = 2 * max(np.abs(tx), np.abs(ty)) + 1
+
+        if final_shape % 2 == 0:
+            final_shape += 1
+
+        selem = np.zeros((final_shape, final_shape))
+        selem[final_shape // 2 - tx, final_shape // 2 - ty] = 1
+
+        print(selem)
+
+        return ParallelMorpOperations(operations=[[[("dilation", selem, False), "union"]]], *args, **kwargs)
+
     @property
     def ui_arrays(self):
         ui_ars = []
@@ -573,3 +589,33 @@ class ParallelMorpOperations:
         vizualiser = MorpOperationsVizualiser(self)
         canva = vizualiser.draw(**kwargs)
         return canva
+
+    def concatenate(self, morp_operations: List["ParallelMorpOperations"], name: str = None) -> "ParallelMorpOperations":
+        if isinstance(morp_operations, ParallelMorpOperations):
+            morp_operations = [morp_operations]
+
+        res = copy.deepcopy(self)
+        final_name = res.name
+
+        for morp_operation in morp_operations:
+            assert res.out_channels[-1] == morp_operation.in_channels[0]
+            for attr in [
+                "operations",
+                "operation_names",
+                "selem_names",
+                "selem_args",
+                "selems",
+                "do_complementation",
+                "in_channels",
+                "out_channels",
+                "max_selem_shape",
+            ]:
+                getattr(res, attr).extend(getattr(morp_operation, attr))
+            final_name = f"{final_name}_{morp_operation.name}"
+
+        if name is None:
+            name = final_name
+
+        res.name = name
+
+        return res

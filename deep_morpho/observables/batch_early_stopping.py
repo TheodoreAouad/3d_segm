@@ -7,6 +7,7 @@ import torch
 
 from general.utils import save_json
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
+from pytorch_lightning.callbacks import Callback
 
 
 class ReasonCodeEnum(Enum):
@@ -141,3 +142,44 @@ class BatchEarlyStopping(EarlyStopping):
                 reason_code = ReasonCodeEnum.STOP_IMPROVING
 
         return should_stop, reason_str, reason_code
+
+
+class BatchActivatedEarlyStopping(Callback):
+
+    def __init__(self, patience=300, *args, **kwargs):
+        """Callback to stop training when all BiSE are activated.
+
+        Args:
+            patience (int, optional): Number of batches to wait until we start the stopping. We avoid initial activations. Defaults to 300.
+        """
+        super().__init__(*args, **kwargs)
+        self.stopped_batch = None
+        self.stopped_epoch = None
+        self.patience = patience
+
+    def on_train_batch_end(self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule', outputs: "STEP_OUTPUT", batch: Any, batch_idx: int, dataloader_idx: int) -> None:
+        if trainer.global_step < self.patience:
+            return
+
+        for bisel in pl_module.model.layers:
+            for bise in bisel.bises:
+                bise.update_learned_selems()
+                if not bise.is_activated.all():
+                    return
+
+        trainer.should_stop = True
+        if trainer.should_stop:
+            self.stopped_epoch = trainer.current_epoch
+            self.stopped_batch = trainer.global_step
+
+    def save(self, save_path: str):
+        final_dir = join(save_path, join(self.__class__.__name__))
+        pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
+
+        to_save = {
+            "stopped_batch": self.stopped_batch,
+            "patience": self.patience,
+        }
+
+        save_json(to_save, join(final_dir, "results.json"))
+        return to_save

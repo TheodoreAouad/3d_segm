@@ -45,12 +45,27 @@ selems = []
 
 
 # morp_operations.append(ParallelMorpOperations.dilation(('hstick', 7)))
-# morp_operations.append(ParallelMorpOperations.white_tophat(('dcross', 7)))
+# morp_operations.append(ParallelMorpOperations.translation(1, 2))
+morp_operations.append(ParallelMorpOperations.concatenate(
+    ParallelMorpOperations.translation(1, 2),
+    ParallelMorpOperations.dilation(('hstick', 7)),
+    # ParallelMorpOperations.dilation(('disk', 3)),
+    # ParallelMorpOperations.dilation(('dcross', 7)),
+))
+morp_operations.append(ParallelMorpOperations.concatenate(
+    ParallelMorpOperations.translation(1, 2),
+    # ParallelMorpOperations.dilation(('hstick', 7)),
+    # ParallelMorpOperations.dilation(('disk', 3)),
+    ParallelMorpOperations.dilation(('dcross', 7)),
+))
+# morp_operations.append(ParallelMorpOperations.translation(2, 1))
+# morp_operations.append(ParallelMorpOperations.translation(0, 3))
+# morp_operations.append(ParallelMorpOperations.translation(3, 0))
 
 
 for op in [
-    # 'disk', 
-    # "hstick", 
+    'disk',
+    "hstick",
     "dcross",
     # 'hstick', 'vstick', 'scross', 'dcross', 'square'
 ]:
@@ -62,8 +77,13 @@ for op in [
     # morp_operations.append(ParallelMorpOperations.erosion((op, size), name=f"erosion/{op}"))
     # morp_operations.append(ParallelMorpOperations.closing((op, size), name=f"closing/{op}"))
     # morp_operations.append(ParallelMorpOperations.opening((op, size), name=f"opening/{op}"))
-    morp_operations.append(ParallelMorpOperations.white_tophat((op, size), name=f"white_tophat/{op}"))
+    # morp_operations.append(ParallelMorpOperations.white_tophat((op, size), name=f"white_tophat/{op}"))
     # morp_operations.append(ParallelMorpOperations.black_tophat((op, size), name=f"black_tophat/{op}"))
+
+    morp_operations.append(ParallelMorpOperations.concatenate(ParallelMorpOperations.translation(2, 1), ParallelMorpOperations.closing((op, size), name=f"closing/{op}")))
+    morp_operations.append(ParallelMorpOperations.concatenate(ParallelMorpOperations.translation(2, 1), ParallelMorpOperations.opening((op, size), name=f"opening/{op}")))
+    morp_operations.append(ParallelMorpOperations.concatenate(ParallelMorpOperations.translation(2, 1), ParallelMorpOperations.white_tophat((op, size), name=f"white_tophat/{op}")))
+    morp_operations.append(ParallelMorpOperations.concatenate(ParallelMorpOperations.translation(2, 1), ParallelMorpOperations.black_tophat((op, size), name=f"black_tophat/{op}")))
 # # morp_operations.append(ParallelMorpOperations.dilation(('disk', 2)))
 # morp_operations.append(ParallelMorpOperations.dilation(('disk', 2)))
 

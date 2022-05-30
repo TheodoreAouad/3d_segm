@@ -186,3 +186,38 @@ class TestParallelMorpOperations:
             ero1 = black_tophat(inpt[..., 0], selem)
             ero2 = morp_operation(inpt).squeeze().numpy()
             assert np.abs(ero1 - ero2).sum() == 0
+
+    @staticmethod
+    def test_concatenate1():
+        mp1 = ParallelMorpOperations.dilation(('disk', 3))
+        mp2 = ParallelMorpOperations.erosion(('disk', 3))
+        mp3 = ParallelMorpOperations.dilation(('disk', 2))
+        mp4 = ParallelMorpOperations.erosion(('disk', 2))
+
+        inpt = np.random.randint(0, 2, (50, 50, 1))
+
+        mpf = ParallelMorpOperations.concatenate(mp1, [mp2, mp3, mp4])
+
+        otp1 = mp1(inpt)
+        otp1 = mp2(otp1)
+        otp1 = mp3(otp1)
+        otp1 = mp4(otp1)
+
+        otp2 = mpf(inpt)
+
+        assert np.abs(otp1 - otp2).sum() == 0
+
+    @staticmethod
+    def test_concatenate2():
+        mp1 = ParallelMorpOperations.concatenate(
+            ParallelMorpOperations.dilation(('disk', 3)),
+            ParallelMorpOperations.erosion(('disk', 3)),
+        )
+
+        mp2 = ParallelMorpOperations.closing(('disk', 3))
+
+        inpt = np.random.randint(0, 2, (50, 50, 1))
+
+        otp1 = mp1(inpt)
+        otp2 = mp2(inpt)
+        assert np.abs(otp1 - otp2).sum() == 0

@@ -123,6 +123,7 @@ def main(args, logger):
         "ConvergenceBinary": obs.ConvergenceBinary(freq=100),
         "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
         "BatchEarlyStoppingBinaryDice": obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
+        # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
         "BatchReduceLrOnPlateau": obs.BatchReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
         "CheckLearningRate": obs.CheckLearningRate(freq=2),
     }
