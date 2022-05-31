@@ -71,6 +71,11 @@ class PlotBimonnForward(Observable):
                 #         trainer.logger.experiment.add_figure(f"forward/{key}", fig, trainer.global_step)
                 #         self.last_figs[key] = fig
 
+            # DEBUG
+            # if self.freq_idx in [442, 443, 444, 445]:
+            #     self.plot_model(trainer, pl_module, batch, "forward")
+
+
         self.freq_idx += 1
         # pl_module.model.binary(False)
 
@@ -159,6 +164,10 @@ class PlotBimonnHistogram(Observable):
                 #         trainer.logger.experiment.add_figure(f"histogram/{key}", fig, trainer.global_step)
                 #         self.last_figs[key] = fig
                 self.plot_model(trainer, pl_module, batch, "histogram")
+            # DEBUG
+            # if self.freq_idx in [442, 443, 444, 445]:
+            #     self.plot_model(trainer, pl_module, batch, "histogram")
+            
         self.freq_idx += 1
         # pl_module.model.binary(False)
 

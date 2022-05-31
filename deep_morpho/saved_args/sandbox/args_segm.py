@@ -17,24 +17,15 @@ loss_dict = {
 
 all_args = {}
 
-# all_args['batch_seed'] = [1932412903]
+# all_args['batch_seed'] = [3227255972]
 all_args['batch_seed'] = [None]
 
-all_args['n_try'] = [0]
-# all_args['n_try'] = range(1, 6)
+# all_args['n_try'] = [0]
+all_args['n_try'] = range(1, 5)
 
 all_args['experiment_name'] = [
-    # "Bimonn_exp_51/sandbox/multi/1"
-    # "Bimonn_exp_51/sandbox/5"
-    # "Bimonn_exp_52/sandbox/2"
-    # "Bimonn_exp_53/sandbox/softplus"
-    # "Bimonn_exp_53/sandbox/0"
-    # "test_reproducibility"
-    # "DGMM_2022/sandbox/1"
-    # "Bimonn_exp_55/sandbox/0"
+    "Bimonn_exp_59/sandbox/0"
     # "Bimonn_exp_56/sandbox/3"
-    # "Bimonn_exp_54/sandbox/0",
-    "Bimonn_exp_57/sandbox/0"
 ]
 
 
@@ -68,10 +59,12 @@ all_args['mnist_args'] = [
     {"threshold": 30, "size": (50, 50), "invert_input_proba": 0},
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
-all_args['n_inputs'] = [
-    3_000_000,
-    # 100_000,
-]
+all_args['n_steps'] = [10000]
+all_args['nb_batch_indep'] = [0]
+# all_args['n_inputs'] = [
+#     3_000_000,
+#     # 100_000,
+# ]
 all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 
@@ -85,8 +78,8 @@ all_args['learning_rate'] = [
 all_args['loss_data_str'] = [
     # nn.BCELoss(),
     # "MaskedBCELoss",
-    "MaskedMSELoss",
-    # "MaskedDiceLoss",
+    # "MaskedMSELoss",
+    "MaskedDiceLoss",
 ]
 all_args['loss_regu'] = [
     # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
@@ -214,6 +207,7 @@ for idx, args in enumerate(all_args):
 
     if args['dataset_type'] == "diskorect":
         args['n_epochs'] = 1
+        args['n_inputs'] = args['n_steps'] * args['batch_size']
         args["random_gen_args"] = args["random_gen_args"].copy()
         args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
         args['random_gen_args']['size'] = args['random_gen_args']['size'] + (args["morp_operation"].in_channels[0],)

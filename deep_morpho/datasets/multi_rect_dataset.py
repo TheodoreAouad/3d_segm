@@ -27,16 +27,30 @@ class InputOutputGeneratorDataset(Dataset):
             device: str = "cpu",
             len_dataset: int = 1000,
             seed: int = None,
+            max_generation_nb: int = 0,
     ):
         self.random_gen_fn = random_gen_fn
         self.random_gen_args = random_gen_args
         self.device = device
         self.len_dataset = len_dataset
         self.morp_fn = morp_operation
+        self.max_generation_nb = max_generation_nb
+        self.data = {}
         self.rng = np.random.default_rng(seed)
 
 
     def __getitem__(self, idx):
+        if self.max_generation_nb == 0:
+            return self.generate_input_target()
+
+        idx = idx % self.max_generation_nb
+
+        if idx not in self.data.keys():
+            self.data[idx] = self.generate_input_target()
+
+        return self.data[idx]
+
+    def generate_input_target(self):
         input_ = self.random_gen_fn(rng_float=self.rng.random, rng_int=self.rng.integers, **self.random_gen_args,)
         target = self.morp_fn(input_).float()
         input_ = torch.tensor(input_).float()
@@ -53,9 +67,11 @@ class InputOutputGeneratorDataset(Dataset):
         return self.len_dataset
 
     @staticmethod
-    def get_loader(batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, seed=None, device='cpu', **kwargs):
+    def get_loader(batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, max_generation_nb=0, seed=None, device='cpu', **kwargs):
         return DataLoader(
-            InputOutputGeneratorDataset(random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device, len_dataset=n_inputs, seed=seed),
+            InputOutputGeneratorDataset(
+                random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device, len_dataset=n_inputs, seed=seed, max_generation_nb=max_generation_nb,
+            ),
             batch_size=batch_size, **kwargs
         )
 

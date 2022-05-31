@@ -36,6 +36,10 @@ class PlotBimonn(Observable):
             #         trainer.logger.experiment.add_figure(f"model/{key}", fig, trainer.global_step)
             #         self.last_figs[key] = fig
 
+        # DEBUG
+        # if self.freq_idx in [442, 443, 444, 445]:
+        #     self.save_figs(trainer, pl_module)
+
         self.freq_idx += 1
 
     def on_train_end(self, trainer, pl_module):

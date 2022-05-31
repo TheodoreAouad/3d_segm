@@ -36,6 +36,13 @@ class ObservableLayers(Observable):
                 self.on_train_batch_end_layers(
                     trainer, pl_module, outputs, batch, batch_idx, dataloader_idx, layer, layer_idx
                 )
+        # DEBUG
+        # if self.freq_idx["on_train_batch_end"] in [442, 443, 444, 445]:
+        #     for layer_idx, layer in enumerate(layers):
+        #         self.on_train_batch_end_layers(
+        #             trainer, pl_module, outputs, batch, batch_idx, dataloader_idx, layer, layer_idx
+        #         )
+
         self.freq_idx["on_train_batch_end"] += 1
         for layer_idx, layer in enumerate(layers):
             self.on_train_batch_end_layers_always(
@@ -59,6 +66,14 @@ class ObservableLayers(Observable):
                 self.on_train_batch_end_with_preds_layers(
                     trainer, pl_module, outputs, batch, batch_idx, preds, layer, layer_idx,
                 )
+        
+        # DEBUG
+        # if self.freq_idx["on_train_batch_end_with_preds"] in [442, 443, 444, 445]:
+        #     for layer_idx, layer in enumerate(layers):
+        #         self.on_train_batch_end_with_preds_layers(
+        #             trainer, pl_module, outputs, batch, batch_idx, preds, layer, layer_idx,
+        #         )
+
         self.freq_idx["on_train_batch_end_with_preds"] += 1
         for layer_idx, layer in enumerate(layers):
             self.on_train_batch_end_with_preds_layers_always(

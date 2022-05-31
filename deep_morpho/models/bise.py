@@ -539,9 +539,30 @@ class BiSE(BinaryNN):
     def weights(self):
         return self.weight
 
+    def get_min_max_intrinsic_bias_values(self):
+        """We compute the min and max values that are really useful for the bias. We suppose that if the bias is out of
+        these bounds, then it is nonsense.
+        The bounds are computed to avoid having always a negative convolution output or a positive convolution output.
+        """
+        # TODO with torch.no_grad() or not??
+        weights_aligned = self._normalized_weight.reshape(self._normalized_weight.shape[0], -1)
+        weights_min = weights_aligned.min(1).values
+        weights_2nd_min = weights_aligned.kthvalue(2, 1).values
+        weights_sum = weights_aligned.sum(1)
+
+        bmin = 1/2 * (weights_min + weights_2nd_min)
+        bmax = weights_sum - 1/2 * weights_min
+
+        return bmin, bmax
+
+
     @property
     def bias(self):
-        return -self.softplus_layer(self.conv.bias) - .5
+        bmin, bmax = self.get_min_max_intrinsic_bias_values()
+        bias = torch.clamp(self.softplus_layer(self.conv.bias), bmin, bmax)
+        return -bias
+        # return -self.softplus_layer(self.conv.bias) - .5
+
         # return self.conv.bias
 
 

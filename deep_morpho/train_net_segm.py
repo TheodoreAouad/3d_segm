@@ -38,12 +38,15 @@ def get_dataloader(args):
         trainloader = InputOutputGeneratorDataset.get_loader(
             batch_size=args['batch_size'],
             n_inputs=args['n_inputs'],
+            max_generation_nb=args['nb_batch_indep'],
             random_gen_fn=args['random_gen_fn'],
             random_gen_args=args['random_gen_args'],
             morp_operation=args['morp_operation'],
             seed=args['seed'],
             device=device,
             num_workers=args['num_workers'],
+            # persistent_workers=True,
+            # pin_memory=True,
         )
         valloader = None
         testloader = None
