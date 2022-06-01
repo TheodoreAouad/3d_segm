@@ -20,8 +20,8 @@ all_args = {}
 # all_args['batch_seed'] = [3227255972]
 all_args['batch_seed'] = [None]
 
-# all_args['n_try'] = [0]
-all_args['n_try'] = range(1, 5)
+all_args['n_try'] = [0]
+# all_args['n_try'] = range(1, 5)
 
 all_args['experiment_name'] = [
     "Bimonn_exp_59/sandbox/0"
