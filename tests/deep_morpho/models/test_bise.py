@@ -100,7 +100,7 @@ class TestBiSE:
             assert operation == original_op
 
     @staticmethod
-    @pytest.mark.parametrize("threshold_mode", ["identity", "tanh"])
+    @pytest.mark.parametrize("threshold_mode", ["identity", "softplus"])
     def test_bise_forward_binary_dilation(threshold_mode):
         weight = disk(3)
         layer = BiSE.bise_from_selem(weight, 'dilation', threshold_mode=threshold_mode)
@@ -112,7 +112,7 @@ class TestBiSE:
         assert np.abs(output - target).sum() == 0
 
     @staticmethod
-    @pytest.mark.parametrize("threshold_mode", ["identity", "tanh"])
+    @pytest.mark.parametrize("threshold_mode", ["identity", "softplus"])
     def test_bise_forward_binary_erosion(threshold_mode):
         weight = disk(3)
         layer = BiSE.bise_from_selem(weight, 'erosion', threshold_mode=threshold_mode)
@@ -124,7 +124,7 @@ class TestBiSE:
         assert np.abs(output - target).sum() == 0
 
     @staticmethod
-    @pytest.mark.parametrize("threshold_mode", ["identity", "tanh"])
+    @pytest.mark.parametrize("threshold_mode", ["identity", "softplus"])
     def test_bise_binary_mode_dilation(threshold_mode):
         weight = disk(3)
         layer = BiSE.bise_from_selem(weight, 'dilation', threshold_mode=threshold_mode)
@@ -138,7 +138,7 @@ class TestBiSE:
         assert np.abs(output - target).sum() == 0
 
     @staticmethod
-    @pytest.mark.parametrize("threshold_mode", ["identity", "tanh"])
+    @pytest.mark.parametrize("threshold_mode", ["identity", "softplus"])
     def test_bise_binary_mode_erosion(threshold_mode):
         weight = disk(3)
         layer = BiSE.bise_from_selem(weight, 'erosion', threshold_mode=threshold_mode)
@@ -151,7 +151,7 @@ class TestBiSE:
         assert np.abs(output - target).sum() == 0
 
     @staticmethod
-    @pytest.mark.parametrize("threshold_mode", ["identity", "tanh"])
+    @pytest.mark.parametrize("threshold_mode", ["identity", "softplus"])
     def test_bise_binary_mode_complementation(threshold_mode):
         weight = disk(2)
         layer = BiSE.bise_from_selem(weight, 'dilation', threshold_mode=threshold_mode)
