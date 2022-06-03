@@ -266,8 +266,8 @@ class BiSE(BinaryNN):
 
         dil_key = self.operation_code['dilation']
         ero_key = self.operation_code['erosion']
-        operations[self.is_activated] = torch.FloatTensor(self.learned_operation[self.is_activated])
-        operations[~self.is_activated] = torch.FloatTensor(self.closest_operation[~self.is_activated])
+        operations[self.is_activated] = torch.FloatTensor(self.learned_operation[self.is_activated]).to(operations.device)
+        operations[~self.is_activated] = torch.FloatTensor(self.closest_operation[~self.is_activated]).to(operations.device)
         bias[operations == dil_key] = -0.5
         bias[operations == ero_key] = -weights[operations == ero_key].sum((1, 2, 3)) + 0.5
 

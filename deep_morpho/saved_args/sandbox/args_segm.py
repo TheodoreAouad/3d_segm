@@ -4,7 +4,7 @@ import torch.optim as optim
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
 from deep_morpho.loss import MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization
 from general.utils import dict_cross
-from deep_morpho.models import InitBiseEnum, ClosestSelemEnum
+from deep_morpho.models import InitBiseEnum, ClosestSelemEnum, ClosestSelemDistanceEnum
 from .args_morp_ops import morp_operations
 
 loss_dict = {
@@ -141,6 +141,12 @@ all_args['closest_selem_method'] = [
     ClosestSelemEnum.MIN_DIST
     # ClosestSelemEnum.MAX_SECOND_DERIVATIVE
 ]
+all_args['closest_selem_distance_fn'] = [
+    # ClosestSelemDistanceEnum.DISTANCE_BETWEEN_BOUNDS
+    # ClosestSelemDistanceEnum.DISTANCE_TO_AND_BETWEEN_BOUNDS
+    ClosestSelemDistanceEnum.DISTANCE_TO_BOUNDS
+]
+
 all_args['activation_P'] = [0]
 all_args['force_lui_identity'] = [False]
 all_args['constant_activation_P'] = [False]
