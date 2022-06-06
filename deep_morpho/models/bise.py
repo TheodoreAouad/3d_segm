@@ -34,6 +34,12 @@ class ClosestSelemDistanceEnum(Enum):
     DISTANCE_TO_AND_BETWEEN_BOUNDS = 3
 
 
+class BiseBiasOptimEnum(Enum):
+    POSITIVE = 1    # only softplus applied
+    POSITIVE_INTERVAL_PROJECTED = 2     # softplus applied and projected gradient on the relevent values [min(W), W.sum()] (no torch grad)
+    POSITIVE_INTERVAL_REPARAMETRIZED = 3     # softplus applied and reparametrized on the relevent values [min(W), W.sum()] (with torch grad)
+
+
 class BiSE(BinaryNN):
 
     operation_code = {"erosion": 0, "dilation": 1}
@@ -55,6 +61,7 @@ class BiSE(BinaryNN):
         do_mask_output: bool = False,
         closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST,
         closest_selem_distance_fn: ClosestSelemDistanceEnum = ClosestSelemDistanceEnum.DISTANCE_TO_AND_BETWEEN_BOUNDS,
+        bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED,
         padding=None,
         *args,
         **kwargs
@@ -71,6 +78,7 @@ class BiSE(BinaryNN):
         self.input_mean = input_mean
         self.closest_selem_method = closest_selem_method
         self.closest_selem_distance_fn = closest_selem_distance_fn
+        self.bias_optim_mode = bias_optim_mode
 
         self.conv = nn.Conv2d(
             in_channels=1,
@@ -116,7 +124,7 @@ class BiSE(BinaryNN):
 
     def update_binary_selems(self):
         self.update_closest_selems()
-        self.update_binary_selems()
+        self.update_learned_selems()
 
     def update_learned_selems(self):
         for chan in range(self.out_channels):
@@ -124,7 +132,7 @@ class BiSE(BinaryNN):
 
     def binary(self, mode: bool = True):
         if mode:
-            self.update_learned_selems()
+            self.update_binary_selems()
         return super().binary(mode)
 
     @staticmethod
@@ -624,10 +632,21 @@ class BiSE(BinaryNN):
 
     @property
     def bias(self):
-        bmin, bmax = self.get_min_max_intrinsic_bias_values()
-        bias = torch.clamp(self.softplus_layer(self.conv.bias), bmin, bmax)
-        return -bias
-        # return -self.softplus_layer(self.conv.bias) - .5
+        if self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE:
+            return -self.softplus_layer(self.conv.bias) - .5
+
+        if self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED:
+            with torch.no_grad():
+                bmin, bmax = self.get_min_max_intrinsic_bias_values()
+                bias = torch.clamp(self.softplus_layer(self.conv.bias), bmin, bmax)
+            return -bias
+
+        if self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED:
+            bmin, bmax = self.get_min_max_intrinsic_bias_values()
+            bias = torch.clamp(self.softplus_layer(self.conv.bias), bmin, bmax)
+            return -bias
+
+        assert NotImplementedError(f'self.bias_optim_mode must be in [{1, 2, 3}]')
 
         # return self.conv.bias
 

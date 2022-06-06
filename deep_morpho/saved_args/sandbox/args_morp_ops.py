@@ -61,6 +61,22 @@ selems = []
 # morp_operations.append(ParallelMorpOperations.translation(2, 1))
 # morp_operations.append(ParallelMorpOperations.translation(0, 3))
 # morp_operations.append(ParallelMorpOperations.translation(3, 0))
+# morp_operations.append(ParallelMorpOperations.concatenate(
+#     ParallelMorpOperations.translation(1, 1),
+#     [
+#         ParallelMorpOperations.translation(0, 1),
+#         ParallelMorpOperations.translation(1, 0),
+#         ParallelMorpOperations.translation(1, 1),
+#         ParallelMorpOperations.translation(1, 1),
+#         ParallelMorpOperations.translation(1, 1),
+#         ParallelMorpOperations.translation(1, 1),
+#         ParallelMorpOperations.translation(1, 1),
+#         ParallelMorpOperations.translation(1, 1),
+#         ParallelMorpOperations.translation(1, 1),
+#     ],
+#     name="mutli_translation",
+#     # ParallelMorpOperations.dilation((op, size), name=f"dilation/{op}")
+# ))
 
 
 for op in [
@@ -77,12 +93,12 @@ for op in [
     # morp_operations.append(ParallelMorpOperations.erosion((op, size), name=f"erosion/{op}"))
     # morp_operations.append(ParallelMorpOperations.closing((op, size), name=f"closing/{op}"))
     # morp_operations.append(ParallelMorpOperations.opening((op, size), name=f"opening/{op}"))
-    # morp_operations.append(ParallelMorpOperations.white_tophat((op, size), name=f"white_tophat/{op}"))
+    morp_operations.append(ParallelMorpOperations.white_tophat((op, size), name=f"white_tophat/{op}"))
     # morp_operations.append(ParallelMorpOperations.black_tophat((op, size), name=f"black_tophat/{op}"))
 
     # morp_operations.append(ParallelMorpOperations.concatenate(ParallelMorpOperations.translation(2, 1), ParallelMorpOperations.dilation((op, size), name=f"dilation/{op}")))
     # morp_operations.append(ParallelMorpOperations.concatenate(ParallelMorpOperations.translation(2, 1), ParallelMorpOperations.erosion((op, size), name=f"erosion/{op}")))
-    morp_operations.append(ParallelMorpOperations.concatenate(ParallelMorpOperations.translation(2, 1), ParallelMorpOperations.closing((op, size), name=f"closing/{op}")))
+    # morp_operations.append(ParallelMorpOperations.concatenate(ParallelMorpOperations.translation(2, 1), ParallelMorpOperations.closing((op, size), name=f"closing/{op}")))
     # morp_operations.append(ParallelMorpOperations.concatenate(ParallelMorpOperations.translation(2, 1), ParallelMorpOperations.opening((op, size), name=f"opening/{op}")))
     # morp_operations.append(ParallelMorpOperations.concatenate(ParallelMorpOperations.translation(2, 1), ParallelMorpOperations.white_tophat((op, size), name=f"white_tophat/{op}")))
     # morp_operations.append(ParallelMorpOperations.concatenate(ParallelMorpOperations.translation(2, 1), ParallelMorpOperations.black_tophat((op, size), name=f"black_tophat/{op}")))

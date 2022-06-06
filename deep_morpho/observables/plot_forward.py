@@ -2,6 +2,7 @@ import pathlib
 from os.path import join
 
 import torch
+import matplotlib.pyplot as plt
 
 from general.nn.observables import Observable
 from deep_morpho.viz.bimonn_viz import BimonnForwardVizualiser, BimonnHistogramVizualiser
@@ -30,19 +31,7 @@ class PlotBimonnForward(Observable):
     ):
         if trainer.global_step > 0:
             return
-        # inpt = batch[0][0].unsqueeze(0).to(pl_module.device)
-        # for key, do_key in self.do_plot.items():
-        #     if do_key:
-        #         if key == "binary":
-        #             pl_module.model.binary(True)
-        #         else:
-        #             pl_module.model.binary(False)
 
-        #         vizualiser = BimonnForwardVizualiser(pl_module.model, mode=key, inpt=inpt)
-        #         fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
-        #         trainer.logger.experiment.add_figure(f"forward/init/{key}", fig, trainer.global_step)
-        #         self.last_figs[key] = fig
-        # pl_module.model.binary(False)
         self.plot_model(trainer, pl_module, batch, "forward/init")
 
 
@@ -56,28 +45,11 @@ class PlotBimonnForward(Observable):
         preds: "Any",
     ) -> None:
         with torch.no_grad():
-            # inpt = batch[0][0].unsqueeze(0)
             if self.freq_idx % self.freq == 0:
                 self.plot_model(trainer, pl_module, batch, "forward")
-                # for key, do_key in self.do_plot.items():
-                #     if do_key:
-                #         if key == "binary":
-                #             pl_module.model.binary(True)
-                #         else:
-                #             pl_module.model.binary(False)
-
-                #         vizualiser = BimonnForwardVizualiser(pl_module.model, mode=key, inpt=inpt)
-                #         fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
-                #         trainer.logger.experiment.add_figure(f"forward/{key}", fig, trainer.global_step)
-                #         self.last_figs[key] = fig
-
-            # DEBUG
-            # if self.freq_idx in [442, 443, 444, 445]:
-            #     self.plot_model(trainer, pl_module, batch, "forward")
 
 
         self.freq_idx += 1
-        # pl_module.model.binary(False)
 
 
     def plot_model(
@@ -98,6 +70,8 @@ class PlotBimonnForward(Observable):
                 vizualiser = BimonnForwardVizualiser(pl_module.model, mode=key, inpt=inpt)
                 fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
                 trainer.logger.experiment.add_figure(f"{title}/{key}", fig, trainer.global_step)
+                if key in self.last_figs.keys():
+                    plt.close(self.last_figs[key])
                 self.last_figs[key] = fig
         pl_module.model.binary(False)
 
@@ -150,26 +124,10 @@ class PlotBimonnHistogram(Observable):
         preds: "Any",
     ) -> None:
         with torch.no_grad():
-            # inpt = batch[0][0].unsqueeze(0)
             if self.freq_idx % self.freq == 0:
-                # for key, do_key in self.do_plot.items():
-                #     if do_key:
-                #         if key == "binary":
-                #             pl_module.model.binary(True)
-                #         else:
-                #             pl_module.model.binary(False)
-
-                #         vizualiser = BimonnHistogramVizualiser(pl_module.model, mode=key, inpt=inpt)
-                #         fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
-                #         trainer.logger.experiment.add_figure(f"histogram/{key}", fig, trainer.global_step)
-                #         self.last_figs[key] = fig
                 self.plot_model(trainer, pl_module, batch, "histogram")
-            # DEBUG
-            # if self.freq_idx in [442, 443, 444, 445]:
-            #     self.plot_model(trainer, pl_module, batch, "histogram")
             
         self.freq_idx += 1
-        # pl_module.model.binary(False)
 
 
     def plot_model(self, trainer, pl_module, batch, title):
@@ -185,6 +143,10 @@ class PlotBimonnHistogram(Observable):
                 vizualiser = BimonnHistogramVizualiser(pl_module.model, mode=key, inpt=inpt)
                 fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
                 trainer.logger.experiment.add_figure(f"{title}/{key}", fig, trainer.global_step)
+
+                if key in self.last_figs.keys():
+                    plt.close(self.last_figs[key])
+
                 self.last_figs[key] = fig
         pl_module.model.binary(False)
 

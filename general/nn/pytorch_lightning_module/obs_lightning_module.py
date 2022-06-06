@@ -1,10 +1,10 @@
 from functools import reduce
-from numpy import isin
 
 from pytorch_lightning import LightningModule
 from typing import Any, List, Optional, Callable, Dict, Union, Tuple
 from ..observables.observable import Observable
 from pytorch_lightning.utilities.types import EPOCH_OUTPUT
+
 
 
 class ObsLightningModule(LightningModule):
@@ -26,7 +26,6 @@ class ObsLightningModule(LightningModule):
                     batch_idx,
                     preds
                 )
-
         return outputs
 
     def validation_step(self, batch: Any, batch_idx: int):
@@ -177,7 +176,14 @@ class NetLightning(ObsLightningModule):
         else:
             values["loss"] = self.loss(ypred, ytrue)
 
+        grad_values = {}
         for key, value in values.items():
-            self.log(f"loss/{state}/{key}", value)
+            self.log(f"loss/{state}/{key}", value.item())  # put .item() to avoid memory leak
+            if key == "loss":
+                continue
+            grad_values[f'{key}_grad'] = value.grad
+            values[key] = values[key].detach()
+
+        values['grads'] = grad_values
 
         return values

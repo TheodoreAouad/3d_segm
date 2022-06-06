@@ -1,5 +1,8 @@
 import pathlib
 from os.path import join
+import torch
+
+import matplotlib.pyplot as plt
 
 from general.nn.observables import Observable
 from deep_morpho.viz.bimonn_viz import BimonnVizualiser
@@ -26,9 +29,9 @@ class PlotBimonn(Observable):
         batch_idx: int,
         preds: "Any",
     ) -> None:
-
-        if self.freq_idx % self.freq == 0:
-            self.save_figs(trainer, pl_module)
+        with torch.no_grad():
+            if self.freq_idx % self.freq == 0:
+                self.save_figs(trainer, pl_module)
             # for key, do_key in self.do_plot.items():
             #     if do_key:
             #         vizualiser = BimonnVizualiser(pl_module.model, mode=key)
@@ -51,6 +54,8 @@ class PlotBimonn(Observable):
                 vizualiser = BimonnVizualiser(pl_module.model, mode=key)
                 fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
                 trainer.logger.experiment.add_figure(f"model/{key}", fig, trainer.global_step)
+                if key in self.last_figs.keys():
+                    plt.close(self.last_figs[key])
                 self.last_figs[key] = fig
 
     def save(self, save_path: str):

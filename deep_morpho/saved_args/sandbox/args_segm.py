@@ -1,10 +1,11 @@
 import numpy as np
 import torch.optim as optim
+import torch.nn as nn
 
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
 from deep_morpho.loss import MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization
 from general.utils import dict_cross
-from deep_morpho.models import InitBiseEnum, ClosestSelemEnum, ClosestSelemDistanceEnum
+from deep_morpho.models import InitBiseEnum, ClosestSelemEnum, ClosestSelemDistanceEnum, BiseBiasOptimEnum
 from .args_morp_ops import morp_operations
 
 loss_dict = {
@@ -21,11 +22,14 @@ all_args = {}
 all_args['batch_seed'] = [None]
 
 all_args['n_try'] = [0]
-# all_args['n_try'] = range(1, 5)
+# all_args['n_try'] = range(1, 6)
 
 all_args['experiment_name'] = [
-    "Bimonn_exp_59/sandbox/0"
-    # "Bimonn_exp_56/sandbox/3"
+    # "Bimonn_exp_59/sandbox/1"
+    # "Bimonn_exp_60/sandbox/0"
+    # "Bimonn_exp_61/sandbox/0"
+    # "Bimonn_mega_multi_1/sandbox/0"
+    "Bimonn_mega_multi_1/"
 ]
 
 
@@ -71,14 +75,15 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 # TRAINING ARGS
 all_args['learning_rate'] = [
     1e-2,
+    1e-1,
     # 1,
 ]
 
 # if max_plus, then the loss is MSELoss
 all_args['loss_data_str'] = [
     # nn.BCELoss(),
-    # "MaskedBCELoss",
-    # "MaskedMSELoss",
+    "MaskedBCELoss",
+    "MaskedMSELoss",
     "MaskedDiceLoss",
 ]
 all_args['loss_regu'] = [
@@ -115,12 +120,19 @@ all_args['atomic_element'] = [
     # 'cobisec',
     # "max_plus",
 ]
+all_args['n_atoms'] = [
+    'adapt',
+    # 2
+]
+
 all_args['kernel_size'] = [
     # 7,
     "adapt",
+    # 7 + 4,
 ]
 all_args['channels'] = [
     'adapt',
+    # [1, 1, 1]
     # [
     #     2, 2, 2, 2, 2, 2, 1
     # ]
@@ -133,9 +145,9 @@ all_args['init_weight_mode'] = [
     # "identity",
     # "normal_identity",
     # "conv_0.5"
-    # InitBiseEnum.KAIMING_UNIFORM
-    InitBiseEnum.CUSTOM_HEURISTIC
-    # InitBiseEnum.CUSTOM_CONSTANT
+    InitBiseEnum.KAIMING_UNIFORM,
+    InitBiseEnum.CUSTOM_HEURISTIC,
+    InitBiseEnum.CUSTOM_CONSTANT
 ]
 all_args['closest_selem_method'] = [
     ClosestSelemEnum.MIN_DIST
@@ -145,6 +157,11 @@ all_args['closest_selem_distance_fn'] = [
     # ClosestSelemDistanceEnum.DISTANCE_BETWEEN_BOUNDS
     # ClosestSelemDistanceEnum.DISTANCE_TO_AND_BETWEEN_BOUNDS
     ClosestSelemDistanceEnum.DISTANCE_TO_BOUNDS
+]
+all_args['bias_optim_mode'] = [
+    BiseBiasOptimEnum.POSITIVE,
+    BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
+    BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 
 all_args['activation_P'] = [0]
@@ -192,7 +209,6 @@ for idx, args in enumerate(all_args):
 
     if args['dataset_type'] in ["diskorect", 'mnist']:
         # args['kernel_size'] = 'adapt'
-        args['n_atoms'] = 'adapt'
 
 
         if args["kernel_size"] == "adapt":
@@ -242,3 +258,4 @@ for idx, args in enumerate(all_args):
     if args['loss_regu'] != "None":
         args['loss_regu'] = (loss_dict[args['loss_regu'][0]], args['loss_regu'][1])
         args['loss']['loss_regu'] = args['loss_regu']
+

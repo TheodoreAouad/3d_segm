@@ -1,3 +1,8 @@
+""" Script to show a memory leak bug in lightning with BCELoss and logging into tensorboard.
+Try running the script with a "wath nvidia-smi", and look at the GPU memory usage increasing.
+Try again with the MSELoss, the GPU memory usage does not increase.
+"""
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -38,7 +43,7 @@ class ARandomDataset(Dataset):
 
     def __getitem__(self, index):
         return torch.rand(1, 1)
-
+    
     def __len__(self):
         return int(1e6)
 
