@@ -77,7 +77,7 @@ def get_dataloader(args):
             batch_size=args['batch_size'],
             morp_operation=args['morp_operation'],
             preprocessing=args['preprocessing'],
-            shuffle=True,
+            # shuffle=True,
             num_workers=args['num_workers'],
             **args['mnist_args']
         )

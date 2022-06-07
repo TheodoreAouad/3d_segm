@@ -37,8 +37,8 @@ all_args['experiment_name'] = [
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
-    # "mnist",
-    'diskorect',
+    "mnist",
+    # 'diskorect',
 ]
 all_args['preprocessing'] = [  # for axspa roi
     None,
@@ -61,7 +61,7 @@ all_args['random_gen_args'] = [
 ]
 all_args['mnist_args'] = [
     {"threshold": 30, "size": (50, 50), "invert_input_proba": 0},
-    # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
+    {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
 all_args['n_steps'] = [10000]
 all_args['nb_batch_indep'] = [0]
@@ -101,7 +101,7 @@ all_args['num_workers'] = [
     # 0,
 ]
 all_args['freq_imgs'] = [300]
-all_args['n_epochs'] = [6]
+all_args['n_epochs'] = [20]
 all_args['patience_loss'] = [2100]
 all_args['patience_reduce_lr'] = [700]
 
@@ -199,7 +199,7 @@ all_args = dict_cross(all_args)
 to_remove = []
 for idx, args in enumerate(all_args):
 
-    for key in ['closest_selem_method', 'closest_selem_distance_fn', 'bias_optim_mode',]:
+    for key in ['closest_selem_method', 'closest_selem_distance_fn', 'bias_optim_mode', 'init_weight_mode']:
         args[f'{key}_str'] = str(args[key])
 
     if args['dataset_type'] == "axspa_roi":
@@ -244,8 +244,6 @@ for idx, args in enumerate(all_args):
     if args['dataset_type'] == "mnist":
         args['freq_imgs'] = 300
         args['n_inputs'] = 70_000
-        if ("erosion" in args['morp_operation'].name) or ("dilation" in args['morp_operation'].name):
-            args['n_epochs'] = 3
         if args['mnist_args']['invert_input_proba'] == 1:
             args['experiment_subname'] = args['experiment_subname'].replace('mnist', 'inverted_mnist')
 
@@ -266,11 +264,11 @@ for idx, args in enumerate(all_args):
         args['loss_regu'] = (loss_dict[args['loss_regu'][0]], args['loss_regu'][1])
         args['loss']['loss_regu'] = args['loss_regu']
 
-    already_seen_path = "deep_morpho/results/results_tensorboards/Bimonn_mega_multi_1/softplus/diskorect/seen_args.txt"
-    with open(already_seen_path, "r") as f:
-        already_seen = f.read()
-    if str((str(args["init_weight_mode"]).split(".")[-1], str(args["bias_optim_mode"]).split(".")[-1], args["loss_data_str"], str(args["learning_rate"]))) in already_seen:
-        to_remove.append(idx)
+    # already_seen_path = "deep_morpho/results/results_tensorboards/Bimonn_mega_multi_1/softplus/diskorect/seen_args.txt"
+    # with open(already_seen_path, "r") as f:
+    #     already_seen = f.read()
+    # if str((str(args["init_weight_mode"]).split(".")[-1], str(args["bias_optim_mode"]).split(".")[-1], args["loss_data_str"], str(args["learning_rate"]))) in already_seen:
+    #     to_remove.append(idx)
 
-for idx in to_remove[::-1]:
-    del all_args[idx]
+# for idx in to_remove[::-1]:
+#     del all_args[idx]
