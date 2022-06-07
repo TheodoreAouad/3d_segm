@@ -122,7 +122,7 @@ def parse_yaml_bise_arguments(yaml_str: str, key: str) -> Any:
         'init_weight_mode': InitBiseEnum,
     }
     if f'{key}_str' in yaml_str:
-        res = parse_yaml_dict_key_line(yaml_str, key)
+        res = parse_yaml_dict_key_line(yaml_str, f'{key}_str')
 
     else:
         res = str(key_to_enum[key](int(regex_find_or_none(rf"\n?{key}[^\n]+\n- (\d)+\n", yaml_str))))
