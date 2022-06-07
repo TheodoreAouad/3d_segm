@@ -294,13 +294,13 @@ if __name__ == '__main__':
         log_console('Time since beginning: {} '.format(format_time(time() - start_all)), logger=console_logger)
         log_console(logger.log_dir, logger=console_logger)
         log_console(args['morp_operation'], logger.log_dir, logger=console_logger)
-        results.append(main(args, logger))
-        # try:
-        #     main(args, logger)
-        # except Exception:
-        #     console_logger.exception(
-        #         f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
-        #     bugged.append(args_idx+1)
+        # results.append(main(args, logger))
+        try:
+            main(args, logger)
+        except Exception:
+            console_logger.exception(
+                f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
+            bugged.append(args_idx+1)
 
     code_saver.delete_temporary_file()
 

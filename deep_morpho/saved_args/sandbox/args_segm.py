@@ -195,7 +195,12 @@ all_args['share_weights'] = [False]
 
 all_args = dict_cross(all_args)
 #
+
+to_remove = []
 for idx, args in enumerate(all_args):
+
+    for key in ['closest_selem_method', 'closest_selem_distance_fn', 'bias_optim_mode',]:
+        args[f'{key}_str'] = str(args[key])
 
     if args['dataset_type'] == "axspa_roi":
         args['dataset_path'] = "data/deep_morpho/axspa_roi/axspa_roi.csv"
@@ -205,7 +210,9 @@ for idx, args in enumerate(all_args):
         args['n_atoms'] = len(args['channels']) - 1
         args['loss_data'] = loss_dict[args['loss_data_str']](border=(0, 0))
 
-
+    if args['init_weight_mode'] == InitBiseEnum.CUSTOM_CONSTANT:
+        args['init_bias_value_bise'] = "auto"
+        args['init_bias_value_lui'] = "auto"
 
     if args['dataset_type'] in ["diskorect", 'mnist']:
         # args['kernel_size'] = 'adapt'
@@ -259,3 +266,11 @@ for idx, args in enumerate(all_args):
         args['loss_regu'] = (loss_dict[args['loss_regu'][0]], args['loss_regu'][1])
         args['loss']['loss_regu'] = args['loss_regu']
 
+    already_seen_path = "deep_morpho/results/results_tensorboards/Bimonn_mega_multi_1/softplus/diskorect/seen_args.txt"
+    with open(already_seen_path, "r") as f:
+        already_seen = f.read()
+    if str((str(args["init_weight_mode"]).split(".")[-1], str(args["bias_optim_mode"]).split(".")[-1], args["loss_data_str"], str(args["learning_rate"]))) in already_seen:
+        to_remove.append(idx)
+
+for idx in to_remove[::-1]:
+    del all_args[idx]
