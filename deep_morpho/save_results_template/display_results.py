@@ -342,13 +342,14 @@ class DisplayResults:
 
     def get_results_from_tensorboard(self, tb_path: str, load_long_args: bool = True,):
         res = {
-            "args": [None],
+            "args": {},
             "tb_path": None,
             "weights": None,
             "normalized_weights": {},
             "bias": None,
-            "dice": None,
-            "baseline_dice": None,
+            "dice": -1,
+            "baseline_dice": -1,
+            "binary_mode_dice": -1,
             "convergence_dice": None,
             "activation_P": [None],
             "learned_selem": dict(),
@@ -357,6 +358,7 @@ class DisplayResults:
             "target_operation": None,
             "learned_weights_viz": None,
             "learned_selems_viz": None,
+            "stopping_reason": None,
         }
 
         long_args = {
@@ -372,8 +374,8 @@ class DisplayResults:
         obs_path = join(tb_path, "observables")
 
         res['tb_path'] = tb_path
-        if os.path.exists(join(tb_path, 'args.yaml')):
-            res['args'] = load_args(join(tb_path, 'args.yaml'))
+        # if os.path.exists(join(tb_path, 'args.yaml')):
+        res['args'] = load_args(join(tb_path, 'args.yaml'))
 
         for obs_name in [
             "PlotWeightsBiSE",

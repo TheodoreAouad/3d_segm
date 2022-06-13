@@ -159,6 +159,12 @@ def create_logger(logger_name=None, all_logs_path=None, error_path=None, level="
     return logger
 
 
+def close_handlers(logger):
+    handlers = logger.handlers
+    for handler in handlers:
+        handler.close()
+
+
 def save_yaml(dic, path):
     with open(path, 'w') as f:
         yaml.dump(dic, f)

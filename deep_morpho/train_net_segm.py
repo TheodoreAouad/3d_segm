@@ -18,7 +18,7 @@ from deep_morpho.datasets.axspa_roi_dataset import AxspaROISimpleDataset
 from deep_morpho.models import LightningBiMoNN, BiSE, COBiSE, BiSEC, COBiSEC
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
-from general.utils import format_time, log_console, create_logger, save_yaml, save_pickle
+from general.utils import format_time, log_console, create_logger, save_yaml, save_pickle, close_handlers
 from general.nn.utils import train_val_test_split
 from deep_morpho.metrics import masked_dice
 from deep_morpho.args_segm import all_args
@@ -68,7 +68,7 @@ def get_dataloader(args):
             shuffle=True,
         )
 
-    elif args['dataset_type'] == "mnist":
+    elif args['dataset_type'] in ["mnist", "inverted_mnist"]:
         prop_train, prop_val, prop_test = args['train_test_split']
         trainloader, valloader, testloader = MnistMorphoDataset.get_train_val_test_loader(
             n_inputs_train=int(prop_train * args['n_inputs']),
@@ -270,6 +270,7 @@ if __name__ == '__main__':
     print(device)
     bugged = []
     results = []
+    console_logger = None
 
     for args_idx, args in enumerate(all_args):
 
@@ -282,6 +283,8 @@ if __name__ == '__main__':
         save_yaml(args, join(logger.log_dir, 'args.yaml'))
         # save_pickle(args, join(logger.log_dir, 'args.pkl'))
 
+        if console_logger is not None:
+            close_handlers(console_logger)
 
         console_logger = create_logger(
             f'args_{args_idx}', all_logs_path=join(logger.log_dir, 'all_logs.log'), error_path=join(logger.log_dir, 'error_logs.log')
@@ -301,6 +304,7 @@ if __name__ == '__main__':
             console_logger.exception(
                 f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
             bugged.append(args_idx+1)
+        log_console("Done.", logger=console_logger)
 
     code_saver.delete_temporary_file()
 

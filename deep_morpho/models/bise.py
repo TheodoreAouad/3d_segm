@@ -189,7 +189,12 @@ class BiSE(BinaryNN):
             nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
 
             if self.init_bias_value == "auto":
-                lb1 = 1/(2*p) * torch.sqrt(3/2 * nb_params)
+                # To keep trakc witth previous experiment
+                # if self.input_mean > 0.7:
+                #     lb1 = 1/p * torch.sqrt(6*nb_params / (12 + 1/self.input_mean**2))
+                # else:
+                #     lb1 = 1/(2*p) * torch.sqrt(3/2 * nb_params)
+                lb1 = 1/p * torch.sqrt(6*nb_params / (12 + 1/self.input_mean**2))
                 lb2 = 1 / p * torch.sqrt(nb_params / 2)
                 self.init_bias_value = (lb1 + lb2) / 2
             # else:

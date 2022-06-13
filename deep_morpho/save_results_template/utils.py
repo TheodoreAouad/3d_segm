@@ -23,7 +23,7 @@ def plot_to_html(figure, close_fig=True):
     return f"<img src='data:image/png;base64, {base64_fig}'>"
 
 
-def detect_identical_values(all_args: List[Dict], verbose=True) -> (Dict, List[str]):
+def detect_identical_values(all_args: List[Dict], verbose=True, ignore_none=True,) -> (Dict, List[str]):
     """
     Given a list of dicts, gives the keys where the values are the same.
     """
@@ -37,6 +37,8 @@ def detect_identical_values(all_args: List[Dict], verbose=True) -> (Dict, List[s
     for key in iterator:
         bad_key = False
         for args in all_args[1:]:
+            if ignore_none and args[key] is None:
+                continue
             if args[key] != all_args[0][key]:
                 bad_key = True
                 break

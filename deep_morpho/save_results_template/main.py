@@ -1,7 +1,8 @@
+print("Import...")
 import os
 from os.path import join
+import pathlib
 import re
-from deep_morpho.save_results_template.save_html import write_html_deep_morpho
 from deep_morpho.save_results_template.display_results import DisplayResults
 import webbrowser
 
@@ -10,6 +11,7 @@ from tqdm import tqdm
 
 def list_dir_joined(folder: str):
     return [os.path.join(folder, k) for k in os.listdir(folder)]
+
 
 TB_PATHS = []
 SAVE_PATH = []
@@ -29,7 +31,35 @@ SAVE_PATH = []
 #     []
 # )
 
-path_global = "deep_morpho/results/results_tensorboards/Bimonn_mega_multi_1/softplus/diskorect/"
+print('Parsing paths...')
+
+# path_global = "deep_morpho/results/results_tensorboards/Bimonn_mega_multi_1/softplus/diskorect/"
+# all_paths = []
+# for operation in os.listdir(path_global):
+#     if not os.path.isdir(join(path_global, operation)):
+#         continue
+#     for selem in os.listdir(join(path_global, operation)):
+#         all_paths += sorted(list_dir_joined(join(path_global, operation, selem)), key=lambda x: int(
+#             re.findall(r'version_(\d+)$', x)[0]
+#         ))
+# TB_PATHS.append(
+#     all_paths
+# )
+# SAVE_PATH.append('html_pages/diskorect_grid_search.html')
+
+# path_global = "deep_morpho/results/results_tensorboards/Bimonn_mega_multi_1/softplus/mnist/"
+# all_paths = []
+# for operation in os.listdir(path_global):
+#     for selem in os.listdir(join(path_global, operation)):
+#         all_paths += sorted(list_dir_joined(join(path_global, operation, selem)), key=lambda x: int(
+#             re.findall(r'version_(\d+)$', x)[0]
+#         ))
+# TB_PATHS.append(
+#     all_paths
+# )
+# SAVE_PATH.append('html_pages/mnist_grid_search.html')
+
+path_global = "deep_morpho/results/results_tensorboards/Bimonn_mega_multi_1/softplus/inverted_mnist/"
 all_paths = []
 for operation in os.listdir(path_global):
     for selem in os.listdir(join(path_global, operation)):
@@ -39,7 +69,8 @@ for operation in os.listdir(path_global):
 TB_PATHS.append(
     all_paths
 )
-SAVE_PATH.append('html_pages/grid_search.html')
+SAVE_PATH.append('html_pages/inverted_mnist_grid_search.html')
+
 
 # DGMM 2022 Diskorect
 # TB_PATHS.append(
@@ -83,11 +114,13 @@ SAVE_PATH.append('html_pages/grid_search.html')
 # SAVE_PATH.append('html_pages/dgmm_2022_mnist.html')
 
 
-TITLE = 'test_page'
 
 # Version BiSES
 # html = write_html_deep_morpho(TB_PATHS, SAVE_PATH, TITLE)
 
+print('Loading HTML web pages...')
+
 for tb, savepath in tqdm(zip(TB_PATHS, SAVE_PATH)):
-    html = DisplayResults().save(tb, savepath, TITLE, show_table=True, show_details=False)
-    webbrowser.open(savepath, new=1)
+    title = str(pathlib.Path(savepath).stem)
+    html = DisplayResults().save(tb, savepath, title, show_table=True, show_details=False)
+    webbrowser.open(savepath, new=0)

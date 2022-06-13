@@ -1,5 +1,8 @@
 import re
 from typing import Any, Dict
+import os
+
+import warnings
 
 from deep_morpho.models import BiseBiasOptimEnum, ClosestSelemDistanceEnum, ClosestSelemEnum, InitBiseEnum
 
@@ -36,26 +39,29 @@ def load_args(path: str) -> Dict:
         "bias_optim_mode",
         "loss_data_str",
     ]
+    bise_keys = ["init_weight_mode", "closest_selem_method", "closest_selem_distance_fn", "bias_optim_mode"]
+
+
+    args = {k: None for k in all_keys_line + bise_keys + ['optimizer', 'operations', 'loss_data', ]}
+
+    if not os.path.exists(path):
+        warnings.warn(f"{path} not found.")
+        return args
 
     with open(path, "r") as f:
         yaml_str = f.read()
 
-    args = {}
 
     # args['loss'] = parse_yaml_dict_loss(yaml_str)
     args['optimizer'] = parse_yaml_dict_optimizer(yaml_str)
-    args['operations'] = parse_yaml_dict_operations(yaml_str)
+    # args['operations'] = parse_yaml_dict_operations(yaml_str)
     args['loss_data'] = parse_yaml_dict_loss_data(yaml_str)
 
     for key in all_keys_line:
         args[key] = parse_yaml_dict_key_line(yaml_str, key)
 
-    for bise_key in [
-        "init_weight_mode",
-        "closest_selem_method",
-        "closest_selem_distance_fn",
-        "bias_optim_mode",
-    ]:
+
+    for bise_key in bise_keys:
         args[bise_key] = parse_yaml_bise_arguments(yaml_str, bise_key)
 
     return args
@@ -88,7 +94,7 @@ def parse_yaml_dict_loss_data(yaml_str: str) -> Any:
 def parse_yaml_dict_optimizer(yaml_str: str) -> Any:
     return regex_find_or_none(r"\n?optimizer[^\n]+\.(\w+)[ \n]", yaml_str)
 
-
+# deprecated
 def parse_yaml_dict_operations(yaml_str: str) -> Any:
     idx0 = yaml_str.find('operations')
     if idx0 == -1:

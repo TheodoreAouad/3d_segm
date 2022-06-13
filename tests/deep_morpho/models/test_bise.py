@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import pytest
 
-from deep_morpho.models import BiSE
+from deep_morpho.models import BiSE, InitBiseEnum
 from general.structuring_elements import disk
 from general.array_morphology import array_erosion, array_dilation
 
@@ -180,3 +180,15 @@ class TestBiSE:
         layer.binary()
         layer.binary(False)
         assert layer.binary_mode == False
+
+
+    @staticmethod
+    @pytest.mark.parametrize("input_mean", [0.1, 0.3, 0.5, 0.7, 0.9])
+    def test_init_mode_custom_constant(input_mean):
+        layer = BiSE(
+            (7, 7),
+            init_weight_mode=InitBiseEnum.CUSTOM_CONSTANT,
+            init_bias_value="auto",
+            input_mean=input_mean,
+        )
+        layer

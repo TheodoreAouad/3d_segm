@@ -1,63 +1,53 @@
-## TEST REGISTRATION
+import os
+from os.path import join
+import shutil
+import re
 
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.linalg import orthogonal_procrustes
+from deep_morpho.save_results_template.load_args import load_args
 
-import ssm.utils as su
 
-rec1 = np.concatenate((
-    np.hstack(
-        (np.ones((50, 1)), np.linspace(1, 2, 50)[:, np.newaxis]),
-    ),
-    np.hstack(
-        (np.linspace(1, 2, 50)[:, np.newaxis], np.ones((50, 1))),
-    ),
-    np.hstack(
-        (1 + np.ones((50, 1)), np.linspace(1, 2, 50)[:, np.newaxis]),
-    ),
-    np.hstack(
-        (np.linspace(1, 2, 50)[:, np.newaxis], 1 + np.ones((50, 1))),
-    ),
-))
-rec1 -= rec1.mean(0)
+def list_dir_joined(folder: str):
+    return [os.path.join(folder, k) for k in os.listdir(folder)]
 
-def rot_matrix(theta):
-    return np.array([
-        [np.cos(theta), -np.sin(theta)],
-        [np.sin(theta), np.cos(theta)]
-    ])
 
-T = np.eye(3)
-R = rot_matrix(np.pi / 4)
-scale_ini = 3
-T[:2, :2] = R / scale_ini
-# T[:-1, -1] = np.array([3, 3])
+seen_args = []
 
-rec2 = su.transform_cloud(T, rec1)
+path_global = "deep_morpho/results/results_tensorboards/Bimonn_mega_multi_1/softplus/"
+all_paths = []
 
-U, S, Vt = np.linalg.svd(rec1.T @ rec2)
-Ropt = Vt.T @ U.T
-scale = S.sum() / (np.linalg.norm(rec1) ** 2)
+to_delete = []
 
-Ropt_scipy, scale_scipy = orthogonal_procrustes(rec1, rec2)
+empty_error = []
+too_many_file = []
+init_error = []
 
-print(scale_scipy)
+for dataset in os.listdir(path_global):
+    for operation in os.listdir(join(path_global, dataset)):
+        if not os.path.isdir(join(path_global, dataset, operation, )):
+            continue
+        for selem in os.listdir(join(path_global, dataset, operation)):
+            for version in os.listdir(join(path_global, dataset, operation, selem)):
+                if not os.path.isdir(join(path_global, dataset, operation, selem, version, "observables")):
+                    version_path = join(path_global, dataset, operation, selem, version)
+                    to_delete.append(version_path)
 
-fig = plt.figure(figsize=(21, 7))
-ax = fig.add_subplot(131)
-ax.scatter(*rec1.T)
-ax.scatter(*rec2.T)
-ax.axis('equal')
+                    error_path = join(version_path, "error_logs.log")
+                    if not os.path.exists(error_path):
+                        empty_error.append(version_path)
+                    else:
+                        with open(error_path, "r") as f:
+                            error_content = f.read()
+                        if error_content == "":
+                            empty_error.append(version_path)
+                        elif "Too many open files" in error_content:
+                            too_many_file.append(version_path)
+                        elif "assert (new_weights >= 0).all()" in error_content:
+                            init_error.append(version_path)
+                    
+                    
 
-ax = fig.add_subplot(132)
-ax.scatter(*((Ropt * scale) @ rec1.T))
-ax.scatter(*rec2.T)
-ax.axis('equal')
 
-ax = fig.add_subplot(133)
-ax.scatter(*((Ropt_scipy * scale_scipy) @ rec1.T))
-ax.scatter(*rec2.T)
-ax.axis('equal')
+print(len(to_delete))
 
-fig.show()
+# with open("deep_morpho/results/results_tensorboards/Bimonn_mega_multi_1/softplus/diskorect/seen_args.txt", "w") as f:
+#     print(*seen_args, sep="\n", file=f)
