@@ -88,8 +88,8 @@ class PlotGradientBise(GradientWatcher):
         chan_output: int,
     ):
         # if isinstance(layer, (BiSE, BiSEC, COBiSEC, COBiSE, BiSEL)):
-        if layer.bises[chan_input].conv.bias.grad is not None:
-            grad_bise_bias = layer.bises[chan_input].conv.bias.grad[chan_output]
+        if layer.bises[chan_input].bias_handler.grad is not None:
+            grad_bise_bias = layer.bises[chan_input].bias_handler.grad[chan_output]
             trainer.logger.experiment.add_scalars(
                 f"weights/bisel/bias_gradient/layer_{layer_idx}_chout_{chan_output}",
                 {f"chin_{chan_input}": grad_bise_bias},
@@ -166,7 +166,7 @@ class ExplosiveWeightGradientWatcher(GradientWatcher):
 
         grad_weights = layer.bises[chan_input].weight.grad[chan_output][0]
         weights = layer.weights[chan_output, chan_input]
-        grad_bias = layer.bises[chan_input].conv.bias.grad[chan_output]
+        grad_bias = layer.bises[chan_input].bias_handler.grad[chan_output]
 
         # if grad_weights.mean().abs() < self.threshold:
         #     return

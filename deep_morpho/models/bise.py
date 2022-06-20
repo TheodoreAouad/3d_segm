@@ -8,10 +8,11 @@ import torch.nn as nn
 from torch import Tensor
 
 
-from .threshold_layer import dispatcher
+from .threshold_layer import dispatcher, ThresholdEnum
 from .complementation_layer import ComplementationLayer
 from .softplus import Softplus
 from .binary_nn import BinaryNN
+from .bias_layer import BiasSoftplus, BiasRaw, BiasBiseSoftplusProjected, BiasBiseSoftplusReparametrized
 from general.utils import set_borders_to
 
 
@@ -35,6 +36,7 @@ class ClosestSelemDistanceEnum(Enum):
 
 
 class BiseBiasOptimEnum(Enum):
+    RAW = 0     # no transformation to bias
     POSITIVE = 1    # only softplus applied
     POSITIVE_INTERVAL_PROJECTED = 2     # softplus applied and projected gradient on the relevent values [min(W), W.sum()] (no torch grad)
     POSITIVE_INTERVAL_REPARAMETRIZED = 3     # softplus applied and reparametrized on the relevent values [min(W), W.sum()] (with torch grad)
@@ -79,6 +81,7 @@ class BiSE(BinaryNN):
         self.closest_selem_method = closest_selem_method
         self.closest_selem_distance_fn = closest_selem_distance_fn
         self.bias_optim_mode = bias_optim_mode
+        self.bias_handler = self.create_bias_handler()
 
         self.conv = nn.Conv2d(
             in_channels=1,
@@ -87,6 +90,7 @@ class BiSE(BinaryNN):
             # padding="same",
             padding=self.padding,
             padding_mode='replicate',
+            bias=False,
             *args,
             **kwargs
         )
@@ -99,13 +103,7 @@ class BiSE(BinaryNN):
         self.weight_threshold_layer = dispatcher[self.weight_threshold_mode](P_=self.weight_P, constant_P=constant_weight_P, n_channels=out_channels, axis_channels=0)
         self.activation_threshold_layer = dispatcher[self.activation_threshold_mode](P_=activation_P, constant_P=constant_activation_P, n_channels=out_channels, axis_channels=1)
 
-        # with torch.no_grad():
-        #     self.conv.bias.fill_(init_bias_value)
-
-        # self.init_weights()
-        # self.init_bias()
         self.init_weights_and_bias()
-        # self.set_bias(torch.zeros_like(self.bias) + self.init_bias_value)
 
 
         self.closest_selem = np.zeros((*self.kernel_size, out_channels)).astype(bool)
@@ -117,6 +115,22 @@ class BiSE(BinaryNN):
         self.is_activated = np.zeros(out_channels).astype(bool)
 
         self.update_learned_selems()
+
+    def create_bias_handler(self):
+        if self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE:
+            return BiasSoftplus(bise_module=self, offset=0.5)
+
+        elif self.bias_optim_mode == BiseBiasOptimEnum.RAW:
+            return BiasRaw(bise_module=self)
+
+        elif self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED:
+            return BiasBiseSoftplusProjected(bise_module=self, offset=0)
+
+        elif self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED:
+            return BiasBiseSoftplusReparametrized(bise_module=self, offset=0)
+
+        raise NotImplementedError(f'self.bias_optim_mode must be in {BiseBiasOptimEnum._member_names_}')
+
 
     def update_closest_selems(self):
         for chan in range(self.out_channels):
@@ -144,8 +158,6 @@ class BiSE(BinaryNN):
             net.set_normalized_weights(torch.FloatTensor(selem)[None, None, ...])
         else:
             net.set_normalized_weights((torch.tensor(selem) + 0.01)[None, None, ...])
-            # net.set_normalized_weights((torch.tensor(selem) - .5)[None, None, ...])
-            # net._weight_P.data = torch.FloatTensor([weight_P])
         bias_value = -.5 if operation == "dilation" else -float(selem.sum()) + .5
         net.set_bias(torch.FloatTensor([bias_value]))
 
@@ -173,7 +185,6 @@ class BiSE(BinaryNN):
         elif self.init_weight_mode == InitBiseEnum.IDENTITY:
             self._init_as_identity()
         elif self.init_weight_mode == InitBiseEnum.KAIMING_UNIFORM:
-            # self.set_normalized_weights(self.weight + 5)
             self.set_normalized_weights(self.weight + 1)
         elif self.init_weight_mode == InitBiseEnum.CUSTOM_HEURISTIC:
             nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
@@ -197,8 +208,6 @@ class BiSE(BinaryNN):
                 lb1 = 1/p * torch.sqrt(6*nb_params / (12 + 1/self.input_mean**2))
                 lb2 = 1 / p * torch.sqrt(nb_params / 2)
                 self.init_bias_value = (lb1 + lb2) / 2
-            # else:
-            #     init_bias_value = self.init_bias_value
 
             mean = self.init_bias_value / (self.input_mean * nb_params)
             sigma = (2 * nb_params - 4 * self.init_bias_value**2 * p ** 2) / (p ** 2 * nb_params ** 2)
@@ -209,17 +218,10 @@ class BiSE(BinaryNN):
                 torch.rand_like(self.weights) * (lb - ub) + ub
             )
         else:
-            # raise ValueError(f"init weight mode {self.init_weight_mode} not recognized.")
             warnings.warn(f"init weight mode {self.init_weight_mode} not recognized.")
 
 
     def init_bias(self):
-        # self.set_bias(
-        #     torch.zeros_like(self.bias) -
-        #     self.init_bias_value *  # input layer mean
-        #     self._normalized_weights.mean((1, 2, 3)) *  # weights mean
-        #     torch.tensor(self._normalized_weights.shape[1:]).prod()  # number of parameters
-        # )
         self.set_bias(
             torch.zeros_like(self.bias) - self.init_bias_value
         )
@@ -361,17 +363,13 @@ class BiSE(BinaryNN):
             None if none is found
         """
         weights = self._normalized_weight[idx, 0]
-        # weight_values = weights.unique()
         bias = self.bias[idx]
         is_op_fn = {'dilation': self.is_dilation_by, 'erosion': self.is_erosion_by}[operation]
         born = {'dilation': -bias / v2, "erosion": (weights.sum() + bias) / (1 - v1)}[operation]
 
-        # possible_values = weight_values >= born
         selem = (weights > born).cpu().detach().numpy()
         if not selem.any():
             return None
-
-        # selem = (weights >= weight_values[possible_values][0]).squeeze().cpu().detach().numpy()
 
         if is_op_fn(weights, bias, selem, v1, v2):
             return selem
@@ -382,9 +380,7 @@ class BiSE(BinaryNN):
         weights, bias, idx: int, operation: str, closest_selem_distance_fn: ClosestSelemDistanceEnum, v1: float = 0, v2: float = 1
     ):
         weights = weights[idx, 0]
-        # weights = self._normalized_weight[idx, 0]
         weight_values = weights.unique().detach().cpu().numpy()
-        # bias = self.bias[idx]
         bias = bias[idx]
         distance_fn = {'dilation': BiSE.distance_to_dilation, 'erosion': BiSE.distance_to_erosion}[operation]
 
@@ -411,10 +407,6 @@ class BiSE(BinaryNN):
             np.ndarray: the closest selem
             float: the distance to the constraint space
         """
-        # selems, dists = self.compute_selem_dist_for_operation_chan(idx=idx, operation=operation, v1=v1, v2=v2)
-
-        # idx_min = dists.argmin()
-        # return selems[idx_min], dists[idx_min]
         if closest_selem_method == ClosestSelemEnum.MIN_DIST:
             return BiSE.closest_selem_by_min_dists(weights, bias, idx, operation, closest_selem_distance_fn, v1, v2)
 
@@ -466,17 +458,6 @@ class BiSE(BinaryNN):
         Returns:
             (np.ndarray, str, float): if the selem is found, returns the selem and the operation
         """
-        # final_dist = np.infty
-        # for operation in ['dilation', 'erosion']:
-        #     new_selem, new_dist = self.find_closest_selem_for_operation_chan(
-        #         weights=self._normalized_weight, bias=self.bias, idx=idx, operation=operation,
-        #         closest_selem_method=self.closest_selem_method, closest_selem_distance_fn=self.closest_selem_distance_fn, v1=v1, v2=v2
-        #     )
-        #     if new_dist < final_dist:
-        #         final_dist = new_dist
-        #         final_selem = new_selem
-        #         final_operation = operation  # str array has 1 character
-
         final_dist, final_selem, final_operation = self.find_closest_selem_and_operation_chan_static(
             weights=self._normalized_weight, bias=self.bias, idx=idx, closest_selem_method=self.closest_selem_method,
             closest_selem_distance_fn=self.closest_selem_distance_fn, v1=v1, v2=v2
@@ -542,7 +523,6 @@ class BiSE(BinaryNN):
             res = [self.activation_threshold_layer(b1 + self.bias), self.activation_threshold_layer(b2 + self.bias)]
         res = [i.item() for i in res]
         return res
-        # return 0, 1
 
     @staticmethod
     def _init_threshold_mode(threshold_mode):
@@ -564,9 +544,6 @@ class BiSE(BinaryNN):
     def _normalized_weight(self):
         conv_weight = self.weight_threshold_layer(self.weight)
         return conv_weight
-        # weights = torch.zeros_like(self.weight)
-        # weights.data[..., self.kernel_size[0]//2, self.kernel_size[1]//2] = 1
-        # return weights
 
     @property
     def _normalized_weights(self):
@@ -593,10 +570,10 @@ class BiSE(BinaryNN):
 
     def set_bias(self, new_bias: torch.Tensor) -> torch.Tensor:
         assert self.bias.shape == new_bias.shape
-        # self.conv.bias.data = new_bias
-        assert (new_bias <= -0.5).all(), new_bias
-        self.conv.bias.data = self.softplus_layer.forward_inverse(-new_bias)
-        # self.conv.bias.data = self.softplus_layer.forward_inverse(-new_bias - 0.5)
+        # assert (new_bias <= -0.5).all(), new_bias
+        # self.conv.bias.data = self.softplus_layer.forward_inverse(-new_bias)
+        # return new_bias
+        self.bias_handler.set_bias(new_bias)
         return new_bias
 
     def set_activation_P(self, new_P: torch.Tensor) -> torch.Tensor:
@@ -623,7 +600,6 @@ class BiSE(BinaryNN):
         these bounds, then it is nonsense.
         The bounds are computed to avoid having always a negative convolution output or a positive convolution output.
         """
-        # TODO with torch.no_grad() or not??
         weights_aligned = self._normalized_weight.reshape(self._normalized_weight.shape[0], -1)
         weights_min = weights_aligned.min(1).values
         weights_2nd_min = weights_aligned.kthvalue(2, 1).values
@@ -637,23 +613,39 @@ class BiSE(BinaryNN):
 
     @property
     def bias(self):
-        if self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE:
-            return -self.softplus_layer(self.conv.bias) - .5
+        return self.bias_handler()
+        # if self.bias_optim_mode == BiseBiasOptimEnum.RAW:
+        #     return self.conv.bias
 
-        if self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED:
-            with torch.no_grad():
-                bmin, bmax = self.get_min_max_intrinsic_bias_values()
-                bias = torch.clamp(self.softplus_layer(self.conv.bias), bmin, bmax)
-            return -bias
+        # if self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE:
+        #     return -self.softplus_layer(self.conv.bias) - .5
 
-        if self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED:
-            bmin, bmax = self.get_min_max_intrinsic_bias_values()
-            bias = torch.clamp(self.softplus_layer(self.conv.bias), bmin, bmax)
-            return -bias
+        # if self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED:
+        #     with torch.no_grad():
+        #         bmin, bmax = self.get_min_max_intrinsic_bias_values()
+        #         bias = torch.clamp(self.softplus_layer(self.conv.bias), bmin, bmax)
+        #     return -bias
 
-        assert NotImplementedError(f'self.bias_optim_mode must be in [{1, 2, 3}]')
+        # if self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED:
+        #     bmin, bmax = self.get_min_max_intrinsic_bias_values()
+        #     bias = torch.clamp(self.softplus_layer(self.conv.bias), bmin, bmax)
+        #     return -bias
 
-        # return self.conv.bias
+        # assert NotImplementedError(f'self.bias_optim_mode must be in {BiseBiasOptimEnum._member_names_}')
+
+
+class SyBiSE(BiSE):
+    POSSIBLE_THRESHOLDS = (dispatcher[ThresholdEnum.tanh_symetric],)
+
+    def __init__(
+        self,
+        *args,
+        threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh_symetric"},
+        **kwargs
+    ):
+        super().__init__(*args, threshold_mode=threshold_mode, **kwargs)
+        assert isinstance(self.activation_threshold_layer, self.POSSIBLE_THRESHOLDS), "Choose a symetric threshold for activation."
+
 
 
 class BiSEC(BiSE):

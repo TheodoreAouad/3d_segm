@@ -1,3 +1,4 @@
+from enum import Enum, auto
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -36,11 +37,6 @@ class ThresholdLayer(nn.Module):
             self.P_.requires_grad = False
 
     def forward(self, x, binary_mode=None):
-        # print((x + self.bias).shape)
-        # print(self.P_.view(*([len(self.P_)] + [1 for _ in range(x.ndim - 1)])).shape)
-        # return self.threshold_fn(
-        #     (x + self.bias) * self.P_.view(*([1 for _ in range(self.axis_channels)] + [len(self.P_)] + [1 for _ in range(self.axis_channels, x.ndim - 1)]))
-        # )
         if binary_mode is None:
             binary_mode = self.binary_mode
 
@@ -102,7 +98,29 @@ class SoftplusThresholdLayer(ThresholdLayer):
         self.threshold = threshold
 
 
+class TanhSymetricLayer(ThresholdLayer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(threshold_fn=tanh_threshold_symetric, threshold_inverse_fn=tanh_threshold_symetric_inverse, threshold_name='tanh_symetric', *args, **kwargs)
+
+
+
+class ThresholdEnum(Enum):
+    sigmoid = auto()
+    arctan = auto()
+    tanh = auto()
+    erf = auto()
+    clamp = auto()
+    identity = auto()
+    softplus = auto()
+    tanh_symetric = auto()
+
 dispatcher = {
-    'sigmoid': SigmoidLayer, 'arctan': ArctanLayer, 'tanh': TanhLayer, 'erf': ErfLayer, 'clamp': ClampLayer, 'identity': IdentityLayer,
-    'softplus': SoftplusThresholdLayer,
+    ThresholdEnum.sigmoid: SigmoidLayer,
+    ThresholdEnum.arctan: ArctanLayer,
+    ThresholdEnum.tanh: TanhLayer,
+    ThresholdEnum.tanh_symetric: TanhSymetricLayer,
+    ThresholdEnum.erf: ErfLayer,
+    ThresholdEnum.clamp: ClampLayer,
+    ThresholdEnum.identity: IdentityLayer,
+    ThresholdEnum.softplus: SoftplusThresholdLayer,
 }
