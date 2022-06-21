@@ -114,6 +114,7 @@ class ThresholdEnum(Enum):
     softplus = auto()
     tanh_symetric = auto()
 
+
 dispatcher = {
     ThresholdEnum.sigmoid: SigmoidLayer,
     ThresholdEnum.arctan: ArctanLayer,
@@ -123,4 +124,12 @@ dispatcher = {
     ThresholdEnum.clamp: ClampLayer,
     ThresholdEnum.identity: IdentityLayer,
     ThresholdEnum.softplus: SoftplusThresholdLayer,
+    "sigmoid": SigmoidLayer,
+    "arctan": ArctanLayer,
+    "tanh": TanhLayer,
+    "tanh_symetric": TanhSymetricLayer,
+    "erf": ErfLayer,
+    "clamp": ClampLayer,
+    "identity": IdentityLayer,
+    "softplus": SoftplusThresholdLayer,
 }

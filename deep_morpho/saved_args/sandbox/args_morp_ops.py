@@ -81,8 +81,8 @@ selems = []
 
 for op in [
     'disk',
-    "hstick",
-    "dcross",
+    # "hstick",
+    # "dcross",
     # 'hstick', 'vstick', 'scross', 'dcross', 'square'
 ]:
     size = 5

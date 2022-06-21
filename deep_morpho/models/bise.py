@@ -81,7 +81,6 @@ class BiSE(BinaryNN):
         self.closest_selem_method = closest_selem_method
         self.closest_selem_distance_fn = closest_selem_distance_fn
         self.bias_optim_mode = bias_optim_mode
-        self.bias_handler = self.create_bias_handler()
 
         self.conv = nn.Conv2d(
             in_channels=1,
@@ -102,6 +101,9 @@ class BiSE(BinaryNN):
 
         self.weight_threshold_layer = dispatcher[self.weight_threshold_mode](P_=self.weight_P, constant_P=constant_weight_P, n_channels=out_channels, axis_channels=0)
         self.activation_threshold_layer = dispatcher[self.activation_threshold_mode](P_=activation_P, constant_P=constant_activation_P, n_channels=out_channels, axis_channels=1)
+
+        self.bias_handler = self.create_bias_handler()
+
 
         self.init_weights_and_bias()
 
@@ -568,6 +570,7 @@ class BiSE(BinaryNN):
         assert (new_weights >= 0).all(), new_weights
         return self.set_weights(self.weight_threshold_layer.forward_inverse(new_weights))
 
+    # DEBUG
     def set_bias(self, new_bias: torch.Tensor) -> torch.Tensor:
         assert self.bias.shape == new_bias.shape
         # assert (new_bias <= -0.5).all(), new_bias
@@ -575,6 +578,11 @@ class BiSE(BinaryNN):
         # return new_bias
         self.bias_handler.set_bias(new_bias)
         return new_bias
+
+    # DEBUG
+    # @property
+    # def bias_handler(self):
+    #     return self.conv.bias
 
     def set_activation_P(self, new_P: torch.Tensor) -> torch.Tensor:
         assert self.activation_P.shape == new_P.shape

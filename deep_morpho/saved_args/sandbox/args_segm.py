@@ -18,10 +18,10 @@ loss_dict = {
 
 all_args = {}
 
-# all_args['batch_seed'] = [3227255972]
-all_args['batch_seed'] = [None]
+all_args['batch_seed'] = [2249939862]
+# all_args['batch_seed'] = [None]
 
-all_args['n_try'] = [0]
+all_args['n_try'] = [1]
 # all_args['n_try'] = range(1, 6)
 
 all_args['experiment_name'] = [
@@ -29,7 +29,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_60/sandbox/0"
     # "Bimonn_exp_61/sandbox/0"
     # "Bimonn_mega_multi_1/sandbox/0"
-    "Bimonn_mega_multi_1/"
+    # "Bimonn_mega_multi_1/"
+    "test_new_bias"
 ]
 
 
@@ -38,8 +39,8 @@ all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
     # "mnist",
-    "inverted_mnist",
-    # 'diskorect',
+    # "inverted_mnist",
+    'diskorect',
 ]
 all_args['preprocessing'] = [  # for axspa roi
     None,
@@ -64,7 +65,7 @@ all_args['mnist_args'] = [
     {"threshold": 30, "size": (50, 50), "invert_input_proba": 0},
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
-all_args['n_steps'] = [10000]
+all_args['n_steps'] = [500]
 all_args['nb_batch_indep'] = [0]
 # all_args['n_inputs'] = [
 #     3_000_000,
@@ -76,16 +77,16 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 # TRAINING ARGS
 all_args['learning_rate'] = [
     1e-2,
-    1e-1,
+    # 1e-1,
     # 1,
 ]
 
 # if max_plus, then the loss is MSELoss
 all_args['loss_data_str'] = [
     # nn.BCELoss(),
-    "MaskedBCELoss",
+    # "MaskedBCELoss",
     "MaskedMSELoss",
-    "MaskedDiceLoss",
+    # "MaskedDiceLoss",
 ]
 all_args['loss_regu'] = [
     # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
@@ -146,9 +147,9 @@ all_args['init_weight_mode'] = [
     # "identity",
     # "normal_identity",
     # "conv_0.5"
-    InitBiseEnum.KAIMING_UNIFORM,
+    # InitBiseEnum.KAIMING_UNIFORM,
     InitBiseEnum.CUSTOM_HEURISTIC,
-    InitBiseEnum.CUSTOM_CONSTANT
+    # InitBiseEnum.CUSTOM_CONSTANT
 ]
 all_args['closest_selem_method'] = [
     ClosestSelemEnum.MIN_DIST
@@ -161,8 +162,8 @@ all_args['closest_selem_distance_fn'] = [
 ]
 all_args['bias_optim_mode'] = [
     BiseBiasOptimEnum.POSITIVE,
-    BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
-    BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+    # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
+    # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 
 all_args['activation_P'] = [0]
@@ -267,20 +268,20 @@ for idx, args in enumerate(all_args):
         args['loss_regu'] = (loss_dict[args['loss_regu'][0]], args['loss_regu'][1])
         args['loss']['loss_regu'] = args['loss_regu']
 
-    already_seen_path = f"deep_morpho/results/results_tensorboards/Bimonn_mega_multi_1/softplus/{args['dataset_type']}/seen_args.txt"
-    with open(already_seen_path, "r") as f:
-        already_seen = f.read()
-    if str((
-        args['morp_operation'].name.split('/')[0],
-        args['morp_operation'].selem_names[0][-1][0],
-        str(args["init_weight_mode"]).split(".")[-1],
-        str(args["bias_optim_mode"]).split(".")[-1],
-        args["loss_data_str"],
-        str(args["learning_rate"])
-    )) in already_seen:
-        to_remove.append(idx)
+    # already_seen_path = f"deep_morpho/results/results_tensorboards/Bimonn_mega_multi_1/softplus/{args['dataset_type']}/seen_args.txt"
+    # with open(already_seen_path, "r") as f:
+    #     already_seen = f.read()
+    # if str((
+    #     args['morp_operation'].name.split('/')[0],
+    #     args['morp_operation'].selem_names[0][-1][0],
+    #     str(args["init_weight_mode"]).split(".")[-1],
+    #     str(args["bias_optim_mode"]).split(".")[-1],
+    #     args["loss_data_str"],
+    #     str(args["learning_rate"])
+    # )) in already_seen:
+    #     to_remove.append(idx)
 
-for idx in to_remove[::-1]:
-    del all_args[idx]
+# for idx in to_remove[::-1]:
+#     del all_args[idx]
 
-pass
+# pass

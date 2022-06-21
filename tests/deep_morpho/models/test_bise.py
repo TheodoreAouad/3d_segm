@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import pytest
 
-from deep_morpho.models import BiSE, InitBiseEnum
+from deep_morpho.models import BiSE, InitBiseEnum, BiseBiasOptimEnum
 from general.structuring_elements import disk
 from general.array_morphology import array_erosion, array_dilation
 
@@ -44,7 +44,7 @@ class TestBiSE:
 
     @staticmethod
     def test_bise_set_bias():
-        layer = BiSE((7, 7))
+        layer = BiSE((7, 7), bias_optim_mode=BiseBiasOptimEnum.POSITIVE)
         bias = torch.rand((1,)) - 2
         layer.set_bias(bias)
         assert layer.bias == bias
