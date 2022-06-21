@@ -13,11 +13,14 @@ from general.nn.observables import Observable
 
 class PlotPreds(Observable):
 
-    def __init__(self, freq: Dict = {"train": 100, "val": 10}, *args, **kwargs):
+    def __init__(self, freq: Dict = {"train": 100, "val": 10}, fig_kwargs={}, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.freq = freq
         self.idx = {"train": 0, "val": 0}
         self.saved_fig = {"train": None, "val": None}
+        self.fig_kwargs = fig_kwargs
+        self.fig_kwargs['vmin'] = self.fig_kwargs.get('vmin', 0)
+        self.fig_kwargs['vmax'] = self.fig_kwargs.get('vmax', 1)
 
     def on_validation_batch_end_with_preds(
         self,
@@ -54,28 +57,28 @@ class PlotPreds(Observable):
                 idx = 0
                 img, target = batch[0][idx], batch[1][idx]
                 pred = preds[idx]
-                fig = self.plot_three(*[k.cpu().detach().numpy() for k in [img, pred, target]], title='train')
+                fig = self.plot_three(*[k.cpu().detach().numpy() for k in [img, pred, target]], title='train', fig_kwargs=self.fig_kwargs)
                 trainer.logger.experiment.add_figure("preds/train/input_pred_target", fig, trainer.global_step)
                 self.saved_fig['train'] = fig
 
         self.idx['train'] += 1
 
     @staticmethod
-    def plot_three(img, pred, target, title=''):
+    def plot_three(img, pred, target, title='', fig_kwargs={"vmin": 0, "vmax": 1}):
         ncols = max(img.shape[0], pred.shape[0])
         fig, axs = plt.subplots(3, ncols, figsize=(4 * ncols, 4 * 3), squeeze=False)
         fig.suptitle(title)
 
         for chan in range(img.shape[0]):
-            axs[0, chan].imshow(img[chan], cmap='gray', vmin=0, vmax=1)
+            axs[0, chan].imshow(img[chan], cmap='gray', **fig_kwargs)
             axs[0, chan].set_title(f'input_{chan}')
 
         for chan in range(pred.shape[0]):
-            axs[1, chan].imshow(pred[chan], cmap='gray', vmin=0, vmax=1)
+            axs[1, chan].imshow(pred[chan], cmap='gray', **fig_kwargs)
             axs[1, chan].set_title(f'pred_{chan} vmin={pred[chan].min():.2} vmax={pred[chan].max():.2}')
 
         for chan in range(target.shape[0]):
-            axs[2, chan].imshow(target[chan], cmap='gray', vmin=0, vmax=1)
+            axs[2, chan].imshow(target[chan], cmap='gray', **fig_kwargs)
             axs[2, chan].set_title(f'target_{chan}')
 
         return fig

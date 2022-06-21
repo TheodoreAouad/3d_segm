@@ -4,7 +4,7 @@ from pytorch_lightning.utilities.types import STEP_OUTPUT
 import pytorch_lightning as pl
 import torch.nn as nn
 
-from deep_morpho.models.bisel import BiSEL
+from deep_morpho.models.bisel import BiSELBase
 from general.nn.observables import Observable
 
 
@@ -158,7 +158,7 @@ class ObservableLayersChans(ObservableLayers):
         layer: "nn.Module",
         layer_idx: int,
     ):
-        if isinstance(layer, BiSEL):
+        if isinstance(layer, BiSELBase):
             for chan_output in range(layer.out_channels):
                 self.on_train_batch_end_layers_chan_output(
                     trainer=trainer,
@@ -226,7 +226,7 @@ class ObservableLayersChans(ObservableLayers):
         layer: "nn.Module",
         layer_idx: int,
     ):
-        if isinstance(layer, BiSEL):
+        if isinstance(layer, BiSELBase):
             for chan_output in range(layer.out_channels):
                 self.on_train_batch_end_layers_chan_output_always(
                     trainer=trainer,
@@ -294,7 +294,7 @@ class ObservableLayersChans(ObservableLayers):
         layer: "nn.Module",
         layer_idx: int,
     ):
-        if isinstance(layer, BiSEL):
+        if isinstance(layer, BiSELBase):
             for chan_output in range(layer.out_channels):
                 self.on_train_batch_end_with_preds_layers_chan_output(
                     trainer=trainer,
@@ -362,7 +362,7 @@ class ObservableLayersChans(ObservableLayers):
         layer: "nn.Module",
         layer_idx: int,
     ):
-        if isinstance(layer, BiSEL):
+        if isinstance(layer, BiSELBase):
             for chan_output in range(layer.out_channels):
                 self.on_train_batch_end_with_preds_layers_chan_output_always(
                     trainer=trainer,

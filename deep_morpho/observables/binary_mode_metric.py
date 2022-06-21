@@ -36,6 +36,8 @@ class BinaryModeMetric(Observable):
             pl_module.model.binary()
 
             inputs, targets = batch
+            inputs = (inputs > 0).float()  # handle both {0, 1} and {-1, 1}
+            targets = targets > 0  # handle both {0, 1} and {-1, 1}
 
             preds = pl_module.model(inputs)
             for metric_name in self.metrics:

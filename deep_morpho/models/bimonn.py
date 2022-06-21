@@ -5,7 +5,7 @@ import numpy as np
 from .bise import BiSE, BiSEC, InitBiseEnum, ClosestSelemEnum, ClosestSelemDistanceEnum, BiseBiasOptimEnum
 from .dilation_sum_layer import MaxPlusAtom
 from .cobise import COBiSE, COBiSEC
-from .bisel import BiSEL
+from .bisel import BiSEL, SyBiSEL
 from .binary_nn import BinaryNN
 
 
@@ -16,31 +16,38 @@ class BiMoNN(BinaryNN):
         kernel_size: List[Union[Tuple, int]],
         channels: List[int],
         atomic_element: Union[str, List[str]] = 'bisel',
-        weight_P: Union[float, List[float]] = 1,
-        # threshold_mode: Union[Union[str, dict], List[Union[str, dict]]] = "tanh",
-        threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh"},
-        activation_P: Union[float, List[float]] = 0,
-        constant_activation_P: Union[bool, List[bool]] = False,
-        constant_weight_P: Union[bool, List[bool]] = False,
-        init_bias_value_bise: Union[float, List[float]] = 1,
-        init_bias_value_lui: Union[float, List[float]] = 1,
-        input_mean: Union[float, List[float]] = .5,
-        init_weight_mode: Union[bool, List[bool]] = InitBiseEnum.CUSTOM_CONSTANT,
-        alpha_init: Union[float, List[float]] = 0,
-        init_value: Union[float, List[float]] = -2,
-        share_weights: Union[bool, List[bool]] = True,
-        constant_P_lui: Union[bool, List[bool]] = False,
-        closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST,
-        closest_selem_distance_fn: ClosestSelemDistanceEnum = ClosestSelemDistanceEnum.DISTANCE_TO_AND_BETWEEN_BOUNDS,
-        bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED,
-        lui_kwargs: Union[Dict, List[Dict]] = {},
+        **kwargs,
+        # weight_P: Union[float, List[float]] = 1,
+        # # threshold_mode: Union[Union[str, dict], List[Union[str, dict]]] = "tanh",
+        # threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh"},
+        # activation_P: Union[float, List[float]] = 0,
+        # constant_activation_P: Union[bool, List[bool]] = False,
+        # constant_weight_P: Union[bool, List[bool]] = False,
+        # init_bias_value_bise: Union[float, List[float]] = 1,
+        # init_bias_value_lui: Union[float, List[float]] = 1,
+        # input_mean: Union[float, List[float]] = .5,
+        # init_weight_mode: Union[bool, List[bool]] = InitBiseEnum.CUSTOM_CONSTANT,
+        # alpha_init: Union[float, List[float]] = 0,
+        # init_value: Union[float, List[float]] = -2,
+        # share_weights: Union[bool, List[bool]] = True,
+        # constant_P_lui: Union[bool, List[bool]] = False,
+        # closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST,
+        # closest_selem_distance_fn: ClosestSelemDistanceEnum = ClosestSelemDistanceEnum.DISTANCE_TO_AND_BETWEEN_BOUNDS,
+        # bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED,
+        # lui_kwargs: Union[Dict, List[Dict]] = {},
     ):
         super().__init__()
         self.kernel_size = self._init_kernel_size(kernel_size)
 
-        # for attr in set(self.bises_args).union(self.bisecs_args).difference(['kernel_size']).union(['atomic_element']):
-        for attr in set(self.all_args):
-            setattr(self, attr, self._init_attr(attr, eval(attr)))
+        # for attr in set(self.all_args):
+        #     setattr(self, attr, self._init_attr(attr, eval(attr)))
+
+        kwargs['kernel_size'] = kernel_size
+        kwargs['channels'] = channels
+        kwargs['atomic_element'] = atomic_element
+        for attr, value in kwargs.items():
+            setattr(self, attr, self._init_attr(attr, value))
+
 
         self.layers = []
         self.bises_idx = []
@@ -86,6 +93,7 @@ class BiMoNN(BinaryNN):
         output["output"] = cur["output"]
         return output
 
+    # deprecated
     def get_bise_selems(self) -> Tuple[Dict[int, np.ndarray], Dict[int, str]]:
         """Go through all BiSE indexes and shows the learned selem and operation. If None are learned, puts value
         None.
@@ -153,37 +161,40 @@ class BiMoNN(BinaryNN):
 
         return [attr_value for _ in range(len(self.kernel_size))]
 
+    def is_not_default(self, key: str) -> bool:
+        return key in self.__dict__.keys()
+
     def bises_kwargs_idx(self, idx):
         return dict(
             **{'shared_weights': None, 'shared_weight_P': None},
-            **{k: getattr(self, k)[idx] for k in self.bises_args}
+            **{k: getattr(self, k)[idx] for k in self.bises_args if self.is_not_default(k)}
         )
 
     def bisels_kwargs_idx(self, idx):
         return dict(
             **{'shared_weights': None, 'shared_weight_P': None},
-            **{k: getattr(self, k)[idx] for k in self.bisels_args}
+            **{k: getattr(self, k)[idx] for k in self.bisels_args if self.is_not_default(k)}
         )
 
     def bisecs_kwargs_idx(self, idx):
         return dict(
             **{'shared_weights': None, 'shared_weight_P': None},
-            **{k: getattr(self, k)[idx] for k in self.bisecs_args}
+            **{k: getattr(self, k)[idx] for k in self.bisecs_args if self.is_not_default(k)}
         )
 
     def cobise_kwargs_idx(self, idx):
         return dict(
-            **{k: getattr(self, k)[idx] for k in self.cobise_args},
+            **{k: getattr(self, k)[idx] for k in self.cobise_args if self.is_not_default(k)},
         )
 
     def cobisec_kwargs_idx(self, idx):
         return dict(
-            **{k: getattr(self, k)[idx] for k in self.cobisec_args},
+            **{k: getattr(self, k)[idx] for k in self.cobisec_args if self.is_not_default(k)},
         )
 
     def max_plus_kwargs_idx(self, idx):
         return dict(
-            **{k: getattr(self, k)[idx] for k in self.max_plus_args},
+            **{k: getattr(self, k)[idx] for k in self.max_plus_args if self.is_not_default(k)},
         )
 
     @property
@@ -224,6 +235,10 @@ class BiMoNN(BinaryNN):
 
         elif self.atomic_element[idx] == 'bisel':
             layer = BiSEL(**self.bisels_kwargs_idx(idx))
+            self.bisels_idx.append(idx)
+
+        elif self.atomic_element[idx] == 'sybisel':
+            layer = SyBiSEL(**self.bisels_kwargs_idx(idx))
             self.bisels_idx.append(idx)
 
         elif self.atomic_element[idx] == 'bisec':

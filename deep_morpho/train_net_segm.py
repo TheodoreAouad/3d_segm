@@ -45,6 +45,7 @@ def get_dataloader(args):
             seed=args['seed'],
             device=device,
             num_workers=args['num_workers'],
+            do_symetric_output=args['atomic_element'] == 'sybisel',
             # persistent_workers=True,
             # pin_memory=True,
         )
@@ -91,7 +92,8 @@ def main(args, logger):
         f.write(f"{args['seed']}")
 
     trainloader, valloader, testloader = get_dataloader(args)
-    metrics = {'dice': lambda y_true, y_pred: masked_dice(y_true, y_pred, border=(args['kernel_size'] // 2, args['kernel_size'] // 2), threshold=.5).mean()}
+    metrics = {'dice': lambda y_true, y_pred: masked_dice(y_true, y_pred, 
+                        border=(args['kernel_size'] // 2, args['kernel_size'] // 2), threshold=0 if args['atomic_element'] == 'sybisel' else 0.5).mean()}
 
     observables_dict = {
         # "SetSeed": obs.SetSeed(args['batch_seed']),
@@ -101,10 +103,10 @@ def main(args, logger):
             metrics=metrics,
             keep_preds_for_epoch=False,
         ),
-        "PlotPreds": obs.PlotPreds(freq={'train': args['freq_imgs'], 'val': 39}),
+        "PlotPreds": obs.PlotPreds(freq={'train': args['freq_imgs'], 'val': 39}, fig_kwargs={"vmax": 1, "vmin": -1 if args['atomic_element'] == 'sybisel' else 0}),
         "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
-        "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=600),
-        "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=600),
+        # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=600),
+        # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=600),
         "InputAsPredMetric": obs.InputAsPredMetric(metrics),
         "CountInputs": obs.CountInputs(),
         "PlotParametersBiSE": obs.PlotParametersBiSE(freq=1),

@@ -2,15 +2,16 @@ from typing import Union, Tuple, Dict
 
 import torch
 
-from .bise import BiSE, InitBiseEnum
+from .bise import BiSE, InitBiseEnum, SyBiSE, BiseBiasOptimEnum
 from .lui import LUI
 from .binary_nn import BinaryNN
 
 
-class BiSEL(BinaryNN):
+class BiSELBase(BinaryNN):
 
     def __init__(
         self,
+        bise_module: BiSE,
         in_channels: int,
         out_channels: int,
         kernel_size: Union[int, Tuple],
@@ -19,11 +20,13 @@ class BiSEL(BinaryNN):
         init_bias_value_bise: float = 0.5,
         init_bias_value_lui: float = 0.5,
         input_mean: float = 0.5,
+        lui_input_mean: float = 0.5,
         init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
         lui_kwargs: Dict = {},
         **bise_kwargs
     ):
         super().__init__()
+        self.bise_module = bise_module
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = kernel_size
@@ -34,6 +37,7 @@ class BiSEL(BinaryNN):
         self.init_bias_value_bise = init_bias_value_bise
         self.init_bias_value_lui = init_bias_value_lui
         self.input_mean = input_mean
+        self.lui_input_mean = lui_input_mean
         self.init_weight_mode = init_weight_mode
 
         self.bises = self._init_bises()
@@ -50,7 +54,7 @@ class BiSEL(BinaryNN):
     def _init_bises(self):
         bises = []
         for idx in range(self.in_channels):
-            layer = BiSE(
+            layer = self.bise_module(
                 out_channels=self.out_channels, kernel_size=self.kernel_size, init_weight_mode=self.init_weight_mode,
                 threshold_mode=self.threshold_mode, init_bias_value=self.init_bias_value_bise, input_mean=self.input_mean,
                 **self.bise_kwargs
@@ -68,7 +72,7 @@ class BiSEL(BinaryNN):
                 chan_outputs=1,
                 constant_P=self.constant_P_lui,
                 init_bias_value=self.init_bias_value_lui,
-                input_mean=0.5,
+                input_mean=self.lui_input_mean,
                 init_mode=self.init_weight_mode,
                 **self.lui_kwargs
             )
@@ -184,3 +188,67 @@ class BiSEL(BinaryNN):
         """ Returns the coefficients of the linear operation of LUI, of shape (out_channels, 2*in_channels).
         """
         return torch.cat([layer.positive_weight for layer in self.luis], axis=0)
+
+
+
+class BiSEL(BiSELBase):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: Union[int, Tuple],
+        threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh_symetric"},
+        constant_P_lui: bool = False,
+        init_bias_value_bise: float = 0.5,
+        init_bias_value_lui: float = 0.5,
+        input_mean: float = 0.5,
+        init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
+        lui_kwargs: Dict = {},
+        **bise_kwargs
+    ):
+        super().__init__(
+            bise_module=BiSE,
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            threshold_mode=threshold_mode,
+            constant_P_lui=constant_P_lui,
+            init_bias_value_bise=init_bias_value_bise,
+            init_bias_value_lui=init_bias_value_lui,
+            input_mean=input_mean,
+            init_weight_mode=init_weight_mode,
+            lui_kwargs=lui_kwargs,
+            **bise_kwargs
+        )
+
+
+class SyBiSEL(BiSELBase):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: Union[int, Tuple],
+        threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh"},
+        constant_P_lui: bool = False,
+        init_bias_value_bise: float = 0.5,
+        init_bias_value_lui: float = 0.5,
+        input_mean: float = 0,
+        init_weight_mode: InitBiseEnum = InitBiseEnum.KAIMING_UNIFORM,
+        bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.RAW,
+        lui_kwargs: Dict = {},
+        **bise_kwargs
+    ):
+        super().__init__(
+            bise_module=SyBiSE,
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            threshold_mode=threshold_mode,
+            constant_P_lui=constant_P_lui,
+            init_bias_value_bise=init_bias_value_bise,
+            init_bias_value_lui=init_bias_value_lui,
+            input_mean=input_mean,
+            init_weight_mode=init_weight_mode,
+            lui_kwargs=lui_kwargs,
+            **bise_kwargs
+        )

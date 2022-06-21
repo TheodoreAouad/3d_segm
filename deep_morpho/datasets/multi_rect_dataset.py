@@ -28,6 +28,7 @@ class InputOutputGeneratorDataset(Dataset):
             len_dataset: int = 1000,
             seed: int = None,
             max_generation_nb: int = 0,
+            do_symetric_output: bool = False,
     ):
         self.random_gen_fn = random_gen_fn
         self.random_gen_args = random_gen_args
@@ -35,6 +36,7 @@ class InputOutputGeneratorDataset(Dataset):
         self.len_dataset = len_dataset
         self.morp_fn = morp_operation
         self.max_generation_nb = max_generation_nb
+        self.do_symetric_output = do_symetric_output
         self.data = {}
         self.rng = np.random.default_rng(seed)
 
@@ -61,16 +63,19 @@ class InputOutputGeneratorDataset(Dataset):
         input_ = input_.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)
         target = target.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)
 
+        if self.do_symetric_output:
+            return 2 * input_ - 1, 2 * target - 1
         return input_, target
 
     def __len__(self):
         return self.len_dataset
 
     @staticmethod
-    def get_loader(batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, max_generation_nb=0, seed=None, device='cpu', **kwargs):
+    def get_loader(batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, max_generation_nb=0, do_symetric_output: bool = False, seed=None, device='cpu', **kwargs):
         return DataLoader(
             InputOutputGeneratorDataset(
-                random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device, len_dataset=n_inputs, seed=seed, max_generation_nb=max_generation_nb,
+                random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device,
+                len_dataset=n_inputs, seed=seed, max_generation_nb=max_generation_nb, do_symetric_output=do_symetric_output,
             ),
             batch_size=batch_size, **kwargs
         )

@@ -18,10 +18,10 @@ loss_dict = {
 
 all_args = {}
 
-all_args['batch_seed'] = [2249939862]
-# all_args['batch_seed'] = [None]
+# all_args['batch_seed'] = [2249939862]
+all_args['batch_seed'] = [None]
 
-all_args['n_try'] = [1]
+all_args['n_try'] = [0]
 # all_args['n_try'] = range(1, 6)
 
 all_args['experiment_name'] = [
@@ -30,7 +30,10 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_61/sandbox/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
-    "test_new_bias"
+    # "test_new_bias"
+    # "Bimonn_reprod"
+    "test_sybisel"
+    # "sybisel_debug"
 ]
 
 
@@ -65,7 +68,7 @@ all_args['mnist_args'] = [
     {"threshold": 30, "size": (50, 50), "invert_input_proba": 0},
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
-all_args['n_steps'] = [500]
+all_args['n_steps'] = [1000]
 all_args['nb_batch_indep'] = [0]
 # all_args['n_inputs'] = [
 #     3_000_000,
@@ -85,8 +88,8 @@ all_args['learning_rate'] = [
 all_args['loss_data_str'] = [
     # nn.BCELoss(),
     # "MaskedBCELoss",
-    "MaskedMSELoss",
-    # "MaskedDiceLoss",
+    # "MaskedMSELoss",
+    "MaskedDiceLoss",
 ]
 all_args['loss_regu'] = [
     # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
@@ -116,7 +119,8 @@ all_args['patience_reduce_lr'] = [700]
 all_args['atomic_element'] = [
     # 'conv',
     # 'bise',
-    "bisel",
+    # "bisel",
+    "sybisel",
     # 'bisec',
     # 'cobise',
     # 'cobisec',
@@ -147,8 +151,8 @@ all_args['init_weight_mode'] = [
     # "identity",
     # "normal_identity",
     # "conv_0.5"
-    # InitBiseEnum.KAIMING_UNIFORM,
-    InitBiseEnum.CUSTOM_HEURISTIC,
+    InitBiseEnum.KAIMING_UNIFORM,
+    # InitBiseEnum.CUSTOM_HEURISTIC,
     # InitBiseEnum.CUSTOM_CONSTANT
 ]
 all_args['closest_selem_method'] = [
@@ -161,7 +165,8 @@ all_args['closest_selem_distance_fn'] = [
     ClosestSelemDistanceEnum.DISTANCE_TO_BOUNDS
 ]
 all_args['bias_optim_mode'] = [
-    BiseBiasOptimEnum.POSITIVE,
+    BiseBiasOptimEnum.RAW,
+    # BiseBiasOptimEnum.POSITIVE,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
@@ -225,7 +230,7 @@ for idx, args in enumerate(all_args):
             args["kernel_size"] = int(max(args['morp_operation'].max_selem_shape))
 
         args['loss_data'] = loss_dict[args['loss_data_str']](border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]))
-        args['experiment_subname'] = f"{args['threshold_mode']['weight']}/{args['dataset_type']}/{args['morp_operation'].name}"
+        args['experiment_subname'] = f"{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset_type']}/{args['morp_operation'].name}"
 
         if args['channels'] == 'adapt':
             args['channels'] = args['morp_operation'].in_channels + [args['morp_operation'].out_channels[-1]]
@@ -257,6 +262,10 @@ for idx, args in enumerate(all_args):
 
     if args['atomic_element'] == "max_plus":
         args['loss'] = MaskedMSELoss()
+
+    if args['atomic_element'] == "sybisel":
+        # args['threshold_mode']["activation"] += "_symetric"
+        args['threshold_mode'] = {'weight': args['threshold_mode']['weight'], 'activation': args['threshold_mode']['activation'] + "_symetric"}
 
     args['loss'] = {"loss_data": args['loss_data']}
 

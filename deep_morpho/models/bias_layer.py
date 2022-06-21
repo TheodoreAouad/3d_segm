@@ -84,9 +84,7 @@ class BiasSoftplus(BiasBise):
     def from_param_to_bias(self, param: torch.Tensor) -> torch.Tensor:
         return -self.softplus_layer(param) - self.offset
 
-    # DEBUG
     def from_bias_to_param(self, bias: torch.Tensor) -> torch.Tensor:
-        # return self.softplus_layer.forward_inverse(-bias)
         return self.softplus_layer.forward_inverse(-bias - self.offset)
 
 
