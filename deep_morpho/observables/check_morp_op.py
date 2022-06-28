@@ -15,7 +15,7 @@ from .observable_layers import ObservableLayers, ObservableLayersChans
 from general.nn.observables import Observable
 from general.utils import save_json
 
-from ..models import COBiSE, BiSE
+from ..models import BiSEBase
 
 
 class CheckMorpOperation(ObservableLayers):
@@ -37,7 +37,7 @@ class CheckMorpOperation(ObservableLayers):
     def get_layout(layers):
         default_layout = {}
         for layer_idx, layer in enumerate(layers):
-            if isinstance(layer, COBiSE):
+            if isinstance(layer, ):
                 for bise_idx, bise_layer in enumerate(layer.bises):
                     tags_dilation = [
                         f'comparative/weights/bias_{layer_idx}_{bise_idx}/bias',
@@ -83,11 +83,11 @@ class CheckMorpOperation(ObservableLayers):
         layer: "nn.Module",
         layer_idx: int,
     ):
-        if isinstance(layer, COBiSE):
+        if isinstance(layer, ):
             for bise_idx, bise_layer in enumerate(layer.bises):
                 self.write_scalars_and_metrics(trainer, bise_layer, f'{layer_idx}_{bise_idx}', 2*layer_idx + bise_idx)
 
-        elif isinstance(layer, BiSE):
+        elif isinstance(layer, BiSEBase):
             self.write_scalars_and_metrics(trainer, layer, layer_idx, layer_idx)
 
 
@@ -137,8 +137,8 @@ class ShowSelemAlmostBinary(Observable):
         if self.freq_idx % self.freq == 0:
             selems, operations = pl_module.model.get_bise_selems()
             for layer_idx, layer in enumerate(pl_module.model.layers):
-                if not isinstance(layer, BiSE):
-                    # fig = self.default_figure("Not BiSE")
+                if not isinstance(layer, BiSEBase):
+                    # fig = self.default_figure("Not BiSEBase")
                     continue
 
                 elif selems[layer_idx] is None:
@@ -249,7 +249,8 @@ class ShowLUISetBinary(ObservableLayersChans):
         chan_output=int,
     ):
         with torch.no_grad():
-            C, operation = layer.luis[chan_output].find_set_and_operation_chan(0, v1=None, v2=None)
+            C, operation = layer.luis[chan_output].find_set_and_operation_chan(0)
+            # C, operation = layer.luis[chan_output].find_set_and_operation_chan(0, v1=None, v2=None)
         if C is None:
             return
 
@@ -304,7 +305,11 @@ class ShowClosestSelemBinary(ObservableLayersChans):
         chan_output: int,
     ):
         with torch.no_grad():
-            selem, operation, distance = layer.bises[chan_input].find_closest_selem_and_operation_chan(chan_output, v1=0, v2=1)
+            layer.bises[chan_input].find_closest_selem_and_operation_chan(chan_output, v1=0, v2=1)
+            selem = layer.bises[chan_input].closest_selem[chan_output]
+            operation = layer.bises[chan_input].closest_operation[chan_output]
+            distance = layer.bises[chan_input].closest_selem_dist[chan_output]
+            # selem, operation, distance = layer.bises[chan_input].find_closest_selem_and_operation_chan(chan_output, v1=0, v2=1)
 
         trainer.logger.experiment.add_scalar(f"comparative/closest_binary_dist/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}", distance, trainer.global_step)
 

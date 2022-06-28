@@ -1,3 +1,4 @@
+from .bise_base import *
 from .bise import *
 from .cobise import *
 from .pconv import *
@@ -9,3 +10,4 @@ from .lightning_pconv import *
 from .lightning_bimonn import *
 from .lui import *
 from .softplus import *
+from .bisel import *

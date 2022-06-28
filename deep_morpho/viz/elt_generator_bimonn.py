@@ -49,7 +49,8 @@ class EltGeneratorLui(EltGenerator):
 
     def generate(self, layer_idx, chout, xy_coords_mean, height):
         lui_layer = self.bimonn_model.layers[layer_idx].luis[chout]
-        lui_layer.update_learned_sets()
+        lui_layer.update_binary_sets()
+        # lui_layer.update_learned_sets()
 
         if self.learned:
             constructor = ElementLui
@@ -100,7 +101,7 @@ class EltGeneratorConnectLuiBise(EltGeneratorConnectLuiBiseBase):
             return float(model.learned_set[0, chin])
 
 
-        coefs = model.positive_weight[0].detach().cpu().numpy()
+        coefs = model.coefs[0].detach().cpu().numpy()
         coefs = coefs / coefs.max() * self.max_width_coef
         return coefs[chin]
 
@@ -108,5 +109,6 @@ class EltGeneratorConnectLuiBise(EltGeneratorConnectLuiBiseBase):
 class EltGeneratorConnectLuiBiseClosest(EltGeneratorConnectLuiBiseBase):
 
     def infer_width(self, lui_elt, chin):
-        model= lui_elt.model
-        return float(model.closest_set[0, chin])
+        model = lui_elt.model
+        # return float(model.closest_set[0, chin])
+        return float(model.closest_set[chin])

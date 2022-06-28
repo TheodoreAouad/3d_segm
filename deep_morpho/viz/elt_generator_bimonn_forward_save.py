@@ -54,7 +54,7 @@ class EltGeneratorConnectLuiBiseForwardSaveBase(EltGenerator):
 class EltGeneratorConnectLuiBiseForwardSave(EltGeneratorConnectLuiBiseForwardSaveBase):
 
     def infer_width(self, model, chin):
-        coefs = model.positive_weight[0].detach().cpu().numpy()
+        coefs = model.coefs[0].detach().cpu().numpy()
         coefs = coefs / coefs.max() * self.max_width_coef
         return coefs[chin]
 

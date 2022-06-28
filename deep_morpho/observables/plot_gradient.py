@@ -13,7 +13,7 @@ from tqdm import tqdm
 from deep_morpho.models.bisel import BiSEL
 from .observable_layers import ObservableLayersChans
 from general.utils import max_min_norm
-from ..models import BiSE, BiSEC, COBiSEC, COBiSE
+from ..models import BiSE
 
 
 
@@ -126,9 +126,10 @@ class PlotGradientBise(GradientWatcher):
         layer_idx: int,
         chan_output: int,
     ):
-        if layer.luis[chan_output].bias_raw.grad is None:
+        if layer.luis[chan_output].bias_handler.grad is None:
+        # if layer.luis[chan_output].bias_raw.grad is None:
             return
-        grad_lui_bias = layer.luis[chan_output].bias_raw.grad[0]
+        grad_lui_bias = layer.luis[chan_output].bias_handler.grad[0]
         if grad_lui_bias is not None:
             trainer.logger.experiment.add_scalars(
                 f"weights/lui/bias_gradient/layer_{layer_idx}",

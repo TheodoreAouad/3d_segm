@@ -27,48 +27,48 @@ class LUI(BinaryNN):
     def __init__(
         self,
         threshold_mode: str,
-        chan_inputs: int,
-        chan_outputs: int,
+        in_channels: int,
+        out_channels: int,
         init_bias_value: float = -0.7,
         input_mean: float = 0.5,
         P_: float = 1,
-        constant_P: bool = False,
-        init_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
+        constant_activation_P: bool = False,
+        init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
         force_identity: bool = False,
     ):
         super().__init__()
 
         self.threshold_mode = threshold_mode
-        self.constant_P = constant_P
-        self.chan_inputs = chan_inputs
-        self.chan_outputs = chan_outputs
+        self.constant_activation_P = constant_activation_P
+        self.in_channels = in_channels
+        self.out_channels = out_channels
         self.init_bias_value = init_bias_value
-        self.init_mode = init_mode
+        self.init_weight_mode = init_weight_mode
         self.force_identity = force_identity
         self.input_mean = input_mean
 
-        if self.chan_inputs == self.chan_outputs == 1:
+        if self.in_channels == self.out_channels == 1:
             self.force_identity = True
 
-        self.threshold_layer = dispatcher[self.threshold_mode](P_=P_, constant_P=self.constant_P, n_channels=chan_outputs)
-        self.linear = nn.Linear(chan_inputs, chan_outputs)
+        self.threshold_layer = dispatcher[self.threshold_mode](P_=P_, constant_activation_P=self.constant_activation_P, n_channels=out_channels)
+        self.linear = nn.Linear(in_channels, out_channels)
         self.softplus_layer = Softplus()
 
         # with torch.no_grad():
-        #     if init_mode == "normal":
+        #     if init_weight_mode == "normal":
         #         self.init_normal_coefs(mean=0.5, std=0.3)
         #         self.init_normal_bias(mean=0.5, std=0.3)
 
         self.init_coefs()
         self.init_bias()
 
-        self.closest_set = np.zeros((self.chan_outputs, self.chan_inputs)).astype(bool)
-        self.closest_operation = np.zeros(self.chan_outputs)
-        self.closest_set_dist = np.zeros(self.chan_outputs)
+        self.closest_set = np.zeros((self.out_channels, self.in_channels)).astype(bool)
+        self.closest_operation = np.zeros(self.out_channels)
+        self.closest_set_dist = np.zeros(self.out_channels)
 
-        self.learned_set = np.zeros((self.chan_outputs, self.chan_inputs)).astype(bool)
-        self.learned_operation = np.zeros(self.chan_outputs)
-        self.is_activated = np.zeros(self.chan_outputs).astype(bool)
+        self.learned_set = np.zeros((self.out_channels, self.in_channels)).astype(bool)
+        self.learned_operation = np.zeros(self.out_channels)
+        self.is_activated = np.zeros(self.out_channels).astype(bool)
 
         self.update_learned_sets()
 
@@ -84,12 +84,12 @@ class LUI(BinaryNN):
     def init_coefs(self):
         if self.force_identity:
             return
-        if self.init_mode == InitBiseEnum.NORMAL:
+        if self.init_weight_mode == InitBiseEnum.NORMAL:
             self.init_normal_coefs(mean=0.5, std=0.3)
             # self.init_normal_bias(mean=0.5, std=0.3)
-        elif self.init_mode == InitBiseEnum.KAIMING_UNIFORM:
+        elif self.init_weight_mode == InitBiseEnum.KAIMING_UNIFORM:
             self.set_positive_weights(self.weight + 1)
-        elif self.init_mode == InitBiseEnum.CUSTOM_HEURISTIC:
+        elif self.init_weight_mode == InitBiseEnum.CUSTOM_HEURISTIC:
             nb_params = torch.tensor(self.weight.shape[1:]).prod()
             mean = self.init_bias_value / (self.input_mean * nb_params)
             std = .5
@@ -98,7 +98,7 @@ class LUI(BinaryNN):
             self.set_positive_weights(
                 torch.rand_like(self.weight) * (lb - ub) + ub
             )
-        elif self.init_mode == InitBiseEnum.CUSTOM_CONSTANT:
+        elif self.init_weight_mode == InitBiseEnum.CUSTOM_CONSTANT:
             p = 1
             nb_params = torch.tensor(self.weight.shape[1:]).prod()
 
@@ -118,8 +118,8 @@ class LUI(BinaryNN):
                 torch.rand_like(self.weights) * (lb - ub) + ub
             )
         else:
-            # warnings.warn(f"init weight mode {self.init_mode} not recognized. Classical linear init used.")
-            raise ValueError(f"init weight mode {self.init_mode} not recognized.")
+            # warnings.warn(f"init weight mode {self.init_weight_mode} not recognized. Classical linear init used.")
+            raise ValueError(f"init weight mode {self.init_weight_mode} not recognized.")
 
     def init_bias(self):
         if self.force_identity:
@@ -129,7 +129,7 @@ class LUI(BinaryNN):
         # self.set_positive_bias(torch.zeros_like(self.bias) - 1)
 
     def update_learned_sets(self):
-        for chan in range(self.chan_outputs):
+        for chan in range(self.out_channels):
             self.find_closest_set_and_operation_chan(chan)
             self.find_set_and_operation_chan(chan)
 
@@ -344,8 +344,8 @@ class LUI(BinaryNN):
 
         Args:
             operation (str): 'union' or 'intersection', the operation we want to check for
-            v1 (np.ndarray): the lower values of the almost binary. Size must be self.chan_inputs.
-            v2 (np.ndarray): the upper values of the almost binary. Size must be self.chan_inputs. (input not in ]v1, v2[)
+            v1 (np.ndarray): the lower values of the almost binary. Size must be self.in_channels.
+            v2 (np.ndarray): the upper values of the almost binary. Size must be self.in_channels. (input not in ]v1, v2[)
 
         Returns:
             np.ndarray: closest set
@@ -371,8 +371,8 @@ class LUI(BinaryNN):
         """Find the closest selem and the operation given the almost binary features.
 
         Args:
-            v1 (np.ndarray): lower bounds of almost binary input deadzone. Must be of shape self.chan_inputs. Defaults to 0.
-            v2 (np.ndarray): upper bounds of almost binary input deadzone. Must be of shape self.chan_inputs. Defaults to 1.
+            v1 (np.ndarray): lower bounds of almost binary input deadzone. Must be of shape self.in_channels. Defaults to 0.
+            v2 (np.ndarray): upper bounds of almost binary input deadzone. Must be of shape self.in_channels. Defaults to 1.
 
         Returns:
             (np.ndarray, str, float): set found, operation, distance to constraints
@@ -397,8 +397,8 @@ class LUI(BinaryNN):
 
         Args:
             operation (str): 'union' or 'intersection', the operation we want to check for
-            v1 (np.ndarray): the lower values of the almost binary. Size must be self.chan_inputs.
-            v2 (np.ndarray): the upper values of the almost binary. Size must be self.chan_inputs. (input not in ]v1, v2[)
+            v1 (np.ndarray): the lower values of the almost binary. Size must be self.in_channels.
+            v2 (np.ndarray): the upper values of the almost binary. Size must be self.in_channels. (input not in ]v1, v2[)
 
         Returns:
             np.ndarray if a set is found
@@ -425,8 +425,8 @@ class LUI(BinaryNN):
         """Find the selem and the operation given the almost binary features.
 
         Args:
-            v1 (np.ndarray): lower bounds of almost binary input deadzone. Must be of shape self.chan_inputs. Defaults to 0.
-            v2 (np.ndarray): upper bounds of almost binary input deadzone. Must be of shape self.chan_inputs. Defaults to 1.
+            v1 (np.ndarray): lower bounds of almost binary input deadzone. Must be of shape self.in_channels. Defaults to 0.
+            v2 (np.ndarray): upper bounds of almost binary input deadzone. Must be of shape self.in_channels. Defaults to 1.
 
         Returns:
             (np.ndarray, operation): if the selem is found, returns the selem and the operation
@@ -441,7 +441,7 @@ class LUI(BinaryNN):
 
     @staticmethod
     def from_set(C: np.ndarray, operation: str, threshold_mode: str = "tanh", **kwargs):
-        net = LUI(chan_inputs=len(C), chan_outputs=1, threshold_mode=threshold_mode, **kwargs)
+        net = LUI(in_channels=len(C), out_channels=1, threshold_mode=threshold_mode, **kwargs)
         assert set(np.unique(C)).issubset([0, 1])
         net.set_positive_weights(torch.FloatTensor(C)[None, :])
         bias_value = -.5 if operation == "union" else -float(C.sum()) + .5

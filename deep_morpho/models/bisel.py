@@ -2,7 +2,9 @@ from typing import Union, Tuple, Dict
 
 import torch
 
-from .bise import BiSE, InitBiseEnum, SyBiSE, BiseBiasOptimEnum
+from .bise_old import BiSE, InitBiseEnum, SyBiSE, BiseBiasOptimEnum
+from .bise import BiSE as BiSE2
+from .lui2 import LUI as LUI2
 from .lui import LUI
 from .binary_nn import BinaryNN
 
@@ -12,6 +14,7 @@ class BiSELBase(BinaryNN):
     def __init__(
         self,
         bise_module: BiSE,
+        lui_module: LUI,
         in_channels: int,
         out_channels: int,
         kernel_size: Union[int, Tuple],
@@ -27,6 +30,7 @@ class BiSELBase(BinaryNN):
     ):
         super().__init__()
         self.bise_module = bise_module
+        self.lui_module = lui_module
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = kernel_size
@@ -66,14 +70,14 @@ class BiSELBase(BinaryNN):
     def _init_luis(self):
         luis = []
         for idx in range(self.out_channels):
-            layer = LUI(
-                chan_inputs=self.in_channels,
-                threshold_mode=self.threshold_mode['activation'],
-                chan_outputs=1,
-                constant_P=self.constant_P_lui,
+            layer = self.lui_module(
+                in_channels=self.in_channels,
+                threshold_mode=self.threshold_mode,
+                out_channels=1,
+                constant_activation_P=self.constant_P_lui,
                 init_bias_value=self.init_bias_value_lui,
                 input_mean=self.lui_input_mean,
-                init_mode=self.init_weight_mode,
+                init_weight_mode=self.init_weight_mode,
                 **self.lui_kwargs
             )
             setattr(self, f'lui_{idx}', layer)
@@ -132,13 +136,6 @@ class BiSELBase(BinaryNN):
         return torch.stack([layer.activation_P for layer in self.bises], axis=-1)
 
     @property
-    def weight_P_bise(self) -> torch.Tensor:
-        """ Returns the weights P of the bise layers, of shape (out_channels, in_channels).
-        """
-        return torch.stack([layer.weight_P for layer in self.bises], axis=-1)
-
-
-    @property
     def activation_P_lui(self) -> torch.Tensor:
         """ Returns the activations P of the lui layer, of shape (out_channels).
         """
@@ -185,9 +182,9 @@ class BiSELBase(BinaryNN):
 
     @property
     def coefs(self) -> torch.Tensor:
-        """ Returns the coefficients of the linear operation of LUI, of shape (out_channels, 2*in_channels).
+        """ Returns the coefficients of the linear operation of LUI, of shape (out_channels, in_channels).
         """
-        return torch.cat([layer.positive_weight for layer in self.luis], axis=0)
+        return torch.cat([layer.coefs for layer in self.luis], axis=0)
 
 
 
@@ -208,6 +205,39 @@ class BiSEL(BiSELBase):
     ):
         super().__init__(
             bise_module=BiSE,
+            lui_module=LUI,
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            threshold_mode=threshold_mode,
+            constant_P_lui=constant_P_lui,
+            init_bias_value_bise=init_bias_value_bise,
+            init_bias_value_lui=init_bias_value_lui,
+            input_mean=input_mean,
+            init_weight_mode=init_weight_mode,
+            lui_kwargs=lui_kwargs,
+            **bise_kwargs
+        )
+
+
+class BiSEL2(BiSELBase):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: Union[int, Tuple],
+        threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh_symetric"},
+        constant_P_lui: bool = False,
+        init_bias_value_bise: float = 0.5,
+        init_bias_value_lui: float = 0.5,
+        input_mean: float = 0.5,
+        init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
+        lui_kwargs: Dict = {},
+        **bise_kwargs
+    ):
+        super().__init__(
+            bise_module=BiSE2,
+            lui_module=LUI2,
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=kernel_size,

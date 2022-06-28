@@ -10,7 +10,7 @@ import numpy as np
 
 from deep_morpho.observables.observable_layers import ObservableLayersChans
 from general.nn.observables import Observable
-from ..models import BiSE
+from ..models import BiSEBase
 from general.utils import save_json
 
 
@@ -107,7 +107,7 @@ class ConvergenceAlmostBinary(Observable):
         if self.freq_idx % self.freq == 0:
             selems, operations = pl_module.model.get_bise_selems()
             for layer_idx, layer in enumerate(pl_module.model.layers):
-                if not isinstance(layer, BiSE):
+                if not isinstance(layer, BiSEBase):
                     continue
 
                 self.update_step(layer_idx, selems[layer_idx] is not None, trainer.global_step)
@@ -168,7 +168,7 @@ class ConvergenceBinary(ObservableLayersChans):
         chan_output=int,
     ):
         key = str((layer_idx, chan_output))
-        C, operation = layer.luis[chan_output].find_set_and_operation_chan(0, v1=None, v2=None)
+        C, operation = layer.luis[chan_output].find_set_and_operation_chan(0)
 
         self.update_step("lui", key, C, operation, trainer.global_step)
 

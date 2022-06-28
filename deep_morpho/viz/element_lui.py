@@ -2,12 +2,13 @@ import numpy as np
 from matplotlib.patches import Polygon
 
 from general.nn.viz import Element, ElementGrouper, ElementSymbolIntersection, ElementSymbolUnion
-from deep_morpho.models import LUI
+from deep_morpho.models import LUI, BiSEBase
 
 
 OPERATION_FACTOR = .3
 
-LUI_INVERT_CODE = {v: k for (k, v) in LUI.operation_code.items()}
+LUI_INVERT_CODE = {v: k for (k, v) in BiSEBase.operation_code.items()}
+# LUI_INVERT_CODE = {v: k for (k, v) in LUI.operation_code.items()}
 
 
 class ElementLuiCoefs(Element):
@@ -65,7 +66,8 @@ class ElementLui(ElementGrouper):
 
 
 class ElementLuiClosest(ElementGrouper):
-    operation_element_dicts = {'intersection': ElementSymbolIntersection, 'union': ElementSymbolUnion}
+    operation_element_dicts = {'erosion': ElementSymbolIntersection, 'dilation': ElementSymbolUnion}
+    # operation_element_dicts = {'intersection': ElementSymbolIntersection, 'union': ElementSymbolUnion}
 
     def __init__(self, model, shape, imshow_kwargs={}, v1=None, v2=None, *args, **kwargs):
         super().__init__(*args, **kwargs)

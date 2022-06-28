@@ -13,7 +13,7 @@ import torch.nn as nn
 from .observable_layers import ObservableLayersChans
 from general.utils import max_min_norm, save_json
 
-from ..models import BiSE, BiSEC, COBiSE, COBiSEC, MaxPlusAtom, BiSEL
+from ..models import BiSE, MaxPlusAtom, BiSEL
 
 
 class PlotWeightsBiSE(ObservableLayersChans):
@@ -35,11 +35,6 @@ class PlotWeightsBiSE(ObservableLayersChans):
         chan_input: int,
         chan_output: int,
     ):
-        # if isinstance(layer, (BiSE, COBiSE, BiSEC, COBiSEC)):
-        #     trainer.logger.experiment.add_figure(f"weights/Normalized_{layer_idx}", self.get_figure_normalized_weights(
-        #         layer._normalized_weight, layer.bias, layer.activation_P), trainer.global_step)
-        # trainer.logger.experiment.add_figure(f"weights/Raw_{layer_idx}", self.get_figure_raw_weights(layer.weight), trainer.global_step)
-
         weights = layer.weights[chan_output, chan_input]
         weights_norm = layer._normalized_weight[chan_output, chan_input]
         trainer.logger.experiment.add_figure(
@@ -58,7 +53,7 @@ class PlotWeightsBiSE(ObservableLayersChans):
     def on_train_end(self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule') -> None:
         for layer_idx, layer in enumerate(pl_module.model.layers):
             to_add = {"weights": layer.weights, "bias_bise": layer.bias_bise, "activation_P_bise": layer.activation_P_bise}
-            if isinstance(layer, (BiSE, BiSEC, COBiSE, COBiSEC, BiSEL)):
+            if isinstance(layer, (BiSE, BiSEL)):
                 to_add["normalized_weights"] = layer._normalized_weight
             self.last_weights.append(to_add)
 
@@ -141,43 +136,17 @@ class PlotParametersBiSE(ObservableLayersChans):
         metrics = {}
         last_params = {}
 
-        # if isinstance(layer, (BiSE, COBiSE, BiSEC, COBiSEC)):
-        #     metrics.update({
-        #         f"weights/sum_norm_weights_{layer_idx}": layer._normalized_weight.sum(),
-        #         f"params/weight_P_{layer_idx}": layer.weight_P,
-        #         f"params/activation_P_{layer_idx}": layer.activation_P,
-        #     })
-
-        #     last_params.update({
-        #         f"weight_P": layer.weight_P.item(),
-        #         f"activation_P": layer.activation_P.item(),
-        #     })
-
-        # if isinstance(layer, (BiSEC, COBiSEC, MaxPlusAtom)):
-        #     metrics[f"weights/norm_alpha_{layer_idx}"] = layer.thresholded_alpha
-        #     last_params["norm_alpha"] = layer.thresholded_alpha.item()
-
-        # if isinstance(layer, (BiSE, BiSEC, COBiSEC)):
-        #     metrics[f"weights/bias_{layer_idx}"] = layer.bias
-        #     last_params["bias"] = layer.bias.item()
-
-        # elif isinstance(layer, COBiSE):
-        #     for bise_idx, bise_layer in enumerate(layer.bises):
-        #         metrics[f"weights/bias_{layer_idx}_{bise_idx}"] = layer.bias
-        #         last_params[f"bias_{bise_idx}"] = layer.bias.item()
-
-        # metrics[f'params/weight_P/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}'] = layer.weight_P_bise[chan_output, chan_input]
         metrics[f'params/activation_P/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}'] = layer.activation_P_bise[chan_output, chan_input]
         metrics[f'params/bias_bise/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}'] = layer.bias_bise[chan_output, chan_input]
 
         trainer.logger.log_metrics(metrics, trainer.global_step)
         self.last_params[layer_idx] = last_params
 
-        trainer.logger.experiment.add_scalars(
-            f"comparative/weight_P/layer_{layer_idx}_chout_{chan_output}",
-            {f"chin_{chan_input}": layer.weight_P_bise[chan_output, chan_input]},
-            trainer.global_step
-        )
+        # trainer.logger.experiment.add_scalars(
+        #     f"comparative/weight_P/layer_{layer_idx}_chout_{chan_output}",
+        #     {f"chin_{chan_input}": layer.weight_P_bise[chan_output, chan_input]},
+        #     trainer.global_step
+        # )
         trainer.logger.experiment.add_scalars(
             f"comparative/activation_P/layer_{layer_idx}_chout_{chan_output}",
             {f"chin_{chan_input}": layer.activation_P_bise[chan_output, chan_input]},

@@ -1,3 +1,6 @@
+# import warnings
+# warnings.filterwarnings('error', message=".+leaf Tensor.+")
+
 from time import time
 import os
 from os.path import join
@@ -15,7 +18,7 @@ from deep_morpho.utils import set_seed
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
 from deep_morpho.datasets.multi_rect_dataset import InputOutputGeneratorDataset, MultiRectDataset
 from deep_morpho.datasets.axspa_roi_dataset import AxspaROISimpleDataset
-from deep_morpho.models import LightningBiMoNN, BiSE, COBiSE, BiSEC, COBiSEC
+from deep_morpho.models import LightningBiMoNN, BiSE #COBiSE, BiSEC, COBiSEC
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
 from general.utils import format_time, log_console, create_logger, save_yaml, save_pickle, close_handlers
@@ -148,7 +151,6 @@ def main(args, logger):
             "activation_P": args['activation_P'],
             "constant_activation_P": args['constant_activation_P'],
             "constant_P_lui": args['constant_P_lui'],
-            "constant_weight_P": args['constant_weight_P'],
             "init_weight_mode": args["init_weight_mode"],
             "alpha_init": args["alpha_init"],
             "lui_kwargs": {"force_identity": args['force_lui_identity']},
@@ -163,7 +165,7 @@ def main(args, logger):
         optimizer=args['optimizer'],
         observables=observables,
     )
-    if isinstance(model.model.layers[0], (BiSE, COBiSE, BiSEC, COBiSEC)):
+    if isinstance(model.model.layers[0], (BiSE)):
         ys = model.model.layers[0].activation_threshold_fn(xs).detach()
         fig, ax = plt.subplots(); ax.plot(xs, ys); ax.set_title(args['threshold_mode'])
         logger.experiment.add_figure("threshold_fn", fig)

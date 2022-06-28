@@ -5,7 +5,7 @@ import torch.nn as nn
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
 from deep_morpho.loss import MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization
 from general.utils import dict_cross
-from deep_morpho.models import InitBiseEnum, ClosestSelemEnum, ClosestSelemDistanceEnum, BiseBiasOptimEnum
+from deep_morpho.models.bise_base import InitBiseEnum, ClosestSelemEnum, ClosestSelemDistanceEnum, BiseBiasOptimEnum
 from .args_morp_ops import morp_operations
 
 loss_dict = {
@@ -32,7 +32,7 @@ all_args['experiment_name'] = [
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
     # "Bimonn_reprod"
-    "test_sybisel"
+    "test_refactor_lui"
     # "sybisel_debug"
 ]
 
@@ -119,8 +119,8 @@ all_args['patience_reduce_lr'] = [700]
 all_args['atomic_element'] = [
     # 'conv',
     # 'bise',
-    # "bisel",
-    "sybisel",
+    "bisel2",
+    # "sybisel",
     # 'bisec',
     # 'cobise',
     # 'cobisec',
@@ -151,9 +151,9 @@ all_args['init_weight_mode'] = [
     # "identity",
     # "normal_identity",
     # "conv_0.5"
-    InitBiseEnum.KAIMING_UNIFORM,
+    # InitBiseEnum.KAIMING_UNIFORM,
     # InitBiseEnum.CUSTOM_HEURISTIC,
-    # InitBiseEnum.CUSTOM_CONSTANT
+    InitBiseEnum.CUSTOM_CONSTANT
 ]
 all_args['closest_selem_method'] = [
     ClosestSelemEnum.MIN_DIST
@@ -165,17 +165,17 @@ all_args['closest_selem_distance_fn'] = [
     ClosestSelemDistanceEnum.DISTANCE_TO_BOUNDS
 ]
 all_args['bias_optim_mode'] = [
-    BiseBiasOptimEnum.RAW,
+    # BiseBiasOptimEnum.RAW,
     # BiseBiasOptimEnum.POSITIVE,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
-    # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+    BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 
 all_args['activation_P'] = [0]
 all_args['force_lui_identity'] = [False]
 all_args['constant_activation_P'] = [False]
 all_args['constant_P_lui'] = [False]
-all_args['constant_weight_P'] = [True]
+# all_args['constant_weight_P'] = [True]
 all_args['init_bias_value_bise'] = [1]
 all_args['init_bias_value_lui'] = [1]
 
