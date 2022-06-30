@@ -150,6 +150,7 @@ def main(args, logger):
             "threshold_mode": args['threshold_mode'],
             "activation_P": args['activation_P'],
             "constant_activation_P": args['constant_activation_P'],
+            "constant_weight_P": args['constant_weight_P'],
             "constant_P_lui": args['constant_P_lui'],
             "init_weight_mode": args["init_weight_mode"],
             "alpha_init": args["alpha_init"],

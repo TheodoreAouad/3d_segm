@@ -39,7 +39,7 @@ class ElementLuiCoefs(Element):
 
 
 class ElementLui(ElementGrouper):
-    operation_element_dicts = {'intersection': ElementSymbolIntersection, 'union': ElementSymbolUnion}
+    operation_element_dicts = {'erosion': ElementSymbolIntersection, 'dilation': ElementSymbolUnion}
 
     def __init__(self, model, shape, imshow_kwargs={}, v1=None, v2=None, *args, **kwargs):
         super().__init__(*args, **kwargs)

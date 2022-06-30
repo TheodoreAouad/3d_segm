@@ -33,6 +33,7 @@ all_args['experiment_name'] = [
     # "test_new_bias"
     # "Bimonn_reprod"
     "test_refactor_lui"
+    # "test_refactor_bise_old2"
     # "sybisel_debug"
 ]
 
@@ -79,8 +80,8 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    # 1e-2,
-    1e-1,
+    1e-2,
+    # 1e-1,
     # 1,
 ]
 
@@ -166,16 +167,19 @@ all_args['closest_selem_distance_fn'] = [
 ]
 all_args['bias_optim_mode'] = [
     # BiseBiasOptimEnum.RAW,
-    BiseBiasOptimEnum.POSITIVE,
+    # BiseBiasOptimEnum.POSITIVE,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
-    # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+    BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 
 all_args['activation_P'] = [0]
 all_args['force_lui_identity'] = [False]
 all_args['constant_activation_P'] = [False]
 all_args['constant_P_lui'] = [False]
-# all_args['constant_weight_P'] = [True]
+all_args['constant_weight_P'] = [
+    True,
+    False
+]
 all_args['init_bias_value_bise'] = [1]
 all_args['init_bias_value_lui'] = [1]
 

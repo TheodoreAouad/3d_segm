@@ -150,7 +150,7 @@ class ConvergenceBinary(ObservableLayersChans):
         super().__init__(*args, **kwargs)
         self.convergence_step = {"lui": {}, "bisel": {}}
         self.has_converged = {
-            "lui": {"intersection": {}, "union": {}},
+            "lui": {"erosion": {}, "dilation": {}},
             "bisel": {"erosion": {}, "dilation": {}}
         }
         self.converged_value = {"lui": {}, "bisel": {}}

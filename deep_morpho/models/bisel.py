@@ -2,9 +2,11 @@ from typing import Union, Tuple, Dict
 
 import torch
 
-from .bise_old import BiSE, InitBiseEnum, SyBiSE, BiseBiasOptimEnum
-from .bise import BiSE as BiSE2
-from .lui2 import LUI as LUI2
+from .bise_old import InitBiseEnum, SyBiSE, BiseBiasOptimEnum
+# from .bise_old import BiSE, InitBiseEnum, SyBiSE, BiseBiasOptimEnum
+# from .bise_old2 import BiSE as BiSE_OLD2
+
+from .bise import BiSE
 from .lui import LUI
 from .binary_nn import BinaryNN
 
@@ -243,8 +245,8 @@ class BiSEL2(BiSELBase):
         **bise_kwargs
     ):
         super().__init__(
-            bise_module=BiSE2,
-            lui_module=LUI2,
+            bise_module=BiSE,
+            lui_module=LUI,
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=kernel_size,

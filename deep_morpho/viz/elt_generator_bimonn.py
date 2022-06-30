@@ -98,7 +98,8 @@ class EltGeneratorConnectLuiBise(EltGeneratorConnectLuiBiseBase):
         model= lui_elt.model
 
         if self.binary_mode and model.is_activated[0]:
-            return float(model.learned_set[0, chin])
+            return float(model.learned_set[chin])
+            # return float(model.learned_set[0, chin])
 
 
         coefs = model.coefs[0].detach().cpu().numpy()

@@ -250,7 +250,8 @@ class ShowLUISetBinary(ObservableLayersChans):
         chan_output=int,
     ):
         with torch.no_grad():
-            C, operation = layer.luis[chan_output].find_set_and_operation_chan(0)
+            layer.luis[chan_output].find_set_and_operation_chan(0)
+            C, operation = layer.luis[chan_output].learned_set[0], layer.luis[chan_output].learned_operation[0]
             # C, operation = layer.luis[chan_output].find_set_and_operation_chan(0, v1=None, v2=None)
         if C is None:
             return
