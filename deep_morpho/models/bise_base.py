@@ -98,7 +98,7 @@ class BiSEBase(BinaryNN):
 
         self.shared_weights = shared_weights
 
-        self.weight_threshold_layer = dispatcher[self.weight_threshold_mode](P_=1, constant_P=True, n_channels=out_channels, axis_channels=0)
+        self.weight_threshold_layer = dispatcher[self.weight_threshold_mode](P_=1, constant_P=False, n_channels=out_channels, axis_channels=0)
         self.activation_threshold_layer = dispatcher[self.activation_threshold_mode](P_=activation_P, constant_P=constant_activation_P, n_channels=out_channels, axis_channels=1)
 
         self.bias_handler = self.create_bias_handler()
@@ -592,6 +592,11 @@ class BiSEBase(BinaryNN):
     @property
     def activation_P(self):
         return self.activation_threshold_layer.P_
+
+    @property
+    def weight_P(self):
+        return self.weight_threshold_layer.P_
+
 
     @property
     def weights(self):

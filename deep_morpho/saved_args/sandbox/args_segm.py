@@ -79,8 +79,8 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-2,
-    # 1e-1,
+    # 1e-2,
+    1e-1,
     # 1,
 ]
 
@@ -166,9 +166,9 @@ all_args['closest_selem_distance_fn'] = [
 ]
 all_args['bias_optim_mode'] = [
     # BiseBiasOptimEnum.RAW,
-    # BiseBiasOptimEnum.POSITIVE,
+    BiseBiasOptimEnum.POSITIVE,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
-    BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+    # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 
 all_args['activation_P'] = [0]

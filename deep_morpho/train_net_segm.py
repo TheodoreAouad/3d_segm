@@ -158,6 +158,7 @@ def main(args, logger):
             "init_bias_value_lui": args['init_bias_value_lui'],
             "input_mean": input_mean,
             "closest_selem_method": args['closest_selem_method'],
+            "closest_selem_distance_fn": args['closest_selem_distance_fn'],
             "bias_optim_mode": args['bias_optim_mode'],
         },
         learning_rate=args['learning_rate'],

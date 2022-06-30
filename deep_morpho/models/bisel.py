@@ -136,6 +136,13 @@ class BiSELBase(BinaryNN):
         return torch.stack([layer.activation_P for layer in self.bises], axis=-1)
 
     @property
+    def weight_P_bise(self) -> torch.Tensor:
+        """ Returns the weights P of the bise layers, of shape (out_channels, in_channels).
+        """
+        return torch.stack([layer.weight_P for layer in self.bises], axis=-1)
+
+
+    @property
     def activation_P_lui(self) -> torch.Tensor:
         """ Returns the activations P of the lui layer, of shape (out_channels).
         """

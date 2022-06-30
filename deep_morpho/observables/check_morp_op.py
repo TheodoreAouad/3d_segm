@@ -199,7 +199,8 @@ class ShowSelemBinary(ObservableLayersChans):
         chan_output: int,
     ):
         with torch.no_grad():
-            selem, operation = layer.bises[chan_input].find_selem_and_operation_chan(chan_output, v1=0, v2=1)
+            layer.bises[chan_input].find_selem_and_operation_chan(chan_output, v1=0, v2=1)
+            selem, operation = layer.bises[chan_input].learned_selem[chan_output], layer.bises[chan_input].learned_operation[chan_output]
         if selem is None:
             return
 

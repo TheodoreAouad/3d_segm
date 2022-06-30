@@ -142,11 +142,11 @@ class PlotParametersBiSE(ObservableLayersChans):
         trainer.logger.log_metrics(metrics, trainer.global_step)
         self.last_params[layer_idx] = last_params
 
-        # trainer.logger.experiment.add_scalars(
-        #     f"comparative/weight_P/layer_{layer_idx}_chout_{chan_output}",
-        #     {f"chin_{chan_input}": layer.weight_P_bise[chan_output, chan_input]},
-        #     trainer.global_step
-        # )
+        trainer.logger.experiment.add_scalars(
+            f"comparative/weight_P/layer_{layer_idx}_chout_{chan_output}",
+            {f"chin_{chan_input}": layer.weight_P_bise[chan_output, chan_input]},
+            trainer.global_step
+        )
         trainer.logger.experiment.add_scalars(
             f"comparative/activation_P/layer_{layer_idx}_chout_{chan_output}",
             {f"chin_{chan_input}": layer.activation_P_bise[chan_output, chan_input]},

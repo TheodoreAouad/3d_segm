@@ -93,7 +93,7 @@ class IdentityLayer(ThresholdLayer):
 
 class SoftplusThresholdLayer(ThresholdLayer):
     def __init__(self, beta: int = 1, threshold: int = 20, *args, **kwargs):
-        super().__init__(threshold_fn=lambda x: F.softplus(x, beta, threshold), threshold_inverse_fn=lambda x: softplus_threshold_inverse(x, beta))
+        super().__init__(threshold_fn=lambda x: F.softplus(x, beta, threshold), threshold_inverse_fn=lambda x: softplus_threshold_inverse(x, beta), *args, **kwargs)
         self.beta = beta
         self.threshold = threshold
 
