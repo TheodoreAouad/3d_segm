@@ -2,10 +2,10 @@ from typing import List, Tuple, Union, Dict
 
 import numpy as np
 
-from .bise import BiSE, InitBiseEnum, ClosestSelemEnum, ClosestSelemDistanceEnum, BiseBiasOptimEnum
+from .bise import BiSE
 from .dilation_sum_layer import MaxPlusAtom
 # from .cobise import COBiSE, COBiSEC
-from .bisel import BiSEL, SyBiSEL, BiSEL2
+from .bisel import BiSEL, SyBiSEL
 from .binary_nn import BinaryNN
 
 
@@ -219,9 +219,9 @@ class BiMoNN(BinaryNN):
             layer = BiSEL(**self.bisels_kwargs_idx(idx))
             self.bisels_idx.append(idx)
 
-        elif self.atomic_element[idx] == 'bisel2':
-            layer = BiSEL2(**self.bisels_kwargs_idx(idx))
-            self.bisels_idx.append(idx)
+        # elif self.atomic_element[idx] == 'bisel2':
+        #     layer = BiSEL2(**self.bisels_kwargs_idx(idx))
+        #     self.bisels_idx.append(idx)
 
         elif self.atomic_element[idx] == 'sybisel':
             layer = SyBiSEL(**self.bisels_kwargs_idx(idx))

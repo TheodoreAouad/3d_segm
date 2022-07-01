@@ -8,8 +8,7 @@ import torch.nn as nn
 from torch import Tensor
 
 
-from .threshold_layer import dispatcher
-from .softplus import Softplus
+from .threshold_layer import dispatcher, ThresholdEnum
 from .binary_nn import BinaryNN
 from .bias_layer import BiasSoftplus, BiasRaw, BiasBiseSoftplusProjected, BiasBiseSoftplusReparametrized
 from general.utils import set_borders_to
@@ -630,3 +629,81 @@ class BiSEBase(BinaryNN):
     @property
     def is_activated(self):
         return self._is_activated
+
+
+class SyBiSEBase(BiSEBase):
+    POSSIBLE_THRESHOLDS = (dispatcher[ThresholdEnum.tanh_symetric],)
+
+    def __init__(
+        self,
+        *args,
+        threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh_symetric"},
+        bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.RAW,
+        init_bias_value: float = 0,
+        input_mean: float = 0,
+        mean_weight_value: float = "auto",
+        **kwargs
+    ):
+        self.mean_weight_value = mean_weight_value
+        super().__init__(*args,
+            threshold_mode=threshold_mode, bias_optim_mode=bias_optim_mode, init_bias_value=init_bias_value, input_mean=input_mean, **kwargs)
+        assert isinstance(self.activation_threshold_layer, self.POSSIBLE_THRESHOLDS), "Choose a symetric threshold for activation."
+
+    @staticmethod
+    def bias_bounds_dilation(normalized_weights: torch.Tensor, S: np.ndarray, v1: float = None, v2: float = 1) -> Tuple[float, float]:
+        return SyBiSEBase.sym_bias_bounds_dilation(normalized_weights=normalized_weights, S=S, epsilon=v2)
+
+    @staticmethod
+    def bias_bounds_erosion(normalized_weights: torch.Tensor, S: np.ndarray, v1: float = None, v2: float = 1) -> Tuple[float, float]:
+        return SyBiSEBase.sym_bias_bounds_erosion(normalized_weights=normalized_weights, S=S, epsilon=v2)
+
+    @staticmethod
+    def sym_bias_bounds_erosion(normalized_weights: torch.Tensor, S: np.ndarray, epsilon: float = 1) -> Tuple[float, float]:
+        S = S.astype(bool)
+        W = normalized_weights.cpu().detach().numpy()
+        lb_dil, ub_dil = SyBiSEBase.bias_bounds_dilation(W, S, epsilon)
+        return -ub_dil, -lb_dil
+
+    @staticmethod
+    def sym_bias_bounds_dilation(normalized_weights: torch.Tensor, S: np.ndarray, epsilon: float = 1) -> Tuple[float, float]:
+        S = S.astype(bool)
+        W = normalized_weights.cpu().detach().numpy()
+        return (
+            -epsilon * W[(W > 0) & S].sum() - W[(W < 0) & S].sum() + W[~S].abs().sum(),
+            -W.abs().sum() + (1 + epsilon) * max(W[S].min(), 0)
+        )
+
+    def init_weights(self):
+        if self.init_weight_mode in [InitBiseEnum.NORMAL, InitBiseEnum.IDENTITY, InitBiseEnum.KAIMING_UNIFORM]:
+            super().init_weights()
+        elif self.init_weight_mode == InitBiseEnum.CUSTOM_HEURISTIC:
+            nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
+            if self.mean_weight_value == 'auto':
+                mean = .5
+            else:
+                mean = self.mean_weight_value
+            std = mean / (2 * np.sqrt(3))
+            lb = mean * (1 - std)
+            ub = mean * (1 + std)
+            self.set_normalized_weights(
+                torch.rand_like(self.weights) * (lb - ub) + ub
+            )
+        elif self.init_weight_mode == InitBiseEnum.CUSTOM_CONSTANT:
+            p = 1
+            nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
+
+            if self.mean_weight_value == "auto":
+                ub = 1 / (p * torch.sqrt(nb_params))
+                lb = np.sqrt(3 / 4) * ub
+                mean = (lb + ub) / 2
+
+            sigma = 1 / (p ** 2 * nb_params) - mean ** 2
+            diff = torch.sqrt(3 * sigma)
+            lb = mean - diff
+            ub = mean + diff
+            self.set_normalized_weights(
+                torch.rand_like(self.weights) * (lb - ub) + ub
+            )
+        else:
+            warnings.warn(f"init weight mode {self.init_weight_mode} not recognized.")
+        pass

@@ -120,8 +120,8 @@ all_args['patience_reduce_lr'] = [700]
 all_args['atomic_element'] = [
     # 'conv',
     # 'bise',
-    "bisel2",
-    # "sybisel",
+    # "bisel",
+    "sybisel",
     # 'bisec',
     # 'cobise',
     # 'cobisec',
@@ -178,7 +178,7 @@ all_args['constant_activation_P'] = [False]
 all_args['constant_P_lui'] = [False]
 all_args['constant_weight_P'] = [
     True,
-    False
+    # False
 ]
 all_args['init_bias_value_bise'] = [1]
 all_args['init_bias_value_lui'] = [1]
@@ -221,7 +221,7 @@ for idx, args in enumerate(all_args):
         args['n_atoms'] = len(args['channels']) - 1
         args['loss_data'] = loss_dict[args['loss_data_str']](border=(0, 0))
 
-    if args['init_weight_mode'] == InitBiseEnum.CUSTOM_CONSTANT:
+    if args['init_weight_mode'] == InitBiseEnum.CUSTOM_CONSTANT and args['atomic_element'] == "bisel":
         args['init_bias_value_bise'] = "auto"
         args['init_bias_value_lui'] = "auto"
 
@@ -270,6 +270,9 @@ for idx, args in enumerate(all_args):
     if args['atomic_element'] == "sybisel":
         # args['threshold_mode']["activation"] += "_symetric"
         args['threshold_mode'] = {'weight': args['threshold_mode']['weight'], 'activation': args['threshold_mode']['activation'] + "_symetric"}
+        args['bias_optim_mode'] = BiseBiasOptimEnum.RAW
+        args['init_bias_value_bise'] = 0
+        args['init_bias_value_lui'] = 0
 
     args['loss'] = {"loss_data": args['loss_data']}
 
