@@ -34,10 +34,12 @@ def list_dir_joined(folder: str):
 
 def set_borders_to(ar: np.ndarray, border: Tuple, value: float = 0, ):
     res = ar + 0
-    res[:border[0], :] = value
-    res[-border[0]:, :] = value
-    res[:, :border[1]] = value
-    res[:, -border[1]:] = value
+    if border[0] != 0:
+        res[:border[0], :] = value
+        res[-border[0]:, :] = value
+    if border[1] != 0:
+        res[:, :border[1]] = value
+        res[:, -border[1]:] = value
     return res
 
 

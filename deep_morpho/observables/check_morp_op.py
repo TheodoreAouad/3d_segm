@@ -18,6 +18,9 @@ from general.utils import save_json
 from ..models import BiSEBase
 
 
+operation_code_inverse = {v: k for k, v in BiSEBase.operation_code.items()}
+
+
 class CheckMorpOperation(ObservableLayers):
 
     def __init__(self, selems, operations, *args, **kwargs):
@@ -198,11 +201,14 @@ class ShowSelemBinary(ObservableLayersChans):
         chan_input: int,
         chan_output: int,
     ):
+        bise_layer = layer.bises[chan_input]
         with torch.no_grad():
-            layer.bises[chan_input].find_selem_and_operation_chan(chan_output, v1=0, v2=1)
-            selem, operation = layer.bises[chan_input].learned_selem[chan_output], layer.bises[chan_input].learned_operation[chan_output]
-        if selem is None:
+            bise_layer.find_selem_and_operation_chan(chan_output, v1=0, v2=1)
+        if not bise_layer._is_activated[chan_output]:
             return
+
+        selem, operation = bise_layer.learned_selem[chan_output], bise_layer.learned_operation[chan_output]
+        operation = operation_code_inverse[operation]
 
         fig = self.selem_fig(selem, operation)
         trainer.logger.experiment.add_figure(f"learned_selem/binary/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}", fig, trainer.global_step)
@@ -249,12 +255,15 @@ class ShowLUISetBinary(ObservableLayersChans):
         layer_idx=int,
         chan_output=int,
     ):
+        lui_layer = layer.luis[chan_output]
         with torch.no_grad():
-            layer.luis[chan_output].find_set_and_operation_chan(0)
-            C, operation = layer.luis[chan_output].learned_set[0], layer.luis[chan_output].learned_operation[0]
-            # C, operation = layer.luis[chan_output].find_set_and_operation_chan(0, v1=None, v2=None)
-        if C is None:
+            lui_layer.find_set_and_operation_chan(0)
+            # C, operation = lui_layer.find_set_and_operation_chan(0, v1=None, v2=None)
+        if not lui_layer._is_activated[chan_output]:
             return
+
+        C, operation = lui_layer.learned_set[0], lui_layer.learned_operation[0]
+        operation = operation_code_inverse[operation]
 
         fig = self.set_fig(C, operation)
         trainer.logger.experiment.add_figure(f"learned_set_lui/binary/layer_{layer_idx}_chout_{chan_output}", fig, trainer.global_step)
@@ -309,8 +318,11 @@ class ShowClosestSelemBinary(ObservableLayersChans):
         with torch.no_grad():
             layer.bises[chan_input].find_closest_selem_and_operation_chan(chan_output, v1=0, v2=1)
             selem = layer.bises[chan_input].closest_selem[chan_output]
-            operation = layer.bises[chan_input].closest_operation[chan_output]
             distance = layer.bises[chan_input].closest_selem_dist[chan_output]
+            operation = layer.bises[chan_input].closest_operation[chan_output]
+
+            operation = operation_code_inverse[operation]
+
             # selem, operation, distance = layer.bises[chan_input].find_closest_selem_and_operation_chan(chan_output, v1=0, v2=1)
 
         trainer.logger.experiment.add_scalar(f"comparative/closest_binary_dist/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}", distance, trainer.global_step)

@@ -158,6 +158,7 @@ class BiSEBase(BinaryNN):
             self.update_binary_selems()
         return super().binary(mode)
 
+    # TODO: move to BiSE class
     @staticmethod
     def bise_from_selem(selem: np.ndarray, operation: str, threshold_mode: str = "softplus", **kwargs):
         assert set(np.unique(selem)).issubset([0, 1])
@@ -318,34 +319,29 @@ class BiSEBase(BinaryNN):
         lb, ub = bound_fn(normalized_weights=normalized_weights, S=S, v1=v1, v2=v2)
         return lb - ub
 
-    @staticmethod
-    def distance_dispatcher(bound_fn, method: ClosestSelemDistanceEnum, normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> float:
+    def distance_dispatcher(self, bound_fn, method: ClosestSelemDistanceEnum, normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> float:
         if method == ClosestSelemDistanceEnum.DISTANCE_TO_BOUNDS:
-            distance_fn = BiSEBase.distance_to_bounds
+            distance_fn = self.distance_to_bounds
         elif method == ClosestSelemDistanceEnum.DISTANCE_BETWEEN_BOUNDS:
-            distance_fn = BiSEBase.distance_between_bounds
+            distance_fn = self.distance_between_bounds
         elif method == ClosestSelemDistanceEnum.DISTANCE_TO_AND_BETWEEN_BOUNDS:
-            distance_fn = lambda *args, **kwargs: BiSEBase.distance_to_bounds(*args, **kwargs) + BiSEBase.distance_between_bounds(*args, **kwargs)
+            distance_fn = lambda *args, **kwargs: self.distance_to_bounds(*args, **kwargs) + self.distance_between_bounds(*args, **kwargs)
         return distance_fn(bound_fn, normalized_weights, bias, S, v1, v2)
 
-    @staticmethod
-    def distance_to_dilation(method: ClosestSelemDistanceEnum, normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> float:
-        return BiSEBase.distance_dispatcher(BiSEBase.bias_bounds_dilation, method, normalized_weights, bias, S, v1, v2)
+    def distance_to_dilation(self, method: ClosestSelemDistanceEnum, normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> float:
+        return self.distance_dispatcher(self.bias_bounds_dilation, method, normalized_weights, bias, S, v1, v2)
 
-    @staticmethod
-    def distance_to_erosion(method: ClosestSelemDistanceEnum, normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> float:
-        return BiSEBase.distance_dispatcher(BiSEBase.bias_bounds_erosion, method, normalized_weights, bias, S, v1, v2)
+    def distance_to_erosion(self, method: ClosestSelemDistanceEnum, normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> float:
+        return self.distance_dispatcher(self.bias_bounds_erosion, method, normalized_weights, bias, S, v1, v2)
 
-    @staticmethod
-    def is_erosion_by(normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> bool:
+    def is_erosion_by(self, normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> bool:
         assert np.isin(np.unique(S), [0, 1]).all(), "S must be binary matrix"
-        lb, ub = BiSEBase.bias_bounds_erosion(normalized_weights=normalized_weights, S=S, v1=v1, v2=v2)
+        lb, ub = self.bias_bounds_erosion(normalized_weights=normalized_weights, S=S, v1=v1, v2=v2)
         return lb < -bias < ub
 
-    @staticmethod
-    def is_dilation_by(normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> bool:
+    def is_dilation_by(self, normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> bool:
         assert np.isin(np.unique(S), [0, 1]).all(), "S must be binary matrix"
-        lb, ub = BiSEBase.bias_bounds_dilation(normalized_weights=normalized_weights, S=S, v1=v1, v2=v2)
+        lb, ub = self.bias_bounds_dilation(normalized_weights=normalized_weights, S=S, v1=v1, v2=v2)
         return lb < -bias < ub
 
     @staticmethod
@@ -390,15 +386,14 @@ class BiSEBase(BinaryNN):
             return selem
         return None
 
-    @staticmethod
     def compute_selem_dist_for_operation_chan(
-        weights, bias, operation: str, closest_selem_distance_fn: ClosestSelemDistanceEnum, chout: int = 0, v1: float = 0, v2: float = 1
+        self, weights, bias, operation: str, closest_selem_distance_fn: ClosestSelemDistanceEnum, chout: int = 0, v1: float = 0, v2: float = 1
         # weights, bias, idx: int, operation: str, closest_selem_distance_fn: ClosestSelemDistanceEnum, v1: float = 0, v2: float = 1
     ):
         weights = weights[chout]
         weight_values = weights.unique().detach().cpu().numpy()
         bias = bias[chout]
-        distance_fn = {'dilation': BiSEBase.distance_to_dilation, 'erosion': BiSEBase.distance_to_erosion}[operation]
+        distance_fn = {'dilation': self.distance_to_dilation, 'erosion': self.distance_to_erosion}[operation]
 
         dists = np.zeros_like(weight_values)
         selems = []
@@ -409,8 +404,7 @@ class BiSEBase(BinaryNN):
 
         return selems, dists
 
-    @staticmethod
-    def find_closest_selem_for_operation_chan(weights, bias, operation: str, closest_selem_method, closest_selem_distance_fn, chout: int = 0, v1: float = 0, v2: float = 1):
+    def find_closest_selem_for_operation_chan(self, weights, bias, operation: str, closest_selem_method, closest_selem_distance_fn, chout: int = 0, v1: float = 0, v2: float = 1):
     # def find_closest_selem_for_operation_chan(weights, bias, idx: int, operation: str, closest_selem_method, closest_selem_distance_fn, v1: float = 0, v2: float = 1):
         """
         We find the selem for either a dilation or an erosion. In theory, there is at most one selem that works.
@@ -425,36 +419,33 @@ class BiSEBase(BinaryNN):
             float: the distance to the constraint space
         """
         if closest_selem_method == ClosestSelemEnum.MIN_DIST:
-            return BiSEBase.closest_selem_by_min_dists(weights=weights, bias=bias, chout=chout, operation=operation, closest_selem_distance_fn=closest_selem_distance_fn, v1=v1, v2=v2)
+            return self.closest_selem_by_min_dists(weights=weights, bias=bias, chout=chout, operation=operation, closest_selem_distance_fn=closest_selem_distance_fn, v1=v1, v2=v2)
 
         if closest_selem_method == ClosestSelemEnum.MAX_SECOND_DERIVATIVE:
-            return BiSEBase.closest_selem_by_second_derivative(weights=weights, bias=bias, chout=chout, operation=operation, closest_selem_distance_fn=closest_selem_distance_fn, v1=v1, v2=v2)
+            return self.closest_selem_by_second_derivative(weights=weights, bias=bias, chout=chout, operation=operation, closest_selem_distance_fn=closest_selem_distance_fn, v1=v1, v2=v2)
 
-    @staticmethod
-    def closest_selem_by_min_dists(weights, bias, operation, chout, closest_selem_distance_fn, v1, v2):
-        selems, dists = BiSEBase.compute_selem_dist_for_operation_chan(
+    def closest_selem_by_min_dists(self, weights, bias, operation, chout, closest_selem_distance_fn, v1, v2):
+        selems, dists = self.compute_selem_dist_for_operation_chan(
             weights=weights, bias=bias, chout=chout, operation=operation, closest_selem_distance_fn=closest_selem_distance_fn, v1=v1, v2=v2
         )
 
         idx_min = dists.argmin()
         return selems[idx_min], dists[idx_min]
 
-    @staticmethod
-    def closest_selem_by_second_derivative(weights, bias, chout, operation, closest_selem_distance_fn, v1, v2):
-        selems, dists = BiSEBase.compute_selem_dist_for_operation_chan(
+    def closest_selem_by_second_derivative(self, weights, bias, chout, operation, closest_selem_distance_fn, v1, v2):
+        selems, dists = self.compute_selem_dist_for_operation_chan(
             weights=weights, bias=bias, chout=chout, operation=operation, closest_selem_distance_fn=closest_selem_distance_fn, v1=v1, v2=v2
         )
         idx_min = (dists[2:] + dists[:-2] - 2 * dists[1:-1]).argmax() + 1
         return selems[idx_min], dists[idx_min]
 
-    @staticmethod
     def find_closest_selem_and_operation_chan_static(
-        weights, bias, chout=0, closest_selem_method=ClosestSelemEnum.MIN_DIST,
+        self, weights, bias, chout=0, closest_selem_method=ClosestSelemEnum.MIN_DIST,
         closest_selem_distance_fn=ClosestSelemDistanceEnum.DISTANCE_TO_BOUNDS, v1=0, v2=1
     ):
         final_dist = np.infty
         for operation in ['dilation', 'erosion']:
-            new_selem, new_dist = BiSEBase.find_closest_selem_for_operation_chan(
+            new_selem, new_dist = self.find_closest_selem_for_operation_chan(
                 weights=weights, bias=bias, chout=chout, operation=operation,
                 closest_selem_method=closest_selem_method, closest_selem_distance_fn=closest_selem_distance_fn, v1=v1, v2=v2
             )
@@ -511,6 +502,9 @@ class BiSEBase(BinaryNN):
                 return selem, operation
 
         self._is_activated[chout] = False
+        self._learned_selem[chout] = None
+        self._learned_operation[chout] = None
+
         return None, None
 
     def get_outputs_bounds(self, v1: float = 0, v2: float = 1):
@@ -649,28 +643,26 @@ class SyBiSEBase(BiSEBase):
             threshold_mode=threshold_mode, bias_optim_mode=bias_optim_mode, init_bias_value=init_bias_value, input_mean=input_mean, **kwargs)
         assert isinstance(self.activation_threshold_layer, self.POSSIBLE_THRESHOLDS), "Choose a symetric threshold for activation."
 
-    @staticmethod
-    def bias_bounds_dilation(normalized_weights: torch.Tensor, S: np.ndarray, v1: float = None, v2: float = 1) -> Tuple[float, float]:
-        return SyBiSEBase.sym_bias_bounds_dilation(normalized_weights=normalized_weights, S=S, epsilon=v2)
+    # @staticmethod
+    # def bias_bounds_dilation(normalized_weights: torch.Tensor, S: np.ndarray, v1: float = None, v2: float = 1) -> Tuple[float, float]:
+    #     return SyBiSEBase.sym_bias_bounds_dilation(normalized_weights=normalized_weights, S=S, epsilon=v2)
 
-    @staticmethod
-    def bias_bounds_erosion(normalized_weights: torch.Tensor, S: np.ndarray, v1: float = None, v2: float = 1) -> Tuple[float, float]:
-        return SyBiSEBase.sym_bias_bounds_erosion(normalized_weights=normalized_weights, S=S, epsilon=v2)
+    # @staticmethod
+    # def bias_bounds_erosion(normalized_weights: torch.Tensor, S: np.ndarray, v1: float = None, v2: float = 1) -> Tuple[float, float]:
+    #     return SyBiSEBase.sym_bias_bounds_erosion(normalized_weights=normalized_weights, S=S, epsilon=v2)
 
-    @staticmethod
-    def sym_bias_bounds_erosion(normalized_weights: torch.Tensor, S: np.ndarray, epsilon: float = 1) -> Tuple[float, float]:
-        S = S.astype(bool)
-        W = normalized_weights.cpu().detach().numpy()
-        lb_dil, ub_dil = SyBiSEBase.bias_bounds_dilation(W, S, epsilon)
+    def bias_bounds_erosion(self, normalized_weights: torch.Tensor, S: np.ndarray, v1=None, v2: float = 1) -> Tuple[float, float]:
+        lb_dil, ub_dil = self.bias_bounds_dilation(normalized_weights, S, v2=v2)
         return -ub_dil, -lb_dil
 
     @staticmethod
-    def sym_bias_bounds_dilation(normalized_weights: torch.Tensor, S: np.ndarray, epsilon: float = 1) -> Tuple[float, float]:
+    def bias_bounds_dilation(normalized_weights: torch.Tensor, S: np.ndarray, v1=None, v2: float = 1) -> Tuple[float, float]:
         S = S.astype(bool)
+        epsilon = v2
         W = normalized_weights.cpu().detach().numpy()
         return (
-            -epsilon * W[(W > 0) & S].sum() - W[(W < 0) & S].sum() + W[~S].abs().sum(),
-            -W.abs().sum() + (1 + epsilon) * max(W[S].min(), 0)
+            -epsilon * W[(W > 0) & S].sum() - W[(W < 0) & S].sum() + np.abs(W[~S]).sum(),
+            -np.abs(W).sum() + (1 + epsilon) * max(W[S].min(), 0)
         )
 
     def init_weights(self):

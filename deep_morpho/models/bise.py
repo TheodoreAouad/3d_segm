@@ -5,6 +5,7 @@ import numpy as np
 
 from .bise_base import BiSEBase, InitBiseEnum, ClosestSelemDistanceEnum, ClosestSelemEnum, BiseBiasOptimEnum, SyBiSEBase
 
+
 class BiSE(BiSEBase):
     """Given the BiSEL implementation, the BiSE always has an input chan of 1.
     """
@@ -54,10 +55,14 @@ class BiSE(BiSEBase):
 
     @property
     def closest_selem(self):
+        if self._closest_selem is None:
+            return None
         return self._closest_selem[:, 0, ...]
 
     @property
     def learned_selem(self):
+        if self._learned_selem is None:
+            return None
         return self._learned_selem[:, 0, ...]
 
 
@@ -109,8 +114,12 @@ class SyBiSE(SyBiSEBase):
 
     @property
     def closest_selem(self):
+        if self._closest_selem is None:
+            return None
         return self._closest_selem[:, 0, ...]
 
     @property
     def learned_selem(self):
+        if self._learned_selem is None:
+            return None
         return self._learned_selem[:, 0, ...]

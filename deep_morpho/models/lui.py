@@ -49,10 +49,14 @@ class BiSELUIExtender:
 
     @property
     def closest_set(self):
+        if self._closest_selem is None:
+            return None
         return self._closest_selem[0]
 
     @property
     def learned_selem(self):
+        if self._learned_selem is None:
+            return None
         return self._learned_selem[0]
 
     @property
