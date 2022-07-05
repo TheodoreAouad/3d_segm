@@ -4,119 +4,39 @@ import copy
 from matplotlib import pyplot as plt
 import numpy as np
 import torch
+import skimage.morphology as morp
 
 from general.structuring_elements import *
-from general.array_morphology import array_erosion, array_dilation, union_chans, intersection_chans
+from general.array_morphology import array_erosion, array_dilation, array_union_chans, array_intersection_chans
 from .viz.morp_operations_viz import MorpOperationsVizualiser
 
 
-class SequentialMorpOperations:
-    str_to_selem_fn = {
-        'disk': disk, 'vstick': vstick, 'hstick': hstick, 'square': square, 'dcross': dcross, 'scross': scross,
-        'vertical_stick': vstick, 'horizontal_stick': hstick, 'diagonal_cross': dcross, 'straight_cross': scross,
-    }
-    str_to_fn = {'dilation': array_dilation, 'erosion': array_erosion}
-
-    def __init__(
-        self,
-        operations: List['str'],
-        selems: List[Union[np.ndarray, Tuple[Union[str, Callable], Any]]],
-        device="cpu",
-        return_numpy_array: bool = False,
-        name: str = None,
-    ):
-        self.operations = [op.lower() for op in operations]
-        self._selems_original = selems
-        self.selems = self._init_selems(selems)
-        assert len(self.operations) == len(self.selems), "Must have same number of operations and selems"
-        self.device = device
-        self.return_numpy_array = return_numpy_array
-        self.name = name
-
-
-
-    def _init_selems(self, selems):
-        res = []
-
-        self._selem_fn = []
-        self._selem_arg = []
-
-        self._repr = "SequentialMorpOperations("
-        for selem_idx, selem in enumerate(selems):
-            if isinstance(selem, np.ndarray):
-                res.append(selem)
-                self._repr += f"{self.operations[selem_idx]}{selem.shape} => "
-                self._selem_fn.append(None)
-                self._selem_arg.append(None)
-            elif isinstance(selem, tuple):
-                selem_fn, selem_arg = selem
-                if isinstance(selem[0], str):
-                    selem_fn = self.str_to_selem_fn[selem_fn]
-                res.append(selem_fn(selem_arg))
-
-                self._repr += f"{self.operations[selem_idx]}({selem_fn.__name__}({selem_arg})) => "
-                self._selem_fn.append(selem_fn)
-                self._selem_arg.append(selem_arg)
-
-        self._repr = self._repr[:-4] + ")"
-        return res
-
-
-
-    def morp_fn(self, ar):
-        res = ar + 0
-        for op, selem in zip(self.operations, self.selems):
-            res = self.str_to_fn[op](ar=res, selem=selem, device=self.device, return_numpy_array=self.return_numpy_array)
-
-        return res
-
-
-    def __call__(self, ar):
-        return self.morp_fn(ar)
-
-
-    def __len__(self):
-        return len(self.selems)
-
-    def __repr__(self):
-        # ops = ""
-        # for op, selem in zip(self.operations, self.selems):
-        #     ops += f"{op}{selem.shape}) "
-        # ops = ops[:-1]
-        # return f"SequentialMorpOperations({ops})"
-        return self._repr
-
-
-    def get_saved_key(self):
-        return (
-            '=>'.join(self.operations) +
-            ' -- ' +
-            "=>".join([f'{fn.__name__}({arg})' for fn, arg in zip(self._selem_fn, self._selem_arg)])
-        )
+erosion, dilation, union, intersection = morp.binary_erosion, morp.binary_dilation, array_union_chans, array_intersection_chans
+# erosion, dilation, union, intersection = array_erosion, array_dilation, array_union_chans, array_intersection_chans
 
 
 class ParallelMorpOperations:
     """
-    Class to apply intersection / union of
+    Class to apply sequences of intersection / union of dilations / erosions
     """
     str_to_selem_fn = {
         'disk': disk, 'vstick': vstick, 'hstick': hstick, 'square': square, 'dcross': dcross, 'scross': scross,
         'vertical_stick': vstick, 'horizontal_stick': hstick, 'diagonal_cross': dcross, 'straight_cross': scross,
         'identity': identity,
     }
-    str_to_fn = {'dilation': array_dilation, 'erosion': array_erosion}
-    str_to_ui_fn = {'union': union_chans, 'intersection': intersection_chans}
+    str_to_fn = {'dilation': dilation, 'erosion': erosion}
+    str_to_ui_fn = {'union': union, 'intersection': intersection}
 
     def __init__(
         self,
         operations: List[List[List[Union[Tuple[Union[Callable, str], Union[Callable, Tuple[str, int]]], 'str', Callable]]]],
         device="cpu",
-        return_numpy_array: bool = False,
+        # return_numpy_array: bool = False,
         name: str = None,
     ):
         self.operations_original = operations
         self.device = device
-        self.return_numpy_array = return_numpy_array
+        # self.return_numpy_array = return_numpy_array
         self.name = name
 
         self.operations = None
@@ -194,10 +114,11 @@ class ParallelMorpOperations:
 
         selem, selem_name, selem_args = self._erodila_selem_converter(args[1])
 
-        op_fn2 = lambda x: op_fn(x, selem=selem, return_numpy_array=self.return_numpy_array)
+        op_fn2 = lambda x: op_fn(x, selem, )
 
         if len(args) == 3 and args[-1]:
-            final_operation = lambda x: ~op_fn2(x)
+            final_operation = lambda x:  1 - op_fn2(x)
+            # final_operation = lambda x: ~op_fn2(x)
             do_complementation = True
         else:
             final_operation = op_fn2
@@ -312,7 +233,8 @@ class ParallelMorpOperations:
         return alls
 
     def apply_layer(self, layer, x):
-        next_x = torch.zeros(x.shape[:-1] + (len(layer),))
+        # next_x = torch.zeros(x.shape[:-1] + (len(layer),))
+        next_x = np.zeros(x.shape[:-1] + (len(layer),))
         for chan_idx, chan in enumerate(layer):
             morps, ui = chan[:-1], chan[-1]
             next_x[..., chan_idx] = ui(
@@ -331,9 +253,9 @@ class ParallelMorpOperations:
             #     )
             # x = next_x
             x = self.apply_layer(layer, x)
-        if not self.return_numpy_array:
-            if not isinstance(x, torch.Tensor):
-                return torch.tensor(x)
+        # if not self.return_numpy_array:
+        #     if not isinstance(x, torch.Tensor):
+        #         return torch.tensor(x)
         return x
 
     def __call__(self, ar):

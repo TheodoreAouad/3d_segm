@@ -259,7 +259,7 @@ class ShowLUISetBinary(ObservableLayersChans):
         with torch.no_grad():
             lui_layer.find_set_and_operation_chan(0)
             # C, operation = lui_layer.find_set_and_operation_chan(0, v1=None, v2=None)
-        if not lui_layer._is_activated[chan_output]:
+        if not lui_layer._is_activated[0]:
             return
 
         C, operation = lui_layer.learned_set[0], lui_layer.learned_operation[0]

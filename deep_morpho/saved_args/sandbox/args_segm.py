@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 import torch.optim as optim
 import torch.nn as nn
@@ -38,8 +39,8 @@ all_args['experiment_name'] = [
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
     # "Bimonn_reprod"
-    # "debug"
-    "sandbox"
+    "debug"
+    # "Bimonn_exp_62/sandbox/0"
     # "test_refactor_bise_old2"
     # "sybisel_debug"
 ]
@@ -69,11 +70,10 @@ all_args['random_gen_fn'] = [
 ]
 all_args['random_gen_args'] = [
     # {'size': (50, 50), 'n_shapes': 2, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
-    # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
+    {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
     # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02,}
     # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
-    {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 1, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
-
+    # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 1, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
 ]
 all_args['mnist_args'] = [
     {"threshold": 30, "size": (50, 50), "invert_input_proba": 0},
@@ -99,10 +99,10 @@ all_args['learning_rate'] = [
 all_args['loss_data_str'] = [
     # nn.BCELoss(),
     # "MaskedBCENormalizedLoss",
-    # "MaskedNormalizedDiceLoss",
+    "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
     # "MSELoss",
-    "MaskedMSELoss",
+    # "MaskedMSELoss",
     # "MaskedDiceLoss",
 ]
 all_args['loss_regu'] = [
@@ -185,7 +185,7 @@ all_args['bias_optim_mode'] = [
     BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 
-all_args['activation_P'] = [0.01]
+all_args['activation_P'] = [0]
 all_args['constant_activation_P'] = [False]
 all_args['force_lui_identity'] = [False]
 all_args['constant_P_lui'] = [False]
@@ -193,8 +193,8 @@ all_args['constant_weight_P'] = [
     True,
     # False
 ]
-all_args['init_bias_value_bise'] = [1]
-all_args['init_bias_value_lui'] = [1]
+all_args['init_bias_value_bise'] = [0]
+all_args['init_bias_value_lui'] = [0]
 
 all_args['threshold_mode'] = [
     # 'arctan',
@@ -222,6 +222,23 @@ all_args = dict_cross(all_args)
 
 to_remove = []
 for idx, args in enumerate(all_args):
+
+    # Duality training
+    warnings.warn('Warning, duality training.')
+    if "erosion" in args['morp_operation'].name:
+        args['random_gen_args']['p_invert'] = 1
+    elif "dilation" in args['morp_operation'].name:
+        args['random_gen_args']['p_invert'] = 0
+
+    elif "closing" in args['morp_operation'].name:
+        args['random_gen_args']['p_invert'] = 1
+    elif "opening" in args['morp_operation'].name:
+        args['random_gen_args']['p_invert'] = 0
+
+    elif "white_tophat" in args['morp_operation'].name:
+        args['random_gen_args']['p_invert'] = 1
+    elif "black_tophat" in args['morp_operation'].name:
+        args['random_gen_args']['p_invert'] = 0
 
     for key in ['closest_selem_method', 'closest_selem_distance_fn', 'bias_optim_mode', 'init_weight_mode']:
         args[f'{key}_str'] = str(args[key])
@@ -292,8 +309,8 @@ for idx, args in enumerate(all_args):
         # args['threshold_mode']["activation"] += "_symetric"
         args['threshold_mode'] = {'weight': args['threshold_mode']['weight'], 'activation': args['threshold_mode']['activation'] + "_symetric"}
         args['bias_optim_mode'] = BiseBiasOptimEnum.RAW
-        args['init_bias_value_bise'] = 0
-        args['init_bias_value_lui'] = 0
+        # args['init_bias_value_bise'] = 0
+        # args['init_bias_value_lui'] = 0
 
     args['loss'] = {"loss_data": args['loss_data']}
 

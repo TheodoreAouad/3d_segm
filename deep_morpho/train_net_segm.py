@@ -97,6 +97,7 @@ def main(args, logger):
     trainloader, valloader, testloader = get_dataloader(args)
     metrics = {'dice': lambda y_true, y_pred: masked_dice(y_true, y_pred, 
                         border=(args['kernel_size'] // 2, args['kernel_size'] // 2), threshold=0 if args['atomic_element'] == 'sybisel' else 0.5).mean()}
+                        # border=(0, 0), threshold=0 if args['atomic_element'] == 'sybisel' else 0.5).mean()}
 
     observables_dict = {
         # "SetSeed": obs.SetSeed(args['batch_seed']),

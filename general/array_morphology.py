@@ -37,23 +37,25 @@ def array_dilation(ar: np.ndarray, selem: np.ndarray, device: torch.device = "cp
     return torch_array
 
 
-def intersection(ars: np.ndarray, axis: int = -1) -> np.ndarray:
+def array_intersection(ars: np.ndarray, axis: int = -1) -> np.ndarray:
     return ars.sum(axis) == ars.shape[axis]
 
 
-def union(ars: np.ndarray, axis: int = -1) -> np.ndarray:
+def array_union(ars: np.ndarray, axis: int = -1) -> np.ndarray:
     return ars.sum(axis) > 0
 
 
-def fn_chans(ar: np.ndarray, fn: Callable, chans: Union[str, List[int]] = 'all') -> np.ndarray:
+def fn_chans(ar: np.ndarray, fn: Callable, chans: Union[str, List[int]] = 'all', return_numpy_array: bool = True) -> np.ndarray:
     if chans == 'all':
         chans = range(ar.shape[-1])
+    if return_numpy_array:
+        return fn(np.stack([ar[..., chan] for chan in chans], axis=-1))
     return torch.tensor(fn(np.stack([ar[..., chan] for chan in chans], axis=-1)))
 
 
-def intersection_chans(ar, chans: Union[str, List[int]] = 'all') -> np.ndarray:
-    return fn_chans(ar, intersection, chans)
+def array_intersection_chans(ar, chans: Union[str, List[int]] = 'all') -> np.ndarray:
+    return fn_chans(ar, array_intersection, chans)
 
 
-def union_chans(ar, chans: Union[str, List[int]] = 'all') -> np.ndarray:
-    return fn_chans(ar, union, chans)
+def array_union_chans(ar, chans: Union[str, List[int]] = 'all') -> np.ndarray:
+    return fn_chans(ar, array_union, chans)

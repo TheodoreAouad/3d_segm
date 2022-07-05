@@ -8,7 +8,7 @@ import torch
 from torch.utils.data.dataset import Dataset
 from torch.utils.data.dataloader import DataLoader
 
-from deep_morpho.morp_operations import SequentialMorpOperations
+from deep_morpho.morp_operations import ParallelMorpOperations
 from general.utils import load_json, log_console
 
 # def get_loader(batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, device='cpu', **kwargs):
@@ -23,7 +23,7 @@ class InputOutputGeneratorDataset(Dataset):
             self,
             random_gen_fn,
             random_gen_args,
-            morp_operation: SequentialMorpOperations,
+            morp_operation: ParallelMorpOperations,
             device: str = "cpu",
             len_dataset: int = 1000,
             seed: int = None,
@@ -54,7 +54,9 @@ class InputOutputGeneratorDataset(Dataset):
 
     def generate_input_target(self):
         input_ = self.random_gen_fn(rng_float=self.rng.random, rng_int=self.rng.integers, **self.random_gen_args,)
-        target = self.morp_fn(input_).float()
+        target = self.morp_fn(input_)
+
+        target = torch.tensor(target).float()
         input_ = torch.tensor(input_).float()
 
         if input_.ndim == 2:
