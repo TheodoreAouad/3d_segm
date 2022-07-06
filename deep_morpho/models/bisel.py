@@ -2,7 +2,7 @@ from typing import Union, Tuple, Dict
 
 import torch
 
-from .bise_old import InitBiseEnum, BiseBiasOptimEnum
+from .bise_base import InitBiseEnum, BiseBiasOptimEnum
 # from .bise_old import BiSE, InitBiseEnum, SyBiSE, BiseBiasOptimEnum
 # from .bise_old2 import BiSE as BiSE_OLD2
 
@@ -39,12 +39,15 @@ class BiSELBase(BinaryNN):
         self.threshold_mode = self._init_threshold_mode(threshold_mode)
         self.constant_P_lui = constant_P_lui
         self.bise_kwargs = bise_kwargs
-        self.lui_kwargs = lui_kwargs
         self.init_bias_value_bise = init_bias_value_bise
         self.init_bias_value_lui = init_bias_value_lui
         self.input_mean = input_mean
         self.lui_input_mean = lui_input_mean
         self.init_weight_mode = init_weight_mode
+
+        self.lui_kwargs = lui_kwargs
+        self.lui_kwargs['constant_activation_P'] = self.constant_P_lui
+        self.lui_kwargs = {k: v for k, v in bise_kwargs.items() if k not in self.lui_kwargs}
 
         self.bises = self._init_bises()
         self.luis = self._init_luis()
@@ -76,7 +79,7 @@ class BiSELBase(BinaryNN):
                 in_channels=self.in_channels,
                 threshold_mode=self.threshold_mode,
                 out_channels=1,
-                constant_activation_P=self.constant_P_lui,
+                # constant_activation_P=self.constant_P_lui,
                 init_bias_value=self.init_bias_value_lui,
                 input_mean=self.lui_input_mean,
                 init_weight_mode=self.init_weight_mode,

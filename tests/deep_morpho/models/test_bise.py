@@ -1,10 +1,13 @@
 import torch
+import torch.nn as nn
 import numpy as np
 import pytest
 
 from deep_morpho.models import BiSE, InitBiseEnum, BiseBiasOptimEnum
+from deep_morpho.datasets import InputOutputGeneratorDataset, get_random_diskorect_channels
 from general.structuring_elements import disk
 from general.array_morphology import array_erosion, array_dilation
+from deep_morpho.morp_operations import ParallelMorpOperations
 
 
 def softplus_inverse(x):
@@ -192,3 +195,63 @@ class TestBiSE:
             input_mean=input_mean,
         )
         layer
+
+
+    @staticmethod
+    def test_duality_training():
+        layer = BiSE(
+            kernel_size=(7, 7),
+            threshold_mode={'weight': 'softplus', 'activation': 'tanh'},
+            activation_P=1,
+            init_bias_value=1/2,
+            input_mean=1/2,
+            init_weight_mode=InitBiseEnum.CUSTOM_HEURISTIC,
+            out_channels=1,
+            bias_optim_mode=BiseBiasOptimEnum.POSITIVE,
+            bias_optim_args={"offset": 0},
+        )
+
+        dataset = InputOutputGeneratorDataset(
+            random_gen_fn=get_random_diskorect_channels,
+            random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)},
+            morp_operation=ParallelMorpOperations.dilation(('disk', 2)),
+            len_dataset=1000,
+            seed=100,
+            do_symetric_output=False,
+        )
+
+        x, y = dataset[0]
+        x = x.unsqueeze(0)
+        y = y.unsqueeze(0)
+
+        loss = nn.BCELoss()
+
+        out1 = layer(x)
+        value_loss1 = loss(out1, y)
+        value_loss1.backward()
+
+
+        grads1 = {}
+        for name, param in layer.named_parameters():
+            if param.grad is not None:
+                grads1[name] = param.grad + 0
+                param.grad.zero_()
+
+        out2 = layer(1 - x)
+        value_loss2 = loss(out2, 1 - y)
+        value_loss2.backward()
+
+
+        grads2 = {}
+        for name, param in layer.named_parameters():
+            if param.grad is not None:
+                grads2[name] = param.grad + 0
+
+
+        assert (value_loss1 - value_loss2).abs().sum() < 1e-5
+        for name, param in layer.named_parameters():
+            if param.grad is not None:
+                if "bias" in name:
+                    assert (grads1[name] + grads2[name]).abs().sum() < 1e-5
+                else:
+                    assert (grads1[name] - grads2[name]).abs().sum() < 1e-5

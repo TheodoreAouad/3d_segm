@@ -1,4 +1,5 @@
 from typing import Tuple, Union, Dict
+from matplotlib.cbook import normalize_kwargs
 
 import torch
 import numpy as np
@@ -64,6 +65,11 @@ class BiSE(BiSEBase):
         if self._learned_selem is None:
             return None
         return self._learned_selem[:, 0, ...]
+
+    @property
+    def _normalized_weight(self):
+        norm_weights = super()._normalized_weight
+        return norm_weights / norm_weights.sum()
 
 
 class SyBiSE(SyBiSEBase):

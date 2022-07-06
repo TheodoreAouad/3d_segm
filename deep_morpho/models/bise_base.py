@@ -62,6 +62,7 @@ class BiSEBase(BinaryNN):
         closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST,
         closest_selem_distance_fn: ClosestSelemDistanceEnum = ClosestSelemDistanceEnum.DISTANCE_TO_AND_BETWEEN_BOUNDS,
         bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED,
+        bias_optim_args: Dict = {},
         padding=None,
         padding_mode: str = "replicate",
         *args,
@@ -78,6 +79,7 @@ class BiSEBase(BinaryNN):
         self.closest_selem_method = closest_selem_method
         self.closest_selem_distance_fn = closest_selem_distance_fn
         self.bias_optim_mode = bias_optim_mode
+        self.bias_optim_args = bias_optim_args
 
         self.out_channels = out_channels
         self.in_channels = in_channels
@@ -101,7 +103,7 @@ class BiSEBase(BinaryNN):
         self.weight_threshold_layer = dispatcher[self.weight_threshold_mode](P_=1, constant_P=constant_weight_P, n_channels=out_channels, axis_channels=0)
         self.activation_threshold_layer = dispatcher[self.activation_threshold_mode](P_=activation_P, constant_P=constant_activation_P, n_channels=out_channels, axis_channels=1)
 
-        self.bias_handler = self.create_bias_handler()
+        self.bias_handler = self.create_bias_handler(**self.bias_optim_args)
 
 
         self.init_weights_and_bias()
@@ -126,18 +128,21 @@ class BiSEBase(BinaryNN):
         self.update_learned_selems()
 
 
-    def create_bias_handler(self):
+    def create_bias_handler(self, **kwargs):
         if self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE:
-            return BiasSoftplus(bise_module=self, offset=0.5)
+            kwargs['offset'] = kwargs.get('offset', 0.5)
+            return BiasSoftplus(bise_module=self, **kwargs)
 
         elif self.bias_optim_mode == BiseBiasOptimEnum.RAW:
-            return BiasRaw(bise_module=self)
+            return BiasRaw(bise_module=self, **kwargs)
 
         elif self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED:
-            return BiasBiseSoftplusProjected(bise_module=self, offset=0)
+            kwargs['offset'] = kwargs.get('offset', 0)
+            return BiasBiseSoftplusProjected(bise_module=self, **kwargs)
 
         elif self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED:
-            return BiasBiseSoftplusReparametrized(bise_module=self, offset=0)
+            kwargs['offset'] = kwargs.get('offset', 0)
+            return BiasBiseSoftplusReparametrized(bise_module=self, **kwargs)
 
         raise NotImplementedError(f'self.bias_optim_mode must be in {BiseBiasOptimEnum._member_names_}')
 
@@ -224,8 +229,11 @@ class BiSEBase(BinaryNN):
             diff = torch.sqrt(3 * sigma)
             lb = mean - diff
             ub = mean + diff
+
+            new_weights = torch.rand_like(self.weights) * (lb - ub) + ub
             self.set_normalized_weights(
-                torch.rand_like(self.weights) * (lb - ub) + ub
+                # new_weights / new_weights.sum()  # DEBUG
+                new_weights
             )
         else:
             warnings.warn(f"init weight mode {self.init_weight_mode} not recognized.")

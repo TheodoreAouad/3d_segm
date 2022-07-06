@@ -39,7 +39,8 @@ all_args['experiment_name'] = [
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
     # "Bimonn_reprod"
-    "debug"
+    # "debug"
+    "sandbox"
     # "Bimonn_exp_62/sandbox/0"
     # "test_refactor_bise_old2"
     # "sybisel_debug"
@@ -99,8 +100,8 @@ all_args['learning_rate'] = [
 all_args['loss_data_str'] = [
     # nn.BCELoss(),
     # "MaskedBCENormalizedLoss",
-    "MaskedNormalizedDiceLoss",
-    # "MaskedBCELoss",
+    # "MaskedNormalizedDiceLoss",
+    "MaskedBCELoss",
     # "MSELoss",
     # "MaskedMSELoss",
     # "MaskedDiceLoss",
@@ -133,8 +134,8 @@ all_args['patience_reduce_lr'] = [700]
 all_args['atomic_element'] = [
     # 'conv',
     # 'bise',
-    # "bisel",
-    "sybisel",
+    "bisel",
+    # "sybisel",
     # 'bisec',
     # 'cobise',
     # 'cobisec',
@@ -166,8 +167,8 @@ all_args['init_weight_mode'] = [
     # "normal_identity",
     # "conv_0.5"
     # InitBiseEnum.KAIMING_UNIFORM,
-    # InitBiseEnum.CUSTOM_HEURISTIC,
-    InitBiseEnum.CUSTOM_CONSTANT
+    InitBiseEnum.CUSTOM_HEURISTIC,
+    # InitBiseEnum.CUSTOM_CONSTANT
 ]
 all_args['closest_selem_method'] = [
     ClosestSelemEnum.MIN_DIST
@@ -179,10 +180,13 @@ all_args['closest_selem_distance_fn'] = [
     ClosestSelemDistanceEnum.DISTANCE_TO_BOUNDS
 ]
 all_args['bias_optim_mode'] = [
-    # BiseBiasOptimEnum.RAW,
+    BiseBiasOptimEnum.RAW,
     # BiseBiasOptimEnum.POSITIVE,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
-    BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+    # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+]
+all_args['bias_optim_args'] = [
+    {"offset": 0}
 ]
 
 all_args['activation_P'] = [0]
@@ -193,7 +197,7 @@ all_args['constant_weight_P'] = [
     True,
     # False
 ]
-all_args['init_bias_value_bise'] = [0]
+all_args['init_bias_value_bise'] = [1/2]
 all_args['init_bias_value_lui'] = [0]
 
 all_args['threshold_mode'] = [

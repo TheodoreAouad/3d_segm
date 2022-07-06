@@ -142,7 +142,8 @@ def main(args, logger):
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
 
     # init_bias_value = next(iter(trainloader))[0].mean()
-    input_mean = next(iter(trainloader))[0].mean()
+    # input_mean = next(iter(trainloader))[0].mean()
+    input_mean = 1/2  # DEBUG
     model = LightningBiMoNN(
         model_args={
             "kernel_size": [args['kernel_size'] for _ in range(args['n_atoms'])],
@@ -162,6 +163,7 @@ def main(args, logger):
             "closest_selem_method": args['closest_selem_method'],
             "closest_selem_distance_fn": args['closest_selem_distance_fn'],
             "bias_optim_mode": args['bias_optim_mode'],
+            "bias_optim_args": args['bias_optim_args'],
         },
         learning_rate=args['learning_rate'],
         loss=args['loss'],

@@ -185,7 +185,7 @@ class BiMoNN(BinaryNN):
             'kernel_size', 'weight_P', 'threshold_mode', 'activation_P',
             'init_bias_value', 'init_weight_mode', 'out_channels', "constant_activation_P",
             "constant_weight_P", "input_mean", "closest_selem_method", "closest_selem_distance_fn",
-            "bias_optim_mode",
+            "bias_optim_mode", "bias_optim_args",
         ]
 
     @property
