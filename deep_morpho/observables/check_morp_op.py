@@ -21,6 +21,7 @@ from ..models import BiSEBase
 operation_code_inverse = {v: k for k, v in BiSEBase.operation_code.items()}
 
 
+# DEPRECATED
 class CheckMorpOperation(ObservableLayers):
 
     def __init__(self, selems, operations, *args, **kwargs):
@@ -120,6 +121,7 @@ class CheckMorpOperation(ObservableLayers):
         trainer.logger.log_metrics(metrics, trainer.global_step)
 
 
+# DEPRECATED
 class ShowSelemAlmostBinary(Observable):
 
     def __init__(self, freq=1, *args, **kwargs):
@@ -188,14 +190,14 @@ class ShowSelemBinary(ObservableLayersChans):
         super().__init__(*args, **kwargs)
         self.last_selem_and_op = {}
 
-    def on_train_batch_end_layers_chans(
+    def on_train_batch_end_with_preds_layers_chans(
         self,
         trainer: 'pl.Trainer',
         pl_module: 'pl.LightningModule',
         outputs: "STEP_OUTPUT",
         batch: "Any",
         batch_idx: int,
-        dataloader_idx: int,
+        preds,
         layer: "nn.Module",
         layer_idx: int,
         chan_input: int,
@@ -243,17 +245,18 @@ class ShowLUISetBinary(ObservableLayersChans):
         super().__init__(*args, **kwargs)
         self.last_set_and_op = {}
 
-    def on_train_batch_end_layers_chan_output(
+    def on_train_batch_end_with_preds_layers_chans(
         self,
-        trainer='pl.Trainer',
-        pl_module='pl.LightningModule',
-        outputs="STEP_OUTPUT",
-        batch="Any",
-        batch_idx=int,
-        dataloader_idx=int,
-        layer="nn.Module",
-        layer_idx=int,
-        chan_output=int,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        preds,
+        layer: "nn.Module",
+        layer_idx: int,
+        chan_input: int,
+        chan_output: int,
     ):
         lui_layer = layer.luis[chan_output]
         with torch.no_grad():
@@ -302,21 +305,21 @@ class ShowClosestSelemBinary(ObservableLayersChans):
         self.last_selems = {}
         self.freq_idx2 = 0
 
-    def on_train_batch_end_layers_chans(
+    def on_train_batch_end_with_preds_layers_chans(
         self,
         trainer: 'pl.Trainer',
         pl_module: 'pl.LightningModule',
         outputs: "STEP_OUTPUT",
         batch: "Any",
         batch_idx: int,
-        dataloader_idx: int,
+        preds,
         layer: "nn.Module",
         layer_idx: int,
         chan_input: int,
         chan_output: int,
     ):
         with torch.no_grad():
-            layer.bises[chan_input].find_closest_selem_and_operation_chan(chan_output, v1=0, v2=1)
+            layer.bises[chan_input].find_closest_selem_and_operation_chan(chan_output)
             selem = layer.bises[chan_input].closest_selem[chan_output]
             distance = layer.bises[chan_input].closest_selem_dist[chan_output]
             operation = layer.bises[chan_input].closest_operation[chan_output]

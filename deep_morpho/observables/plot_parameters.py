@@ -39,12 +39,13 @@ class PlotWeightsBiSE(ObservableLayersChans):
         weights_norm = layer._normalized_weight[chan_output, chan_input]
         trainer.logger.experiment.add_figure(
             f"weights_normalized/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
-            self.get_figure_normalized_weights(weights_norm, layer.bias_bise[chan_output, chan_input], layer.activation_P_bise[chan_output, chan_input]),
+            self.get_figure_raw_weights(weights_norm, layer.bias_bise[chan_output, chan_input], layer.activation_P_bise[chan_output, chan_input]),
+            # self.get_figure_normalized_weights(weights_norm, layer.bias_bise[chan_output, chan_input], layer.activation_P_bise[chan_output, chan_input]),
             trainer.global_step
         )
         trainer.logger.experiment.add_figure(
             f"weights_raw/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
-            self.get_figure_raw_weights(weights),
+            self.get_figure_raw_weights(weights, layer.bias_bise[chan_output, chan_input], layer.activation_P_bise[chan_output, chan_input]),
             trainer.global_step
         )
 
@@ -67,10 +68,13 @@ class PlotWeightsBiSE(ObservableLayersChans):
                 for chan_output in range(weight.shape[0]):
                     for chan_input in range(weight.shape[1]):
                         if key == "normalized_weights":
-                            fig = self.get_figure_normalized_weights(weight[chan_output, chan_input],
+                            # fig = self.get_figure_normalized_weights(weight[chan_output, chan_input],
+                            fig = self.get_figure_raw_weights(weight[chan_output, chan_input],
                             bias=layer_dict['bias_bise'][chan_output, chan_input], activation_P=layer_dict['activation_P_bise'][chan_output, chan_input])
                         elif key == "weights":
-                            fig = self.get_figure_raw_weights(weight[chan_output, chan_input])
+                            fig = self.get_figure_raw_weights(weight[chan_output, chan_input],
+                            bias=layer_dict['bias_bise'][chan_output, chan_input], activation_P=layer_dict['activation_P_bise'][chan_output, chan_input])
+
                         fig.savefig(join(final_dir, f"{key}_layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}.png"))
 
         return self.last_weights
@@ -95,10 +99,11 @@ class PlotWeightsBiSE(ObservableLayersChans):
         return figure
 
     @staticmethod
-    def get_figure_raw_weights(weights):
+    def get_figure_raw_weights(weights, bias, activation_P):
         weights = weights.cpu().detach()
         weights_normed = max_min_norm(weights)
         figure = plt.figure(figsize=(8, 8))
+        plt.title(f"bias={bias.item():.3f}  act_P={activation_P.item():.3f}  sum={weights.sum():.3f}")
         plt.imshow(weights_normed, interpolation='nearest', cmap=plt.cm.gray)
         plt.colorbar()
         # plt.clim(0, 1)

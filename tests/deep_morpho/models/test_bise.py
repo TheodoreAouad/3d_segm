@@ -5,6 +5,7 @@ import pytest
 
 from deep_morpho.models import BiSE, InitBiseEnum, BiseBiasOptimEnum
 from deep_morpho.datasets import InputOutputGeneratorDataset, get_random_diskorect_channels
+from deep_morpho.models.bise_base import BiseWeightsOptimEnum
 from general.structuring_elements import disk
 from general.array_morphology import array_erosion, array_dilation
 from deep_morpho.morp_operations import ParallelMorpOperations
@@ -209,6 +210,7 @@ class TestBiSE:
             out_channels=1,
             bias_optim_mode=BiseBiasOptimEnum.POSITIVE,
             bias_optim_args={"offset": 0},
+            weights_optim_mode=BiseWeightsOptimEnum.NORMALIZED,
         )
 
         dataset = InputOutputGeneratorDataset(

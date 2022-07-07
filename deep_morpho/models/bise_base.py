@@ -11,6 +11,7 @@ from torch import Tensor
 from .threshold_layer import dispatcher, ThresholdEnum
 from .binary_nn import BinaryNN
 from .bias_layer import BiasSoftplus, BiasRaw, BiasBiseSoftplusProjected, BiasBiseSoftplusReparametrized
+from .weights_layer import WeightsThresholdedBise, WeightsNormalizedBiSE
 from general.utils import set_borders_to
 
 
@@ -40,6 +41,10 @@ class BiseBiasOptimEnum(Enum):
     POSITIVE_INTERVAL_REPARAMETRIZED = 3     # softplus applied and reparametrized on the relevent values [min(W), W.sum()] (with torch grad)
 
 
+class BiseWeightsOptimEnum(Enum):
+    THRESHOLDED = 0
+    NORMALIZED = 1
+
 
 class BiSEBase(BinaryNN):
 
@@ -51,8 +56,10 @@ class BiSEBase(BinaryNN):
         threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh"},
         activation_P: float = 10,
         constant_activation_P: bool = False,
-        constant_weight_P: bool = False,
-        shared_weights: torch.tensor = None,
+        weights_optim_mode: BiseWeightsOptimEnum = BiseWeightsOptimEnum.THRESHOLDED,
+        weights_optim_args: Dict = {},
+        # constant_weight_P: bool = False,
+        shared_weights: torch.tensor = None,  # deprecated
         init_bias_value: float = 1,
         input_mean: float = 0.5,
         init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
@@ -80,6 +87,8 @@ class BiSEBase(BinaryNN):
         self.closest_selem_distance_fn = closest_selem_distance_fn
         self.bias_optim_mode = bias_optim_mode
         self.bias_optim_args = bias_optim_args
+        self.weights_optim_mode = weights_optim_mode
+        self.weights_optim_args = weights_optim_args
 
         self.out_channels = out_channels
         self.in_channels = in_channels
@@ -100,10 +109,11 @@ class BiSEBase(BinaryNN):
 
         self.shared_weights = shared_weights
 
-        self.weight_threshold_layer = dispatcher[self.weight_threshold_mode](P_=1, constant_P=constant_weight_P, n_channels=out_channels, axis_channels=0)
+        # self.weight_threshold_layer = dispatcher[self.weight_threshold_mode](P_=1, constant_P=constant_weight_P, n_channels=out_channels, axis_channels=0)
         self.activation_threshold_layer = dispatcher[self.activation_threshold_mode](P_=activation_P, constant_P=constant_activation_P, n_channels=out_channels, axis_channels=1)
 
         self.bias_handler = self.create_bias_handler(**self.bias_optim_args)
+        self.weights_handler = self.create_weights_handler(**self.weights_optim_args)
 
 
         self.init_weights_and_bias()
@@ -125,8 +135,7 @@ class BiSEBase(BinaryNN):
         self._learned_operation = np.zeros((out_channels))
         self._is_activated = np.zeros((out_channels)).astype(bool)
 
-        self.update_learned_selems()
-
+        self.update_binary_selems()
 
     def create_bias_handler(self, **kwargs):
         if self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE:
@@ -145,6 +154,15 @@ class BiSEBase(BinaryNN):
             return BiasBiseSoftplusReparametrized(bise_module=self, **kwargs)
 
         raise NotImplementedError(f'self.bias_optim_mode must be in {BiseBiasOptimEnum._member_names_}')
+
+    def create_weights_handler(self, **kwargs):
+        if self.weights_optim_mode == BiseWeightsOptimEnum.THRESHOLDED:
+            return WeightsThresholdedBise(bise_module=self, threshold_mode=self.weight_threshold_mode, **kwargs)
+
+        elif self.weights_optim_mode == BiseWeightsOptimEnum.NORMALIZED:
+            return WeightsNormalizedBiSE(bise_module=self, threshold_mode=self.weight_threshold_mode, **kwargs)
+
+        raise NotImplementedError(f'self.bias_optim_mode must be in {BiseWeightsOptimEnum._member_names_}')
 
     def update_closest_selems(self):
         for chan in range(self.out_channels):
@@ -550,6 +568,10 @@ class BiSEBase(BinaryNN):
         return threshold_mode
 
     @property
+    def weight_threshold_layer(self):
+        return self.weights_handler.threshold_layer
+
+    @property
     def weight_threshold_mode(self):
         return self.threshold_mode["weight"]
 
@@ -559,8 +581,9 @@ class BiSEBase(BinaryNN):
 
     @property
     def _normalized_weight(self):
-        conv_weight = self.weight_threshold_layer(self.weight)
-        return conv_weight
+        # conv_weight = self.weight_threshold_layer(self.weight)
+        # return conv_weight
+        return self.weights_handler()
 
     @property
     def _normalized_weights(self):
@@ -568,18 +591,21 @@ class BiSEBase(BinaryNN):
 
     @property
     def weight(self):
-        if self.shared_weights is not None:
-            return self.shared_weights
-        return self.conv.weight
+        # if self.shared_weights is not None:
+        #     return self.shared_weights
+        # return self.conv.weight
+        return self.weights_handler.param
 
     def set_weights(self, new_weights: torch.Tensor) -> torch.Tensor:
         assert self.weight.shape == new_weights.shape, f"Weights must be of same shape {self.weight.shape}"
-        self.conv.weight.data = new_weights
-        return new_weights
+        # self.conv.weight.data = new_weights
+        # return new_weights
+        return self.weights_handler.set_param(new_weights)
 
     def set_normalized_weights(self, new_weights: torch.Tensor) -> torch.Tensor:
         assert (new_weights >= 0).all(), new_weights
-        return self.set_weights(self.weight_threshold_layer.forward_inverse(new_weights))
+        # return self.set_weights(self.weight_threshold_layer.forward_inverse(new_weights))
+        return self.weights_handler.set_weights(new_weights)
 
     def set_bias(self, new_bias: torch.Tensor) -> torch.Tensor:
         assert self.bias.shape == new_bias.shape
@@ -598,7 +624,6 @@ class BiSEBase(BinaryNN):
     @property
     def weight_P(self):
         return self.weight_threshold_layer.P_
-
 
     @property
     def weights(self):

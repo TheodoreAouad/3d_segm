@@ -9,7 +9,7 @@ from deep_morpho.loss import (
     MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss
 )
 from general.utils import dict_cross
-from deep_morpho.models.bise_base import InitBiseEnum, ClosestSelemEnum, ClosestSelemDistanceEnum, BiseBiasOptimEnum
+from deep_morpho.models.bise_base import InitBiseEnum, ClosestSelemEnum, ClosestSelemDistanceEnum, BiseBiasOptimEnum, BiseWeightsOptimEnum
 from .args_morp_ops import morp_operations
 
 loss_dict = {
@@ -28,7 +28,7 @@ all_args = {}
 all_args['batch_seed'] = [2249939862]
 # all_args['batch_seed'] = [None]
 
-all_args['n_try'] = [0]
+all_args['n_try'] = [0, 1]
 # all_args['n_try'] = range(1, 6)
 
 all_args['experiment_name'] = [
@@ -91,7 +91,7 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-2,
+    1e-1,
     # 1e-1,
     # 1,
 ]
@@ -188,15 +188,23 @@ all_args['bias_optim_mode'] = [
 all_args['bias_optim_args'] = [
     {"offset": 0}
 ]
+all_args['weights_optim_mode'] = [
+    # BiseWeightsOptimEnum.THRESHOLDED,
+    BiseWeightsOptimEnum.NORMALIZED
+]
+all_args['weights_optim_args'] = [
+    # {"constant_P": True}
+    {"constant_P": True, "factor": 1}
+]
 
 all_args['activation_P'] = [0]
 all_args['constant_activation_P'] = [False]
 all_args['force_lui_identity'] = [False]
 all_args['constant_P_lui'] = [False]
-all_args['constant_weight_P'] = [
-    True,
+# all_args['constant_weight_P'] = [
+#     True,
     # False
-]
+# ]
 all_args['init_bias_value_bise'] = [1/2]
 all_args['init_bias_value_lui'] = [0]
 
