@@ -142,8 +142,8 @@ def main(args, logger):
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
 
     # init_bias_value = next(iter(trainloader))[0].mean()
-    # input_mean = next(iter(trainloader))[0].mean()
-    input_mean = 1/2  # DEBUG
+    input_mean = next(iter(trainloader))[0].mean()
+    # input_mean = 1/2  # DEBUG
     model = LightningBiMoNN(
         model_args={
             "kernel_size": [args['kernel_size'] for _ in range(args['n_atoms'])],

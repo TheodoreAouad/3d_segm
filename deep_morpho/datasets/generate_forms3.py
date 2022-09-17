@@ -3,7 +3,7 @@ from typing import Tuple
 import numpy as np
 import random
 from PIL import Image, ImageDraw
-from numba import njit
+# from numba import njit
 from general.numba_utils import numba_randint, numba_rand, numba_rand_shape_2d
 from general.utils import set_borders_to
 
@@ -19,7 +19,7 @@ def straight_rect(width, height):
     return np.array([(0, 0), (width, 0), (width, height), (0, height), (0, 0)])
 
 
-@njit
+# @njit
 def numba_straight_rect(width, height):
     return np.array([(0, 0), (width, 0), (width, height), (0, height), (0, 0)])
 
@@ -28,23 +28,23 @@ def rotation_matrix(theta):
     return np.array([[np.cos(theta), -np.sin(theta)],
                      [np.sin(theta), np.cos(theta)]])
 
-@njit
+# @njit
 def numba_rotation_matrix(theta):
     return np.array([[np.cos(theta), -np.sin(theta)],
                      [np.sin(theta), np.cos(theta)]])
 
 
-@njit
+# @njit
 def numba_transform_rect(rect: np.ndarray, R: np.ndarray, offset: np.ndarray):
     return np.dot(rect, R) + offset
 
 
-@njit
+# @njit
 def numba_correspondance(ar: np.ndarray) -> np.ndarray:
     return 1 - ar
 
 
-@njit
+# @njit
 def numba_invert_proba(ar: np.ndarray, p_invert: float) -> np.ndarray:
     if numba_rand() < p_invert:
         return numba_correspondance(ar)

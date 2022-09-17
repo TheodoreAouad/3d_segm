@@ -19,14 +19,17 @@ class BiMoNN(BinaryNN):
         **kwargs,
     ):
         super().__init__()
+        self.length = max([len(value) if isinstance(value, list) else 0 for value in [kernel_size, atomic_element] + list(kwargs.values())])
+        self.length = max(len(channels) - 1, self.length)
         self.kernel_size = self._init_kernel_size(kernel_size)
+        self.atomic_element = self._init_atomic_element(atomic_element)
 
         # for attr in set(self.all_args):
         #     setattr(self, attr, self._init_attr(attr, eval(attr)))
 
-        kwargs['kernel_size'] = kernel_size
+        # kwargs['kernel_size'] = kernel_size
         kwargs['channels'] = channels
-        kwargs['atomic_element'] = atomic_element
+        # kwargs['atomic_element'] = atomic_element
         for attr, value in kwargs.items():
             setattr(self, attr, self._init_attr(attr, value))
 
@@ -35,7 +38,7 @@ class BiMoNN(BinaryNN):
         self.bises_idx = []
         self.bisecs_idx = []
         self.bisels_idx = []
-        for idx in range(len(self.kernel_size)):
+        for idx in range(len(self)):
             layer = self._make_layer(idx)
             self.layers.append(layer)
             setattr(self, f'layer{idx+1}', layer)
@@ -95,17 +98,25 @@ class BiMoNN(BinaryNN):
         return selems, operations
 
     def __len__(self):
-        return len(self.layers)
+        return self.length
+        # return len(self.atomic_element)
+        # return len(self.layers)
 
-    @staticmethod
-    def _init_kernel_size(kernel_size: List[Union[Tuple, int]]):
-        res = []
-        for size in kernel_size:
-            if isinstance(size, int):
-                res.append((size, size))
-            else:
-                res.append(size)
-        return res
+    def _init_kernel_size(self, kernel_size: List[Union[Tuple, int]]):
+        if isinstance(kernel_size, list):
+            res = []
+            for size in kernel_size:
+                if isinstance(size, int):
+                    res.append((size, size))
+                else:
+                    res.append(size)
+            return res
+
+        if isinstance(kernel_size, int):
+            kernel_size = (kernel_size, kernel_size)
+
+        return [kernel_size for _ in range(len(self))]
+
 
     def _init_channels(self, channels: List[int]):
         self.out_channels = channels[1:]
@@ -116,13 +127,13 @@ class BiMoNN(BinaryNN):
     def _init_input_mean(self, input_mean: Union[float, List[float]]):
         if isinstance(input_mean, list):
             return input_mean
-        return [input_mean] + [0.5 for _ in range(1, len(self.kernel_size))]
+        return [input_mean] + [0 if self.atomic_element[idx - 1] == "sybisel" else .5 for idx in range(1, len(self))]
 
     def _init_atomic_element(self, atomic_element: Union[str, List[str]]):
         if isinstance(atomic_element, list):
             return [s.lower() for s in atomic_element]
 
-        return [atomic_element.lower() for _ in range(len(self.kernel_size))]
+        return [atomic_element.lower() for _ in range(len(self))]
 
     def _init_attr(self, attr_name, attr_value):
         if attr_name == "kernel_size":
@@ -141,7 +152,8 @@ class BiMoNN(BinaryNN):
         if isinstance(attr_value, list):
             return attr_value
 
-        return [attr_value for _ in range(len(self.kernel_size))]
+        return [attr_value for _ in range(len(self))]
+        # return [attr_value for _ in range(len(self.kernel_size))]
 
     def is_not_default(self, key: str) -> bool:
         return key in self.__dict__.keys()

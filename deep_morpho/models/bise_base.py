@@ -205,12 +205,14 @@ class BiSEBase(BinaryNN):
         return kernel_size
 
     def init_weights_and_bias(self):
-        if self.init_weight_mode == "custom":
-            self.init_bias()
-            self.init_weights()
-        else:
-            self.init_weights()
-            self.init_bias()
+        # if self.init_weight_mode == "custom":
+        #     self.init_bias()
+        #     self.init_weights()
+        # else:
+        #     self.init_weights()
+        #     self.init_bias()
+        self.init_weights()
+        self.init_bias()
 
     def init_weights(self):
         if self.init_weight_mode == InitBiseEnum.NORMAL:
@@ -701,6 +703,8 @@ class SyBiSEBase(BiSEBase):
     def init_weights(self):
         if self.init_weight_mode in [InitBiseEnum.NORMAL, InitBiseEnum.IDENTITY, InitBiseEnum.KAIMING_UNIFORM]:
             super().init_weights()
+            self.init_bias_value = self.input_mean * self.weight.mean() * torch.tensor(self._normalized_weights.shape[1:]).prod()
+
         elif self.init_weight_mode == InitBiseEnum.CUSTOM_HEURISTIC:
             nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
             if self.mean_weight_value == 'auto':
@@ -713,6 +717,8 @@ class SyBiSEBase(BiSEBase):
             self.set_normalized_weights(
                 torch.rand_like(self.weights) * (lb - ub) + ub
             )
+            self.init_bias_value = self.input_mean * mean * nb_params
+
         elif self.init_weight_mode == InitBiseEnum.CUSTOM_CONSTANT:
             p = 1
             nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
@@ -729,6 +735,9 @@ class SyBiSEBase(BiSEBase):
             self.set_normalized_weights(
                 torch.rand_like(self.weights) * (lb - ub) + ub
             )
+            self.init_bias_value = self.input_mean * mean * nb_params
         else:
             warnings.warn(f"init weight mode {self.init_weight_mode} not recognized.")
+
+
         pass

@@ -28,7 +28,7 @@ all_args = {}
 all_args['batch_seed'] = [2249939862]
 # all_args['batch_seed'] = [None]
 
-all_args['n_try'] = [0, 1]
+all_args['n_try'] = [0]
 # all_args['n_try'] = range(1, 6)
 
 all_args['experiment_name'] = [
@@ -101,9 +101,9 @@ all_args['loss_data_str'] = [
     # nn.BCELoss(),
     # "MaskedBCENormalizedLoss",
     # "MaskedNormalizedDiceLoss",
-    "MaskedBCELoss",
+    # "MaskedBCELoss",
     # "MSELoss",
-    # "MaskedMSELoss",
+    "MaskedMSELoss",
     # "MaskedDiceLoss",
 ]
 all_args['loss_regu'] = [
@@ -134,8 +134,8 @@ all_args['patience_reduce_lr'] = [700]
 all_args['atomic_element'] = [
     # 'conv',
     # 'bise',
-    "bisel",
-    # "sybisel",
+    # "bisel",
+    "sybisel",
     # 'bisec',
     # 'cobise',
     # 'cobisec',
