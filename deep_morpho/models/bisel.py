@@ -22,11 +22,15 @@ class BiSELBase(BinaryNN):
         kernel_size: Union[int, Tuple],
         threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh"},
         constant_P_lui: bool = False,
-        init_bias_value_bise: float = 0.5,
-        init_bias_value_lui: float = 0.5,
-        input_mean: float = 0.5,
-        lui_input_mean: float = 0.5,
-        init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
+        bise_initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
+        bise_initializer_args: Dict = {},
+        lui_initializer_method: InitBiseEnum = None,
+        lui_initializer_args: Dict = None,
+        # init_bias_value_bise: float = 0.5,
+        # init_bias_value_lui: float = 0.5,
+        # input_mean: float = 0.5,
+        # lui_input_mean: float = 0.5,
+        # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
         lui_kwargs: Dict = {},
         **bise_kwargs
     ):
@@ -39,11 +43,15 @@ class BiSELBase(BinaryNN):
         self.threshold_mode = self._init_threshold_mode(threshold_mode)
         self.constant_P_lui = constant_P_lui
         self.bise_kwargs = bise_kwargs
-        self.init_bias_value_bise = init_bias_value_bise
-        self.init_bias_value_lui = init_bias_value_lui
-        self.input_mean = input_mean
-        self.lui_input_mean = lui_input_mean
-        self.init_weight_mode = init_weight_mode
+        self.bise_initializer_method = bise_initializer_method
+        self.bise_initializer_args = bise_initializer_args
+        self.lui_initializer_method = lui_initializer_method if lui_initializer_method is not None else bise_initializer_method
+        self.lui_initializer_args = lui_initializer_args if lui_initializer_args is not None else bise_initializer_args
+        # self.init_bias_value_bise = init_bias_value_bise
+        # self.init_bias_value_lui = init_bias_value_lui
+        # self.input_mean = input_mean
+        # self.lui_input_mean = lui_input_mean
+        # self.init_weight_mode = init_weight_mode
 
         self.lui_kwargs = lui_kwargs
         self.lui_kwargs['constant_activation_P'] = self.constant_P_lui
@@ -65,8 +73,8 @@ class BiSELBase(BinaryNN):
         for idx in range(self.in_channels):
             layer = self.bise_module(
                 out_channels=self.out_channels, kernel_size=self.kernel_size, init_weight_mode=self.init_weight_mode,
-                threshold_mode=self.threshold_mode, init_bias_value=self.init_bias_value_bise, input_mean=self.input_mean,
-                **self.bise_kwargs
+                threshold_mode=self.threshold_mode, initializer_method=self.bise_initializer_method,
+                initializer_args=self.bise_initializer_args, **self.bise_kwargs
             )
             setattr(self, f'bise_{idx}', layer)
             bises.append(layer)
@@ -80,8 +88,10 @@ class BiSELBase(BinaryNN):
                 threshold_mode=self.threshold_mode,
                 out_channels=1,
                 # constant_activation_P=self.constant_P_lui,
-                init_bias_value=self.init_bias_value_lui,
-                input_mean=self.lui_input_mean,
+                # init_bias_value=self.init_bias_value_lui,
+                # input_mean=self.lui_input_mean,
+                initializer_method=self.lui_initializer_method,
+                initializer_args=self.lui_initializer_args,
                 init_weight_mode=self.init_weight_mode,
                 **self.lui_kwargs
             )
@@ -208,10 +218,12 @@ class BiSEL(BiSELBase):
         kernel_size: Union[int, Tuple],
         threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh_symetric"},
         constant_P_lui: bool = False,
-        init_bias_value_bise: float = 0.5,
-        init_bias_value_lui: float = 0.5,
-        input_mean: float = 0.5,
-        init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
+        # init_bias_value_bise: float = 0.5,
+        # init_bias_value_lui: float = 0.5,
+        # input_mean: float = 0.5,
+        # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
+        bise_initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
+        bise_initializer_args: Dict = {"input_mean": 0.5},
         lui_kwargs: Dict = {},
         **bise_kwargs
     ):
@@ -223,10 +235,12 @@ class BiSEL(BiSELBase):
             kernel_size=kernel_size,
             threshold_mode=threshold_mode,
             constant_P_lui=constant_P_lui,
-            init_bias_value_bise=init_bias_value_bise,
-            init_bias_value_lui=init_bias_value_lui,
-            input_mean=input_mean,
-            init_weight_mode=init_weight_mode,
+            bise_initializer_method=bise_initializer_method,
+            bise_initializer_args=bise_initializer_args,
+            # init_bias_value_bise=init_bias_value_bise,
+            # init_bias_value_lui=init_bias_value_lui,
+            # input_mean=input_mean,
+            # init_weight_mode=init_weight_mode,
             lui_kwargs=lui_kwargs,
             **bise_kwargs
         )
@@ -240,10 +254,12 @@ class SyBiSEL(BiSELBase):
         kernel_size: Union[int, Tuple],
         threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh_symetric"},
         constant_P_lui: bool = False,
-        init_bias_value_bise: float = 0,
-        init_bias_value_lui: float = 0,
-        input_mean: float = 0,
-        init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_CONSTANT,
+        # init_bias_value_bise: float = 0,
+        # init_bias_value_lui: float = 0,
+        # input_mean: float = 0,
+        # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_CONSTANT,
+        bise_initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_CONSTANT,
+        bise_initializer_args: Dict = {"input_mean": 0, "mean_weight": "auto"},
         bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.RAW,
         lui_kwargs: Dict = {},
         **bise_kwargs
@@ -257,10 +273,8 @@ class SyBiSEL(BiSELBase):
             bias_optim_mode=bias_optim_mode,
             threshold_mode=threshold_mode,
             constant_P_lui=constant_P_lui,
-            init_bias_value_bise=init_bias_value_bise,
-            init_bias_value_lui=init_bias_value_lui,
-            input_mean=input_mean,
-            init_weight_mode=init_weight_mode,
+            bise_initializer_method=bise_initializer_method,
+            bise_initializer_args=bise_initializer_args,
             lui_kwargs=lui_kwargs,
             **bise_kwargs
         )

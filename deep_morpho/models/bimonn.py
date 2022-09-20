@@ -2,9 +2,6 @@ from typing import List, Tuple, Union, Dict
 
 import numpy as np
 
-from .bise import BiSE
-from .dilation_sum_layer import MaxPlusAtom
-# from .cobise import COBiSE, COBiSEC
 from .bisel import BiSEL, SyBiSEL
 from .binary_nn import BinaryNN
 
@@ -24,12 +21,8 @@ class BiMoNN(BinaryNN):
         self.kernel_size = self._init_kernel_size(kernel_size)
         self.atomic_element = self._init_atomic_element(atomic_element)
 
-        # for attr in set(self.all_args):
-        #     setattr(self, attr, self._init_attr(attr, eval(attr)))
-
-        # kwargs['kernel_size'] = kernel_size
         kwargs['channels'] = channels
-        # kwargs['atomic_element'] = atomic_element
+
         for attr, value in kwargs.items():
             setattr(self, attr, self._init_attr(attr, value))
 
@@ -158,110 +151,45 @@ class BiMoNN(BinaryNN):
     def is_not_default(self, key: str) -> bool:
         return key in self.__dict__.keys()
 
-    def bises_kwargs_idx(self, idx):
-        return dict(
-            **{'shared_weights': None, },
-            **{k: getattr(self, k)[idx] for k in self.bises_args if self.is_not_default(k)}
-        )
-
     def bisels_kwargs_idx(self, idx):
         return dict(
             **{'shared_weights': None, },
             **{k: getattr(self, k)[idx] for k in self.bisels_args if self.is_not_default(k)}
         )
 
-    def bisecs_kwargs_idx(self, idx):
-        return dict(
-            **{'shared_weights': None, },
-            **{k: getattr(self, k)[idx] for k in self.bisecs_args if self.is_not_default(k)}
-        )
-
-    def cobise_kwargs_idx(self, idx):
-        return dict(
-            **{k: getattr(self, k)[idx] for k in self.cobise_args if self.is_not_default(k)},
-        )
-
-    def cobisec_kwargs_idx(self, idx):
-        return dict(
-            **{k: getattr(self, k)[idx] for k in self.cobisec_args if self.is_not_default(k)},
-        )
-
-    def max_plus_kwargs_idx(self, idx):
-        return dict(
-            **{k: getattr(self, k)[idx] for k in self.max_plus_args if self.is_not_default(k)},
-        )
-
     @property
     def bises_args(self):
         return [
             'kernel_size', 'weight_P', 'threshold_mode', 'activation_P',
-            'init_bias_value', 'init_weight_mode', 'out_channels', "constant_activation_P",
-            "constant_weight_P", "input_mean", "closest_selem_method", "closest_selem_distance_fn",
+            # 'init_bias_value', "input_mean",
+            "initializer_method", "initializer_args",
+            'init_weight_mode', 'out_channels', "constant_activation_P",
+            "constant_weight_P",
+            "closest_selem_method", "closest_selem_distance_fn",
             "bias_optim_mode", "bias_optim_args", "weights_optim_mode", "weights_optim_args",
         ]
 
     @property
     def bisels_args(self):
         return set(self.bises_args).union(
-            ['in_channels', 'constant_P_lui', "lui_kwargs", "init_bias_value_bise", "init_bias_value_lui"]
+            [
+                'in_channels', 'constant_P_lui', "lui_kwargs",
+                # "init_bias_value_bise", "init_bias_value_lui"
+                "bise_initializer_method", "bise_initializer_args",
+                "lui_initializer_method", "lui_initializer_args",
+            ]
         ).difference(["init_bias_value"])
 
-    @property
-    def bisecs_args(self):
-        return set(self.bises_args).difference(['init_bias_value']).union(['alpha_init'])
-
-    @property
-    def max_plus_args(self):
-        return ['kernel_size', 'alpha_init', 'init_value', 'threshold_mode']
-
-    @property
-    def cobise_args(self):
-        return set(self.bises_args).union(['share_weights'])
-
-    @property
-    def cobisec_args(self):
-        return set(self.bisecs_args).union(['share_weights'])
-
     def _make_layer(self, idx):
-        if self.atomic_element[idx] == 'bise':
-            layer = BiSE(**self.bises_kwargs_idx(idx))
-            self.bises_idx.append(idx)
-
-        elif self.atomic_element[idx] == 'bisel':
+        if self.atomic_element[idx] == 'bisel':
             layer = BiSEL(**self.bisels_kwargs_idx(idx))
             self.bisels_idx.append(idx)
-
-        # elif self.atomic_element[idx] == 'bisel2':
-        #     layer = BiSEL2(**self.bisels_kwargs_idx(idx))
-        #     self.bisels_idx.append(idx)
 
         elif self.atomic_element[idx] == 'sybisel':
             layer = SyBiSEL(**self.bisels_kwargs_idx(idx))
             self.bisels_idx.append(idx)
 
-        # elif self.atomic_element[idx] == 'bisec':
-        #     layer (**self.bisecs_kwargs_idx(idx))
-        #     self.bisecs_idx.append(idx)
-
-        elif self.atomic_element[idx] == 'max_plus':
-            layer = MaxPlusAtom(**self.max_plus_kwargs_idx(idx))
-
-        # elif self.atomic_element[idx] == 'cobise':
-        #     layer = COBiSE(**self.cobise_kwargs_idx(idx))
-
-        # elif self.atomic_element[idx] == 'cobisec':
-        #     layer = COBiSEC(**self.cobisec_kwargs_idx(idx))
-
         return layer
-
-    # @property
-    # def all_args(self):
-    #     return [
-    #         "kernel_size", "atomic_element", "weight_P", "threshold_mode", "activation_P", "constant_activation_P",
-    #         "init_bias_value_bise", "init_bias_value_lui", "init_weight_mode", "alpha_init", "init_value", "share_weights",
-    #         "constant_weight_P", "constant_P_lui", "channels", "lui_kwargs", "input_mean", "closest_selem_method",
-    #         "closest_selem_distance_fn", "bias_optim_mode"
-    #     ]
 
 
 

@@ -7,11 +7,15 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-
 from .threshold_layer import dispatcher, ThresholdEnum
 from .binary_nn import BinaryNN
 from .bias_layer import BiasSoftplus, BiasRaw, BiasBiseSoftplusProjected, BiasBiseSoftplusReparametrized
 from .weights_layer import WeightsThresholdedBise, WeightsNormalizedBiSE
+from ..initializer import (
+    InitBiseHeuristicWeights, InitBiseConstantVarianceWeights, InitSybiseHeuristicWeights, InitSybiseConstantVarianceWeights,
+    InitIdentity, InitNormalIdentity, InitKaimingUniform, InitIdentityZeroMean, InitNormalIdentityZeroMean,
+    InitKaimingUniformZeroMean, InitSybiseConstantVarianceWeightsRandomBias
+)
 from general.utils import set_borders_to
 
 
@@ -21,6 +25,7 @@ class InitBiseEnum(Enum):
     CUSTOM_HEURISTIC = 3
     CUSTOM_CONSTANT = 4
     IDENTITY = 5
+    CUSTOM_CONSTANT_RANDOM_BIAS = 6
 
 
 class ClosestSelemEnum(Enum):
@@ -58,11 +63,12 @@ class BiSEBase(BinaryNN):
         constant_activation_P: bool = False,
         weights_optim_mode: BiseWeightsOptimEnum = BiseWeightsOptimEnum.THRESHOLDED,
         weights_optim_args: Dict = {},
-        # constant_weight_P: bool = False,
         shared_weights: torch.tensor = None,  # deprecated
-        init_bias_value: float = 1,
-        input_mean: float = 0.5,
-        init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
+        initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
+        initializer_args: Dict = {},
+        # init_bias_value: float = 1,
+        # input_mean: float = 0.5,
+        # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
         in_channels: int = 1,
         out_channels: int = 1,
         do_mask_output: bool = False,
@@ -79,10 +85,12 @@ class BiSEBase(BinaryNN):
         self.threshold_mode = self._init_threshold_mode(threshold_mode)
         self.activation_P_init = activation_P
         self.kernel_size = self._init_kernel_size(kernel_size)
-        self.init_weight_mode = init_weight_mode
         self.do_mask_output = do_mask_output
-        self.init_bias_value = init_bias_value
-        self.input_mean = input_mean
+        # self.init_weight_mode = init_weight_mode
+        # self.init_bias_value = init_bias_value
+        # self.input_mean = input_mean
+        self.initializer_method = initializer_method
+        self.initializer_args = initializer_args
         self.closest_selem_method = closest_selem_method
         self.closest_selem_distance_fn = closest_selem_distance_fn
         self.bias_optim_mode = bias_optim_mode
@@ -116,7 +124,9 @@ class BiSEBase(BinaryNN):
         self.weights_handler = self.create_weights_handler(**self.weights_optim_args)
 
 
-        self.init_weights_and_bias()
+        # self.init_weights_and_bias()
+        self.initializer = self.create_initializer(**self.initializer_args)
+        self.initializer.initialize(self)
 
 
         # self._closest_selem = np.zeros((*self.kernel_size, out_channels)).astype(bool)
@@ -136,6 +146,24 @@ class BiSEBase(BinaryNN):
         self._is_activated = np.zeros((out_channels)).astype(bool)
 
         self.update_binary_selems()
+
+    def create_initializer(self, **kwargs):
+        if self.initializer_method == InitBiseEnum.NORMAL:
+            return InitNormalIdentity(**kwargs)
+
+        elif self.initializer_method == InitBiseEnum.IDENTITY:
+            return InitIdentity(**kwargs)
+
+        elif self.initializer_method == InitBiseEnum.KAIMING_UNIFORM:
+            return InitKaimingUniform(**kwargs)
+
+        elif self.initializer_method == InitBiseEnum.CUSTOM_HEURISTIC:
+            return InitBiseHeuristicWeights(**kwargs)
+
+        elif self.initializer_method == InitBiseEnum.CUSTOM_CONSTANT:
+            return InitBiseConstantVarianceWeights(**kwargs)
+
+        raise NotImplementedError("Initializer not recognized.")
 
     def create_bias_handler(self, **kwargs):
         if self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE:
@@ -204,76 +232,70 @@ class BiSEBase(BinaryNN):
             return (kernel_size, kernel_size)
         return kernel_size
 
-    def init_weights_and_bias(self):
-        # if self.init_weight_mode == "custom":
-        #     self.init_bias()
-        #     self.init_weights()
-        # else:
-        #     self.init_weights()
-        #     self.init_bias()
-        self.init_weights()
-        self.init_bias()
+    # def init_weights_and_bias(self):
+    #     self.init_weights()
+    #     self.init_bias()
 
-    def init_weights(self):
-        if self.init_weight_mode == InitBiseEnum.NORMAL:
-            self.set_normalized_weights(self._init_normal_identity(self.kernel_size, self.out_channels))
-        elif self.init_weight_mode == InitBiseEnum.IDENTITY:
-            self._init_as_identity()
-        elif self.init_weight_mode == InitBiseEnum.KAIMING_UNIFORM:
-            self.set_normalized_weights(self.weight + 1)
-        elif self.init_weight_mode == InitBiseEnum.CUSTOM_HEURISTIC:
-            nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
-            mean = self.init_bias_value / (self.input_mean * nb_params)
-            std = .5
-            lb = mean * (1 - std)
-            ub = mean * (1 + std)
-            self.set_normalized_weights(
-                torch.rand_like(self.weights) * (lb - ub) + ub
-            )
-        elif self.init_weight_mode == InitBiseEnum.CUSTOM_CONSTANT:
-            p = 1
-            nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
+    # def init_weights(self):
+    #     if self.init_weight_mode == InitBiseEnum.NORMAL:
+    #         self.set_normalized_weights(self._init_normal_identity(self.kernel_size, self.out_channels))
+    #     elif self.init_weight_mode == InitBiseEnum.IDENTITY:
+    #         self._init_as_identity()
+    #     elif self.init_weight_mode == InitBiseEnum.KAIMING_UNIFORM:
+    #         self.set_normalized_weights(self.weight + 1)
+    #     elif self.init_weight_mode == InitBiseEnum.CUSTOM_HEURISTIC:
+    #         nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
+    #         mean = self.init_bias_value / (self.input_mean * nb_params)
+    #         std = .5
+    #         lb = mean * (1 - std)
+    #         ub = mean * (1 + std)
+    #         self.set_normalized_weights(
+    #             torch.rand_like(self.weights) * (lb - ub) + ub
+    #         )
+    #     elif self.init_weight_mode == InitBiseEnum.CUSTOM_CONSTANT:
+    #         p = 1
+    #         nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
 
-            if self.init_bias_value == "auto":
-                # To keep trakc witth previous experiment
-                # if self.input_mean > 0.7:
-                #     lb1 = 1/p * torch.sqrt(6*nb_params / (12 + 1/self.input_mean**2))
-                # else:
-                #     lb1 = 1/(2*p) * torch.sqrt(3/2 * nb_params)
-                lb1 = 1/p * torch.sqrt(6*nb_params / (12 + 1/self.input_mean**2))
-                lb2 = 1 / p * torch.sqrt(nb_params / 2)
-                self.init_bias_value = (lb1 + lb2) / 2
+    #         if self.init_bias_value == "auto":
+    #             # To keep trakc with previous experiment
+    #             # if self.input_mean > 0.7:
+    #             #     lb1 = 1/p * torch.sqrt(6*nb_params / (12 + 1/self.input_mean**2))
+    #             # else:
+    #             #     lb1 = 1/(2*p) * torch.sqrt(3/2 * nb_params)
+    #             lb1 = 1/p * torch.sqrt(6*nb_params / (12 + 1/self.input_mean**2))
+    #             lb2 = 1 / p * torch.sqrt(nb_params / 2)
+    #             self.init_bias_value = (lb1 + lb2) / 2
 
-            mean = self.init_bias_value / (self.input_mean * nb_params)
-            sigma = (2 * nb_params - 4 * self.init_bias_value**2 * p ** 2) / (p ** 2 * nb_params ** 2)
-            diff = torch.sqrt(3 * sigma)
-            lb = mean - diff
-            ub = mean + diff
+    #         mean = self.init_bias_value / (self.input_mean * nb_params)
+    #         sigma = (2 * nb_params - 4 * self.init_bias_value**2 * p ** 2) / (p ** 2 * nb_params ** 2)
+    #         diff = torch.sqrt(3 * sigma)
+    #         lb = mean - diff
+    #         ub = mean + diff
 
-            new_weights = torch.rand_like(self.weights) * (lb - ub) + ub
-            self.set_normalized_weights(
-                # new_weights / new_weights.sum()  # DEBUG
-                new_weights
-            )
-        else:
-            warnings.warn(f"init weight mode {self.init_weight_mode} not recognized.")
-        pass
+    #         new_weights = torch.rand_like(self.weights) * (lb - ub) + ub
+    #         self.set_normalized_weights(
+    #             # new_weights / new_weights.sum()  # DEBUG
+    #             new_weights
+    #         )
+    #     else:
+    #         warnings.warn(f"init weight mode {self.init_weight_mode} not recognized.")
+    #     pass
 
-    def init_bias(self):
-        self.set_bias(
-            torch.zeros_like(self.bias) - self.init_bias_value
-        )
+    # def init_bias(self):
+    #     self.set_bias(
+    #         torch.zeros_like(self.bias) - self.init_bias_value
+    #     )
 
-    @staticmethod
-    def _init_normal_identity(kernel_size, chan_output, std=0.3, mean=1):
-        weights = torch.randn((chan_output,) + kernel_size)[:, None, ...] * std - mean
-        weights[..., kernel_size[0] // 2, kernel_size[1] // 2] += 2*mean
-        return weights
+    # @staticmethod
+    # def _init_normal_identity(kernel_size, chan_output, std=0.3, mean=1):
+    #     weights = torch.randn((chan_output,) + kernel_size)[:, None, ...] * std - mean
+    #     weights[..., kernel_size[0] // 2, kernel_size[1] // 2] += 2*mean
+    #     return weights
 
-    def _init_as_identity(self):
-        self.conv.weight.data.fill_(-1)
-        shape = self.conv.weight.shape
-        self.conv.weight.data[..., shape[-2]//2, shape[-1]//2] = 1
+    # def _init_as_identity(self):
+    #     self.conv.weight.data.fill_(-1)
+    #     shape = self.conv.weight.shape
+    #     self.conv.weight.data[..., shape[-2]//2, shape[-1]//2] = 1
 
     def activation_threshold_fn(self, x):
         return self.activation_threshold_layer.threshold_fn(x)
@@ -314,8 +336,6 @@ class BiSEBase(BinaryNN):
         bias = torch.zeros_like(self.bias)
         operations = torch.zeros_like(self.bias)
 
-        # weights[self._is_activated, 0] = torch.FloatTensor(self._learned_selem[..., self._is_activated].transpose(2, 0, 1)).to(weights.device)
-        # weights[~self._is_activated, 0] = torch.FloatTensor(self._closest_selem[..., ~self._is_activated].transpose(2, 0, 1)).to(bias.device)
         weights[self._is_activated] = torch.FloatTensor(self._learned_selem[self._is_activated]).to(weights.device)
         weights[~self._is_activated] = torch.FloatTensor(self._closest_selem[~self._is_activated]).to(bias.device)
 
@@ -324,7 +344,6 @@ class BiSEBase(BinaryNN):
         operations[self._is_activated] = torch.FloatTensor(self._learned_operation[self._is_activated]).to(operations.device)
         operations[~self._is_activated] = torch.FloatTensor(self._closest_operation[~self._is_activated]).to(operations.device)
         bias[operations == dil_key] = -0.5
-        # bias[operations == ero_key] = -weights[operations == ero_key].sum((1, 2, 3)) + 0.5
         bias[operations == ero_key] = -weights[operations == ero_key].sum((1, 2, 3)) + 0.5
 
         return weights, bias
@@ -385,7 +404,6 @@ class BiSEBase(BinaryNN):
         return W[(~S) & (W > 0)].sum() + v1 * W[S & (W > 0)].sum(), v2 * W[S].min() + W[W < 0].sum()
 
     def find_selem_for_operation_chan(self, operation: str, chout: int = 0, v1: float = 0, v2: float = 1):
-    # def find_selem_for_operation_chan(self, idx: int, operation: str, v1: float = 0, v2: float = 1):
         """
         We find the selem for either a dilation or an erosion. In theory, there is at most one selem that works.
         We verify this theory.
@@ -399,8 +417,6 @@ class BiSEBase(BinaryNN):
             np.ndarray if a selem is found
             None if none is found
         """
-        # weights = self._normalized_weight[idx, 0]
-        # bias = self.bias[idx]
         weights = self._normalized_weight[chout]
         bias = self.bias[chout]
         is_op_fn = {'dilation': self.is_dilation_by, 'erosion': self.is_erosion_by}[operation]
@@ -416,7 +432,6 @@ class BiSEBase(BinaryNN):
 
     def compute_selem_dist_for_operation_chan(
         self, weights, bias, operation: str, closest_selem_distance_fn: ClosestSelemDistanceEnum, chout: int = 0, v1: float = 0, v2: float = 1
-        # weights, bias, idx: int, operation: str, closest_selem_distance_fn: ClosestSelemDistanceEnum, v1: float = 0, v2: float = 1
     ):
         weights = weights[chout]
         weight_values = weights.unique().detach().cpu().numpy()
@@ -433,7 +448,6 @@ class BiSEBase(BinaryNN):
         return selems, dists
 
     def find_closest_selem_for_operation_chan(self, weights, bias, operation: str, closest_selem_method, closest_selem_distance_fn, chout: int = 0, v1: float = 0, v2: float = 1):
-    # def find_closest_selem_for_operation_chan(weights, bias, idx: int, operation: str, closest_selem_method, closest_selem_distance_fn, v1: float = 0, v2: float = 1):
         """
         We find the selem for either a dilation or an erosion. In theory, there is at most one selem that works.
 
@@ -503,12 +517,6 @@ class BiSEBase(BinaryNN):
         self._closest_operation[chout] = self.operation_code[final_operation]
         self._closest_selem_dist[chout] = final_dist
         return final_selem, final_operation, final_dist
-
-    # def find_selem_dilation_chan(self, idx: int, v1: float = 0, v2: float = 1):
-    #     return self.find_selem_for_operation(idx, 'dilation', v1=v1, v2=v2)
-
-    # def find_selem_erosion_chan(self, idx: int, v1: float = 0, v2: float = 1):
-    #     return self.find_selem_for_operation(idx, 'erosion', v1=v1, v2=v2)
 
     def find_selem_and_operation_chan(self, chout: int = 0, v1: float = 0, v2: float = 1):
         """Find the selem and the operation given the almost binary features.
@@ -668,23 +676,21 @@ class SyBiSEBase(BiSEBase):
         *args,
         threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh_symetric"},
         bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.RAW,
-        init_bias_value: float = 0,
-        input_mean: float = 0,
+        # init_bias_value: float = 0,
+        # input_mean: float = 0,
+        initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_CONSTANT,
+        initializer_args: Dict = {},
         mean_weight_value: float = "auto",
         **kwargs
     ):
         self.mean_weight_value = mean_weight_value
         super().__init__(*args,
-            threshold_mode=threshold_mode, bias_optim_mode=bias_optim_mode, init_bias_value=init_bias_value, input_mean=input_mean, **kwargs)
+            threshold_mode=threshold_mode,
+            bias_optim_mode=bias_optim_mode,
+            initializer_method=initializer_method,
+            initializer_args=initializer_args,
+        **kwargs)
         assert isinstance(self.activation_threshold_layer, self.POSSIBLE_THRESHOLDS), "Choose a symetric threshold for activation."
-
-    # @staticmethod
-    # def bias_bounds_dilation(normalized_weights: torch.Tensor, S: np.ndarray, v1: float = None, v2: float = 1) -> Tuple[float, float]:
-    #     return SyBiSEBase.sym_bias_bounds_dilation(normalized_weights=normalized_weights, S=S, epsilon=v2)
-
-    # @staticmethod
-    # def bias_bounds_erosion(normalized_weights: torch.Tensor, S: np.ndarray, v1: float = None, v2: float = 1) -> Tuple[float, float]:
-    #     return SyBiSEBase.sym_bias_bounds_erosion(normalized_weights=normalized_weights, S=S, epsilon=v2)
 
     def bias_bounds_erosion(self, normalized_weights: torch.Tensor, S: np.ndarray, v1=None, v2: float = 1) -> Tuple[float, float]:
         lb_dil, ub_dil = self.bias_bounds_dilation(normalized_weights, S, v2=v2)
@@ -700,44 +706,65 @@ class SyBiSEBase(BiSEBase):
             -np.abs(W).sum() + (1 + epsilon) * max(W[S].min(), 0)
         )
 
-    def init_weights(self):
-        if self.init_weight_mode in [InitBiseEnum.NORMAL, InitBiseEnum.IDENTITY, InitBiseEnum.KAIMING_UNIFORM]:
-            super().init_weights()
-            self.init_bias_value = self.input_mean * self.weight.mean() * torch.tensor(self._normalized_weights.shape[1:]).prod()
+    def create_initializer(self, **kwargs):
+        if self.initializer_method in InitBiseEnum.NORMAL:
+            return InitNormalIdentityZeroMean(**kwargs)
 
-        elif self.init_weight_mode == InitBiseEnum.CUSTOM_HEURISTIC:
-            nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
-            if self.mean_weight_value == 'auto':
-                mean = .5
-            else:
-                mean = self.mean_weight_value
-            std = mean / (2 * np.sqrt(3))
-            lb = mean * (1 - std)
-            ub = mean * (1 + std)
-            self.set_normalized_weights(
-                torch.rand_like(self.weights) * (lb - ub) + ub
-            )
-            self.init_bias_value = self.input_mean * mean * nb_params
+        elif self.initializer_method == InitBiseEnum.IDENTITY:
+            return InitIdentityZeroMean(**kwargs)
 
-        elif self.init_weight_mode == InitBiseEnum.CUSTOM_CONSTANT:
-            p = 1
-            nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
+        elif self.initializer_method == InitBiseEnum.KAIMING_UNIFORM:
+            return InitKaimingUniformZeroMean(**kwargs)
 
-            if self.mean_weight_value == "auto":
-                ub = 1 / (p * torch.sqrt(nb_params))
-                lb = np.sqrt(3 / 4) * ub
-                mean = (lb + ub) / 2
+        elif self.initializer_method == InitBiseEnum.CUSTOM_HEURISTIC:
+            return InitSybiseHeuristicWeights(**kwargs)
 
-            sigma = 1 / (p ** 2 * nb_params) - mean ** 2
-            diff = torch.sqrt(3 * sigma)
-            lb = mean - diff
-            ub = mean + diff
-            self.set_normalized_weights(
-                torch.rand_like(self.weights) * (lb - ub) + ub
-            )
-            self.init_bias_value = self.input_mean * mean * nb_params
-        else:
-            warnings.warn(f"init weight mode {self.init_weight_mode} not recognized.")
+        elif self.initializer_method == InitBiseEnum.CUSTOM_CONSTANT:
+            return InitSybiseConstantVarianceWeights(**kwargs)
+
+        elif self.initializer_method == InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS:
+            return InitSybiseConstantVarianceWeightsRandomBias(**kwargs)
+
+        raise NotImplementedError("Initializer not recognized.")
+
+    # def init_weights(self):
+    #     if self.init_weight_mode in [InitBiseEnum.NORMAL, InitBiseEnum.IDENTITY, InitBiseEnum.KAIMING_UNIFORM]:
+    #         super().init_weights()
+    #         self.init_bias_value = self.input_mean * self.weight.mean() * torch.tensor(self._normalized_weights.shape[1:]).prod()
+
+    #     elif self.init_weight_mode == InitBiseEnum.CUSTOM_HEURISTIC:
+    #         nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
+    #         if self.mean_weight_value == 'auto':
+    #             mean = .5
+    #         else:
+    #             mean = self.mean_weight_value
+    #         std = mean / (2 * np.sqrt(3))
+    #         lb = mean * (1 - std)
+    #         ub = mean * (1 + std)
+    #         self.set_normalized_weights(
+    #             torch.rand_like(self.weights) * (lb - ub) + ub
+    #         )
+    #         self.init_bias_value = self.input_mean * mean * nb_params
+
+    #     elif self.init_weight_mode == InitBiseEnum.CUSTOM_CONSTANT:
+    #         p = 1
+    #         nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
+
+    #         if self.mean_weight_value == "auto":
+    #             ub = 1 / (p * torch.sqrt(nb_params))
+    #             lb = np.sqrt(3 / 4) * ub
+    #             mean = (lb + ub) / 2
+
+    #         sigma = 1 / (p ** 2 * nb_params) - mean ** 2
+    #         diff = torch.sqrt(3 * sigma)
+    #         lb = mean - diff
+    #         ub = mean + diff
+    #         self.set_normalized_weights(
+    #             torch.rand_like(self.weights) * (lb - ub) + ub
+    #         )
+    #         self.init_bias_value = self.input_mean * mean * nb_params
+    #     else:
+    #         warnings.warn(f"init weight mode {self.init_weight_mode} not recognized.")
 
 
-        pass
+    #     pass

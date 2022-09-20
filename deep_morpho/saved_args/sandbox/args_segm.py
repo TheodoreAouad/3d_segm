@@ -34,13 +34,13 @@ all_args['n_try'] = [0]
 all_args['experiment_name'] = [
     # "Bimonn_exp_59/sandbox/1"
     # "Bimonn_exp_60/sandbox/0"
-    # "Bimonn_exp_61/sandbox/0"
+    "Bimonn_exp_63/sandbox/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
     # "Bimonn_reprod"
     # "debug"
-    "sandbox"
+    # "sandbox"
     # "Bimonn_exp_62/sandbox/0"
     # "test_refactor_bise_old2"
     # "sybisel_debug"
@@ -167,8 +167,8 @@ all_args['init_weight_mode'] = [
     # "normal_identity",
     # "conv_0.5"
     # InitBiseEnum.KAIMING_UNIFORM,
-    InitBiseEnum.CUSTOM_HEURISTIC,
-    # InitBiseEnum.CUSTOM_CONSTANT
+    # InitBiseEnum.CUSTOM_HEURISTIC,
+    InitBiseEnum.CUSTOM_CONSTANT
 ]
 all_args['closest_selem_method'] = [
     ClosestSelemEnum.MIN_DIST
@@ -189,8 +189,8 @@ all_args['bias_optim_args'] = [
     {"offset": 0}
 ]
 all_args['weights_optim_mode'] = [
-    # BiseWeightsOptimEnum.THRESHOLDED,
-    BiseWeightsOptimEnum.NORMALIZED
+    BiseWeightsOptimEnum.THRESHOLDED,
+    # BiseWeightsOptimEnum.NORMALIZED
 ]
 all_args['weights_optim_args'] = [
     # {"constant_P": True}
