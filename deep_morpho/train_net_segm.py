@@ -142,7 +142,7 @@ def main(args, logger):
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
 
     # init_bias_value = next(iter(trainloader))[0].mean()
-    input_mean = next(iter(trainloader))[0].mean()
+    args["bise_initializer_args"]["input_mean"] = next(iter(trainloader))[0].mean()
     # input_mean = 1/2  # DEBUG
     model = LightningBiMoNN(
         model_args={
@@ -156,9 +156,11 @@ def main(args, logger):
             "init_weight_mode": args["init_weight_mode"],
             "alpha_init": args["alpha_init"],
             "lui_kwargs": {"force_identity": args['force_lui_identity']},
-            "init_bias_value_bise": args['init_bias_value_bise'],
-            "init_bias_value_lui": args['init_bias_value_lui'],
-            "input_mean": input_mean,
+            # "init_bias_value_bise": args['init_bias_value_bise'],
+            # "init_bias_value_lui": args['init_bias_value_lui'],
+            # "input_mean": input_mean,
+            "bise_initializer_method": args["bise_initializer_method"],
+            "bise_initializer_args": args["bise_initializer_args"],
             "closest_selem_method": args['closest_selem_method'],
             "closest_selem_distance_fn": args['closest_selem_distance_fn'],
             "bias_optim_mode": args['bias_optim_mode'],

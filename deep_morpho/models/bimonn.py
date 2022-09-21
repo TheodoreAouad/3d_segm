@@ -161,9 +161,9 @@ class BiMoNN(BinaryNN):
     def bises_args(self):
         return [
             'kernel_size', 'weight_P', 'threshold_mode', 'activation_P',
-            # 'init_bias_value', "input_mean",
+            # 'init_bias_value', "input_mean", 'init_weight_mode',
             "initializer_method", "initializer_args",
-            'init_weight_mode', 'out_channels', "constant_activation_P",
+            'out_channels', "constant_activation_P",
             "constant_weight_P",
             "closest_selem_method", "closest_selem_distance_fn",
             "bias_optim_mode", "bias_optim_args", "weights_optim_mode", "weights_optim_args",

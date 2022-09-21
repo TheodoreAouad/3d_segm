@@ -27,7 +27,7 @@ class InitWeightsThenBias(BiseInitializer):
 
 
 class InitBiasFixed(InitWeightsThenBias):
-    def __init__(self, init_bias_value: float) -> None:
+    def __init__(self, init_bias_value: float, *args, **kwargs) -> None:
         self.init_bias_value = init_bias_value
 
     def init_bias(self, module):
@@ -38,7 +38,7 @@ class InitBiasFixed(InitWeightsThenBias):
 
 class InitNormalIdentity(InitBiasFixed):
 
-    def __init__(self, init_bias_value: float, mean: float = 1, std: float = .3) -> None:
+    def __init__(self, init_bias_value: float, mean: float = 1, std: float = .3, *args, **kwargs) -> None:
         super().__init__(init_bias_value=init_bias_value)
         self.mean = mean
         self.std = std
@@ -99,7 +99,7 @@ class InitKaimingUniformZeroMean(InitZeroMeanBias):
 
 
 class InitBiseHeuristicWeights(InitBiasFixed):
-    def __init__(self, init_bias_value: float, input_mean: float = 0.5):
+    def __init__(self, init_bias_value: float, input_mean: float = 0.5, *args, **kwargs):
         super().__init__(init_bias_value=init_bias_value)
         self.input_mean = input_mean
 
@@ -115,7 +115,7 @@ class InitBiseHeuristicWeights(InitBiasFixed):
 
 
 class InitBiseConstantVarianceWeights(InitBiasFixed):
-    def __init__(self, init_bias_value: float = "auto", input_mean: float = 0.5):
+    def __init__(self, init_bias_value: float = "auto", input_mean: float = 0.5, *args, **kwargs):
         super().__init__(init_bias_value=init_bias_value)
         self.input_mean = input_mean
 
@@ -147,7 +147,7 @@ class InitBiseConstantVarianceWeights(InitBiasFixed):
 
 
 class InitSybiseHeuristicWeights(InitWeightsThenBias):
-    def __init__(self, input_mean: float = 0, mean_weight: float = "auto") -> None:
+    def __init__(self, input_mean: float = 0, mean_weight: float = "auto", *args, **kwargs) -> None:
         self.input_mean = input_mean
         self.mean_weight = mean_weight
 
@@ -178,7 +178,7 @@ class InitSybiseHeuristicWeights(InitWeightsThenBias):
 
 
 class InitSybiseConstantVarianceWeights(InitWeightsThenBias):
-    def __init__(self, input_mean: float = 0, mean_weight: float = "auto") -> None:
+    def __init__(self, input_mean: float = 0, mean_weight: float = "auto", *args, **kwargs) -> None:
         self.input_mean = input_mean
         self.mean_weight = mean_weight
 
@@ -189,7 +189,7 @@ class InitSybiseConstantVarianceWeights(InitWeightsThenBias):
         p = 1
         nb_params = torch.tensor(module._normalized_weights.shape[1:]).prod()
 
-        if self.mean_weight_value == "auto":
+        if self.mean_weight == "auto":
             ub = 1 / (p * torch.sqrt(nb_params))
             lb = np.sqrt(3 / 4) * ub
             mean = (lb + ub) / 2

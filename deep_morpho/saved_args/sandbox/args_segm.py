@@ -132,14 +132,8 @@ all_args['patience_reduce_lr'] = [700]
 #     4,
 # ]
 all_args['atomic_element'] = [
-    # 'conv',
-    # 'bise',
     # "bisel",
     "sybisel",
-    # 'bisec',
-    # 'cobise',
-    # 'cobisec',
-    # "max_plus",
 ]
 all_args['n_atoms'] = [
     'adapt',
@@ -162,14 +156,14 @@ all_args['channels'] = [
     #     2, 2, 1,
     # ]
 ]
-all_args['init_weight_mode'] = [
-    # "identity",
-    # "normal_identity",
-    # "conv_0.5"
-    # InitBiseEnum.KAIMING_UNIFORM,
-    # InitBiseEnum.CUSTOM_HEURISTIC,
-    InitBiseEnum.CUSTOM_CONSTANT
-]
+# all_args['init_weight_mode'] = [
+#     # "identity",
+#     # "normal_identity",
+#     # "conv_0.5"
+#     # InitBiseEnum.KAIMING_UNIFORM,
+#     # InitBiseEnum.CUSTOM_HEURISTIC,
+#     InitBiseEnum.CUSTOM_CONSTANT
+# ]
 all_args['closest_selem_method'] = [
     ClosestSelemEnum.MIN_DIST
     # ClosestSelemEnum.MAX_SECOND_DERIVATIVE
@@ -197,6 +191,16 @@ all_args['weights_optim_args'] = [
     {"constant_P": True, "factor": 1}
 ]
 
+all_args['bise_initializer_method'] = [
+    # InitBiseEnum.KAIMING_UNIFORM,
+    # InitBiseEnum.CUSTOM_HEURISTIC,
+    InitBiseEnum.CUSTOM_CONSTANT,
+    # InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
+]
+all_args['bise_initializer_args'] = [
+    {"init_bias_value": 0, "ub": 0.01}
+]
+
 all_args['activation_P'] = [0]
 all_args['constant_activation_P'] = [False]
 all_args['force_lui_identity'] = [False]
@@ -209,8 +213,6 @@ all_args['init_bias_value_bise'] = [1/2]
 all_args['init_bias_value_lui'] = [0]
 
 all_args['threshold_mode'] = [
-    # 'arctan',
-    # 'sigmoid',
     {
         "weight": 'softplus',
         "activation": 'tanh',
@@ -225,9 +227,7 @@ all_args['threshold_mode'] = [
     # "identity",
     # {"activation": "sigmoid", "weight": "identity", "complementation": "clamp"}
 ]
-all_args["alpha_init"] = [0]
 
-all_args['share_weights'] = [False]
 
 all_args = dict_cross(all_args)
 #

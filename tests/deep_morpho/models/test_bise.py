@@ -191,9 +191,10 @@ class TestBiSE:
     def test_init_mode_custom_constant(input_mean):
         layer = BiSE(
             (7, 7),
-            init_weight_mode=InitBiseEnum.CUSTOM_CONSTANT,
-            init_bias_value="auto",
-            input_mean=input_mean,
+            initializer_method=InitBiseEnum.CUSTOM_CONSTANT,
+            initializer_args={"input_mean": input_mean, "init_bias_value": "auto"},
+            # init_bias_value="auto",
+            # input_mean=input_mean,
         )
         layer
 
@@ -204,9 +205,11 @@ class TestBiSE:
             kernel_size=(7, 7),
             threshold_mode={'weight': 'softplus', 'activation': 'tanh'},
             activation_P=1,
-            init_bias_value=1/2,
-            input_mean=1/2,
-            init_weight_mode=InitBiseEnum.CUSTOM_HEURISTIC,
+            # init_bias_value=1/2,
+            # input_mean=1/2,
+            # init_weight_mode=InitBiseEnum.CUSTOM_HEURISTIC,
+            initializer_method=InitBiseEnum.CUSTOM_HEURISTIC,
+            initializer_args={"input_mean": .5, "init_bias_value": .5},
             out_channels=1,
             bias_optim_mode=BiseBiasOptimEnum.POSITIVE,
             bias_optim_args={"offset": 0},

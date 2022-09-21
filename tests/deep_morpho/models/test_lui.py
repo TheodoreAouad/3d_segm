@@ -9,7 +9,7 @@ class TestLUI:
 
     @staticmethod
     def test_lui_init():
-        layer = LUI(threshold_mode='tanh', chan_inputs=10, chan_outputs=5)
+        layer = LUI(threshold_mode='tanh', in_channels=10, out_channels=5)
         layer
 
     @staticmethod
@@ -31,7 +31,7 @@ class TestLUI:
 
     @staticmethod
     def test_lui_binary_mode():
-        layer = LUI(threshold_mode='tanh', chan_inputs=10, chan_outputs=5)
+        layer = LUI(threshold_mode='tanh', in_channels=10, out_channels=5)
         layer.binary()
         assert layer.binary_mode == True
         layer.binary(False)
@@ -39,7 +39,7 @@ class TestLUI:
 
     @staticmethod
     def test_lui_forward_binary():
-        layer = LUI(threshold_mode='tanh', chan_inputs=10, chan_outputs=5)
+        layer = LUI(threshold_mode='tanh', in_channels=10, out_channels=5)
         x = torch.randint(0, 2, (5, 10, 50, 50)).float()
 
         output = layer.forward_binary(x).detach().cpu().numpy()

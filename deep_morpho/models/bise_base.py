@@ -65,7 +65,7 @@ class BiSEBase(BinaryNN):
         weights_optim_args: Dict = {},
         shared_weights: torch.tensor = None,  # deprecated
         initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
-        initializer_args: Dict = {},
+        initializer_args: Dict = {"init_bias_value": 1},
         # init_bias_value: float = 1,
         # input_mean: float = 0.5,
         # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
@@ -707,7 +707,7 @@ class SyBiSEBase(BiSEBase):
         )
 
     def create_initializer(self, **kwargs):
-        if self.initializer_method in InitBiseEnum.NORMAL:
+        if self.initializer_method == InitBiseEnum.NORMAL:
             return InitNormalIdentityZeroMean(**kwargs)
 
         elif self.initializer_method == InitBiseEnum.IDENTITY:
