@@ -10,36 +10,27 @@ class BiselInitializer:
     """
     def __init__(
         self,
-        bise_initializer_method: BiseInitializer = BiseInitializer,
-        bise_initializer_args: Dict = {},
-        lui_initializer_method: BiseInitializer = BiseInitializer,
-        lui_initializer_args: Dict = {},
+        bise_initializer: BiseInitializer = BiseInitializer(),
+        lui_initializer: BiseInitializer = BiseInitializer(),
         *args, **kwargs
     ):
-        self.bise_initializer_method = bise_initializer_method
-        self.bise_initializer_args = bise_initializer_args
-        self.lui_initializer_method = lui_initializer_method
-        self.lui_initializer_args = lui_initializer_args
+        self.bise_initializer = bise_initializer
+        self.lui_initializer = lui_initializer
 
     def get_bise_initializers(self, module) -> Tuple[BiseInitializer, Dict]:
-        return self.bise_initializer_method, deepcopy(self.bise_initializer_args)
+        return deepcopy(self.bise_initializer)
 
     def get_lui_initializers(self, module) -> Tuple[BiseInitializer, Dict]:
-        return self.lui_initializer_method, deepcopy(self.lui_initializer_args)
+        return deepcopy(self.lui_initializer)
 
     def post_initialize(self, module):
         pass
 
 
-class BiselInitIdenticalMethod:
-    def __init__(self, initializer_method: BiseInitializer, initializer_args_bise: Dict, initializer_args_lui: Dict, *args, **kwargs):
+class BiselInitIdentical(BiselInitializer):
+    def __init__(self, initializer: BiseInitializer, *args, **kwargs):
         super().__init__(
-            bise_initializer_method=initializer_method,
-            bise_initializer_args=initializer_args_bise,
-            lui_initializer_method=initializer_method,
-            lui_initializer_args=initializer_args_lui,
+            bise_initializer=initializer,
+            lui_initializer=initializer,
         )
 
-    @property
-    def initializer_method(self):
-        return self.bise_initializer_method

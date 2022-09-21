@@ -453,6 +453,8 @@ def max_min_norm(ar: np.ndarray) -> np.ndarray:
 
 
 def uniform_sampling_bound(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    if isinstance(a, (float, int)):
+        a = np.array([a])
     return np.random.rand(*a.shape) * (b - a) + a
 
 

@@ -4,6 +4,7 @@ import numpy as np
 
 from .bisel import BiSEL, SyBiSEL
 from .binary_nn import BinaryNN
+from ..initializer import BimonnInitializer, InitBimonnEnum, BimonnInitInputMean, InitBiseEnum
 
 
 class BiMoNN(BinaryNN):
@@ -12,7 +13,9 @@ class BiMoNN(BinaryNN):
         self,
         kernel_size: List[Union[Tuple, int]],
         channels: List[int],
-        atomic_element: Union[str, List[str]] = 'bisel',
+        atomic_element: Union[str, List[str]] = 'sybisel',
+        initializer_method: InitBimonnEnum = InitBimonnEnum.INPUT_MEAN,
+        initializer_args: Dict = None,
         **kwargs,
     ):
         super().__init__()
@@ -21,11 +24,16 @@ class BiMoNN(BinaryNN):
         self.kernel_size = self._init_kernel_size(kernel_size)
         self.atomic_element = self._init_atomic_element(atomic_element)
 
+        self.initializer_method = initializer_method
+        self.initializer_args = initializer_args if initializer_args is not None else self._default_init_args()
+        self.initalizer = self.create_initializer(**self.initializer_args)
+
         kwargs['channels'] = channels
 
         for attr, value in kwargs.items():
             setattr(self, attr, self._init_attr(attr, value))
 
+        self.bisel_initializers = self.initalizer.generate_bisel_initializers(self)
 
         self.layers = []
         self.bises_idx = []
@@ -35,6 +43,30 @@ class BiMoNN(BinaryNN):
             layer = self._make_layer(idx)
             self.layers.append(layer)
             setattr(self, f'layer{idx+1}', layer)
+
+    def _default_init_args(self):
+        if self.atomic_element[0] == "bisel":
+            return {
+                "input_mean": 0.5,
+                "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC,
+                "bise_init_args": {"init_bias_value": 1},
+            }
+
+        elif self.atomic_element[0] == "sybisel":
+            return {
+                "input_mean": 0,
+                "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
+                "bise_init_args": {"mean_weight": "auto"},
+            }
+
+    def create_initializer(self, **kwargs):
+        if self.initializer_method == InitBimonnEnum.IDENTICAL:
+            return BimonnInitializer(**kwargs)
+
+        elif self.initializer_method == InitBimonnEnum.INPUT_MEAN:
+            return BimonnInitInputMean(**kwargs)
+
+        raise NotImplementedError("Initializer not recognized.")
 
     @property
     def bises(self):
@@ -162,7 +194,7 @@ class BiMoNN(BinaryNN):
         return [
             'kernel_size', 'weight_P', 'threshold_mode', 'activation_P',
             # 'init_bias_value', "input_mean", 'init_weight_mode',
-            "initializer_method", "initializer_args",
+            # "initializer_method", "initializer_args",
             'out_channels', "constant_activation_P",
             "constant_weight_P",
             "closest_selem_method", "closest_selem_distance_fn",
@@ -175,18 +207,18 @@ class BiMoNN(BinaryNN):
             [
                 'in_channels', 'constant_P_lui', "lui_kwargs",
                 # "init_bias_value_bise", "init_bias_value_lui"
-                "bise_initializer_method", "bise_initializer_args",
-                "lui_initializer_method", "lui_initializer_args",
+                # "bise_initializer_method", "bise_initializer_args",
+                # "lui_initializer_method", "lui_initializer_args",
             ]
         ).difference(["init_bias_value"])
 
     def _make_layer(self, idx):
         if self.atomic_element[idx] == 'bisel':
-            layer = BiSEL(**self.bisels_kwargs_idx(idx))
+            layer = BiSEL(initializer=self.bisel_initializers[idx], **self.bisels_kwargs_idx(idx))
             self.bisels_idx.append(idx)
 
         elif self.atomic_element[idx] == 'sybisel':
-            layer = SyBiSEL(**self.bisels_kwargs_idx(idx))
+            layer = SyBiSEL(initializer=self.bisel_initializers[idx], **self.bisels_kwargs_idx(idx))
             self.bisels_idx.append(idx)
 
         return layer

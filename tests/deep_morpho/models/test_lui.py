@@ -12,22 +12,22 @@ class TestLUI:
         layer = LUI(threshold_mode='tanh', in_channels=10, out_channels=5)
         layer
 
-    @staticmethod
-    def test_lui_union_check():
-        C = np.random.randint(0, 2, 10)
-        layer = LUI.from_set(C, 'union')
-        Cpred, operation = layer.find_set_and_operation_chan(0)
-        assert operation == "union"
-        assert np.abs(C - Cpred).sum() == 0
+    # @staticmethod
+    # def test_lui_union_check():
+    #     C = np.random.randint(0, 2, 10)
+    #     layer = LUI.from_set(C, 'union')
+    #     Cpred, operation = layer.find_set_and_operation_chan(0)
+    #     assert operation == "union"
+    #     assert np.abs(C - Cpred).sum() == 0
 
 
-    @staticmethod
-    def test_lui_intersection_check():
-        C = np.random.randint(0, 2, 10)
-        layer = LUI.from_set(C, 'intersection')
-        Cpred, operation = layer.find_set_and_operation_chan(0)
-        assert operation == "intersection"
-        assert np.abs(C - Cpred).sum() == 0
+    # @staticmethod
+    # def test_lui_intersection_check():
+    #     C = np.random.randint(0, 2, 10)
+    #     layer = LUI.from_set(C, 'intersection')
+    #     Cpred, operation = layer.find_set_and_operation_chan(0)
+    #     assert operation == "intersection"
+    #     assert np.abs(C - Cpred).sum() == 0
 
     @staticmethod
     def test_lui_binary_mode():
@@ -46,12 +46,12 @@ class TestLUI:
         assert np.isin(output, [0, 1]).all()
 
 
-    @staticmethod
-    def test_lui_binary_mode_identity():
-        C = np.ones((1,))
-        layer = LUI.from_set(C, 'union')
-        layer.binary()
+    # @staticmethod
+    # def test_lui_binary_mode_identity():
+    #     C = np.ones((1,))
+    #     layer = LUI.from_set(C, 'union')
+    #     layer.binary()
 
-        x = torch.randint(0, 2, (5, 1, 50, 50)).float()
-        pred = layer(x)
-        assert (x - pred).abs().sum() == 0
+    #     x = torch.randint(0, 2, (5, 1, 50, 50)).float()
+    #     pred = layer(x)
+    #     assert (x - pred).abs().sum() == 0

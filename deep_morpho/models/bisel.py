@@ -3,15 +3,14 @@ from enum import Enum
 
 import torch
 
-from .bise_base import InitBiseEnum, BiseBiasOptimEnum
+from .bise_base import BiseBiasOptimEnum
 # from .bise_old import BiSE, InitBiseEnum, SyBiSE, BiseBiasOptimEnum
 # from .bise_old2 import BiSE as BiSE_OLD2
 
 from .bise import BiSE, SyBiSE
 from .lui import LUI, SyLUI
 from .binary_nn import BinaryNN
-from ..initializer import BiselInitIdenticalMethod, BiselInitializer
-from deep_morpho import initializer
+from ..initializer import BiselInitIdentical, BiselInitializer, InitBiseHeuristicWeights, InitBiseEnum
 
 
 class InitBiselEnum(Enum):
@@ -29,8 +28,9 @@ class BiSELBase(BinaryNN):
         kernel_size: Union[int, Tuple],
         threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh"},
         constant_P_lui: bool = False,
-        initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
-        initializer_args: Dict = {"init_bias_value": 1, "input_mean": 0.5},
+        # initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
+        # initializer_args: Dict = {"init_bias_value": 1, "input_mean": 0.5},
+        initializer: BiselInitializer = BiselInitIdentical(InitBiseHeuristicWeights(init_bias_value=1, input_mean=0.5)),
         # bise_initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
         # bise_initializer_args: Dict = {"init_bias_value": 1},
         # lui_initializer_method: InitBiseEnum = None,
@@ -53,9 +53,10 @@ class BiSELBase(BinaryNN):
         self.constant_P_lui = constant_P_lui
         self.bise_kwargs = bise_kwargs
 
-        self.initializer_method = initializer_method
-        self.initializer_args = initializer_args
-        self.initializer = self.create_initializer(**self.initializer_args)
+        # self.initializer_method = initializer_method
+        # self.initializer_args = initializer_args
+        # self.initializer = self.create_initializer(**self.initializer_args)
+        self.initializer = initializer
 
         # self.bise_initializer_method = bise_initializer_method
         # self.bise_initializer_args = bise_initializer_args
@@ -74,19 +75,21 @@ class BiSELBase(BinaryNN):
         self.bises = self._init_bises()
         self.luis = self._init_luis()
 
-    def create_initializer(self, **kwargs):
-        if isinstance(self.initializer_method, InitBiseEnum):
-            if "bise" in kwargs.keys() and "lui" in kwargs.keys():
-                args_bise = kwargs["bise"]
-                args_lui = kwargs["lui"]
-            else:
-                args_bise = args_lui = kwargs
-            return BiselInitIdenticalMethod(initializer_method=self.initializer_method, initializer_args_bise=args_bise, initializer_args_lui=args_lui)
+        self.initializer.post_initialize(self)
 
-        if self.initializer_method == InitBiselEnum.DIFFERENT_INIT:
-            return BiselInitializer(initializer_method=self.initializer_method, initializer_args=kwargs)
+    # def create_initializer(self, **kwargs):
+    #     if isinstance(self.initializer_method, InitBiseEnum):
+    #         if "bise" in kwargs.keys() and "lui" in kwargs.keys():
+    #             args_bise = kwargs["bise"]
+    #             args_lui = kwargs["lui"]
+    #         else:
+    #             args_bise = args_lui = kwargs
+    #         return BiselInitIdenticalMethod(initializer_method=self.initializer_method, initializer_args_bise=args_bise, initializer_args_lui=args_lui)
 
-        raise NotImplementedError("Init method not recognized.")
+    #     if self.initializer_method == InitBiselEnum.DIFFERENT_INIT:
+    #         return BiselInitializer(initializer_method=self.initializer_method, initializer_args=kwargs)
+
+    #     raise NotImplementedError("Init method not recognized.")
 
     @staticmethod
     def _init_threshold_mode(threshold_mode):
@@ -98,12 +101,12 @@ class BiSELBase(BinaryNN):
 
     def _init_bises(self):
         bises = []
-        init_method, init_args = self.initializer.get_bise_initializers(self)
+        bise_initializer = self.initializer.get_bise_initializers(self)
         for idx in range(self.in_channels):
             layer = self.bise_module(
                 out_channels=self.out_channels, kernel_size=self.kernel_size,
-                threshold_mode=self.threshold_mode, initializer_method=init_method,
-                initializer_args=init_args, **self.bise_kwargs
+                threshold_mode=self.threshold_mode, initializer=bise_initializer,
+                **self.bise_kwargs
             )
             setattr(self, f'bise_{idx}', layer)
             bises.append(layer)
@@ -111,7 +114,7 @@ class BiSELBase(BinaryNN):
 
     def _init_luis(self):
         luis = []
-        init_method, init_args = self.initializer.get_lui_initializers(self)
+        lui_initializer = self.initializer.get_bise_initializers(self)
         for idx in range(self.out_channels):
             layer = self.lui_module(
                 in_channels=self.in_channels,
@@ -121,8 +124,7 @@ class BiSELBase(BinaryNN):
                 # init_bias_value=self.init_bias_value_lui,
                 # input_mean=self.lui_input_mean,
                 # init_weight_mode=self.init_weight_mode,
-                initializer_method=init_method,
-                initializer_args=init_args,
+                initializer=lui_initializer,
                 **self.lui_kwargs
             )
             setattr(self, f'lui_{idx}', layer)
@@ -252,8 +254,9 @@ class BiSEL(BiSELBase):
         # init_bias_value_lui: float = 0.5,
         # input_mean: float = 0.5,
         # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
-        initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
-        initializer_args: Dict = {"init_bias_value": 1, "input_mean": 0.5},
+        initializer: BiselInitializer = BiselInitIdentical(InitBiseHeuristicWeights(init_bias_value=1, input_mean=0.5)),
+        # initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
+        # initializer_args: Dict = {"init_bias_value": 1, "input_mean": 0.5},
         lui_kwargs: Dict = {},
         **bise_kwargs
     ):
@@ -265,8 +268,7 @@ class BiSEL(BiSELBase):
             kernel_size=kernel_size,
             threshold_mode=threshold_mode,
             constant_P_lui=constant_P_lui,
-            initializer_method=initializer_method,
-            initializer_args=initializer_args,
+            initializer=initializer,
             # init_bias_value_bise=init_bias_value_bise,
             # init_bias_value_lui=init_bias_value_lui,
             # input_mean=input_mean,
@@ -288,8 +290,9 @@ class SyBiSEL(BiSELBase):
         # init_bias_value_lui: float = 0,
         # input_mean: float = 0,
         # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_CONSTANT,
-        initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_CONSTANT,
-        initializer_args: Dict = {"input_mean": 0, "mean_weight": "auto"},
+        initializer: BiselInitializer = BiselInitIdentical(InitBiseHeuristicWeights(init_bias_value=1, input_mean=0.5)),
+        # initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_CONSTANT,
+        # initializer_args: Dict = {"input_mean": 0, "mean_weight": "auto"},
         bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.RAW,
         lui_kwargs: Dict = {},
         **bise_kwargs
@@ -303,8 +306,7 @@ class SyBiSEL(BiSELBase):
             bias_optim_mode=bias_optim_mode,
             threshold_mode=threshold_mode,
             constant_P_lui=constant_P_lui,
-            initializer_method=initializer_method,
-            initializer_args=initializer_args,
+            initializer=initializer,
             lui_kwargs=lui_kwargs,
             **bise_kwargs
         )

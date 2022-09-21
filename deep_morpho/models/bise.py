@@ -4,7 +4,9 @@ from matplotlib.cbook import normalize_kwargs
 import torch
 import numpy as np
 
-from .bise_base import BiSEBase, BiseWeightsOptimEnum, InitBiseEnum, ClosestSelemDistanceEnum, ClosestSelemEnum, BiseBiasOptimEnum, SyBiSEBase, BiseWeightsOptimEnum
+from ..initializer import BiseInitializer, InitBiseHeuristicWeights, InitSybiseConstantVarianceWeights, InitBiseEnum
+
+from .bise_base import BiSEBase, BiseWeightsOptimEnum, ClosestSelemDistanceEnum, ClosestSelemEnum, BiseBiasOptimEnum, SyBiSEBase, BiseWeightsOptimEnum
 
 
 class BiSE(BiSEBase):
@@ -24,8 +26,9 @@ class BiSE(BiSEBase):
         # init_bias_value: float = 1,
         # input_mean: float = 0.5,
         # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
-        initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
-        initializer_args: Dict = {"init_bias_value": 1},
+        initializer: BiseInitializer = InitBiseHeuristicWeights(input_mean=0.5, init_bias_value=1),
+        # initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
+        # initializer_args: Dict = {"init_bias_value": 1},
         out_channels: int = 1,
         do_mask_output: bool = False,
         closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST,
@@ -43,8 +46,7 @@ class BiSE(BiSEBase):
             constant_activation_P=constant_activation_P,
             # constant_weight_P=constant_weight_P,
             shared_weights=shared_weights,
-            initializer_method=initializer_method,
-            initializer_args=initializer_args,
+            initializer=initializer,
             # weights_optim_mode=weights_optim_mode,
             # weights_optim_args=weights_optim_args,
             # init_bias_value=init_bias_value,
@@ -95,8 +97,9 @@ class SyBiSE(SyBiSEBase):
         # input_mean: float = 0,
         # mean_weight_value: float = "auto",
         # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
-        initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_CONSTANT,
-        initializer_args: Dict = {},
+        # initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_CONSTANT,
+        # initializer_args: Dict = {},
+        initializer: BiseInitializer = InitSybiseConstantVarianceWeights(input_mean=0, mean_weight="auto"),
         out_channels: int = 1,
         do_mask_output: bool = False,
         closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST,
@@ -115,8 +118,7 @@ class SyBiSE(SyBiSEBase):
             # weights_optim_mode=weights_optim_mode,
             # weights_optim_args=weights_optim_args,
             shared_weights=shared_weights,
-            initializer_method=initializer_method,
-            initializer_args=initializer_args,
+            initializer=initializer,
             # # init_bias_value=init_bias_value,
             # # input_mean=input_mean,
             # # init_weight_mode=init_weight_mode,

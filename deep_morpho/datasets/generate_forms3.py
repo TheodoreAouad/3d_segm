@@ -126,8 +126,8 @@ def get_random_rotated_diskorect(
         draw_shape(max_shape=max_shape_holes, fill_value=0)
 
     diskorect = np.asarray(img) + 0
-    diskorect[rand_shape_2d(diskorect.shape, rng_float=rng_float) < noise_proba] = 1
-    diskorect = invert_proba(diskorect, p_invert, rng_float=rng_float)
+    diskorect[rand_shape_2d(diskorect.shape, rng_float=rng_float) < noise_proba] = 1  # bernoulli noise
+    diskorect = invert_proba(diskorect, p_invert, rng_float=rng_float)  # random invert
     # diskorect[numba_rand_shape_2d(*diskorect.shape) < noise_proba] = 1
     # diskorect = numba_invert_proba(diskorect, p_invert)
 

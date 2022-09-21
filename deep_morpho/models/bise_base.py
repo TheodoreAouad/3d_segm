@@ -1,6 +1,5 @@
 from enum import Enum
 from typing import Tuple, Union, Dict
-import warnings
 
 import numpy as np
 import torch
@@ -11,21 +10,8 @@ from .threshold_layer import dispatcher, ThresholdEnum
 from .binary_nn import BinaryNN
 from .bias_layer import BiasSoftplus, BiasRaw, BiasBiseSoftplusProjected, BiasBiseSoftplusReparametrized
 from .weights_layer import WeightsThresholdedBise, WeightsNormalizedBiSE
-from ..initializer import (
-    InitBiseHeuristicWeights, InitBiseConstantVarianceWeights, InitSybiseHeuristicWeights, InitSybiseConstantVarianceWeights,
-    InitIdentity, InitNormalIdentity, InitKaimingUniform, InitIdentityZeroMean, InitNormalIdentityZeroMean,
-    InitKaimingUniformZeroMean, InitSybiseConstantVarianceWeightsRandomBias
-)
+from ..initializer import InitBiseHeuristicWeights, BiseInitializer, InitSybiseConstantVarianceWeights
 from general.utils import set_borders_to
-
-
-class InitBiseEnum(Enum):
-    NORMAL = 1
-    KAIMING_UNIFORM = 2
-    CUSTOM_HEURISTIC = 3
-    CUSTOM_CONSTANT = 4
-    IDENTITY = 5
-    CUSTOM_CONSTANT_RANDOM_BIAS = 6
 
 
 class ClosestSelemEnum(Enum):
@@ -64,8 +50,9 @@ class BiSEBase(BinaryNN):
         weights_optim_mode: BiseWeightsOptimEnum = BiseWeightsOptimEnum.THRESHOLDED,
         weights_optim_args: Dict = {},
         shared_weights: torch.tensor = None,  # deprecated
-        initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
-        initializer_args: Dict = {"init_bias_value": 1},
+        # initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
+        # initializer_args: Dict = {"init_bias_value": 1},
+        initializer: BiseInitializer = InitBiseHeuristicWeights(init_bias_value=1, input_mean=0.5),
         # init_bias_value: float = 1,
         # input_mean: float = 0.5,
         # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
@@ -89,8 +76,8 @@ class BiSEBase(BinaryNN):
         # self.init_weight_mode = init_weight_mode
         # self.init_bias_value = init_bias_value
         # self.input_mean = input_mean
-        self.initializer_method = initializer_method
-        self.initializer_args = initializer_args
+        # self.initializer_method = initializer_method
+        # self.initializer_args = initializer_args
         self.closest_selem_method = closest_selem_method
         self.closest_selem_distance_fn = closest_selem_distance_fn
         self.bias_optim_mode = bias_optim_mode
@@ -125,7 +112,8 @@ class BiSEBase(BinaryNN):
 
 
         # self.init_weights_and_bias()
-        self.initializer = self.create_initializer(**self.initializer_args)
+        # self.initializer = self.create_initializer(**self.initializer_args)
+        self.initializer = initializer
         self.initializer.initialize(self)
 
 
@@ -147,23 +135,23 @@ class BiSEBase(BinaryNN):
 
         self.update_binary_selems()
 
-    def create_initializer(self, **kwargs):
-        if self.initializer_method == InitBiseEnum.NORMAL:
-            return InitNormalIdentity(**kwargs)
+    # def create_initializer(self, **kwargs):
+    #     if self.initializer_method == InitBiseEnum.NORMAL:
+    #         return InitNormalIdentity(**kwargs)
 
-        elif self.initializer_method == InitBiseEnum.IDENTITY:
-            return InitIdentity(**kwargs)
+    #     elif self.initializer_method == InitBiseEnum.IDENTITY:
+    #         return InitIdentity(**kwargs)
 
-        elif self.initializer_method == InitBiseEnum.KAIMING_UNIFORM:
-            return InitKaimingUniform(**kwargs)
+    #     elif self.initializer_method == InitBiseEnum.KAIMING_UNIFORM:
+    #         return InitKaimingUniform(**kwargs)
 
-        elif self.initializer_method == InitBiseEnum.CUSTOM_HEURISTIC:
-            return InitBiseHeuristicWeights(**kwargs)
+    #     elif self.initializer_method == InitBiseEnum.CUSTOM_HEURISTIC:
+    #         return InitBiseHeuristicWeights(**kwargs)
 
-        elif self.initializer_method == InitBiseEnum.CUSTOM_CONSTANT:
-            return InitBiseConstantVarianceWeights(**kwargs)
+    #     elif self.initializer_method == InitBiseEnum.CUSTOM_CONSTANT:
+    #         return InitBiseConstantVarianceWeights(**kwargs)
 
-        raise NotImplementedError("Initializer not recognized.")
+        # raise NotImplementedError("Initializer not recognized.")
 
     def create_bias_handler(self, **kwargs):
         if self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE:
@@ -678,8 +666,9 @@ class SyBiSEBase(BiSEBase):
         bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.RAW,
         # init_bias_value: float = 0,
         # input_mean: float = 0,
-        initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_CONSTANT,
-        initializer_args: Dict = {},
+        initializer: BiseInitializer = InitSybiseConstantVarianceWeights(input_mean=0, mean_weight="auto"),
+        # initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_CONSTANT,
+        # initializer_args: Dict = {},
         mean_weight_value: float = "auto",
         **kwargs
     ):
@@ -687,8 +676,9 @@ class SyBiSEBase(BiSEBase):
         super().__init__(*args,
             threshold_mode=threshold_mode,
             bias_optim_mode=bias_optim_mode,
-            initializer_method=initializer_method,
-            initializer_args=initializer_args,
+            # initializer_method=initializer_method,
+            # initializer_args=initializer_args,
+            initializer=initializer,
         **kwargs)
         assert isinstance(self.activation_threshold_layer, self.POSSIBLE_THRESHOLDS), "Choose a symetric threshold for activation."
 
@@ -706,26 +696,26 @@ class SyBiSEBase(BiSEBase):
             -np.abs(W).sum() + (1 + epsilon) * max(W[S].min(), 0)
         )
 
-    def create_initializer(self, **kwargs):
-        if self.initializer_method == InitBiseEnum.NORMAL:
-            return InitNormalIdentityZeroMean(**kwargs)
+    # def create_initializer(self, **kwargs):
+    #     if self.initializer_method == InitBiseEnum.NORMAL:
+    #         return InitNormalIdentityZeroMean(**kwargs)
 
-        elif self.initializer_method == InitBiseEnum.IDENTITY:
-            return InitIdentityZeroMean(**kwargs)
+    #     elif self.initializer_method == InitBiseEnum.IDENTITY:
+    #         return InitIdentityZeroMean(**kwargs)
 
-        elif self.initializer_method == InitBiseEnum.KAIMING_UNIFORM:
-            return InitKaimingUniformZeroMean(**kwargs)
+    #     elif self.initializer_method == InitBiseEnum.KAIMING_UNIFORM:
+    #         return InitKaimingUniformZeroMean(**kwargs)
 
-        elif self.initializer_method == InitBiseEnum.CUSTOM_HEURISTIC:
-            return InitSybiseHeuristicWeights(**kwargs)
+    #     elif self.initializer_method == InitBiseEnum.CUSTOM_HEURISTIC:
+    #         return InitSybiseHeuristicWeights(**kwargs)
 
-        elif self.initializer_method == InitBiseEnum.CUSTOM_CONSTANT:
-            return InitSybiseConstantVarianceWeights(**kwargs)
+    #     elif self.initializer_method == InitBiseEnum.CUSTOM_CONSTANT:
+    #         return InitSybiseConstantVarianceWeights(**kwargs)
 
-        elif self.initializer_method == InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS:
-            return InitSybiseConstantVarianceWeightsRandomBias(**kwargs)
+    #     elif self.initializer_method == InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS:
+    #         return InitSybiseConstantVarianceWeightsRandomBias(**kwargs)
 
-        raise NotImplementedError("Initializer not recognized.")
+    #     raise NotImplementedError("Initializer not recognized.")
 
     # def init_weights(self):
     #     if self.init_weight_mode in [InitBiseEnum.NORMAL, InitBiseEnum.IDENTITY, InitBiseEnum.KAIMING_UNIFORM]:

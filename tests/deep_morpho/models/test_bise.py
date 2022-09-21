@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import pytest
+from deep_morpho.initializer.bise_initializer import InitBiseConstantVarianceWeights, InitBiseHeuristicWeights
 
 from deep_morpho.models import BiSE, InitBiseEnum, BiseBiasOptimEnum
 from deep_morpho.datasets import InputOutputGeneratorDataset, get_random_diskorect_channels
@@ -191,8 +192,9 @@ class TestBiSE:
     def test_init_mode_custom_constant(input_mean):
         layer = BiSE(
             (7, 7),
-            initializer_method=InitBiseEnum.CUSTOM_CONSTANT,
-            initializer_args={"input_mean": input_mean, "init_bias_value": "auto"},
+            # initializer_method=InitBiseEnum.CUSTOM_CONSTANT,
+            # initializer_args={"input_mean": input_mean, "init_bias_value": "auto"},
+            initializer=InitBiseConstantVarianceWeights(input_mean=input_mean, init_bias_value="auto")
             # init_bias_value="auto",
             # input_mean=input_mean,
         )
@@ -208,8 +210,9 @@ class TestBiSE:
             # init_bias_value=1/2,
             # input_mean=1/2,
             # init_weight_mode=InitBiseEnum.CUSTOM_HEURISTIC,
-            initializer_method=InitBiseEnum.CUSTOM_HEURISTIC,
-            initializer_args={"input_mean": .5, "init_bias_value": .5},
+            # initializer_method=InitBiseEnum.CUSTOM_HEURISTIC,
+            # initializer_args={"input_mean": .5, "init_bias_value": .5},
+            initializer=InitBiseHeuristicWeights(input_mean=.5, init_bias_value=.5),
             out_channels=1,
             bias_optim_mode=BiseBiasOptimEnum.POSITIVE,
             bias_optim_args={"offset": 0},

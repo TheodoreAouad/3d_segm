@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Tuple
 
 import numpy as np
@@ -5,6 +6,15 @@ import torch.nn as nn
 import torch
 
 from general.utils import uniform_sampling_bound
+
+
+class InitBiseEnum(Enum):
+    NORMAL = 1
+    KAIMING_UNIFORM = 2
+    CUSTOM_HEURISTIC = 3
+    CUSTOM_CONSTANT = 4
+    IDENTITY = 5
+    CUSTOM_CONSTANT_RANDOM_BIAS = 6
 
 
 class BiseInitializer:
@@ -66,7 +76,7 @@ class InitKaimingUniform(InitBiasFixed):
         module.set_normalized_weights(module.weight + 1)
 
 
-class InitZeroMeanBias(InitWeightsThenBias):
+class InitSybiseBias(InitWeightsThenBias):
     def __init__(self, init_class: BiseInitializer, input_mean: float = 0, *args, **kwargs):
         self.input_mean = input_mean
         self.init_class = init_class(*args, **kwargs)
@@ -83,17 +93,17 @@ class InitZeroMeanBias(InitWeightsThenBias):
         )
 
 
-class InitIdentityZeroMean(InitZeroMeanBias):
+class InitIdentitySybise(InitSybiseBias):
     def __init__(self, *args, **kwargs):
         super().__init__(init_class=InitIdentity, *args, **kwargs)
 
 
-class InitNormalIdentityZeroMean(InitZeroMeanBias):
+class InitNormalIdentitySybise(InitSybiseBias):
     def __init__(self, *args, **kwargs):
         super().__init__(init_class=InitNormalIdentity, *args, **kwargs)
 
 
-class InitKaimingUniformZeroMean(InitZeroMeanBias):
+class InitKaimingUniformSybise(InitSybiseBias):
     def __init__(self, *args, **kwargs):
         super().__init__(init_class=InitKaimingUniform, *args, **kwargs)
 
@@ -218,7 +228,7 @@ class InitSybiseConstantVarianceWeightsRandomBias(InitSybiseConstantVarianceWeig
         self.ub = ub
 
     def init_bias(self, module):
-        new_value = self.input_mean * self.mean * self.nb_params + uniform_sampling_bound(-self.ub, self.ub)
+        new_value = self.input_mean * self.mean * self.nb_params + uniform_sampling_bound(-self.ub, self.ub).astype(np.float32)
         module.set_bias(
             torch.zeros_like(module.bias) - new_value
         )

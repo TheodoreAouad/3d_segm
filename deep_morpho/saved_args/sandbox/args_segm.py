@@ -9,7 +9,8 @@ from deep_morpho.loss import (
     MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss
 )
 from general.utils import dict_cross
-from deep_morpho.models.bise_base import InitBiseEnum, ClosestSelemEnum, ClosestSelemDistanceEnum, BiseBiasOptimEnum, BiseWeightsOptimEnum
+from deep_morpho.models.bise_base import ClosestSelemEnum, ClosestSelemDistanceEnum, BiseBiasOptimEnum, BiseWeightsOptimEnum
+from deep_morpho.initializer import InitBimonnEnum, InitBiseEnum
 from .args_morp_ops import morp_operations
 
 loss_dict = {
@@ -34,7 +35,7 @@ all_args['n_try'] = [0]
 all_args['experiment_name'] = [
     # "Bimonn_exp_59/sandbox/1"
     # "Bimonn_exp_60/sandbox/0"
-    "Bimonn_exp_63/sandbox/0"
+    "Bimonn_exp_63/multi/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -80,7 +81,7 @@ all_args['mnist_args'] = [
     {"threshold": 30, "size": (50, 50), "invert_input_proba": 0},
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
-all_args['n_steps'] = [1000]
+all_args['n_steps'] = [30000]
 all_args['nb_batch_indep'] = [0]
 # all_args['n_inputs'] = [
 #     3_000_000,
@@ -92,14 +93,14 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 # TRAINING ARGS
 all_args['learning_rate'] = [
     1e-1,
-    # 1e-1,
+    1e-2,
     # 1,
 ]
 
 # if max_plus, then the loss is MSELoss
 all_args['loss_data_str'] = [
     # nn.BCELoss(),
-    # "MaskedBCENormalizedLoss",
+    "MaskedBCENormalizedLoss",
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
     # "MSELoss",
@@ -191,14 +192,19 @@ all_args['weights_optim_args'] = [
     {"constant_P": True, "factor": 1}
 ]
 
-all_args['bise_initializer_method'] = [
+all_args['initializer_method'] = [
     # InitBiseEnum.KAIMING_UNIFORM,
     # InitBiseEnum.CUSTOM_HEURISTIC,
-    InitBiseEnum.CUSTOM_CONSTANT,
+    # InitBiseEnum.CUSTOM_CONSTANT,
     # InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
+    InitBimonnEnum.INPUT_MEAN,
 ]
-all_args['bise_initializer_args'] = [
-    {"init_bias_value": 0, "ub": 0.01}
+all_args['initializer_args'] = [
+    {
+        # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
+        "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
+        "bise_init_args": {"init_bias_value": 0, "mean_weight": "auto", "ub": 0.01}
+    }
 ]
 
 all_args['activation_P'] = [0]
@@ -209,8 +215,8 @@ all_args['constant_P_lui'] = [False]
 #     True,
     # False
 # ]
-all_args['init_bias_value_bise'] = [1/2]
-all_args['init_bias_value_lui'] = [0]
+# all_args['init_bias_value_bise'] = [1/2]
+# all_args['init_bias_value_lui'] = [0]
 
 all_args['threshold_mode'] = [
     {
@@ -236,24 +242,27 @@ to_remove = []
 for idx, args in enumerate(all_args):
 
     # Duality training
-    warnings.warn('Warning, duality training.')
-    if "erosion" in args['morp_operation'].name:
-        args['random_gen_args']['p_invert'] = 1
-    elif "dilation" in args['morp_operation'].name:
-        args['random_gen_args']['p_invert'] = 0
+    # warnings.warn('Warning, duality training.')
+    # if "erosion" in args['morp_operation'].name:
+    #     args['random_gen_args']['p_invert'] = 1
+    # elif "dilation" in args['morp_operation'].name:
+    #     args['random_gen_args']['p_invert'] = 0
 
-    elif "closing" in args['morp_operation'].name:
-        args['random_gen_args']['p_invert'] = 1
-    elif "opening" in args['morp_operation'].name:
-        args['random_gen_args']['p_invert'] = 0
+    # elif "closing" in args['morp_operation'].name:
+    #     args['random_gen_args']['p_invert'] = 1
+    # elif "opening" in args['morp_operation'].name:
+    #     args['random_gen_args']['p_invert'] = 0
 
-    elif "white_tophat" in args['morp_operation'].name:
-        args['random_gen_args']['p_invert'] = 1
-    elif "black_tophat" in args['morp_operation'].name:
-        args['random_gen_args']['p_invert'] = 0
+    # elif "white_tophat" in args['morp_operation'].name:
+    #     args['random_gen_args']['p_invert'] = 1
+    # elif "black_tophat" in args['morp_operation'].name:
+    #     args['random_gen_args']['p_invert'] = 0
 
-    for key in ['closest_selem_method', 'closest_selem_distance_fn', 'bias_optim_mode', 'init_weight_mode']:
+    for key in ['closest_selem_method', 'closest_selem_distance_fn', 'bias_optim_mode']:
         args[f'{key}_str'] = str(args[key])
+    
+    args['init_bimonn_str'] = str(args["initializer_method"])
+    args['init_bise_str'] = str(args["initializer_args"]["bise_init_method"])
 
     if args['dataset_type'] == "axspa_roi":
         args['dataset_path'] = "data/deep_morpho/axspa_roi/axspa_roi.csv"
@@ -263,9 +272,9 @@ for idx, args in enumerate(all_args):
         args['n_atoms'] = len(args['channels']) - 1
         args['loss_data'] = loss_dict[args['loss_data_str']](border=(0, 0))
 
-    if args['init_weight_mode'] == InitBiseEnum.CUSTOM_CONSTANT and args['atomic_element'] == "bisel":
-        args['init_bias_value_bise'] = "auto"
-        args['init_bias_value_lui'] = "auto"
+    # if args['init_weight_mode'] == InitBiseEnum.CUSTOM_CONSTANT and args['atomic_element'] == "bisel":
+    #     args['init_bias_value_bise'] = "auto"
+    #     args['init_bias_value_lui'] = "auto"
 
     if args['dataset_type'] in ["diskorect", 'mnist', 'inverted_mnist']:
         # args['kernel_size'] = 'adapt'
@@ -313,9 +322,6 @@ for idx, args in enumerate(all_args):
 
     if args['atomic_element'] == "conv":
         args['threshold_mode'] = {"activation": "sigmoid", "weight": "identity"}
-
-    if args['atomic_element'] == "max_plus":
-        args['loss'] = MaskedMSELoss()
 
     if args['atomic_element'] == "sybisel":
         # args['threshold_mode']["activation"] += "_symetric"

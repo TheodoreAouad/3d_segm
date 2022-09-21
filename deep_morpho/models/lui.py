@@ -2,7 +2,9 @@ from typing import Union, Dict
 
 import torch
 
-from .bise_base import BiSEBase, InitBiseEnum, ClosestSelemDistanceEnum, ClosestSelemEnum, BiseBiasOptimEnum, SyBiSEBase
+from ..initializer import BiseInitializer, InitBiseHeuristicWeights, InitSybiseConstantVarianceWeights, InitBiseEnum
+
+from .bise_base import BiSEBase, ClosestSelemDistanceEnum, ClosestSelemEnum, BiseBiasOptimEnum, SyBiSEBase
 
 
 class BiSELUIExtender:
@@ -73,8 +75,9 @@ class LUI(BiSELUIExtender, BiSEBase):
         constant_activation_P: bool = False,
         # constant_weight_P: bool = True,
         shared_weights: torch.tensor = None,
-        initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
-        initializer_args: Dict = {"input_mean": 0.5, "init_bias_value": 1},
+        initializer: BiseInitializer = InitBiseHeuristicWeights(input_mean=.5, init_bias_value=1),
+        # initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
+        # initializer_args: Dict = {"input_mean": 0.5, "init_bias_value": 1},
         # init_bias_value: float = 1,
         # input_mean: float = 0.5,
         # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
@@ -100,8 +103,7 @@ class LUI(BiSELUIExtender, BiSEBase):
             # init_bias_value=init_bias_value,
             # input_mean=input_mean,
             # init_weight_mode=init_weight_mode,
-            initializer_method=initializer_method,
-            initializer_args=initializer_args,
+            initializer=initializer,
             out_channels=out_channels,
             in_channels=in_channels,
             do_mask_output=False,
@@ -126,8 +128,7 @@ class SyLUI(BiSELUIExtender, SyBiSEBase):
         # init_bias_value: float = 0,
         # input_mean: float = 0,
         # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_CONSTANT,
-        initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_CONSTANT,
-        initializer_args: Dict = {"input_mean": 0.5, "mean_weight": "auto"},
+        initializer: BiseInitializer = InitSybiseConstantVarianceWeights(input_mean=0, mean_weight="auto"),
         in_channels: int = 1,
         out_channels: int = 1,
         closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST,
@@ -152,8 +153,7 @@ class SyLUI(BiSELUIExtender, SyBiSEBase):
             # init_bias_value=init_bias_value,
             # input_mean=input_mean,
             # init_weight_mode=init_weight_mode,
-            initializer_method=initializer_method,
-            initializer_args=initializer_args,
+            initializer=initializer,
             out_channels=out_channels,
             in_channels=in_channels,
             do_mask_output=False,
