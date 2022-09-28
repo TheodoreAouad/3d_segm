@@ -4,7 +4,7 @@ import os
 
 import warnings
 
-from deep_morpho.models import BiseBiasOptimEnum, ClosestSelemDistanceEnum, ClosestSelemEnum, InitBiseEnum
+from deep_morpho.models import BiseBiasOptimEnum, ClosestSelemDistanceEnum, ClosestSelemEnum, InitBiseEnum, InitBimonnEnum
 
 
 def load_args(path: str) -> Dict:
@@ -126,12 +126,17 @@ def parse_yaml_bise_arguments(yaml_str: str, key: str) -> Any:
         'closest_selem_distance_fn': ClosestSelemDistanceEnum,
         'bias_optim_mode': BiseBiasOptimEnum,
         'init_weight_mode': InitBiseEnum,
+        'initializer_args': InitBimonnEnum,
     }
     if f'{key}_str' in yaml_str:
         res = parse_yaml_dict_key_line(yaml_str, f'{key}_str')
 
     else:
-        res = str(key_to_enum[key](int(regex_find_or_none(rf"\n?{key}[^\n]+\n- (\d)+\n", yaml_str))))
+        enum_int = regex_find_or_none(rf"\n?{key}[^\n]+\n- (\d)+\n", yaml_str)
+        if enum_int is not None:
+            res = str(key_to_enum[key](int(enum_int)))
+        else:
+            return None
 
     if "." in res:
         return res.split('.')[-1]

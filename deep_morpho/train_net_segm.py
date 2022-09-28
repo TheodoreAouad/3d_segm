@@ -95,7 +95,7 @@ def main(args, logger):
         f.write(f"{args['seed']}")
 
     trainloader, valloader, testloader = get_dataloader(args)
-    metrics = {'dice': lambda y_true, y_pred: masked_dice(y_true, y_pred, 
+    metrics = {'dice': lambda y_true, y_pred: masked_dice(y_true, y_pred,
                         border=(args['kernel_size'] // 2, args['kernel_size'] // 2), threshold=0 if args['atomic_element'] == 'sybisel' else 0.5).mean()}
                         # border=(0, 0), threshold=0 if args['atomic_element'] == 'sybisel' else 0.5).mean()}
 
@@ -107,7 +107,7 @@ def main(args, logger):
             metrics=metrics,
             keep_preds_for_epoch=False,
         ),
-        "PlotPreds": obs.PlotPreds(freq={'train': args['freq_imgs'], 'val': 39}, fig_kwargs={"vmax": 1, "vmin": -1 if args['atomic_element'] == 'sybisel' else 0}),
+        # "PlotPreds": obs.PlotPreds(freq={'train': args['freq_imgs'], 'val': 39}, fig_kwargs={"vmax": 1, "vmin": -1 if args['atomic_element'] == 'sybisel' else 0}),
         "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=600),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=600),
@@ -310,13 +310,16 @@ if __name__ == '__main__':
         log_console('Time since beginning: {} '.format(format_time(time() - start_all)), logger=console_logger)
         log_console(logger.log_dir, logger=console_logger)
         log_console(args['morp_operation'], logger.log_dir, logger=console_logger)
-        results.append(main(args, logger))
-        # try:
-        #     main(args, logger)
-        # except Exception:
-        #     console_logger.exception(
-        #         f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
-        #     bugged.append(args_idx+1)
+
+        # results.append(main(args, logger))
+
+        try:
+            main(args, logger)
+        except Exception:
+            console_logger.exception(
+                f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
+            bugged.append(args_idx+1)
+
         log_console("Done.", logger=console_logger)
 
     code_saver.delete_temporary_file()

@@ -38,7 +38,7 @@ class TestMnistMorphoDataset:
         morp_operation = ParallelMorpOperations(operations=[
             [
                 [('dilation', ('hstick', 7), False), 'union'],
-                [('dilation', ('dstick', 7), False), 'union'],
+                [('dilation', ('vstick', 7), False), 'union'],
             ],
         ])
         dataset = MnistMorphoDataset(n_inputs=10000, morp_operation=morp_operation)

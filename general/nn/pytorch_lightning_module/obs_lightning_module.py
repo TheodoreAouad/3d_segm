@@ -181,9 +181,11 @@ class NetLightning(ObsLightningModule):
             self.log(f"loss/{state}/{key}", value.item())  # put .item() to avoid memory leak
             if key == "loss":
                 continue
-            value.retain_grad()  # see graph of each loss term
-            grad_values[f'{key}_grad'] = value.grad
-            values[key] = values[key].detach()
+
+            if value.requires_grad:
+                value.retain_grad()  # see graph of each loss term
+                grad_values[f'{key}_grad'] = value.grad
+                values[key] = values[key].detach()
 
         values['grads'] = grad_values
 

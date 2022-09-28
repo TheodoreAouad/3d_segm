@@ -51,7 +51,7 @@ class MnistMorphoDataset(MNIST):
 
         # input_[..., 0] = set_borders_to(input_[..., 0], np.array(self.morp_operation.max_selem_shape[0]) // 2, value=0)
 
-        target = self.morp_operation(input_).float()
+        target = torch.tensor(self.morp_operation(input_)).float()
         input_ = torch.tensor(input_).float()
 
         input_ = input_.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)
