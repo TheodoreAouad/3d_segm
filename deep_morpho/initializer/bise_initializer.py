@@ -15,6 +15,7 @@ class InitBiseEnum(Enum):
     CUSTOM_CONSTANT = 4
     IDENTITY = 5
     CUSTOM_CONSTANT_RANDOM_BIAS = 6
+    CUSTOM_HEURISTIC_RANDOM_BIAS = 7
 
 
 class BiseInitializer:
@@ -223,6 +224,18 @@ class InitSybiseConstantVarianceWeights(InitWeightsThenBias):
 
 
 class InitSybiseConstantVarianceWeightsRandomBias(InitSybiseConstantVarianceWeights):
+    def __init__(self, ub: float = 0.01, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.ub = ub
+
+    def init_bias(self, module):
+        new_value = self.input_mean * self.mean * self.nb_params + uniform_sampling_bound(-self.ub, self.ub).astype(np.float32)
+        module.set_bias(
+            torch.zeros_like(module.bias) - new_value
+        )
+
+
+class InitSybiseHeuristicWeightsRandomBias(InitSybiseHeuristicWeights):
     def __init__(self, ub: float = 0.01, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.ub = ub

@@ -39,7 +39,7 @@ def load_args(path: str) -> Dict:
         "bias_optim_mode",
         "loss_data_str",
     ]
-    bise_keys = ["init_weight_mode", "closest_selem_method", "closest_selem_distance_fn", "bias_optim_mode"]
+    bise_keys = ["init_weight_mode", "initializer_method", "initializer_args", "bise_init_method", "closest_selem_method", "closest_selem_distance_fn", "bias_optim_mode"]
 
 
     args = {k: None for k in all_keys_line + bise_keys + ['optimizer', 'operations', 'loss_data', ]}
@@ -94,6 +94,11 @@ def parse_yaml_dict_loss_data(yaml_str: str) -> Any:
 def parse_yaml_dict_optimizer(yaml_str: str) -> Any:
     return regex_find_or_none(r"\n?optimizer[^\n]+\.(\w+)[ \n]", yaml_str)
 
+
+def parse_yaml_dict_bise_init_method(yaml_str: str) -> Any:
+    return regex_find_or_none(r"\n?\t?bise_init_method[^\n]+\n +- (\d)+", yaml_str)
+
+
 # deprecated
 def parse_yaml_dict_operations(yaml_str: str) -> Any:
     idx0 = yaml_str.find('operations')
@@ -126,13 +131,18 @@ def parse_yaml_bise_arguments(yaml_str: str, key: str) -> Any:
         'closest_selem_distance_fn': ClosestSelemDistanceEnum,
         'bias_optim_mode': BiseBiasOptimEnum,
         'init_weight_mode': InitBiseEnum,
-        'initializer_args': InitBimonnEnum,
+        'initializer_method': InitBimonnEnum,
+        'bise_init_method': InitBiseEnum,
     }
     if f'{key}_str' in yaml_str:
         res = parse_yaml_dict_key_line(yaml_str, f'{key}_str')
 
     else:
-        enum_int = regex_find_or_none(rf"\n?{key}[^\n]+\n- (\d)+\n", yaml_str)
+        if key == "bise_init_method":
+            enum_int = parse_yaml_dict_bise_init_method(yaml_str)
+        else:
+            enum_int = regex_find_or_none(rf"\n?{key}[^\n]+\n- (\d)+\n", yaml_str)
+
         if enum_int is not None:
             res = str(key_to_enum[key](int(enum_int)))
         else:

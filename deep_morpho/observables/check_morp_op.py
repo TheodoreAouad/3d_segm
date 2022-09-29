@@ -220,7 +220,7 @@ class ShowSelemBinary(ObservableLayersChans):
     @staticmethod
     def selem_fig(selem, operation):
         fig = plt.figure(figsize=(3, 3))
-        plt.imshow(selem, interpolation="nearest", vmin=0, vmax=1)
+        plt.imshow(selem, interpolation="nearest", vmin=0, vmax=1, cmap="gray")
         plt.title(operation)
         return fig
 
@@ -276,7 +276,7 @@ class ShowLUISetBinary(ObservableLayersChans):
     @staticmethod
     def set_fig(C, operation):
         fig = plt.figure(figsize=(3, 3))
-        plt.imshow(C[:, None].astype(int), interpolation="nearest", vmin=0, vmax=1)
+        plt.imshow(C[:, None].astype(int), interpolation="nearest", vmin=0, vmax=1, cmap="gray")
         plt.xticks([])
         plt.yticks(range(len(C)))
         plt.title(operation)
@@ -339,7 +339,7 @@ class ShowClosestSelemBinary(ObservableLayersChans):
     @staticmethod
     def selem_fig(selem, title):
         fig = plt.figure(figsize=(3, 3))
-        plt.imshow(selem, interpolation="nearest", vmin=0, vmax=1)
+        plt.imshow(selem, interpolation="nearest", vmin=0, vmax=1, cmap="gray")
         plt.title(title)
         return fig
 

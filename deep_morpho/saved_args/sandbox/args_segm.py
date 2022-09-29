@@ -29,14 +29,14 @@ all_args = {}
 # all_args['batch_seed'] = [2249939862]
 all_args['batch_seed'] = [None]
 
-all_args['n_try'] = [0]
+all_args['n_try'] = [0, 1, 2, 3, 4]
 # all_args['n_try'] = range(1, 20)
 
 all_args['experiment_name'] = [
     # "Bimonn_exp_59/sandbox/1"
     # "Bimonn_exp_60/sandbox/0"
-    # "Bimonn_exp_63/sandbox",
-    "Bimonn_exp_63/multi"
+    "Bimonn_exp_63/sandbox",
+    # "Bimonn_exp_63/multi"
     # "Bimonn_exp_63/multi/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
@@ -55,8 +55,8 @@ all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
     # "mnist",
-    "inverted_mnist",
-    # 'diskorect',
+    # "inverted_mnist",
+    'diskorect',
 ]
 all_args['preprocessing'] = [  # for axspa roi
     None,
@@ -80,10 +80,10 @@ all_args['random_gen_args'] = [
     # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 1, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
 ]
 all_args['mnist_args'] = [
-    {"threshold": 30, "size": (50, 50), "invert_input_proba": 0},
+    {"threshold": 30, "size": (50, 50), "invert_input_proba": 0, },
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
-all_args['n_steps'] = [10000]
+all_args['n_steps'] = [1000]
 all_args['nb_batch_indep'] = [0]
 # all_args['n_inputs'] = [
 #     3_000_000,
@@ -95,14 +95,14 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 # TRAINING ARGS
 all_args['learning_rate'] = [
     1e-1,
-    1e-2,
+    # 1e-2,
     # 1,
 ]
 
 # if max_plus, then the loss is MSELoss
 all_args['loss_data_str'] = [
     # nn.BCELoss(),
-    "MaskedBCENormalizedLoss",
+    # "MaskedBCENormalizedLoss",
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
     # "MSELoss",
@@ -213,27 +213,12 @@ all_args['activation_P'] = [0]
 all_args['constant_activation_P'] = [False]
 all_args['force_lui_identity'] = [False]
 all_args['constant_P_lui'] = [False]
-# all_args['constant_weight_P'] = [
-#     True,
-    # False
-# ]
-# all_args['init_bias_value_bise'] = [1/2]
-# all_args['init_bias_value_lui'] = [0]
 
 all_args['threshold_mode'] = [
     {
         "weight": 'softplus',
         "activation": 'tanh',
     },
-    # {
-    #     # "weight": 'softplus',
-    #     "weight": 'identity',
-    #     # "weight": 'tanh',
-    #     "activation": 'tanh',
-    # },
-    # 'erf',
-    # "identity",
-    # {"activation": "sigmoid", "weight": "identity", "complementation": "clamp"}
 ]
 
 
@@ -329,6 +314,8 @@ for idx, args in enumerate(all_args):
         # args['threshold_mode']["activation"] += "_symetric"
         args['threshold_mode'] = {'weight': args['threshold_mode']['weight'], 'activation': args['threshold_mode']['activation'] + "_symetric"}
         args['bias_optim_mode'] = BiseBiasOptimEnum.RAW
+        if "mnist" in args['dataset_type']:
+            args['mnist_args']['do_symetric_output'] = True
         # args['init_bias_value_bise'] = 0
         # args['init_bias_value_lui'] = 0
 

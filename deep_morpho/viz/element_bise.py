@@ -17,7 +17,7 @@ class ElementBiseWeightsChan(ElementImage):
 
         self.imshow_kwargs['vmin'] = self.imshow_kwargs.get('vmin', 0)
         self.imshow_kwargs['vmax'] = self.imshow_kwargs.get('vmax', 1)
-        self.imshow_kwargs['cmap'] = self.imshow_kwargs.get('cmap', 'gray')
+        # self.imshow_kwargs['cmap'] = self.imshow_kwargs.get('cmap', 'gray')
 
     @property
     def image(self):
@@ -53,7 +53,7 @@ class ElementBiseSelemChan(ElementGrouper):
             radius_operation = max(2, self.size / 4)
             # radius_operation = max(2, self.kernel_shape[-1] / 4)
 
-            self.selem_element = ElementImage(selem, imshow_kwargs={"interpolation": "nearest", "vmin": 0, "vmax": 1}, size=self.size, **kwargs)
+            self.selem_element = ElementImage(selem, imshow_kwargs={"interpolation": "nearest", "vmin": 0, "vmax": 1, "cmap": "gray"}, size=self.size, **kwargs)
             self.operation_element = self.operation_elements_dict[operation](
                 radius=radius_operation, xy_coords_mean=self.selem_element.xy_coords_mean + np.array([0, self.size / 2 + radius_operation / 2])
                 # radius=radius_operation, xy_coords_mean=self.selem_element.xy_coords_mean + np.array([0, self.kernel_shape[-1] / 2 + radius_operation / 2])

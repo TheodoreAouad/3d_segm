@@ -482,7 +482,7 @@ class ParallelMorpOperations:
                 array_compl = np.where(op_ar, np.array(self.do_complementation[layer_idx][chan_output]), 0)
                 final_array = np.concatenate([array_no_compl, array_compl])
 
-                ax.imshow(final_array[:, None], vmin=0, vmax=1, interpolation='nearest')
+                ax.imshow(final_array[:, None], vmin=0, vmax=1, interpolation='nearest', cmap="gray")
                 ax.set_xticks([])
                 ax.set_yticks(range(len(final_array)))
                 all_figs[(layer_idx, chan_output)] = fig
@@ -501,7 +501,7 @@ class ParallelMorpOperations:
                     ax.set_title(
                         f"layer {layer_idx} | (chan in, chan out) ({chan_input}, {chan_output})  "
                         f"| {op_str}")
-                    ax.imshow(selem, vmin=0, vmax=1, interpolation='nearest')
+                    ax.imshow(selem, vmin=0, vmax=1, interpolation='nearest', cmap="gray")
                     ax.set_xticks(range(selem.shape[0]))
                     ax.set_yticks(range(selem.shape[1]))
                     all_figs[(layer_idx, chan_input, chan_output)] = fig

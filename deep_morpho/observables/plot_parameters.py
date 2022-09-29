@@ -13,7 +13,7 @@ import torch.nn as nn
 from .observable_layers import ObservableLayersChans
 from general.utils import max_min_norm, save_json
 
-from ..models import BiSE, MaxPlusAtom, BiSEL
+from ..models import BiSE, BiSEL
 
 
 class PlotWeightsBiSE(ObservableLayersChans):
@@ -85,7 +85,7 @@ class PlotWeightsBiSE(ObservableLayersChans):
         weights = weights.cpu().detach()
         figure = plt.figure(figsize=(8, 8))
         plt.title(f"bias={bias.item():.3f}  act_P={activation_P.item():.3f}  sum={weights.sum():.3f}")
-        plt.imshow(weights, interpolation='nearest', cmap=plt.cm.gray)
+        plt.imshow(weights, interpolation='nearest',)
         plt.colorbar()
         plt.clim(0, 1)
 
@@ -104,7 +104,7 @@ class PlotWeightsBiSE(ObservableLayersChans):
         weights_normed = max_min_norm(weights)
         figure = plt.figure(figsize=(8, 8))
         plt.title(f"bias={bias.item():.3f}  act_P={activation_P.item():.3f}  sum={weights.sum():.3f}")
-        plt.imshow(weights_normed, interpolation='nearest', cmap=plt.cm.gray)
+        plt.imshow(weights_normed, interpolation='nearest',)
         plt.colorbar()
         # plt.clim(0, 1)
 

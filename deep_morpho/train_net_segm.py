@@ -107,7 +107,7 @@ def main(args, logger):
             metrics=metrics,
             keep_preds_for_epoch=False,
         ),
-        # "PlotPreds": obs.PlotPreds(freq={'train': args['freq_imgs'], 'val': 39}, fig_kwargs={"vmax": 1, "vmin": -1 if args['atomic_element'] == 'sybisel' else 0}),
+        "PlotPreds": obs.PlotPreds(freq={'train': args['freq_imgs'], 'val': 39}, fig_kwargs={"vmax": 1, "vmin": -1 if args['atomic_element'] == 'sybisel' else 0}),
         "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=600),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=600),

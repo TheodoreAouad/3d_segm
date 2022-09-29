@@ -27,6 +27,7 @@ class MnistMorphoDataset(MNIST):
         root: str = ROOT_MNIST_DIR,
         train: bool = True,
         invert_input_proba: bool = 0,
+        do_symetric_output: bool = False,
         **kwargs,
     ) -> None:
         super().__init__(root, train, *kwargs)
@@ -35,6 +36,7 @@ class MnistMorphoDataset(MNIST):
         self.preprocessing = preprocessing
         self.size = size
         self.invert_input_proba = invert_input_proba
+        self.do_symetric_output = do_symetric_output
 
         if n_inputs != "all":
             self.data = self.data[first_idx:n_inputs+first_idx]
@@ -63,6 +65,9 @@ class MnistMorphoDataset(MNIST):
             input_ = self.preprocessing(input_)
             target = self.preprocessing(target)
 
+        if self.do_symetric_output:
+            return 2 * input_ - 1, 2 * target - 1
+
         return input_.float(), target.float()
 
 
@@ -72,7 +77,7 @@ class MnistMorphoDataset(MNIST):
 
 
     @staticmethod
-    def get_loader(batch_size, n_inputs, morp_operation, train, first_idx=0, threshold=.5, size=(50, 50), invert_input_proba=0, preprocessing=None, **kwargs):
+    def get_loader(batch_size, n_inputs, morp_operation, train, first_idx=0, threshold=.5, size=(50, 50), invert_input_proba=0, do_symetric_output=False, preprocessing=None, **kwargs):
         if n_inputs == 0:
             return DataLoader([])
         return DataLoader(
@@ -80,6 +85,7 @@ class MnistMorphoDataset(MNIST):
                 morp_operation=morp_operation, n_inputs=n_inputs, first_idx=first_idx,
                 train=train, threshold=threshold, preprocessing=preprocessing,
                 size=size, invert_input_proba=invert_input_proba,
+                do_symetric_output=do_symetric_output,
             ), batch_size=batch_size, **kwargs)
 
     @staticmethod
