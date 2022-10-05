@@ -1,7 +1,7 @@
 import numpy as np
 
 from general.nn.viz import ElementGrouper, ElementImage, ElementSymbolDilation, ElementSymbolErosion, ElementCircle
-from deep_morpho.models import BiSE
+from ..models import BiSE
 
 
 MAX_WIDTH_COEF = 1

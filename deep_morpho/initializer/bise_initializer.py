@@ -167,10 +167,10 @@ class InitSybiseHeuristicWeights(InitWeightsThenBias):
 
     def init_weights(self, module):
         nb_params = torch.tensor(module._normalized_weights.shape[1:]).prod()
-        if self.mean_weight_value == 'auto':
+        if self.mean_weight == 'auto':
             mean = .5
         else:
-            mean = self.mean_weight_value
+            mean = self.mean_weight
         std = mean / (2 * np.sqrt(3))
         lb = mean * (1 - std)
         ub = mean * (1 + std)

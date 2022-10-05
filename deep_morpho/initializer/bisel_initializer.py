@@ -33,4 +33,3 @@ class BiselInitIdentical(BiselInitializer):
             bise_initializer=initializer,
             lui_initializer=initializer,
         )
-

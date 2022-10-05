@@ -226,7 +226,7 @@ def main(args, logger):
 
     logger.log_hyperparams(args, hyperparams)
 
-    if args['dataset_type'] in ["diskorect", "mnist"]:
+    if args['dataset_type'] in ["diskorect", "mnist", "inverted_mnist"]:
         pathlib.Path(join(logger.log_dir, "target_SE")).mkdir(exist_ok=True, parents=True)
         figs_selems = args['morp_operation'].plot_selem_arrays()
         for (layer_idx, chan_input, chan_output), fig in figs_selems.items():
@@ -311,14 +311,14 @@ if __name__ == '__main__':
         log_console(logger.log_dir, logger=console_logger)
         log_console(args['morp_operation'], logger.log_dir, logger=console_logger)
 
-        # results.append(main(args, logger))
+        results.append(main(args, logger))
 
-        try:
-            main(args, logger)
-        except Exception:
-            console_logger.exception(
-                f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
-            bugged.append(args_idx+1)
+        # try:
+        #     main(args, logger)
+        # except Exception:
+        #     console_logger.exception(
+        #         f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
+        #     bugged.append(args_idx+1)
 
         log_console("Done.", logger=console_logger)
 

@@ -6,7 +6,8 @@ from .bisel_initializer import BiselInitializer
 from .bise_initializer import (
     InitNormalIdentity, InitIdentity, InitKaimingUniform, InitIdentitySybise, InitNormalIdentitySybise,
     InitKaimingUniformSybise, InitBiseHeuristicWeights, InitBiseConstantVarianceWeights, InitSybiseHeuristicWeights,
-    InitSybiseConstantVarianceWeights, InitSybiseConstantVarianceWeightsRandomBias, InitBiseEnum
+    InitSybiseConstantVarianceWeights, InitSybiseConstantVarianceWeightsRandomBias, InitBiseEnum,
+    InitSybiseHeuristicWeightsRandomBias
 )
 
 
@@ -90,6 +91,10 @@ class BimonnInitializer:
 
             elif bise_init_method == InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS:
                 return InitSybiseConstantVarianceWeightsRandomBias
+
+            elif bise_init_method == InitBiseEnum.CUSTOM_HEURISTIC_RANDOM_BIAS:
+                return InitSybiseHeuristicWeightsRandomBias
+
 
 
 class BimonnInitInputMean(BimonnInitializer):

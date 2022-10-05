@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib.patches import Polygon
 
 from general.nn.viz import Element, ElementGrouper, ElementSymbolIntersection, ElementSymbolUnion
-from deep_morpho.models import LUI, BiSEBase
+from ..models import LUI, BiSEBase
 
 
 OPERATION_FACTOR = .3

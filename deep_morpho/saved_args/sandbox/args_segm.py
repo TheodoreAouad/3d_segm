@@ -29,14 +29,14 @@ all_args = {}
 # all_args['batch_seed'] = [2249939862]
 all_args['batch_seed'] = [None]
 
-all_args['n_try'] = [0, 1, 2, 3, 4]
+all_args['n_try'] = [0]
 # all_args['n_try'] = range(1, 20)
 
 all_args['experiment_name'] = [
     # "Bimonn_exp_59/sandbox/1"
     # "Bimonn_exp_60/sandbox/0"
-    "Bimonn_exp_63/sandbox",
-    # "Bimonn_exp_63/multi"
+    # "Bimonn_exp_63/sandbox",
+    "Bimonn_exp_63/multi"
     # "Bimonn_exp_63/multi/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
@@ -54,9 +54,9 @@ all_args['experiment_name'] = [
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
-    # "mnist",
+    "mnist",
     # "inverted_mnist",
-    'diskorect',
+    # 'diskorect',
 ]
 all_args['preprocessing'] = [  # for axspa roi
     None,
@@ -95,14 +95,14 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 # TRAINING ARGS
 all_args['learning_rate'] = [
     1e-1,
-    # 1e-2,
+    1e-2,
     # 1,
 ]
 
 # if max_plus, then the loss is MSELoss
 all_args['loss_data_str'] = [
     # nn.BCELoss(),
-    # "MaskedBCENormalizedLoss",
+    "MaskedBCENormalizedLoss",
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
     # "MSELoss",
@@ -204,7 +204,8 @@ all_args['initializer_method'] = [
 all_args['initializer_args'] = [
     {
         # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
-        "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
+        "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC_RANDOM_BIAS,
+        # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
         "bise_init_args": {"init_bias_value": 0, "mean_weight": "auto", "ub": 0.01}
     }
 ]

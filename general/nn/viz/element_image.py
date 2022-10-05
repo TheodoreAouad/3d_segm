@@ -11,7 +11,7 @@ class ElementImage(Element):
 
     def __init__(self, image: np.ndarray, borders=True, size=None, imshow_kwargs={}, *args, **kwargs):
         self._image = image
-        self._size = size if size is not None else image.shape[:2]
+        self._size = size if size is not None else self.image.shape[:2]
         if isinstance(self._size, (float, int)):
             self._size = (self._size, self._size)
         super().__init__(*args, **kwargs)
