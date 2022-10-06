@@ -10,6 +10,7 @@ class TestArrayErosion:
     def test_array_erosion_2d_rod():
         seg2 = np.zeros((100, 100))
         seg2[47:53, 20:80] = 1
+        seg2[0] = seg2[-1] = seg2[:, 0] = seg2[:, -1] = 1
 
         selem = np.random.randint(0, 2, size=(3, 3))
 

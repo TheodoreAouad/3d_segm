@@ -1,8 +1,10 @@
 from typing import Union, Callable, Union, List
+from functools import partial
 
 import numpy as np
 import torch
 import torch.nn.functional as F
+from torch.nn import Conv2d, Conv3d
 
 
 def format_for_conv(ar: np.ndarray, device: torch.device) -> torch.Tensor:
@@ -11,12 +13,18 @@ def format_for_conv(ar: np.ndarray, device: torch.device) -> torch.Tensor:
     return ar.unsqueeze(0).unsqueeze(0).float().to(device)
 
 
+def conv_fn_gen(ndim, *args, **kwargs):
+    conv_layer = {2: Conv2d, 3: Conv3d}[ndim](bias=False, *args, **kwargs)
+    for param in conv_layer.parameters():
+        del param
+    return conv_layer._conv_forward
+
+
 def array_erosion(ar: np.ndarray, selem: np.ndarray, device: torch.device = "cpu", return_numpy_array: bool = True) -> Union[np.ndarray, torch.Tensor]:
-    conv_fn = {2: F.conv2d, 3: F.conv3d}[ar.ndim]
+    conv_fn = conv_fn_gen(ar.ndim, padding=selem.shape[0] // 2, padding_mode="replicate", in_channels=1, out_channels=1, kernel_size=selem.shape)
 
     torch_array = (conv_fn(
-        format_for_conv(ar, device=device), format_for_conv(selem, device=device),
-        padding=selem.shape[0] // 2,
+        format_for_conv(ar, device=device), format_for_conv(selem, device=device), bias=torch.FloatTensor([0], device=device)
     ) == selem.sum()).squeeze()
 
     if return_numpy_array:
@@ -25,11 +33,20 @@ def array_erosion(ar: np.ndarray, selem: np.ndarray, device: torch.device = "cpu
 
 
 def array_dilation(ar: np.ndarray, selem: np.ndarray, device: torch.device = "cpu", return_numpy_array: bool = True) -> Union[np.ndarray, torch.Tensor]:
-    conv_fn = {2: F.conv2d, 3: F.conv3d}[ar.ndim]
+    # conv_fn = {2: F.conv2d, 3: F.conv3d}[ar.ndim]
+
+    # torch_array = (conv_fn(
+    #     format_for_conv(ar, device=device), format_for_conv(selem, device=device),
+    #     padding=selem.shape[0] // 2,
+    # ) > 0).squeeze()
+
+    # if return_numpy_array:
+    #     return torch_array.to("cpu").int().numpy()
+    # return torch_array
+    conv_fn = conv_fn_gen(ar.ndim, padding=selem.shape[0] // 2, padding_mode="replicate", in_channels=1, out_channels=1, kernel_size=selem.shape)
 
     torch_array = (conv_fn(
-        format_for_conv(ar, device=device), format_for_conv(selem, device=device),
-        padding=selem.shape[0] // 2,
+        format_for_conv(ar, device=device), format_for_conv(selem, device=device), bias=torch.FloatTensor([0], device=device)
     ) > 0).squeeze()
 
     if return_numpy_array:

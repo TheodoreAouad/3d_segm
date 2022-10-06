@@ -142,7 +142,11 @@ def main(args, logger):
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
 
     # init_bias_value = next(iter(trainloader))[0].mean()
-    args["initializer_args"]["input_mean"] = next(iter(trainloader))[0].mean().item()
+    if isinstance(args["initializer_args"], dict):
+        args["initializer_args"]["input_mean"] = next(iter(trainloader))[0].mean().item()
+    elif isinstance(args["initializer_args"], list):
+        args["initializer_args"][0]["input_mean"] = next(iter(trainloader))[0].mean().item()
+
     # input_mean = 1/2  # DEBUG
     model = LightningBiMoNN(
         model_args={

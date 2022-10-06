@@ -11,8 +11,8 @@ from general.array_morphology import array_erosion, array_dilation, array_union_
 from .viz.morp_operations_viz import MorpOperationsVizualiser
 
 
-erosion, dilation, union, intersection = morp.binary_erosion, morp.binary_dilation, array_union_chans, array_intersection_chans
-# erosion, dilation, union, intersection = array_erosion, array_dilation, array_union_chans, array_intersection_chans
+# erosion, dilation, union, intersection = morp.binary_erosion, morp.binary_dilation, array_union_chans, array_intersection_chans
+erosion, dilation, union, intersection = array_erosion, array_dilation, array_union_chans, array_intersection_chans
 
 
 class ParallelMorpOperations:

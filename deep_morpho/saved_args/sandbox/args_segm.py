@@ -6,7 +6,7 @@ import torch.nn as nn
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
 from deep_morpho.loss import (
     MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization, 
-    MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss
+    MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss, BCENormalizedLoss,
 )
 from general.utils import dict_cross
 from deep_morpho.models.bise_base import ClosestSelemEnum, ClosestSelemDistanceEnum, BiseBiasOptimEnum, BiseWeightsOptimEnum
@@ -22,6 +22,7 @@ loss_dict = {
     "linear": LinearBoundRegularization,
     "MaskedNormalizedDiceLoss": MaskedNormalizedDiceLoss,
     "MSELoss": nn.MSELoss,
+    "BCENormalizedLoss": BCENormalizedLoss,
 }
 
 all_args = {}
@@ -35,8 +36,8 @@ all_args['n_try'] = [0]
 all_args['experiment_name'] = [
     # "Bimonn_exp_59/sandbox/1"
     # "Bimonn_exp_60/sandbox/0"
-    # "Bimonn_exp_63/sandbox",
-    "Bimonn_exp_63/multi"
+    "Bimonn_exp_63/sandbox",
+    # "Bimonn_exp_63/multi"
     # "Bimonn_exp_63/multi/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
@@ -54,9 +55,9 @@ all_args['experiment_name'] = [
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
-    "mnist",
+    # "mnist",
     # "inverted_mnist",
-    # 'diskorect',
+    'diskorect',
 ]
 all_args['preprocessing'] = [  # for axspa roi
     None,
@@ -83,7 +84,7 @@ all_args['mnist_args'] = [
     {"threshold": 30, "size": (50, 50), "invert_input_proba": 0, },
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
-all_args['n_steps'] = [1000]
+all_args['n_steps'] = [10000]
 all_args['nb_batch_indep'] = [0]
 # all_args['n_inputs'] = [
 #     3_000_000,
@@ -94,7 +95,7 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-1,
+    # 1e-1,
     1e-2,
     # 1,
 ]
@@ -102,11 +103,12 @@ all_args['learning_rate'] = [
 # if max_plus, then the loss is MSELoss
 all_args['loss_data_str'] = [
     # nn.BCELoss(),
-    "MaskedBCENormalizedLoss",
+    # "MaskedBCENormalizedLoss",
+    # "MaskedMSELoss",
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
-    # "MSELoss",
-    "MaskedMSELoss",
+    # "BCENormalizedLoss",
+    "MSELoss",
     # "MaskedDiceLoss",
 ]
 all_args['loss_regu'] = [
@@ -202,22 +204,34 @@ all_args['initializer_method'] = [
     InitBimonnEnum.INPUT_MEAN,
 ]
 all_args['initializer_args'] = [
+    # {
+    #     # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
+    #     # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC_RANDOM_BIAS,
+    #     "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
+    #     "bise_init_args": {"init_bias_value": 0, "mean_weight": "auto", "ub": 0.01}
+    # }
+
+    # force operations at init
     {
         # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
-        "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC_RANDOM_BIAS,
-        # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
+        # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC_RANDOM_BIAS,
+        "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
+        # "bise_init_args": [{"init_bias_value": 1, "mean_weight": "auto", "ub": 0.01}, {"init_bias_value": -1, "mean_weight": "auto", "ub": 0.01}]
         "bise_init_args": {"init_bias_value": 0, "mean_weight": "auto", "ub": 0.01}
-    }
+    },
+
 ]
 
 all_args['activation_P'] = [0]
+# all_args['activation_P'] = [1]  # force non complementation
 all_args['constant_activation_P'] = [False]
 all_args['force_lui_identity'] = [False]
 all_args['constant_P_lui'] = [False]
 
 all_args['threshold_mode'] = [
     {
-        "weight": 'softplus',
+        "weight": 'identity',
+        # "weight": 'softplus',
         "activation": 'tanh',
     },
 ]
@@ -250,7 +264,10 @@ for idx, args in enumerate(all_args):
         args[f'{key}_str'] = str(args[key])
     
     args['init_bimonn_str'] = str(args["initializer_method"])
-    args['init_bise_str'] = str(args["initializer_args"]["bise_init_method"])
+    if isinstance(args["initializer_args"], dict):
+        args['init_bise_str'] = str(args["initializer_args"]["bise_init_method"])
+    elif isinstance(args["initializer_args"], list):
+        args['init_bise_str'] = [str(ar["bise_init_method"]) for ar in args["initializer_args"]]
 
     if args['dataset_type'] == "axspa_roi":
         args['dataset_path'] = "data/deep_morpho/axspa_roi/axspa_roi.csv"
@@ -272,14 +289,18 @@ for idx, args in enumerate(all_args):
             # args["kernel_size"] = args["morp_operation"].selems[0][0][0].shape[0]
             args["kernel_size"] = int(max(args['morp_operation'].max_selem_shape))
 
+        kwargs_loss = {}
         if "Normalized" in args['loss_data_str'] and args['atomic_element'] == 'sybisel':
-            args['loss_data'] = loss_dict[args['loss_data_str']](
-                border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]),
-                vmin=-1, vmax=1,
-            )
-        else:
+            kwargs_loss.update({"vmin": -1, "vmax": 1})
+            # args['loss_data'] = loss_dict[args['loss_data_str']](
+            #     border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]),
+            #     vmin=-1, vmax=1,
+            # )
+        if "Masked" in args['loss_data_str']:
+            kwargs_loss.update({"border": np.array([args['kernel_size'] // 2, args['kernel_size'] // 2])})
             # args['loss_data'] = loss_dict[args['loss_data_str']]()
-            args['loss_data'] = loss_dict[args['loss_data_str']](border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]))
+            # args['loss_data'] = loss_dict[args['loss_data_str']](border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]))
+        args['loss_data'] = loss_dict[args['loss_data_str']](**kwargs_loss)
 
         args['experiment_subname'] = f"{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset_type']}/{args['morp_operation'].name}"
 

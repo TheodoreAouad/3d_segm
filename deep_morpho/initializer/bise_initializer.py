@@ -158,9 +158,10 @@ class InitBiseConstantVarianceWeights(InitBiasFixed):
 
 
 class InitSybiseHeuristicWeights(InitWeightsThenBias):
-    def __init__(self, input_mean: float = 0, mean_weight: float = "auto", *args, **kwargs) -> None:
+    def __init__(self, input_mean: float = 0, mean_weight: float = "auto", init_bias_value: float = 0, *args, **kwargs) -> None:
         self.input_mean = input_mean
         self.mean_weight = mean_weight
+        self.init_bias_value = init_bias_value
 
         self.mean = None
         self.nb_params = None
@@ -171,9 +172,11 @@ class InitSybiseHeuristicWeights(InitWeightsThenBias):
             mean = .5
         else:
             mean = self.mean_weight
-        std = mean / (2 * np.sqrt(3))
-        lb = mean * (1 - std)
-        ub = mean * (1 + std)
+        # std = mean / (2 * np.sqrt(3))
+        # lb = mean * (1 - std)
+        # ub = mean * (1 + std)
+        lb = mean / 2
+        ub = 3 * lb
         module.set_normalized_weights(
             torch.rand_like(module.weights) * (lb - ub) + ub
         )
@@ -184,14 +187,15 @@ class InitSybiseHeuristicWeights(InitWeightsThenBias):
     def init_bias(self, module):
         new_value = self.input_mean * self.mean * self.nb_params
         module.set_bias(
-            torch.zeros_like(module.bias) - new_value
+            torch.zeros_like(module.bias) - new_value + self.init_bias_value
         )
 
 
 class InitSybiseConstantVarianceWeights(InitWeightsThenBias):
-    def __init__(self, input_mean: float = 0, mean_weight: float = "auto", *args, **kwargs) -> None:
+    def __init__(self, input_mean: float = 0, mean_weight: float = "auto", init_bias_value: float = 0, *args, **kwargs) -> None:
         self.input_mean = input_mean
         self.mean_weight = mean_weight
+        self.init_bias_value = init_bias_value
 
         self.mean = None
         self.nb_params = None
@@ -219,7 +223,7 @@ class InitSybiseConstantVarianceWeights(InitWeightsThenBias):
     def init_bias(self, module):
         new_value = self.input_mean * self.mean * self.nb_params
         module.set_bias(
-            torch.zeros_like(module.bias) - new_value
+            torch.zeros_like(module.bias) - new_value + self.init_bias_value
         )
 
 
@@ -231,7 +235,7 @@ class InitSybiseConstantVarianceWeightsRandomBias(InitSybiseConstantVarianceWeig
     def init_bias(self, module):
         new_value = self.input_mean * self.mean * self.nb_params + uniform_sampling_bound(-self.ub, self.ub).astype(np.float32)
         module.set_bias(
-            torch.zeros_like(module.bias) - new_value
+            torch.zeros_like(module.bias) - new_value + self.init_bias_value
         )
 
 
@@ -243,5 +247,5 @@ class InitSybiseHeuristicWeightsRandomBias(InitSybiseHeuristicWeights):
     def init_bias(self, module):
         new_value = self.input_mean * self.mean * self.nb_params + uniform_sampling_bound(-self.ub, self.ub).astype(np.float32)
         module.set_bias(
-            torch.zeros_like(module.bias) - new_value
+            torch.zeros_like(module.bias) - new_value + self.init_bias_value
         )
