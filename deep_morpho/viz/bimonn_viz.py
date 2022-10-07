@@ -1,3 +1,5 @@
+from typing import Dict
+
 import numpy as np
 
 from .skeleton_morp_viz import SkeletonMorpViz
@@ -87,7 +89,10 @@ class BimonnForwardVizualiser(SkeletonMorpViz):
 
 class BimonnHistogramVizualiser(SkeletonMorpViz):
 
-    def __init__(self, model, inpt, dpi=100, mode: str = "float", lui_horizontal_factor: float = 1.7, **kwargs):
+    def __init__(
+        self, model, inpt, dpi=100, mode: str = "float", lui_horizontal_factor: float = 1.7,
+        hist_kwargs: Dict = {}, bise_hist_kwargs: Dict = None, lui_hist_kwargs: Dict = None, init_hist_kwargs: Dict = None,
+        **kwargs):
         self.model = model
         self.dpi = dpi
 
@@ -102,10 +107,29 @@ class BimonnHistogramVizualiser(SkeletonMorpViz):
 
         self.all_outputs = model.forward_save(inpt)
 
+        self.hist_kwargs = hist_kwargs
+        self.bise_hist_kwargs = bise_hist_kwargs if bise_hist_kwargs is not None else hist_kwargs
+        self.lui_hist_kwargs = lui_hist_kwargs if lui_hist_kwargs is not None else hist_kwargs
+        self.init_hist_kwargs = init_hist_kwargs if init_hist_kwargs is not None else hist_kwargs
+
+        if model.atomic_element[0] == "sybisel":
+            range_hist = (-1, 1)
+        elif model.atomic_element[0] == "bisel":
+            range_hist = (0, 1)
+
+        bins = 10
+        self.bise_hist_kwargs["range"] = self.bise_hist_kwargs.get("range", range_hist)
+        self.lui_hist_kwargs["range"] = self.lui_hist_kwargs.get("range", range_hist)
+        self.init_hist_kwargs["range"] = self.init_hist_kwargs.get("range", range_hist)
+
+        self.bise_hist_kwargs["bins"] = self.bise_hist_kwargs.get("bins", bins)
+        self.lui_hist_kwargs["bins"] = self.lui_hist_kwargs.get("bins", bins)
+        self.init_hist_kwargs["bins"] = self.init_hist_kwargs.get("bins", bins)
+
         kwargs.update({
-            "elt_generator_bise": EltGeneratorBiseHistogram(self.all_outputs, dpi=dpi),
-            "elt_generator_lui": EltGeneratorLuiHistogram(self.all_outputs, dpi=dpi),
-            "elt_generator_init": EltGeneratorInitHistogram(self.all_outputs, dpi=dpi)
+            "elt_generator_bise": EltGeneratorBiseHistogram(self.all_outputs, dpi=dpi, hist_kwargs=self.bise_hist_kwargs),
+            "elt_generator_lui": EltGeneratorLuiHistogram(self.all_outputs, dpi=dpi, hist_kwargs=self.lui_hist_kwargs),
+            "elt_generator_init": EltGeneratorInitHistogram(self.all_outputs, dpi=dpi, hist_kwargs=self.init_hist_kwargs),
         })
 
         super().__init__(

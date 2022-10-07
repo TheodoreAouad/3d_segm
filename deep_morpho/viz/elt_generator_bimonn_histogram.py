@@ -12,7 +12,11 @@ class EltGeneratorHistogramBase(EltGenerator):
         self.dpi = dpi
         self.all_outputs = all_outputs
         self.hist_kwargs = hist_kwargs
-        self.hist_kwargs["bins"] = self.hist_kwargs.get("bins", np.arange(0, 12) / 10 - 0.05)
+
+        # self.hist_kwargs['vmin'] = self.hist_kwargs.get("vmin", -1)
+        # self.hist_kwargs['vmax'] = self.hist_kwargs.get("vmax", 1)
+        self.hist_kwargs['range'] = self.hist_kwargs.get("range", (-1.05, 1.05))
+        self.hist_kwargs["bins"] = self.hist_kwargs.get("bins", 20)
         self.hist_kwargs['density'] = self.hist_kwargs.get('density', True)
         self.hist_kwargs['stacked'] = self.hist_kwargs.get('stacked', False)
 

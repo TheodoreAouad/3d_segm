@@ -70,6 +70,7 @@ def get_dataloader(args):
             batch_size=args['batch_size'],
             preprocessing=args['preprocessing'],
             shuffle=True,
+            do_symetric_output=args['atomic_element'] == 'sybisel',
         )
 
     elif args['dataset_type'] in ["mnist", "inverted_mnist"]:
@@ -83,6 +84,7 @@ def get_dataloader(args):
             preprocessing=args['preprocessing'],
             # shuffle=True,
             num_workers=args['num_workers'],
+            do_symetric_output=args['atomic_element'] == 'sybisel',
             **args['mnist_args']
         )
 
