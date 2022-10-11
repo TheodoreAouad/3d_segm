@@ -32,7 +32,7 @@ class UnfoldingLayer(nn.Module):
         # self.P = None  # TODO: init P
         self.unfolder = Unfolder(kernel_size=kernel_size, padding=padding, padding_value=padding_value)
         self.weight = nn.Parameter(self.init_weights()).float()
-        self.pooling = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=kernel_size, stride=kernel_size)
+        self.pooling = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=kernel_size, stride=kernel_size, bias=False)
         self.pooling.weight.data = torch.ones_like(self.pooling.weight.data, requires_grad=False)
 
 
@@ -111,8 +111,13 @@ class AdaptativeMorphologicalLayer(UnfoldingLayer):
 
     def forward(self, x):
         output = self.unfolder(x)
+        # print("weights", self.weight)
+        # print("b", self.b)
+        # print("1:", output)
         output = self.pooling(torch.exp(self.softsign(self.A) * self.kron_weight(x.shape[-self.ndim:]) * output))
+        # print("2:", output)
         output = self.softsign(self.A) * torch.log(output) + self.b
+        # print("3:", output)
         return output
 
     @staticmethod
@@ -134,14 +139,28 @@ class AdaptativeMorphologicalLayer(UnfoldingLayer):
 class NetMulti(nn.Module):
     layer_dict = {"LMorph": LMorph, "SMorph": SMorph, "AdaptativeMorphologicalLayer": AdaptativeMorphologicalLayer}
 
-    def __init__(self, kernel_size: List, name: str):
+    def __init__(self, kernel_size: List, name: str, channels: List = None, **kwargs):
         super().__init__()
         self.name = name
         self.layer_init = self.layer_dict[name]
 
         self.kernel_size = kernel_size
+        self.channels = channels if channels is not None else [1 for _ in range(len(kernel_size) + 1)]
+        self.in_channels = self.channels[:-1]
+        self.out_channels = self.channels[1:]
+
+        for attr, value in kwargs.items():
+            setattr(self, attr, self._init_attr(attr, value))
+
         self.layers = self.init_layers()
         self.rescaler = nn.Conv2d(1, 1, 1)
+
+
+    def _init_attr(self, attr_name, attr_value):
+        if isinstance(attr_value, list):
+            return attr_value
+
+        return [attr_value for _ in range(len(self))]
 
     def init_layers(self):
         layers = []
@@ -155,6 +174,9 @@ class NetMulti(nn.Module):
         for layer in self.layers:
             x = layer(x)
         return x
+
+    def __len__(self):
+        return len(self.layers)
 
 
 class NetLSMorph(NetMulti):

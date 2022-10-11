@@ -57,6 +57,9 @@ class CalculateAndLogMetrics(Observable):
             trainer.logger.log_metrics(
                 {f"metrics_{batch_or_epoch}/{metric_name}_{state}": metric}, step
             )
+            trainer.logged_metrics.update(
+                {f"metrics_{batch_or_epoch}/{metric_name}_{state}": metric}
+            )
 
             if batch_or_epoch == 'batch':
                 self.tb_steps[metric_name][state] = step + 1

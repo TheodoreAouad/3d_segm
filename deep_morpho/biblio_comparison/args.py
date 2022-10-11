@@ -6,10 +6,28 @@ import torchvision.transforms as transforms
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
 from general.utils import dict_cross
 from general.nn.loss import DiceLoss
+from deep_morpho.loss import (
+    MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization,
+    MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss, BCENormalizedLoss,
+)
 from .args_morp_ops_mnist import morp_operations as morp_operations_mnist
 from .args_morp_ops_diskorect import morp_operations as morp_operations_diskorect
 from .lightning_models import LightningLMorph, LightningSMorph, LightningAdaptativeMorphologicalLayer
 
+
+loss_dict = {
+    "MaskedMSELoss": MaskedMSELoss,
+    "MaskedDiceLoss": MaskedDiceLoss,
+    "DiceLoss": DiceLoss,
+    "MaskedBCELoss": MaskedBCELoss,
+    "MaskedBCENormalizedLoss": MaskedBCENormalizedLoss,
+    "quadratic": QuadraticBoundRegularization,
+    "linear": LinearBoundRegularization,
+    "MaskedNormalizedDiceLoss": MaskedNormalizedDiceLoss,
+    "MSELoss": nn.MSELoss,
+    "BCENormalizedLoss": BCENormalizedLoss,
+    "BCELoss": nn.BCELoss,
+}
 
 all_args = {}
 
@@ -20,7 +38,7 @@ all_args['n_try'] = [0]
 # all_args['n_try'] = range(1, 11)
 
 all_args['experiment_name'] = [
-    "DGMM_2022/biblio/test_repro"
+    "JMIV/biblio/sandbox"
 ]
 
 #########################
@@ -50,17 +68,19 @@ all_args['random_gen_args'] = [
 
 ]
 
-all_args['n_inputs'] = [
-    1_000_000,
-    # 100_000,
-    # 70000,
-]
+# all_args['n_inputs'] = [
+#     1_000_000,
+#     # 100_000,
+#     # 70000,
+# ]
 all_args['train_test_split'] = [(1, 1, 0)]
 
+all_args['patience_loss'] = [2100]
+all_args['patience_reduce_lr'] = [700]
 
 # TRAINING ARGS
 
-all_args['loss'] = [nn.MSELoss()]
+all_args['loss_data_str'] = ['MSELoss']
 all_args['num_workers'] = [
     20,
     # 0,
@@ -74,6 +94,10 @@ all_args['n_epochs'] = [5]
 #     # 'adapt',
 #     4,
 # ]
+
+all_args['n_steps'] = [10000]
+all_args['nb_batch_indep'] = [0]
+
 all_args['kernel_size'] = [
     # 7,
     "adapt",
@@ -84,8 +108,8 @@ all_args['kernel_size'] = [
 ##################
 
 all_args['model'] = [
-    "lmorph",
-    # "smorph",
+    # "lmorph",
+    "smorph",
 ]
 all_args['optimizer'] = [optim.Adam]
 all_args['batch_size'] = [256]
@@ -97,8 +121,8 @@ all_args['mnist_args'] = [
 ]
 
 all_args_lsmorph = (
-    # dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect})) +
-    dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist})) +
+    dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect})) +
+    # dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist})) +
     []
 )
 
@@ -107,14 +131,14 @@ all_args_lsmorph = (
 ##############
 
 all_args['model'] = ["adaptative"]
-all_args['optimizer'] = [optim.SGD]
-all_args['learning_rate'] = [10]
+all_args['optimizer'] = [optim.Adam]
+all_args['learning_rate'] = [1e-3]
 all_args['batch_size'] = [64]
 
 
 
 all_args_adaptative = (
-    dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist})) +
+    # dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist})) +
     dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect})) +
     []
 )
@@ -123,7 +147,7 @@ all_args_adaptative = (
 
 all_args = (
     all_args_lsmorph +
-    # all_args_adaptative +
+    all_args_adaptative +
     []
 )
 
@@ -134,17 +158,22 @@ for idx, args in enumerate(all_args):
     # args['kernel_size'] = 'adapt'
     args['n_atoms'] = 'adapt'
 
+    kwargs_loss = {}
+    args['loss_data'] = loss_dict[args['loss_data_str']](**kwargs_loss)
+    args['loss'] = {"loss_data": args['loss_data']}
+
 
     if args["kernel_size"] == "adapt":
         args["kernel_size"] = args["morp_operation"].selems[0][0][0].shape[0]
 
-    args['experiment_subname'] = f"{args['dataset_type']}/{args['morp_operation'].name}/{args['model']}"
+    args['experiment_subname'] = f"{args['model']}/{args['dataset_type']}/{args['morp_operation'].name}"
 
     if args["n_atoms"] == 'adapt':
         args['n_atoms'] = len(args['morp_operation'])
 
     if args['dataset_type'] == "diskorect":
         args['n_epochs'] = 1
+        args['n_inputs'] = args['n_steps'] * args['batch_size']
         args["random_gen_args"] = args["random_gen_args"].copy()
         args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
         args['random_gen_args']['size'] = args['random_gen_args']['size'] + (args["morp_operation"].in_channels[0],)

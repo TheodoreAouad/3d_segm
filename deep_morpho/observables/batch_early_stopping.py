@@ -5,7 +5,7 @@ import pathlib
 
 import torch
 
-from general.utils import save_json
+from general.utils import save_json, log_console
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.callbacks import Callback
 
@@ -20,11 +20,12 @@ class ReasonCodeEnum(Enum):
 
 class BatchEarlyStopping(EarlyStopping):
 
-    def __init__(self, name: str = '', *args, **kwargs):
+    def __init__(self, name: str = '', console_logger=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = name
         self.reason_code = None
         self.stopped_batch = None
+        self.console_logger = console_logger
 
     def on_train_epoch_end(self, trainer, pl_module) -> None:
         return
@@ -94,6 +95,7 @@ class BatchEarlyStopping(EarlyStopping):
         if should_stop:
             self.stopped_epoch = trainer.current_epoch
             self.stopped_batch = trainer.global_step
+            log_console(f"epoch={self.stopped_epoch}, batch={self.stopped_batch}", reason)
         if reason and self.verbose:
             self._log_info(trainer, reason)
 

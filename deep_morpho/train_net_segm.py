@@ -18,7 +18,7 @@ from deep_morpho.utils import set_seed
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
 from deep_morpho.datasets.multi_rect_dataset import InputOutputGeneratorDataset, MultiRectDataset
 from deep_morpho.datasets.axspa_roi_dataset import AxspaROISimpleDataset
-from deep_morpho.models import LightningBiMoNN, BiSE #COBiSE, BiSEC, COBiSEC
+from deep_morpho.models import LightningBiMoNN, BiSE  # COBiSE, BiSEC, COBiSEC
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
 from general.utils import format_time, log_console, create_logger, save_yaml, save_pickle, close_handlers
@@ -211,24 +211,6 @@ def main(args, logger):
         **{"metrics_batch/dice_train": torch.tensor([np.nan])},
         **{"convergence/metric_dice_train": torch.tensor([np.nan])},
     )
-
-    if args['atomic_element'] in ['bisec', 'cobisec']:
-        hyperparams.update(dict(
-            **{f'{k}_{layer_idx}': -1 for k in ["weights/norm_alpha"] for layer_idx in range(len(model.model.layers))}
-        ))
-
-    if args["atomic_element"] == 'cobise':
-        hyperparams.update(dict(
-            **{f'metrics/bias - lb(op)_{layer_idx}_0': torch.tensor([np.nan]) for layer_idx in range(len(model.model.layers))},
-            **{f'metrics/ub(op) - bias_{layer_idx}_0': torch.tensor([np.nan]) for layer_idx in range(len(model.model.layers))},
-            **{f'metrics/bias - lb(op)_{layer_idx}_1': torch.tensor([np.nan]) for layer_idx in range(len(model.model.layers))},
-            **{f'metrics/ub(op) - bias_{layer_idx}_1': torch.tensor([np.nan]) for layer_idx in range(len(model.model.layers))},
-        ))
-    elif args["atomic_element"] in ["bise", "conv"]:
-        hyperparams.update(dict(
-            **{f'metrics/bias - lb(op)_{layer_idx}': torch.tensor([np.nan]) for layer_idx in range(len(model.model.layers))},
-            **{f'metrics/ub(op) - bias_{layer_idx}': torch.tensor([np.nan]) for layer_idx in range(len(model.model.layers))},
-        ))
 
     logger.log_hyperparams(args, hyperparams)
 

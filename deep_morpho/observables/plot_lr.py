@@ -24,8 +24,10 @@ class CheckLearningRate(Callback):
         self.freq_idx += 1
 
     def get_lr_from_optimizer(self, optimizer):
-        if isinstance(optimizer, optim.Adam):
+        if isinstance(optimizer, (optim.Adam, optim.SGD)):
             return optimizer.param_groups[0]['lr']
+        
+        raise NotImplementedError("optimizer not recognized.")
 
     def save(self, save_path: str):
         final_dir = join(save_path, self.__class__.__name__)
