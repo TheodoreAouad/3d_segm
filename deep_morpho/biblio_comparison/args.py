@@ -38,7 +38,7 @@ all_args['n_try'] = [0]
 # all_args['n_try'] = range(1, 11)
 
 all_args['experiment_name'] = [
-    "JMIV/biblio/sandbox"
+    "JMIV/biblio/reprod"
 ]
 
 #########################
@@ -112,17 +112,22 @@ all_args['model'] = [
     "smorph",
 ]
 all_args['optimizer'] = [optim.Adam]
-all_args['batch_size'] = [256]
-all_args['learning_rate'] = [1e-3*2]
+all_args['batch_size'] = [32]
+all_args['learning_rate'] = [0.01]
+all_args['n_epochs'] = [1000]
+all_args['patience_loss'] = [60000 // 32 * 10]
+all_args['patience_reduce_lr'] = [60000 // 32 * 5]
+
 
 all_args['mnist_args'] = [
+    {"threshold": 30, "size": (28, 28), "invert_input_proba": 0}
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 0}
-    {"threshold": 30, "size": (50, 50), "invert_input_proba": 1}
+    # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1}
 ]
 
 all_args_lsmorph = (
-    dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect})) +
-    # dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist})) +
+    # dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect})) +
+    dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist})) +
     []
 )
 
@@ -138,8 +143,8 @@ all_args['batch_size'] = [64]
 
 
 all_args_adaptative = (
-    # dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist})) +
-    dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect})) +
+    dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist})) +
+    # dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect})) +
     []
 )
 
@@ -147,7 +152,7 @@ all_args_adaptative = (
 
 all_args = (
     all_args_lsmorph +
-    all_args_adaptative +
+    # all_args_adaptative +
     []
 )
 

@@ -22,7 +22,7 @@ class ParallelMorpOperations:
     str_to_selem_fn = {
         'disk': disk, 'vstick': vstick, 'hstick': hstick, 'square': square, 'dcross': dcross, 'scross': scross,
         'vertical_stick': vstick, 'horizontal_stick': hstick, 'diagonal_cross': dcross, 'straight_cross': scross,
-        'identity': identity,
+        'identity': identity, 'bsquare': bsquare, 'bdiamond': bdiamond, 'bcomplex': bcomplex,
     }
     str_to_fn = {'dilation': dilation, 'erosion': erosion}
     str_to_ui_fn = {'union': union, 'intersection': intersection}

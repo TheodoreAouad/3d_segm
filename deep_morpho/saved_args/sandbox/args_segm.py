@@ -4,6 +4,7 @@ import torch.optim as optim
 import torch.nn as nn
 
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
+from deep_morpho.datasets.sticks_noised_dataset import SticksNoisedGeneratorDataset
 from deep_morpho.loss import (
     MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization,
     MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss, BCENormalizedLoss,
@@ -37,8 +38,9 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_59/sandbox/1"
     # "Bimonn_exp_60/sandbox/0"
     # "Bimonn_exp_63/sandbox",
-    "Bimonn_exp_63/multi"
+    # "Bimonn_exp_63/multi"
     # "Bimonn_exp_63/multi/0"
+    "Bimonn_exp_64/sandbox"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -54,10 +56,11 @@ all_args['experiment_name'] = [
 # DATA ARGS
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
-    'axspa_roi',
+    # 'axspa_roi',
     # "mnist",
     # "inverted_mnist",
     # 'diskorect',
+    "sticks_noised",
 ]
 all_args['preprocessing'] = [  # for axspa roi
     None,
@@ -84,6 +87,21 @@ all_args['mnist_args'] = [
     {"threshold": 30, "size": (50, 50), "invert_input_proba": 0, },
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
+all_args['sticks_noised_angles'] = [
+    [30, 60],
+    np.linspace(0, 180, 5),
+]
+all_args['sticks_noised_args'] = [
+    {
+        "size": (50, 50),
+        "n_shapes": 15,
+        "lengths_lim": (12, 15),
+        "widths_lim": (3, 4),
+        "p_invert": 0,
+        "border": (0, 0),
+        "noise_proba": 0.1,
+    }
+]
 all_args['n_steps'] = [10000]
 all_args['nb_batch_indep'] = [0]
 # all_args['n_inputs'] = [
@@ -95,7 +113,7 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-1,
+    # 1e-1,
     1e-2,
     # 1,
 ]
@@ -107,7 +125,7 @@ all_args['loss_data_str'] = [
     # "MaskedMSELoss",
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
-    "BCENormalizedLoss",
+    # "BCENormalizedLoss",
     "MSELoss",
     # "MaskedDiceLoss",
 ]
@@ -151,15 +169,15 @@ all_args['kernel_size'] = [
     # 21,
 ]
 all_args['channels'] = [
-    # 'adapt',
+    'adapt',
     # [1, 1, 1]
-    [
-        2, 2, 2, 2, 2, 2, 1
-    ],
-    [
-        # 1,  # input
-        2, 2, 1,
-    ]
+    # [
+    #     2, 2, 2, 2, 2, 2, 1
+    # ],
+    # [
+    #     # 1,  # input
+    #     2, 2, 1,
+    # ]
 ]
 # all_args['init_weight_mode'] = [
 #     # "identity",
@@ -237,6 +255,9 @@ all_args['threshold_mode'] = [
 ]
 
 
+if all_args['dataset_type'] == ['axspa_roi'] or all_args['dataset_type'] == ["sticks_noised"]:
+    all_args['morp_operation'] = [None]
+
 all_args = dict_cross(all_args)
 #
 
@@ -284,11 +305,20 @@ for idx, args in enumerate(all_args):
                 size += 1
             args['kernel_size'] = int(size)
 
+    if args['dataset_type'] == "sticks_noised":
+        args["sticks_noised_args"] = args["sticks_noised_args"].copy()
+        args['sticks_noised_args']['angles'] = args['sticks_noised_angles']
+        args['morp_operation'] = SticksNoisedGeneratorDataset.get_default_morp_operation(
+            lengths_lim=args['sticks_noised_args']['lengths_lim'],
+            angles=args['sticks_noised_args']['angles'],
+        )
+        args['sticks_noised_args']['size'] = args['sticks_noised_args']['size'] + (args["morp_operation"].in_channels[0],)
+
     # if args['init_weight_mode'] == InitBiseEnum.CUSTOM_CONSTANT and args['atomic_element'] == "bisel":
     #     args['init_bias_value_bise'] = "auto"
     #     args['init_bias_value_lui'] = "auto"
 
-    if args['dataset_type'] in ["diskorect", 'mnist', 'inverted_mnist']:
+    if args['dataset_type'] in ["diskorect", 'mnist', 'inverted_mnist', 'sticks_noised']:
         # args['kernel_size'] = 'adapt'
 
 
@@ -332,11 +362,11 @@ for idx, args in enumerate(all_args):
         # args['loss_data'] = loss_dict[args['loss_data_str']](border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]))
     args['loss_data'] = loss_dict[args['loss_data_str']](**kwargs_loss)
 
-
-
-    if args['dataset_type'] == "diskorect":
+    if args['dataset_type'] in ['diskorect', 'sticks_noised']:
         args['n_epochs'] = 1
         args['n_inputs'] = args['n_steps'] * args['batch_size']
+
+    if args['dataset_type'] == "diskorect":
         args["random_gen_args"] = args["random_gen_args"].copy()
         # args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
         args['random_gen_args']['size'] = args['random_gen_args']['size'] + (args["morp_operation"].in_channels[0],)
@@ -348,10 +378,6 @@ for idx, args in enumerate(all_args):
     if args['dataset_type'] == 'inverted_mnist':
         args['mnist_args']['invert_input_proba'] = 1
         # args['experiment_subname'] = args['experiment_subname'].replace('mnist', 'inverted_mnist')
-
-
-    if args['atomic_element'] == "conv":
-        args['threshold_mode'] = {"activation": "sigmoid", "weight": "identity"}
 
     if args['atomic_element'] == "sybisel":
         # args['threshold_mode']["activation"] += "_symetric"

@@ -18,6 +18,7 @@ from deep_morpho.utils import set_seed
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
 from deep_morpho.datasets.multi_rect_dataset import InputOutputGeneratorDataset, MultiRectDataset
 from deep_morpho.datasets.axspa_roi_dataset import AxspaROISimpleDataset
+from deep_morpho.datasets.sticks_noised_dataset import SticksNoisedGeneratorDataset
 from deep_morpho.models import LightningBiMoNN, BiSE  # COBiSE, BiSEC, COBiSEC
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
@@ -87,6 +88,19 @@ def get_dataloader(args):
             do_symetric_output=args['atomic_element'] == 'sybisel',
             **args['mnist_args']
         )
+
+    elif args['dataset_type'] == "sticks_noised":
+        trainloader = SticksNoisedGeneratorDataset.get_loader(
+            batch_size=args['batch_size'],
+            n_inputs=args['n_inputs'],
+            max_generation_nb=args['nb_batch_indep'],
+            seed=args['seed'],
+            num_workers=args['num_workers'],
+            do_symetric_output=args['atomic_element'] == 'sybisel',
+            **args['sticks_noised_args']
+        )
+        valloader = None
+        testloader = None
 
     return trainloader, valloader, testloader
 
@@ -214,7 +228,7 @@ def main(args, logger):
 
     logger.log_hyperparams(args, hyperparams)
 
-    if args['dataset_type'] in ["diskorect", "mnist", "inverted_mnist"]:
+    if args['dataset_type'] in ["diskorect", "mnist", "inverted_mnist", "sticks_noised"]:
         pathlib.Path(join(logger.log_dir, "target_SE")).mkdir(exist_ok=True, parents=True)
         figs_selems = args['morp_operation'].plot_selem_arrays()
         for (layer_idx, chan_input, chan_output), fig in figs_selems.items():
