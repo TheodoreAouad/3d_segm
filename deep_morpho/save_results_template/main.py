@@ -86,7 +86,7 @@ for operation in os.listdir(path_global):
 TB_PATHS.append(
     all_paths
 )
-SAVE_PATH.append('html_pages/63_mnist.html')
+# SAVE_PATH.append('html_pages/63_mnist.html')
 
 path_global = "/hdd/aouadt/these/projets/3d_segm/deep_morpho/results/results_tensorboards/Bimonn_exp_63/multi/sybisel/softplus/inverted_mnist"
 all_paths = []
@@ -100,7 +100,7 @@ for operation in os.listdir(path_global):
 TB_PATHS.append(
     all_paths
 )
-SAVE_PATH.append('html_pages/63_inverted_mnist.html')
+# SAVE_PATH.append('html_pages/63_inverted_mnist.html')
 
 # DGMM 2022 Diskorect
 # TB_PATHS.append(

@@ -13,9 +13,13 @@ morp_operations = []
 
 for op in [
     # 'disk', 'hstick', 'vstick', 'scross', 'dcross', 'square'
-    "disk",
-    "hstick",
-    "dcross",
+    # "disk",
+    # "hstick",
+    # "dcross",
+    "bcomplex",
+    "bsquare",
+    "bdiamond",
+    "scross"
 ]:
     size = 7
     if op == "disk":

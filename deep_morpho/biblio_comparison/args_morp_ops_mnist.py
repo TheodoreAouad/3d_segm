@@ -18,9 +18,9 @@ for op in [
     # "hstick",
     # "dcross",
     "scross",
-    # "bsquare",
-    # "bdiamond",
-    # "bcomplex",
+    "bsquare",
+    "bdiamond",
+    "bcomplex",
 ]:
     size1 = 5
     size2 = 7
@@ -28,7 +28,7 @@ for op in [
         size1 = size1 // 2
         size2 = size2 // 2
 
-    morp_operations.append(ParallelMorpOperations.dilation((op, size2), name=f"dilation/{op}"))
-    morp_operations.append(ParallelMorpOperations.erosion((op, size2), name=f"erosion/{op}"))
+    # morp_operations.append(ParallelMorpOperations.dilation((op, size2), name=f"dilation/{op}"))
+    # morp_operations.append(ParallelMorpOperations.erosion((op, size2), name=f"erosion/{op}"))
     morp_operations.append(ParallelMorpOperations.closing((op, size2), name=f"closing/{op}"))
     morp_operations.append(ParallelMorpOperations.opening((op, size2), name=f"opening/{op}"))

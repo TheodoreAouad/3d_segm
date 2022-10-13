@@ -123,7 +123,8 @@ def main(args, logger):
         # "PlotGradientBise": obs.PlotGradientBise(freq=args['freq_imgs']),
         "ConvergenceMetrics": obs.ConvergenceMetrics(metrics),
         "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
-        "BatchEarlyStoppingDice": obs.BatchEarlyStopping(name="dice", monitor="metrics_batch/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
+        # "BatchEarlyStoppingDice": obs.BatchEarlyStopping(name="dice", monitor="metrics_batch/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
+        "BatchEarlyStoppingLossZero": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", stopping_threshold=1e-5, patience=np.infty, mode="min"),
         "BatchReduceLrOnPlateau": obs.BatchReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
         "CheckLearningRate": obs.CheckLearningRate(freq=2),
     }

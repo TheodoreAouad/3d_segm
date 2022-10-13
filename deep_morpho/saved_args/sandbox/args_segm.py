@@ -7,7 +7,7 @@ from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
 from deep_morpho.datasets.sticks_noised_dataset import SticksNoisedGeneratorDataset
 from deep_morpho.loss import (
     MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization,
-    MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss, BCENormalizedLoss,
+    MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss, BCENormalizedLoss, DiceLoss, NormalizedDiceLoss
 )
 from general.utils import dict_cross
 from deep_morpho.models.bise_base import ClosestSelemEnum, ClosestSelemDistanceEnum, BiseBiasOptimEnum, BiseWeightsOptimEnum
@@ -17,6 +17,7 @@ from .args_morp_ops import morp_operations
 loss_dict = {
     "MaskedMSELoss": MaskedMSELoss,
     "MaskedDiceLoss": MaskedDiceLoss,
+    "DiceLoss": DiceLoss,
     "MaskedBCELoss": MaskedBCELoss,
     "MaskedBCENormalizedLoss": MaskedBCENormalizedLoss,
     "quadratic": QuadraticBoundRegularization,
@@ -24,6 +25,7 @@ loss_dict = {
     "MaskedNormalizedDiceLoss": MaskedNormalizedDiceLoss,
     "MSELoss": nn.MSELoss,
     "BCENormalizedLoss": BCENormalizedLoss,
+    'NormalizedDiceLoss': NormalizedDiceLoss,
 }
 
 all_args = {}
@@ -40,6 +42,7 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_63/sandbox",
     # "Bimonn_exp_63/multi"
     # "Bimonn_exp_63/multi/0"
+    # "Bimonn_exp_65/sandbox"
     "Bimonn_exp_64/sandbox"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
@@ -88,6 +91,7 @@ all_args['mnist_args'] = [
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
 all_args['sticks_noised_angles'] = [
+    [0, 90],
     [30, 60],
     np.linspace(0, 180, 5),
 ]
@@ -128,6 +132,7 @@ all_args['loss_data_str'] = [
     # "BCENormalizedLoss",
     "MSELoss",
     # "MaskedDiceLoss",
+    # "NormalizedDiceLoss",
 ]
 all_args['loss_regu'] = [
     # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
@@ -155,8 +160,8 @@ all_args['patience_reduce_lr'] = [700]
 #     4,
 # ]
 all_args['atomic_element'] = [
-    # "bisel",
-    "sybisel",
+    "bisel",
+    # "sybisel",
 ]
 all_args['n_atoms'] = [
     'adapt',
@@ -197,8 +202,8 @@ all_args['closest_selem_distance_fn'] = [
     ClosestSelemDistanceEnum.DISTANCE_TO_BOUNDS
 ]
 all_args['bias_optim_mode'] = [
-    BiseBiasOptimEnum.RAW,
-    # BiseBiasOptimEnum.POSITIVE,
+    # BiseBiasOptimEnum.RAW,
+    BiseBiasOptimEnum.POSITIVE,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
@@ -215,10 +220,6 @@ all_args['weights_optim_args'] = [
 ]
 
 all_args['initializer_method'] = [
-    # InitBiseEnum.KAIMING_UNIFORM,
-    # InitBiseEnum.CUSTOM_HEURISTIC,
-    # InitBiseEnum.CUSTOM_CONSTANT,
-    # InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
     InitBimonnEnum.INPUT_MEAN,
 ]
 all_args['initializer_args'] = [
@@ -231,11 +232,11 @@ all_args['initializer_args'] = [
 
     # force operations at init
     {
-        # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
+        "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
         # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC_RANDOM_BIAS,
-        "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
+        # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
         # "bise_init_args": [{"init_bias_value": 1, "mean_weight": "auto", "ub": 0.01}, {"init_bias_value": -1, "mean_weight": "auto", "ub": 0.01}]
-        "bise_init_args": {"init_bias_value": 0, "mean_weight": "auto", "ub": 0.01}
+        "bise_init_args": {"init_bias_value": "auto", "mean_weight": "auto", "ub": 0.01}
     },
 
 ]
