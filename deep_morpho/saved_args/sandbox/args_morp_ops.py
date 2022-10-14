@@ -50,12 +50,12 @@ selems = []
 
 
 for op in [
-    # 'disk',
-    # "hstick",
-    # "dcross",
-    # "bsquare",
-    # "bdiamond",
-    # "bcomplex",
+    'disk',
+    "hstick",
+    "dcross",
+    "bsquare",
+    "bdiamond",
+    "bcomplex",
     "scross"
     # 'hstick', 'vstick', 'scross', 'dcross', 'square'
 ]:

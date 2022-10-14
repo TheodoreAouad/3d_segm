@@ -18,11 +18,12 @@ from deep_morpho.datasets.multi_rect_dataset import InputOutputGeneratorDataset,
 from deep_morpho.datasets.axspa_roi_dataset import AxspaROIDataset, AxspaROISimpleDataset
 import deep_morpho.observables as obs
 import deep_morpho.biblio_comparison.observables as biblio_obs
+from deep_morpho.datasets.sticks_noised_dataset import SticksNoisedGeneratorDataset
 from general.nn.observables import CalculateAndLogMetrics
 from general.utils import format_time, log_console, create_logger, save_yaml, close_handlers
 from general.nn.utils import train_val_test_split
 from deep_morpho.metrics import masked_dice
-from deep_morpho.biblio_comparison.args import all_args
+from deep_morpho.biblio_comparison.args import final_args as all_args
 from general.code_saver import CodeSaver
 from deep_morpho.biblio_comparison.lightning_models import LightningLMorph, LightningSMorph, LightningAdaptativeMorphologicalLayer
 
@@ -92,6 +93,21 @@ def get_dataloader(args):
             do_symetric_output=False,
             **args['mnist_args']
         )
+
+    elif args['dataset_type'] == "sticks_noised":
+        trainloader = SticksNoisedGeneratorDataset.get_loader(
+            batch_size=args['batch_size'],
+            n_inputs=args['n_inputs'],
+            max_generation_nb=args['nb_batch_indep'],
+            seed=args['seed'],
+            num_workers=args['num_workers'],
+            do_symetric_output=False,
+            **args['sticks_noised_args']
+        )
+        valloader = None
+        testloader = None
+
+    return trainloader, valloader, testloader
 
     return trainloader, valloader, testloader
 

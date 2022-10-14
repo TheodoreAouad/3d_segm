@@ -23,7 +23,7 @@ class SticksNoisedGeneratorDataset(Dataset):
             angles: np.ndarray = np.linspace(0, 180, 10),
             n_shapes: int = 15,
             lengths_lim: Tuple = (12, 15),
-            widths_lim: Tuple = (3, 4),
+            widths_lim: Tuple = (3, 3),
             p_invert: float = 0,
             border: Tuple = (0, 0),
             noise_proba: float = 0.1,
@@ -65,7 +65,7 @@ class SticksNoisedGeneratorDataset(Dataset):
     @staticmethod
     def get_default_morp_operation(lengths_lim, angles, **kwargs):
         L = lengths_lim[0] - 2
-        selems = [get_rect(width=1, height=L, angle=theta) for theta in angles]
+        selems = [get_rect(width=0, height=L, angle=theta) for theta in angles]
         kwargs["name"] = kwargs.get("name", 'sticks_noised')
         return ParallelMorpOperations(
             operations=[
@@ -117,7 +117,7 @@ class SticksNoisedGeneratorDataset(Dataset):
         angles: np.ndarray = np.linspace(0, 180, 10),
         n_shapes: int = 30,
         lengths_lim: Tuple = (12, 15),
-        widths_lim: Tuple = (3, 4),
+        widths_lim: Tuple = (3, 3),
         p_invert: float = 0.5,
         border: Tuple = (0, 0),
         noise_proba: float = 0.1,

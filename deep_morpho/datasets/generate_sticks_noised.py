@@ -26,8 +26,8 @@ def get_sticks_noised(
         x = rng_int(0, size[0] - 2)
         y = rng_int(0, size[0] - 2)
 
-        L = rng_int(lengths_lim[0], lengths_lim[1])
-        W = rng_int(widths_lim[0], widths_lim[1])
+        L = rng_int(lengths_lim[0], lengths_lim[1] + 1)
+        W = rng_int(widths_lim[0], widths_lim[1] + 1)
 
         angle = angles[rng_int(0, len(angles))]
         draw_poly(draw, get_rect_vertices(x, y, W, L, angle), fill_value=1)

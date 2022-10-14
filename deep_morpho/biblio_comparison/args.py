@@ -6,6 +6,7 @@ import torchvision.transforms as transforms
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
 from general.utils import dict_cross
 from general.nn.loss import DiceLoss
+from deep_morpho.datasets.sticks_noised_dataset import SticksNoisedGeneratorDataset
 from deep_morpho.loss import (
     MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization,
     MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss, BCENormalizedLoss,
@@ -29,7 +30,26 @@ loss_dict = {
     "BCELoss": nn.BCELoss,
 }
 
+do_args = {
+    ('smorph', 'diskorect'): False,
+    ('smorph', 'mnist'): False,
+    ('smorph', 'inverted_mnist'): False,
+    ('smorph', 'sticks_noised'): True,
+
+    ('lmorph', 'diskorect'): False,
+    ('lmorph', 'mnist'): False,
+    ('lmorph', 'inverted_mnist'): False,
+    ('lmorph', 'sticks_noised'): False,
+    ('adaptative', 'diskorect'): False,
+
+    ('adaptative', 'mnist'): False,
+    ('adaptative', 'inverted_mnist'): False,
+    ('adaptative', 'sticks_noised'): False,
+}
+
+
 all_args = {}
+all_args_dict = {}
 
 all_args['batch_seed'] = [None]
 
@@ -99,10 +119,8 @@ all_args['n_epochs'] = [5]
 all_args['n_steps'] = [10000]
 all_args['nb_batch_indep'] = [0]
 
-all_args['kernel_size'] = [
-    # 7,
-    "adapt",
-]
+all_args['n_atoms'] = ['adapt']
+all_args['kernel_size'] = ["adapt"]
 
 ##################
 # LMorph, SMorph #
@@ -115,7 +133,8 @@ all_args['model'] = [
 all_args['optimizer'] = [optim.Adam]
 all_args['learning_rate'] = [0.01]
 
-all_args_lsmorph = []
+all_args['n_atoms'] = ['adapt']
+
 
 # MNIST
 all_args['batch_size'] = [32]
@@ -130,6 +149,7 @@ all_args['mnist_args'] = [
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1}
 ]
 
+all_args_dict['smorph', 'mnist'] = dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist}))
 # all_args_lsmorph += dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist}))
 
 # DISKORECT
@@ -139,7 +159,38 @@ all_args['n_epochs'] = [1]
 all_args['patience_loss'] = [2100]
 all_args['patience_reduce_lr'] = [700]
 
-all_args_lsmorph += dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect}))
+all_args['n_atoms'] = ['adapt']
+
+
+all_args_dict['smorph', 'diskorect'] = dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect}))
+
+
+# STICKS NOISED
+all_args['sticks_noised_angles'] = [
+    # [0, 90],
+    # [30, 60]
+    # [30],
+    # [30, 120],
+    [0],
+    [0, 90],
+    # np.linspace(0, 160, 5),
+    # np.linspace(0, 180, 5),
+]
+all_args['sticks_noised_args'] = [
+    {
+        "size": (50, 50),
+        "n_shapes": 15,
+        "lengths_lim": (12, 15),
+        "widths_lim": (0, 0),
+        "p_invert": 0,
+        "border": (0, 0),
+        "noise_proba": 0.1,
+    }
+]
+
+all_args['n_atoms'] = [2]
+
+all_args_dict['smorph', 'sticks_noised'] = dict_cross(dict(**all_args, **{'dataset_type': ["sticks_noised"]}))
 
 
 ##############
@@ -151,33 +202,51 @@ all_args['optimizer'] = [optim.Adam]
 all_args['learning_rate'] = [1e-3]
 all_args['batch_size'] = [64]
 
+all_args['n_atoms'] = ['adapt']
 
 
-all_args_adaptative = (
-    dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist})) +
-    # dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect})) +
-    []
-)
+all_args_dict['adaptative', 'mnist'] = dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist}))
+all_args_dict['adaptative', 'diskorect'] = dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect}))
+
+# all_args_adaptative = (
+#     dict_cross(dict(**all_args, **{'dataset_type': ["mnist"], "morp_operation": morp_operations_mnist})) +
+#     # dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect})) +
+#     []
+# )
 
 #############################
 
-all_args = (
-    all_args_lsmorph +
-    # all_args_adaptative +
-    []
-)
+final_args = []
+
+for model in ['adaptative', 'smorph', 'lmorph']:
+    for dataset in ['diskorect', 'mnist', 'inverted_mnist', 'sticks_noised']:
+        if do_args[model, dataset]:
+            final_args += all_args_dict[model, dataset]
+
+# all_args = (
+#     all_args_lsmorph +
+#     # all_args_adaptative +
+#     []
+# )
 
 #
-for idx, args in enumerate(all_args):
+for idx, args in enumerate(final_args):
 
 
     # args['kernel_size'] = 'adapt'
-    args['n_atoms'] = 'adapt'
 
     kwargs_loss = {}
     args['loss_data'] = loss_dict[args['loss_data_str']](**kwargs_loss)
     args['loss'] = {"loss_data": args['loss_data']}
 
+    if args['dataset_type'] == "sticks_noised":
+        args["sticks_noised_args"] = args["sticks_noised_args"].copy()
+        args['sticks_noised_args']['angles'] = args['sticks_noised_angles']
+        args['morp_operation'] = SticksNoisedGeneratorDataset.get_default_morp_operation(
+            lengths_lim=args['sticks_noised_args']['lengths_lim'],
+            angles=args['sticks_noised_args']['angles'],
+        )
+        args['sticks_noised_args']['size'] = args['sticks_noised_args']['size'] + (args["morp_operation"].in_channels[0],)
 
     if args["kernel_size"] == "adapt":
         args["kernel_size"] = args["morp_operation"].selems[0][0][0].shape[0]
@@ -187,7 +256,8 @@ for idx, args in enumerate(all_args):
     if args["n_atoms"] == 'adapt':
         args['n_atoms'] = len(args['morp_operation'])
 
-    if args['dataset_type'] == "diskorect":
+
+    if args['dataset_type'] in ["diskorect", "sticks_noised"]:
         args['n_epochs'] = 1
         args['n_inputs'] = args['n_steps'] * args['batch_size']
         args["random_gen_args"] = args["random_gen_args"].copy()

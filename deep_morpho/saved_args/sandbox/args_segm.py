@@ -43,7 +43,9 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_63/multi"
     # "Bimonn_exp_63/multi/0"
     # "Bimonn_exp_65/sandbox"
-    "Bimonn_exp_64/sandbox"
+    "Bimonn_exp_67/sandbox"  # comp
+    # "Bimonn_exp_66/sandbox"  # comp + op
+    # "Bimonn_exp_64/sandbox"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -62,8 +64,8 @@ all_args['dataset_type'] = [
     # 'axspa_roi',
     # "mnist",
     # "inverted_mnist",
-    # 'diskorect',
-    "sticks_noised",
+    'diskorect',
+    # "sticks_noised",
 ]
 all_args['preprocessing'] = [  # for axspa roi
     None,
@@ -91,16 +93,19 @@ all_args['mnist_args'] = [
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
 all_args['sticks_noised_angles'] = [
+    # [0, 90],
+    # [30, 60],
     [0, 90],
-    [30, 60],
-    np.linspace(0, 180, 5),
+    # np.linspace(0, 180, 5),
+    # np.linspace(0, 160, 5),
+    # [30, 120],
 ]
 all_args['sticks_noised_args'] = [
     {
         "size": (50, 50),
         "n_shapes": 15,
         "lengths_lim": (12, 15),
-        "widths_lim": (3, 4),
+        "widths_lim": (0, 0),
         "p_invert": 0,
         "border": (0, 0),
         "noise_proba": 0.1,
@@ -117,7 +122,7 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    # 1e-1,
+    1e-1,
     1e-2,
     # 1,
 ]
@@ -129,7 +134,7 @@ all_args['loss_data_str'] = [
     # "MaskedMSELoss",
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
-    # "BCENormalizedLoss",
+    "BCENormalizedLoss",
     "MSELoss",
     # "MaskedDiceLoss",
     # "NormalizedDiceLoss",
@@ -148,7 +153,7 @@ all_args['num_workers'] = [
     20,
     # 0,
 ]
-all_args['freq_imgs'] = [300]
+all_args['freq_imgs'] = [900]
 all_args['n_epochs'] = [20]
 all_args['patience_loss'] = [2100]
 all_args['patience_reduce_lr'] = [700]
@@ -160,8 +165,8 @@ all_args['patience_reduce_lr'] = [700]
 #     4,
 # ]
 all_args['atomic_element'] = [
-    "bisel",
-    # "sybisel",
+    # "bisel",
+    "sybisel",
 ]
 all_args['n_atoms'] = [
     'adapt',
@@ -235,15 +240,16 @@ all_args['initializer_args'] = [
         "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
         # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC_RANDOM_BIAS,
         # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
-        # "bise_init_args": [{"init_bias_value": 1, "mean_weight": "auto", "ub": 0.01}, {"init_bias_value": -1, "mean_weight": "auto", "ub": 0.01}]
-        "bise_init_args": {"init_bias_value": "auto", "mean_weight": "auto", "ub": 0.01}
+        # "bise_init_args": [{"init_bias_value": -1, "mean_weight": "auto", "ub": 0.01}, {"init_bias_value": 1, "mean_weight": "auto", "ub": 0.01}]
+        "bise_init_args": {"init_bias_value": 0, "mean_weight": "auto", "ub": 0.01}
+        # "bise_init_args": {"init_bias_value": "auto", "mean_weight": "auto", "ub": 0.01}
     },
 
 ]
 
-all_args['activation_P'] = [0]
+all_args['activation_P'] = [2]
 # all_args['activation_P'] = [1]  # force non complementation
-all_args['constant_activation_P'] = [False]
+all_args['constant_activation_P'] = [False, True]
 all_args['force_lui_identity'] = [False]
 all_args['constant_P_lui'] = [False]
 
