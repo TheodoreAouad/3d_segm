@@ -103,6 +103,12 @@ class TanhSymetricLayer(ThresholdLayer):
         super().__init__(threshold_fn=tanh_threshold_symetric, threshold_inverse_fn=tanh_threshold_symetric_inverse, threshold_name='tanh_symetric', *args, **kwargs)
 
 
+class SigmoidSymetricLayer(ThresholdLayer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(threshold_fn=sigmoid_threshold_symetric, threshold_inverse_fn=sigmoid_threshold_symetric_inverse, threshold_name='sigmoid_symetric', *args, **kwargs)
+
+
+
 
 class ThresholdEnum(Enum):
     sigmoid = auto()
@@ -113,10 +119,12 @@ class ThresholdEnum(Enum):
     identity = auto()
     softplus = auto()
     tanh_symetric = auto()
+    sigmoid_symetric = auto()
 
 
 dispatcher = {
     ThresholdEnum.sigmoid: SigmoidLayer,
+    ThresholdEnum.sigmoid_symetric: SigmoidSymetricLayer,
     ThresholdEnum.arctan: ArctanLayer,
     ThresholdEnum.tanh: TanhLayer,
     ThresholdEnum.tanh_symetric: TanhSymetricLayer,
@@ -125,6 +133,7 @@ dispatcher = {
     ThresholdEnum.identity: IdentityLayer,
     ThresholdEnum.softplus: SoftplusThresholdLayer,
     "sigmoid": SigmoidLayer,
+    "sigmoid_symetric": SigmoidSymetricLayer,
     "arctan": ArctanLayer,
     "tanh": TanhLayer,
     "tanh_symetric": TanhSymetricLayer,

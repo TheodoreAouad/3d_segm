@@ -46,3 +46,11 @@ def tanh_threshold_symetric(x):
 
 def tanh_threshold_symetric_inverse(y):
     return torch.atanh(y)
+
+
+def sigmoid_threshold_symetric(x):
+    return torch.sigmoid((x + 1) / 2)
+
+
+def sigmoid_threshold_symetric_inverse(y):
+    return torch.logit(2 * y - 1)

@@ -657,7 +657,7 @@ class BiSEBase(BinaryNN):
 
 
 class SyBiSEBase(BiSEBase):
-    POSSIBLE_THRESHOLDS = (dispatcher[ThresholdEnum.tanh_symetric],)
+    POSSIBLE_THRESHOLDS = (dispatcher[ThresholdEnum.tanh_symetric], dispatcher[ThresholdEnum.sigmoid_symetric])
 
     def __init__(
         self,

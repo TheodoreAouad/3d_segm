@@ -43,9 +43,10 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_63/multi"
     # "Bimonn_exp_63/multi/0"
     # "Bimonn_exp_65/sandbox"
-    "Bimonn_exp_67/sandbox"  # comp
+    # "Bimonn_exp_67/sandbox"  # comp
     # "Bimonn_exp_66/sandbox"  # comp + op
     # "Bimonn_exp_64/sandbox"
+    "Bimonn_exp_69/multi"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -153,7 +154,7 @@ all_args['num_workers'] = [
     20,
     # 0,
 ]
-all_args['freq_imgs'] = [900]
+all_args['freq_imgs'] = [1000]
 all_args['n_epochs'] = [20]
 all_args['patience_loss'] = [2100]
 all_args['patience_reduce_lr'] = [700]
@@ -237,9 +238,9 @@ all_args['initializer_args'] = [
 
     # force operations at init
     {
-        "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
+        # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
         # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC_RANDOM_BIAS,
-        # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
+        "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
         # "bise_init_args": [{"init_bias_value": -1, "mean_weight": "auto", "ub": 0.01}, {"init_bias_value": 1, "mean_weight": "auto", "ub": 0.01}]
         "bise_init_args": {"init_bias_value": 0, "mean_weight": "auto", "ub": 0.01}
         # "bise_init_args": {"init_bias_value": "auto", "mean_weight": "auto", "ub": 0.01}
@@ -247,9 +248,9 @@ all_args['initializer_args'] = [
 
 ]
 
-all_args['activation_P'] = [2]
+all_args['activation_P'] = [0]
 # all_args['activation_P'] = [1]  # force non complementation
-all_args['constant_activation_P'] = [False, True]
+all_args['constant_activation_P'] = [False]
 all_args['force_lui_identity'] = [False]
 all_args['constant_P_lui'] = [False]
 
@@ -257,7 +258,8 @@ all_args['threshold_mode'] = [
     {
         # "weight": 'identity',
         "weight": 'softplus',
-        "activation": 'tanh',
+        # "activation": 'tanh',
+        "activation": 'sigmoid',
     },
 ]
 
