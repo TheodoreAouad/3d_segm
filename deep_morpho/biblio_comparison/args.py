@@ -31,10 +31,10 @@ loss_dict = {
 }
 
 do_args = {
-    ('smorph', 'diskorect'): False,
+    ('smorph', 'diskorect'): True,
     ('smorph', 'mnist'): False,
     ('smorph', 'inverted_mnist'): False,
-    ('smorph', 'sticks_noised'): True,
+    ('smorph', 'sticks_noised'): False,
 
     ('lmorph', 'diskorect'): False,
     ('lmorph', 'mnist'): False,
@@ -84,7 +84,7 @@ all_args['random_gen_fn'] = [
     get_random_diskorect_channels
 ]
 all_args['random_gen_args'] = [
-    {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
+    {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, 'border': (0, 0)}
     # {'size': (50, 50), 'n_shapes': 30, 'max_shape': (15, 15), 'p_invert': 0.5, 'n_holes': 15, 'max_shape_holes': (7, 7)}
 
 ]
@@ -131,9 +131,7 @@ all_args['model'] = [
     "smorph",
 ]
 all_args['optimizer'] = [optim.Adam]
-all_args['learning_rate'] = [0.01]
-
-all_args['n_atoms'] = ['adapt']
+all_args['learning_rate'] = [0.001]
 
 
 # MNIST
@@ -159,8 +157,14 @@ all_args['n_epochs'] = [1]
 all_args['patience_loss'] = [2100]
 all_args['patience_reduce_lr'] = [700]
 
-all_args['n_atoms'] = ['adapt']
-
+all_args['kernel_size'] = [
+    # "adapt",
+    3,
+]
+all_args['n_atoms'] = [
+    # 'adapt',
+    10,
+]
 
 all_args_dict['smorph', 'diskorect'] = dict_cross(dict(**all_args, **{'dataset_type': ["diskorect"], "morp_operation": morp_operations_diskorect}))
 
@@ -171,7 +175,7 @@ all_args['sticks_noised_angles'] = [
     # [30, 60]
     # [30],
     # [30, 120],
-    [0],
+    # [0],
     [0, 90],
     # np.linspace(0, 160, 5),
     # np.linspace(0, 180, 5),

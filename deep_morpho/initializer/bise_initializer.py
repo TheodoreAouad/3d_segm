@@ -74,7 +74,7 @@ class InitIdentity(InitBiasFixed):
 
 class InitKaimingUniform(InitBiasFixed):
     def init_weights(self, module: nn.Module):
-        module.set_normalized_weights(module.weight + 1)
+        module.set_normalized_weights(module.conv.weight + 1)
 
 
 class InitSybiseBias(InitWeightsThenBias):

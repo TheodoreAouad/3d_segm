@@ -46,7 +46,7 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_67/sandbox"  # comp
     # "Bimonn_exp_66/sandbox"  # comp + op
     # "Bimonn_exp_64/sandbox"
-    "Bimonn_exp_69/multi"
+    "Bimonn_exp_68/sandbox/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -84,7 +84,8 @@ all_args['random_gen_fn'] = [
 ]
 all_args['random_gen_args'] = [
     # {'size': (50, 50), 'n_shapes': 2, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
-    {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
+    {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': .5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
+    # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
     # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02,}
     # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
     # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 1, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
@@ -124,7 +125,7 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 # TRAINING ARGS
 all_args['learning_rate'] = [
     1e-1,
-    1e-2,
+    # 1e-2,
     # 1,
 ]
 
@@ -135,7 +136,7 @@ all_args['loss_data_str'] = [
     # "MaskedMSELoss",
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
-    "BCENormalizedLoss",
+    # "BCENormalizedLoss",
     "MSELoss",
     # "MaskedDiceLoss",
     # "NormalizedDiceLoss",
@@ -154,7 +155,7 @@ all_args['num_workers'] = [
     20,
     # 0,
 ]
-all_args['freq_imgs'] = [1000]
+all_args['freq_imgs'] = [300]
 all_args['n_epochs'] = [20]
 all_args['patience_loss'] = [2100]
 all_args['patience_reduce_lr'] = [700]
@@ -166,21 +167,24 @@ all_args['patience_reduce_lr'] = [700]
 #     4,
 # ]
 all_args['atomic_element'] = [
-    # "bisel",
-    "sybisel",
+    "bisel",
+    # "sybisel",
 ]
 all_args['n_atoms'] = [
-    'adapt',
+    # 'adapt',
+    10
     # 2
 ]
 
 all_args['kernel_size'] = [
     # 7,
-    "adapt",
+    3
+    # "adapt",
     # 21,
 ]
 all_args['channels'] = [
-    'adapt',
+    # 'adapt',
+    [1] * 11
     # [1, 1, 1]
     # [
     #     2, 2, 2, 2, 2, 2, 1
@@ -238,11 +242,12 @@ all_args['initializer_args'] = [
 
     # force operations at init
     {
+        "bise_init_method": InitBiseEnum.KAIMING_UNIFORM,
         # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
         # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC_RANDOM_BIAS,
-        "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
+        # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
         # "bise_init_args": [{"init_bias_value": -1, "mean_weight": "auto", "ub": 0.01}, {"init_bias_value": 1, "mean_weight": "auto", "ub": 0.01}]
-        "bise_init_args": {"init_bias_value": 0, "mean_weight": "auto", "ub": 0.01}
+        "bise_init_args": {"init_bias_value": 1, "mean_weight": "auto", "ub": 0.01}
         # "bise_init_args": {"init_bias_value": "auto", "mean_weight": "auto", "ub": 0.01}
     },
 
@@ -258,8 +263,8 @@ all_args['threshold_mode'] = [
     {
         # "weight": 'identity',
         "weight": 'softplus',
-        # "activation": 'tanh',
-        "activation": 'sigmoid',
+        "activation": 'tanh',
+        # "activation": 'sigmoid',
     },
 ]
 
@@ -290,8 +295,7 @@ for idx, args in enumerate(all_args):
     # elif "black_tophat" in args['morp_operation'].name:
     #     args['random_gen_args']['p_invert'] = 0
 
-    for key in ['closest_selem_method', 'closest_selem_distance_fn', 'bias_optim_mode']:
-        args[f'{key}_str'] = str(args[key])
+
 
     args['init_bimonn_str'] = str(args["initializer_method"])
     if isinstance(args["initializer_args"], dict):
@@ -407,6 +411,9 @@ for idx, args in enumerate(all_args):
     if args['loss_regu'] != "None":
         args['loss_regu'] = (loss_dict[args['loss_regu'][0]], args['loss_regu'][1])
         args['loss']['loss_regu'] = args['loss_regu']
+
+    for key in ['closest_selem_method', 'closest_selem_distance_fn', 'bias_optim_mode']:
+        args[f'{key}_str'] = str(args[key])
 
 #     already_seen_path = f"deep_morpho/results/results_tensorboards/Bimonn_exp_63/multi/sybisel/softplus/diskorect/seen_args.txt"
 #     with open(already_seen_path, "r") as f:
