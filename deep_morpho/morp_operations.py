@@ -1,4 +1,4 @@
-from typing import Union, Tuple, List, Callable, Any
+from typing import Union, Tuple, List, Callable, Any, Dict
 import copy
 
 from matplotlib import pyplot as plt
@@ -24,8 +24,6 @@ class ParallelMorpOperations:
         'vertical_stick': vstick, 'horizontal_stick': hstick, 'diagonal_cross': dcross, 'straight_cross': scross,
         'identity': identity, 'bsquare': bsquare, 'bdiamond': bdiamond, 'bcomplex': bcomplex,
     }
-    str_to_fn = {'dilation': dilation, 'erosion': erosion}
-    str_to_ui_fn = {'union': union, 'intersection': intersection}
 
     def __init__(
         self,
@@ -33,11 +31,15 @@ class ParallelMorpOperations:
         device="cpu",
         # return_numpy_array: bool = False,
         name: str = None,
+        str_to_fn: Dict = {'dilation': dilation, 'erosion': erosion},
+        str_to_ui_fn: Dict = {'union': union, 'intersection': intersection}
     ):
         self.operations_original = operations
         self.device = device
         # self.return_numpy_array = return_numpy_array
         self.name = name
+        self.str_to_fn = str_to_fn
+        self.str_to_ui_fn = str_to_ui_fn
 
         self.operations = None
         self.operation_names = None
@@ -328,6 +330,17 @@ class ParallelMorpOperations:
         kwargs["name"] = kwargs.get("name", 'dilation')
         return ParallelMorpOperations(
             operations=[[[('dilation', selem, False), 'union']]],
+            *args,
+            **kwargs
+        )
+
+    @staticmethod
+    def dilation_gray(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        kwargs["name"] = kwargs.get("name", 'dilation')
+        return ParallelMorpOperations(
+            operations=[[[('dilation', selem, False), 'union']]],
+            str_to_fn={"dilation": morp.dilation, "erosion": morp.erosion},
+            str_to_ui_fn={"intersection": lambda *x: x[0][..., 0], "union": lambda *x: x[0][..., 0]},
             *args,
             **kwargs
         )

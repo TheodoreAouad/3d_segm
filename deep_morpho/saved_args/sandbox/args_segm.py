@@ -172,7 +172,7 @@ all_args['atomic_element'] = [
 ]
 all_args['n_atoms'] = [
     # 'adapt',
-    10
+    11
     # 2
 ]
 
@@ -184,7 +184,7 @@ all_args['kernel_size'] = [
 ]
 all_args['channels'] = [
     # 'adapt',
-    [1] * 11
+    [1] * 12
     # [1, 1, 1]
     # [
     #     2, 2, 2, 2, 2, 2, 1
@@ -242,7 +242,8 @@ all_args['initializer_args'] = [
 
     # force operations at init
     {
-        "bise_init_method": InitBiseEnum.KAIMING_UNIFORM,
+        # "bise_init_method": InitBiseEnum.KAIMING_UNIFORM,
+        "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC,
         # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
         # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC_RANDOM_BIAS,
         # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,

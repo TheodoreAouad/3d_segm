@@ -14,7 +14,7 @@ selems = []
 
 # morp_operations.append(ParallelMorpOperations.remove_isolated_points())
 
-morp_operations.append(ParallelMorpOperations.dilation(('hstick', 11), name="large_dilation/disk"))
+morp_operations.append(ParallelMorpOperations.dilation(('hstick', 11), name="large_dilation/hstick"))
 # morp_operations.append(ParallelMorpOperations.translation(0, 10))
 
 # morp_operations.append(ParallelMorpOperations.translation(1, 2))

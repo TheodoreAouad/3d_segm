@@ -142,7 +142,7 @@ def main(args, logger):
         # "ShowSelemAlmostBinary": obs.ShowSelemAlmostBinary(freq=args['freq_imgs']),
         "ShowSelemBinary": obs.ShowSelemBinary(freq=args['freq_imgs']),
         "ShowClosestSelemBinary": obs.ShowClosestSelemBinary(freq=args['freq_imgs']),
-        "ShowLUISetBinary": obs.ShowLUISetBinary(freq=args['freq_imgs']),
+        # "ShowLUISetBinary": obs.ShowLUISetBinary(freq=args['freq_imgs']),
         "BinaryModeMetric": obs.BinaryModeMetric(metrics, freq=args['freq_imgs']),
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         "ConvergenceBinary": obs.ConvergenceBinary(freq=100),

@@ -18,7 +18,8 @@ class CalculateAndLogMetrics(Observable):
         if self.keep_preds_for_epoch:
             self.all_preds = {'train': torch.tensor([]), 'val': torch.tensor([]), 'test': torch.tensor([])}
             self.all_targets = {'train': torch.tensor([]), 'val': torch.tensor([]), 'test': torch.tensor([])}
-        self.tb_steps = {metric: {"train": 0, "val": 0, "test": 0} for metric in self.metrics.keys()}
+        self.tb_steps = {metric: {} for metric in self.metrics.keys()}
+        # self.tb_steps = {metric: {"train": 0, "val": 0, "test": 0} for metric in self.metrics.keys()}
 
         self._hp_metrics = dict(
             **{f"metrics_{batch_or_epoch}/{metric_name}_{state}": -1
@@ -40,29 +41,30 @@ class CalculateAndLogMetrics(Observable):
         inputs, targets = batch
         self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='test')
 
-    def _calculate_and_log_metrics(self, trainer, pl_module, targets, preds, state='train', batch_or_epoch='batch'):
+    def _calculate_and_log_metrics(self, trainer, pl_module, targets, preds, state='train', batch_or_epoch='batch', suffix=""):
+        key = f"{state}{suffix}"
         for metric_name in self.metrics:
             metric = self.metrics[metric_name](targets, preds)
             self.last_value[metric_name] = metric
             # pl_module.log(f"mean_metrics_{batch_or_epoch}/{metric_name}/{state}", metric)
             if batch_or_epoch == 'batch':
-                step = self.tb_steps[metric_name][state]
+                step = self.tb_steps[metric_name].get(key, 0)
             else:
                 step = trainer.current_epoch
 
             trainer.logger.experiment.add_scalars(
-                f"comparative/metrics_{batch_or_epoch}/{metric_name}", {state: metric}, step
+                f"comparative/metrics_{batch_or_epoch}/{metric_name}{suffix}", {state: metric}, step
             )
 
             trainer.logger.log_metrics(
-                {f"metrics_{batch_or_epoch}/{metric_name}_{state}": metric}, step
+                {f"metrics_{batch_or_epoch}/{metric_name}{suffix}_{state}": metric}, step
             )
             trainer.logged_metrics.update(
-                {f"metrics_{batch_or_epoch}/{metric_name}_{state}": metric}
+                {f"metrics_{batch_or_epoch}/{metric_name}{suffix}_{state}": metric}
             )
 
             if batch_or_epoch == 'batch':
-                self.tb_steps[metric_name][state] = step + 1
+                self.tb_steps[metric_name][key] = step + 1
 
             # f"metrics_multi_label_{batch_or_epoch}/{metric_name}/{state}", {f'label_{name_label}': metric}, step
             # trainer.logger.experiment.add_scalars(metric_name, {f'{metric_name}_{state}': metric})
