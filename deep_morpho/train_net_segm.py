@@ -1,6 +1,7 @@
 # import warnings
 # warnings.filterwarnings('error', message=".+leaf Tensor.+")
 
+from functools import partial
 from time import time
 import os
 from os.path import join
@@ -12,7 +13,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from deep_morpho.datasets.mnist_dataset import MnistMorphoDataset
+from deep_morpho.datasets.mnist_dataset import MnistMorphoDataset, MnistGrayScaleDataset
 from deep_morpho.utils import set_seed
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
@@ -102,6 +103,21 @@ def get_dataloader(args):
         valloader = None
         testloader = None
 
+    elif args['dataset_type'] == "mnist_gray":
+        prop_train, prop_val, prop_test = args['train_test_split']
+        trainloader, valloader, testloader = MnistGrayScaleDataset.get_train_val_test_loader(
+            n_inputs_train=int(prop_train * args['n_inputs']),
+            n_inputs_val=int(prop_val * args['n_inputs']),
+            n_inputs_test=int(prop_test * args['n_inputs']),
+            batch_size=args['batch_size'],
+            morp_operation=args['morp_operation'],
+            preprocessing=args['preprocessing'],
+            # shuffle=True,
+            num_workers=args['num_workers'],
+            do_symetric_output=args['atomic_element'] == 'sybisel',
+            **args['mnist_gray_args']
+        )
+
     return trainloader, valloader, testloader
 
 
@@ -111,9 +127,16 @@ def main(args, logger):
         f.write(f"{args['seed']}")
 
     trainloader, valloader, testloader = get_dataloader(args)
-    metrics = {'dice': lambda y_true, y_pred: masked_dice(y_true, y_pred,
-                        border=(args['kernel_size'] // 2, args['kernel_size'] // 2), threshold=0 if args['atomic_element'] == 'sybisel' else 0.5).mean()}
-                        # border=(0, 0), threshold=0 if args['atomic_element'] == 'sybisel' else 0.5).mean()}
+    metrics = {
+        'dice': lambda y_true, y_pred: masked_dice(y_true, y_pred,
+                        border=(args['kernel_size'] // 2, args['kernel_size'] // 2), threshold=0 if args['atomic_element'] == 'sybisel' else 0.5).mean(),    
+        # 'mse': lambda y_true, y_pred: ((y_true - y_pred) ** 2).mean()
+    }
+
+    if "gray" in args['dataset_type']:
+        plot_pred_obs_fn = obs.PlotPredsGrayscale if "gray" in args['dataset_type'] else obs.PlotPreds
+    else:
+        plot_pred_obs_fn = partial(obs.PlotPreds, fig_kwargs={"vmax": 1, "vmin": -1 if args['atomic_element'] == 'sybisel' else 0})
 
     observables_dict = {
         # "SetSeed": obs.SetSeed(args['batch_seed']),
@@ -123,7 +146,7 @@ def main(args, logger):
             metrics=metrics,
             keep_preds_for_epoch=False,
         ),
-        "PlotPreds": obs.PlotPreds(freq={'train': args['freq_imgs'], 'val': 39}, fig_kwargs={"vmax": 1, "vmin": -1 if args['atomic_element'] == 'sybisel' else 0}),
+        "PlotPreds": plot_pred_obs_fn(freq={'train': args['freq_imgs'], 'val': 39}, ),
         "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=600),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=600),
@@ -152,6 +175,18 @@ def main(args, logger):
         "BatchReduceLrOnPlateau": obs.BatchReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
         "CheckLearningRate": obs.CheckLearningRate(freq=2),
     }
+
+    if "gray" in args['dataset_type']:
+        metrics_gray_scale = {'mse': lambda y_true, y_pred: ((y_true - y_pred) ** 2).mean()}
+        observables_dict.update({
+            "CalculateAndLogMetricGrayScale": obs.CalculateAndLogMetricGrayScale(
+                metrics=metrics_gray_scale,
+                keep_preds_for_epoch=False,
+            ),
+            "InputAsPredMetricGrayScale": obs.InputAsPredMetricGrayScale(metrics_gray_scale),
+            "BinaryModeMetricGrayScale": obs.BinaryModeMetricGrayScale(metrics_gray_scale, freq=args['freq_imgs']),
+        })
+
 
     observables = list(observables_dict.values())
 

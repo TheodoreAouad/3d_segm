@@ -26,6 +26,7 @@ loss_dict = {
     "MSELoss": nn.MSELoss,
     "BCENormalizedLoss": BCENormalizedLoss,
     'NormalizedDiceLoss': NormalizedDiceLoss,
+    "BCELoss": nn.BCELoss,
 }
 
 all_args = {}
@@ -46,7 +47,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_67/sandbox"  # comp
     # "Bimonn_exp_66/sandbox"  # comp + op
     # "Bimonn_exp_64/sandbox"
-    "Bimonn_exp_68/sandbox/0"
+    # "Bimonn_exp_68/sandbox/0"
+    "Bimonn_exp_70/sandbox/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -64,8 +66,9 @@ all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
     # "mnist",
+    "mnist_gray",
     # "inverted_mnist",
-    'diskorect',
+    # 'diskorect',
     # "sticks_noised",
 ]
 all_args['preprocessing'] = [  # for axspa roi
@@ -94,6 +97,10 @@ all_args['mnist_args'] = [
     {"threshold": 30, "size": (50, 50), "invert_input_proba": 0, },
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
+all_args['mnist_gray_args'] = [
+    {"n_gray_scale_values": 20, "size": (50, 50), "invert_input_proba": 0, }
+]
+
 all_args['sticks_noised_angles'] = [
     # [0, 90],
     # [30, 60],
@@ -137,7 +144,8 @@ all_args['loss_data_str'] = [
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
-    "MSELoss",
+    "BCELoss"
+    # "MSELoss",
     # "MaskedDiceLoss",
     # "NormalizedDiceLoss",
 ]
@@ -150,7 +158,7 @@ all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
-all_args['batch_size'] = [256]
+all_args['batch_size'] = [32]
 all_args['num_workers'] = [
     20,
     # 0,
@@ -171,20 +179,20 @@ all_args['atomic_element'] = [
     # "sybisel",
 ]
 all_args['n_atoms'] = [
-    # 'adapt',
-    11
+    'adapt',
+    # 11
     # 2
 ]
 
 all_args['kernel_size'] = [
     # 7,
-    3
-    # "adapt",
+    # 3
+    "adapt",
     # 21,
 ]
 all_args['channels'] = [
-    # 'adapt',
-    [1] * 12
+    'adapt',
+    # [1] * 12
     # [1, 1, 1]
     # [
     #     2, 2, 2, 2, 2, 2, 1
@@ -243,13 +251,13 @@ all_args['initializer_args'] = [
     # force operations at init
     {
         # "bise_init_method": InitBiseEnum.KAIMING_UNIFORM,
-        "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC,
-        # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
+        # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC,
+        "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
         # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC_RANDOM_BIAS,
         # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
         # "bise_init_args": [{"init_bias_value": -1, "mean_weight": "auto", "ub": 0.01}, {"init_bias_value": 1, "mean_weight": "auto", "ub": 0.01}]
-        "bise_init_args": {"init_bias_value": 1, "mean_weight": "auto", "ub": 0.01}
-        # "bise_init_args": {"init_bias_value": "auto", "mean_weight": "auto", "ub": 0.01}
+        # "bise_init_args": {"init_bias_value": 1, "mean_weight": "auto", "ub": 0.01}
+        "bise_init_args": {"init_bias_value": "auto", "mean_weight": "auto", "ub": 0.01}
     },
 
 ]
@@ -332,7 +340,7 @@ for idx, args in enumerate(all_args):
     #     args['init_bias_value_bise'] = "auto"
     #     args['init_bias_value_lui'] = "auto"
 
-    if args['dataset_type'] in ["diskorect", 'mnist', 'inverted_mnist', 'sticks_noised']:
+    if args['dataset_type'] in ["diskorect", 'mnist', 'inverted_mnist', 'sticks_noised', 'mnist_gray']:
         # args['kernel_size'] = 'adapt'
 
 
@@ -385,7 +393,7 @@ for idx, args in enumerate(all_args):
         # args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
         args['random_gen_args']['size'] = args['random_gen_args']['size'] + (args["morp_operation"].in_channels[0],)
 
-    if args['dataset_type'] in ["mnist", "inverted_mnist"]:
+    if args['dataset_type'] in ["mnist", "inverted_mnist", "mnist_gray"]:
         args['freq_imgs'] = 300
         args['n_inputs'] = 70_000
 
@@ -415,6 +423,12 @@ for idx, args in enumerate(all_args):
 
     for key in ['closest_selem_method', 'closest_selem_distance_fn', 'bias_optim_mode']:
         args[f'{key}_str'] = str(args[key])
+
+    if args['dataset_type'] == 'mnist_gray':
+        assert "gray" in args['morp_operation'].name
+    else:
+        assert "gray" not in args['morp_operation'].name
+
 
 #     already_seen_path = f"deep_morpho/results/results_tensorboards/Bimonn_exp_63/multi/sybisel/softplus/diskorect/seen_args.txt"
 #     with open(already_seen_path, "r") as f:

@@ -326,6 +326,17 @@ class ParallelMorpOperations:
         )
 
     @staticmethod
+    def erosion_gray(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        kwargs["name"] = kwargs.get("name", 'erosion_gray')
+        return ParallelMorpOperations(
+            operations=[[[('erosion', selem, False), 'union']]],
+            str_to_fn={"dilation": morp.dilation, "erosion": morp.erosion},
+            str_to_ui_fn={"intersection": lambda *x: x[0][..., 0], "union": lambda *x: x[0][..., 0]},
+            *args,
+            **kwargs
+        )
+
+    @staticmethod
     def dilation(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
         kwargs["name"] = kwargs.get("name", 'dilation')
         return ParallelMorpOperations(
@@ -336,7 +347,7 @@ class ParallelMorpOperations:
 
     @staticmethod
     def dilation_gray(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
-        kwargs["name"] = kwargs.get("name", 'dilation')
+        kwargs["name"] = kwargs.get("name", 'dilation_gray')
         return ParallelMorpOperations(
             operations=[[[('dilation', selem, False), 'union']]],
             str_to_fn={"dilation": morp.dilation, "erosion": morp.erosion},
@@ -358,6 +369,20 @@ class ParallelMorpOperations:
         )
 
     @staticmethod
+    def opening_gray(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        kwargs["name"] = kwargs.get("name", 'opening_gray')
+        return ParallelMorpOperations(
+            operations=[
+                [[('erosion', selem, False), 'union']],
+                [[('dilation', selem, False), 'union']],
+            ],
+            str_to_fn={"dilation": morp.dilation, "erosion": morp.erosion},
+            str_to_ui_fn={"intersection": lambda *x: x[0][..., 0], "union": lambda *x: x[0][..., 0]},
+            *args,
+            **kwargs
+        )
+
+    @staticmethod
     def closing(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
         kwargs["name"] = kwargs.get("name", 'closing')
         return ParallelMorpOperations(
@@ -365,6 +390,20 @@ class ParallelMorpOperations:
                 [[('dilation', selem, False), 'union']],
                 [[('erosion', selem, False), 'union']],
             ],
+            *args,
+            **kwargs
+        )
+
+    @staticmethod
+    def closing_gray(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        kwargs["name"] = kwargs.get("name", 'closing_gray')
+        return ParallelMorpOperations(
+            operations=[
+                [[('dilation', selem, False), 'union']],
+                [[('erosion', selem, False), 'union']],
+            ],
+            str_to_fn={"dilation": morp.dilation, "erosion": morp.erosion},
+            str_to_ui_fn={"intersection": lambda *x: x[0][..., 0], "union": lambda *x: x[0][..., 0]},
             *args,
             **kwargs
         )

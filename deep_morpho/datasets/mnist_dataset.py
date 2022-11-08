@@ -10,6 +10,7 @@ import torch
 from deep_morpho.morp_operations import ParallelMorpOperations
 from deep_morpho.gray_scale import level_sets_from_gray, gray_from_level_sets
 from deep_morpho.datasets.collate_fn_gray import collate_fn_gray_scale
+from deep_morpho.tensor_with_attributes import TensorGray
 # from general.utils import set_borders_to
 
 
@@ -132,8 +133,10 @@ class MnistGrayScaleDataset(MNIST):
             cv2.resize(self.data[index].numpy(), (self.size[1], self.size[0]), interpolation=cv2.INTER_CUBIC)
         )[..., None]
 
-        target = torch.tensor(self.morp_operation(input_)).float()
-        input_ = torch.tensor(input_).float()
+        # target = torch.tensor(self.morp_operation(input_)).float()
+        # input_ = torch.tensor(input_).float()
+        target = TensorGray(self.morp_operation(input_)).float()
+        input_ = TensorGray(input_).float()
 
         input_ = input_.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)
         target = target.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)

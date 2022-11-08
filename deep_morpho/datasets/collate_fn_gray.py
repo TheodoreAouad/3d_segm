@@ -14,7 +14,7 @@ def collate_tensor_fn_accumulate(batch):
         # shared memory tensor to avoid an extra copy
         numel = sum(x.numel() for x in batch)
         storage = elem.storage()._new_shared(numel, device=elem.device)
-        out = elem.new(storage).resize_(len(batch), *list(elem.size()))
+        out = elem.new(storage).resize_(len(batch) * elem.size(0), *list(elem.size()[1:]))
     return torch.cat(batch, 0, out=out)
 
 

@@ -1,3 +1,4 @@
+from typing import Dict
 import random
 
 import matplotlib.pyplot as plt
@@ -64,14 +65,14 @@ class BinaryModeMetricGrayScale(BinaryModeMetric):
 
 
             img, pred, target, original_img, original_target = inputs[0], preds[0], targets[0], original_inputs[0], original_targets[0]
-            fig = self.plot_five(*[k.cpu().detach().numpy() for k in [img, pred, target, original_img, original_target]], title='train')
+            fig = self.plot_five(*[k.cpu().detach().numpy()[0] for k in [img, pred, target, original_img, original_target]], title='train')
             trainer.logger.experiment.add_figure("preds/train/binary_mode/input_pred_target", fig, trainer.global_step)
 
             pl_module.model.binary(False)
 
 
     @staticmethod
-    def plot_five(img, pred, target, original_img, original_target, title='', fig_kwargs={"vmin": 0, "vmax": 1}):
+    def plot_five(img, pred, target, original_img, original_target, title='', fig_kwargs={}):
         fig, axs = plt.subplots(2, 3, figsize=(4 * 3, 4 * 2), squeeze=False)
         fig.suptitle(title)
 
@@ -83,16 +84,16 @@ class BinaryModeMetricGrayScale(BinaryModeMetric):
         axs[0, 0].set_title(f'input - {nb_values} values')
 
         axs[0, 1].imshow(pred, **fig_kwargs)
-        axs[0, 1].set_title(f'reconstructed pred vmin={pred.min():.2} vmax={pred.max():.2}')
+        axs[0, 1].set_title(f'rec pred vmin={pred.min():.2} vmax={pred.max():.2}')
 
         axs[0, 2].imshow(target, **fig_kwargs)
         axs[0, 2].set_title(f'target - {nb_values} values')
 
         axs[1, 0].imshow(original_img, **fig_kwargs)
-        axs[1, 0].set_title(f'original input - MSE={MSE_input}')
+        axs[1, 0].set_title(f'ori input - MSE={MSE_input:.2}')
 
         axs[1, 2].imshow(original_target, **fig_kwargs)
-        axs[1, 2].set_title(f'original target - MSE={MSE_target}')
+        axs[1, 2].set_title(f'ori target - MSE={MSE_target:.2}')
 
         return fig
 
@@ -105,6 +106,13 @@ class InputAsPredMetricGrayScale(InputAsPredMetric):
 
 
 class PlotPredsGrayscale(PlotPreds):
+    def __init__(self, freq: Dict = {"train": 100, "val": 10}, fig_kwargs={}, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.freq = freq
+        self.idx = {"train": 0, "val": 0}
+        self.saved_fig = {"train": None, "val": None}
+        self.fig_kwargs = fig_kwargs
+
 
     def on_validation_batch_end_with_preds(
         self,
@@ -116,6 +124,7 @@ class PlotPredsGrayscale(PlotPreds):
         preds: "Any",
     ) -> None:
         if self.idx['val'] % self.freq['val'] != 0:
+            self.idx['val'] += 1
             return
 
         idx = random.choice(range(len(batch[0].original)))
@@ -139,7 +148,8 @@ class PlotPredsGrayscale(PlotPreds):
         batch_idx: int,
         preds: 'Any',
     ) -> None:
-        if self.idx['train'] % self.freq["train"] == 0:
+        if self.idx['train'] % self.freq["train"] != 0:
+            self.idx['train'] += 1
             return
 
         with torch.no_grad():
@@ -157,7 +167,7 @@ class PlotPredsGrayscale(PlotPreds):
 
 
     @staticmethod
-    def plot_five(img, pred, target, original_img, original_target, title='', fig_kwargs={"vmin": 0, "vmax": 1}):
+    def plot_five(img, pred, target, original_img, original_target, title='', fig_kwargs={}):
         fig, axs = plt.subplots(2, 3, figsize=(4 * 3, 4 * 2), squeeze=False)
         fig.suptitle(title)
 
@@ -169,35 +179,35 @@ class PlotPredsGrayscale(PlotPreds):
         axs[0, 0].set_title(f'input - {nb_values} values')
 
         axs[0, 1].imshow(pred, **fig_kwargs)
-        axs[0, 1].set_title(f'reconstructed pred vmin={pred.min():.2} vmax={pred.max():.2}')
+        axs[0, 1].set_title(f'rec pred vmin={pred.min():.2} vmax={pred.max():.2}')
 
         axs[0, 2].imshow(target, **fig_kwargs)
         axs[0, 2].set_title(f'target - {nb_values} values')
 
         axs[1, 0].imshow(original_img, **fig_kwargs)
-        axs[1, 0].set_title(f'original input - MSE={MSE_input}')
+        axs[1, 0].set_title(f'ori input - MSE={MSE_input:.2}')
 
         axs[1, 2].imshow(original_target, **fig_kwargs)
-        axs[1, 2].set_title(f'original target - MSE={MSE_target}')
+        axs[1, 2].set_title(f'ori target - MSE={MSE_target:.2}')
 
         return fig
 
 
 class CalculateAndLogMetricGrayScale(CalculateAndLogMetrics):
     def __init__(self, metrics, keep_preds_for_epoch=False):
-        super.__init__(metrics, keep_preds_for_epoch)
+        super().__init__(metrics, keep_preds_for_epoch)
 
     def on_train_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
         inputs, preds, targets, original_inputs, original_targets = MnistGrayScaleDataset.get_relevent_tensors_batch(batch, preds)
-        self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='train', suffix="rec")
-        self._calculate_and_log_metrics(trainer, pl_module, original_targets, preds, state='train', suffix="ori")
+        self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='train', suffix="_rec")
+        self._calculate_and_log_metrics(trainer, pl_module, original_targets, preds, state='train', suffix="_ori")
 
     def on_validation_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
         inputs, preds, targets, original_inputs, original_targets = MnistGrayScaleDataset.get_relevent_tensors_batch(batch, preds)
-        self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='val', suffix="rec")
-        self._calculate_and_log_metrics(trainer, pl_module, original_targets, preds, state='val', suffix="ori")
+        self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='val', suffix="_rec")
+        self._calculate_and_log_metrics(trainer, pl_module, original_targets, preds, state='val', suffix="_ori")
 
     def on_test_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
         inputs, preds, targets, original_inputs, original_targets = MnistGrayScaleDataset.get_relevent_tensors_batch(batch, preds)
-        self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='test', suffix="rec")
-        self._calculate_and_log_metrics(trainer, pl_module, original_targets, preds, state='test', suffix="ori")
+        self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='test', suffix="_rec")
+        self._calculate_and_log_metrics(trainer, pl_module, original_targets, preds, state='test', suffix="_ori")
