@@ -204,9 +204,9 @@ class BiSEBase(BinaryNN):
         net = BiSEBase(kernel_size=selem.shape, threshold_mode=threshold_mode, out_channels=1, **kwargs)
 
         if threshold_mode == "identity":
-            net.set_weights_from_weights(torch.FloatTensor(selem)[None, None, ...])
+            net.set_param_from_weights(torch.FloatTensor(selem)[None, None, ...])
         else:
-            net.set_weights_from_weights((torch.tensor(selem) + 0.01)[None, None, ...])
+            net.set_param_from_weights((torch.tensor(selem) + 0.01)[None, None, ...])
         bias_value = -.5 if operation == "dilation" else -float(selem.sum()) + .5
         net.set_bias(torch.FloatTensor([bias_value]))
 
@@ -226,18 +226,18 @@ class BiSEBase(BinaryNN):
 
     # def init_weights(self):
     #     if self.init_weight_mode == InitBiseEnum.NORMAL:
-    #         self.set_weights_from_weights(self._init_normal_identity(self.kernel_size, self.out_channels))
+    #         self.set_param_from_weights(self._init_normal_identity(self.kernel_size, self.out_channels))
     #     elif self.init_weight_mode == InitBiseEnum.IDENTITY:
     #         self._init_as_identity()
     #     elif self.init_weight_mode == InitBiseEnum.KAIMING_UNIFORM:
-    #         self.set_weights_from_weights(self.weight + 1)
+    #         self.set_param_from_weights(self.weight + 1)
     #     elif self.init_weight_mode == InitBiseEnum.CUSTOM_HEURISTIC:
     #         nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
     #         mean = self.init_bias_value / (self.input_mean * nb_params)
     #         std = .5
     #         lb = mean * (1 - std)
     #         ub = mean * (1 + std)
-    #         self.set_weights_from_weights(
+    #         self.set_param_from_weights(
     #             torch.rand_like(self.weights) * (lb - ub) + ub
     #         )
     #     elif self.init_weight_mode == InitBiseEnum.CUSTOM_CONSTANT:
@@ -261,7 +261,7 @@ class BiSEBase(BinaryNN):
     #         ub = mean + diff
 
     #         new_weights = torch.rand_like(self.weights) * (lb - ub) + ub
-    #         self.set_weights_from_weights(
+    #         self.set_param_from_weights(
     #             # new_weights / new_weights.sum()  # DEBUG
     #             new_weights
     #         )
@@ -589,20 +589,12 @@ class BiSEBase(BinaryNN):
 
     @property
     def weight(self):
-        # if self.shared_weights is not None:
-        #     return self.shared_weights
-        # return self.conv.weight
         return self.weights_handler.param
 
-    def set_param_from_weights(self, new_weights: torch.Tensor) -> torch.Tensor:
-        assert self.weight.shape == new_weights.shape, f"Weights must be of same shape {self.weight.shape}"
-        # self.conv.weight.data = new_weights
-        # return new_weights
-        return self.weights_handler.set_param(new_weights)
+    def set_weights_param(self, new_param: torch.Tensor) -> torch.Tensor:
+        return self.weights_handler.set_param(new_param)
 
-    def set_weights_from_weights(self, new_weights: torch.Tensor) -> torch.Tensor:
-        assert (new_weights >= 0).all(), new_weights
-        # return self.set_param_from_weights(self.weight_threshold_layer.forward_inverse(new_weights))
+    def set_param_from_weights(self, new_weights: torch.Tensor) -> torch.Tensor:
         return self.weights_handler.set_param_from_weights(new_weights)
 
     def set_bias(self, new_bias: torch.Tensor) -> torch.Tensor:

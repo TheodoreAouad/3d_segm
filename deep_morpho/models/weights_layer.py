@@ -6,6 +6,7 @@ if TYPE_CHECKING:
 
 import torch
 import torch.nn as nn
+import numpy as np
 
 from .bise_module_container import BiseModuleContainer
 from .threshold_layer import dispatcher
@@ -52,6 +53,7 @@ class WeightsBise(nn.Module):
         return nn.Parameter(torch.FloatTensor(size=self.shape))
 
     def set_param_from_weights(self, new_weights: torch.Tensor) -> torch.Tensor:
+        assert new_weights.shape == self.weight.shape, f"Weights must be of same shape {self.weight.shape}"
         new_param = self.from_weights_to_param(new_weights)
         self.set_param(new_param)
         return new_param
@@ -80,6 +82,7 @@ class WeightsThresholdedBise(WeightsBise):
         return self.threshold_layer.forward(param)
 
     def from_weights_to_param(self, weights: torch.Tensor) -> torch.Tensor:
+        assert (weights >= 0).all(), weights
         return self.threshold_layer.forward_inverse(weights)
 
 
@@ -116,7 +119,7 @@ class WeightsEllipse(WeightsBise):
         return param[:, :, :self.dim]
 
     def get_sigma_inv(self, param: torch.Tensor) -> torch.Tensor:
-        return param[:, :, self.dim:self.dim + self.dim**2]
+        return param[:, :, self.dim:self.dim + self.dim**2].reshape(*self.shape[:2] + (self.dim, self.dim))
 
     def get_a(self, param: torch.Tensor) -> torch.Tensor:
         return param[:, :, -1]
