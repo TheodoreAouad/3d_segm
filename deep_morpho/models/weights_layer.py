@@ -106,14 +106,14 @@ class WeightsRaw(WeightsThresholdedBise):
 class WeightsEllipse(WeightsBise):
     def init_param(self, *args, **kwargs) -> torch.Tensor:
         return nn.Parameter(torch.FloatTensor(size=(
-            self.shape[2] +  # out_channels, in_channels
+            self.shape[:2] +  # out_channels, in_channels
             (  # ellipse parameters
                 self.dim +  # mu
                 self.dim ** 2 +  # sigma
                 1   # exponent parameter
-            )
+            ,)
         )))
-        return nn.Parameter(torch.FloatTensor(size=self.shape))
+        # return nn.Parameter(torch.FloatTensor(size=([1, 1, 7])))
 
     def get_mu(self, param: torch.Tensor) -> torch.Tensor:
         return param[:, :, :self.dim]
@@ -146,6 +146,7 @@ class WeightsEllipse(WeightsBise):
 
     @staticmethod
     def ellipse_level(x: torch.Tensor, mu: torch.Tensor, sigma_inv: torch.Tensor, a_: torch.Tensor) -> torch.Tensor:
+        mu = mu[:, None]
         A1 = (x - mu).T @ sigma_inv
         A2 = (x - mu).T
         res = torch.bmm(A1[:, None, :], A2[..., None])
@@ -153,7 +154,7 @@ class WeightsEllipse(WeightsBise):
 
     def get_one_ellipse_matrix(self, mu: torch.Tensor, sigma_inv: torch.Tensor, a_: torch.Tensor) -> torch.Tensor:
         shape_W = self.shape[2:]
-        ellipse_fn = partial(self.ellipse_level_torch, mu=mu, sigma_inv=sigma_inv, a=a_)
+        ellipse_fn = partial(self.ellipse_level, mu=mu, sigma_inv=sigma_inv, a_=a_)
 
         XX, YY = torch.meshgrid(torch.arange(shape_W[0], device=self.device), torch.arange(shape_W[1], device=self.device))
         coords = torch.vstack([XX.flatten(), YY.flatten()])

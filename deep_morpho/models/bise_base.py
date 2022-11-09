@@ -9,7 +9,7 @@ from torch import Tensor
 from .threshold_layer import dispatcher, ThresholdEnum
 from .binary_nn import BinaryNN
 from .bias_layer import BiasSoftplus, BiasRaw, BiasBiseSoftplusProjected, BiasBiseSoftplusReparametrized
-from .weights_layer import WeightsThresholdedBise, WeightsNormalizedBiSE
+from .weights_layer import WeightsThresholdedBise, WeightsNormalizedBiSE, WeightsEllipse
 from ..initializer import InitBiseHeuristicWeights, BiseInitializer, InitSybiseConstantVarianceWeights
 from general.utils import set_borders_to
 
@@ -35,6 +35,7 @@ class BiseBiasOptimEnum(Enum):
 class BiseWeightsOptimEnum(Enum):
     THRESHOLDED = 0
     NORMALIZED = 1
+    ELLIPSE = 2
 
 
 class BiSEBase(BinaryNN):
@@ -177,6 +178,10 @@ class BiSEBase(BinaryNN):
 
         elif self.weights_optim_mode == BiseWeightsOptimEnum.NORMALIZED:
             return WeightsNormalizedBiSE(bise_module=self, threshold_mode=self.weight_threshold_mode, **kwargs)
+
+        elif self.weights_optim_mode == BiseWeightsOptimEnum.ELLIPSE:
+            return WeightsEllipse(bise_module=self, **kwargs)
+
 
         raise NotImplementedError(f'self.bias_optim_mode must be in {BiseWeightsOptimEnum._member_names_}')
 

@@ -251,22 +251,22 @@ class InitSybiseHeuristicWeightsRandomBias(InitSybiseHeuristicWeights):
         )
 
 
-class InitBiseEllipseWeights(InitWeightsThenBias):
+class InitBiseEllipseWeights(InitBiasFixed):
     def init_weights(self, module):
-        param = torch.FloatTensor(size=module.weight_handler.param.shape)
+        param = torch.FloatTensor(size=module.weights_handler.param.shape)
 
-        shape = module.weight_handler.shape[2:]
-        dim = module.weight_handler.dim
+        shape = module.weights_handler.shape[2:]
+        dim = module.weights_handler.dim
 
         # mu
-        param[:, :, :dim] = torch.FloatTensor(shape) // 2
+        param[:, :, :dim] = torch.tensor(shape) // 2
 
         # sigma_inv
         sigma_inv = torch.zeros(dim, dim)
-        sigma_inv[torch.arange(dim), torch.arange(dim)] = torch.FloatTensor([1e-3 for _ in range(self.dim)])
+        sigma_inv[torch.arange(dim), torch.arange(dim)] = torch.tensor([1e-3 for _ in range(dim)])
         param[:, :, dim: dim + dim ** 2] = sigma_inv.view(-1)
 
         # a_
         param[:, :, -1] = 1
 
-        module.
+        module.set_weights_param(param)

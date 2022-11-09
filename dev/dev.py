@@ -1,7 +1,10 @@
-import numpy as np
+import deep_morpho.initializer as inits
+import deep_morpho.models.bise as bise
 
 
-A = np.arange(3 * 4 * 5).reshape(3, 4, 5)
-B = np.ones((3, 4))
-
-B @ A
+model = bise.BiSE(
+    kernel_size=(7, 7),
+    initializer=inits.InitBiseEllipseWeights(init_bias_value=1),
+    weights_optim_mode=bise.BiseWeightsOptimEnum.ELLIPSE,
+    bias_optim_mode=bise.BiseBiasOptimEnum.POSITIVE,
+)
