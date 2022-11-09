@@ -62,7 +62,7 @@ class InitNormalIdentity(InitBiasFixed):
 
 
     def init_weights(self, module: nn.Module) -> Tuple[torch.Tensor, torch.Tensor]:
-        module.set_normalized_weights(self._init_normal_identity(module.kernel_size, module.out_channels))
+        module.set_weights_from_weights(self._init_normal_identity(module.kernel_size, module.out_channels))
 
 
 class InitIdentity(InitBiasFixed):
@@ -74,7 +74,7 @@ class InitIdentity(InitBiasFixed):
 
 class InitKaimingUniform(InitBiasFixed):
     def init_weights(self, module: nn.Module):
-        module.set_normalized_weights(module.conv.weight + 1)
+        module.set_weights_from_weights(module.conv.weight + 1)
 
 
 class InitSybiseBias(InitWeightsThenBias):
@@ -120,7 +120,7 @@ class InitBiseHeuristicWeights(InitBiasFixed):
         std = .5
         lb = mean * (1 - std)
         ub = mean * (1 + std)
-        module.set_normalized_weights(
+        module.set_weights_from_weights(
             torch.rand_like(module.weights) * (lb - ub) + ub
         )
 
@@ -152,7 +152,7 @@ class InitBiseConstantVarianceWeights(InitBiasFixed):
 
         new_weights = torch.rand_like(module.weights) * (lb - ub) + ub
 
-        module.set_normalized_weights(
+        module.set_weights_from_weights(
             new_weights
         )
 
@@ -177,7 +177,7 @@ class InitSybiseHeuristicWeights(InitWeightsThenBias):
         # ub = mean * (1 + std)
         lb = mean / 2
         ub = 3 * lb
-        module.set_normalized_weights(
+        module.set_weights_from_weights(
             torch.rand_like(module.weights) * (lb - ub) + ub
         )
 
@@ -213,7 +213,7 @@ class InitSybiseConstantVarianceWeights(InitWeightsThenBias):
         diff = torch.sqrt(3 * sigma)
         lb = mean - diff
         ub = mean + diff
-        module.set_normalized_weights(
+        module.set_weights_from_weights(
             torch.rand_like(module.weights) * (lb - ub) + ub
         )
 
@@ -249,3 +249,7 @@ class InitSybiseHeuristicWeightsRandomBias(InitSybiseHeuristicWeights):
         module.set_bias(
             torch.zeros_like(module.bias) - new_value + self.init_bias_value
         )
+
+
+class InitBiseEllipseWeights(InitWeightsThenBias):
+    def init_weights(self, module):

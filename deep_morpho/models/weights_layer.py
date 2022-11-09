@@ -1,4 +1,5 @@
-from typing import Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING
+from functools import partial
 
 if TYPE_CHECKING:
     from .bise import BiSE
@@ -50,7 +51,7 @@ class WeightsBise(nn.Module):
     def init_param(self, *args, **kwargs) -> torch.Tensor:
         return nn.Parameter(torch.FloatTensor(size=self.shape))
 
-    def set_weights(self, new_weights: torch.Tensor) -> torch.Tensor:
+    def set_param_from_weights(self, new_weights: torch.Tensor) -> torch.Tensor:
         new_param = self.from_weights_to_param(new_weights)
         self.set_param(new_param)
         return new_param
@@ -62,6 +63,10 @@ class WeightsBise(nn.Module):
     @property
     def grad(self):
         return self.param.grad
+
+    @property
+    def device(self):
+        return self.param.device
 
 
 class WeightsThresholdedBise(WeightsBise):
@@ -93,3 +98,71 @@ class WeightsRaw(WeightsThresholdedBise):
 
     def __init__(self, *args, **kwargs):
         super().__init__(threshold_mode='identity', *args, **kwargs)
+
+
+class WeightsEllipse(WeightsBise):
+    def init_param(self, *args, **kwargs) -> torch.Tensor:
+        return nn.Parameter(torch.FloatTensor(size=(
+            self.shape[2] +  # out_channels, in_channels
+            (  # ellipse parameters
+                self.dim +  # mu
+                self.dim ** 2 +  # sigma
+                1   # exponent parameter
+            )
+        )))
+        return nn.Parameter(torch.FloatTensor(size=self.shape))
+
+    def get_mu(self, param: torch.Tensor) -> torch.Tensor:
+        return param[:, :, :self.dim]
+
+    def get_sigma_inv(self, param: torch.Tensor) -> torch.Tensor:
+        return param[:, :, self.dim:self.dim + self.dim**2]
+
+    def get_a(self, param: torch.Tensor) -> torch.Tensor:
+        return param[:, :, -1]
+
+    @property
+    def mu(self) -> torch.Tensor:
+        return self.get_mu(self.param)
+
+    @property
+    def sigma_inv(self) -> torch.Tensor:
+        return self.get_sigma_inv(self.param)
+
+    @property
+    def a_(self) -> torch.Tensor:
+        return self.get_a(self.param)
+
+    @property
+    def dim(self) -> int:
+        return len(self.shape[2:])
+
+    def from_param_to_weights(self, param: torch.Tensor) -> torch.Tensor:
+        mu, sigma_inv, a_ = self.get_mu(param), self.get_sigma_inv(param), self.get_a(param)
+        return self.get_weights_from_ellipse(mu, sigma_inv, a_)
+
+    @staticmethod
+    def ellipse_level(x: torch.Tensor, mu: torch.Tensor, sigma_inv: torch.Tensor, a_: torch.Tensor) -> torch.Tensor:
+        A1 = (x - mu).T @ sigma_inv
+        A2 = (x - mu).T
+        res = torch.bmm(A1[:, None, :], A2[..., None])
+        return torch.exp(-res ** a_)
+
+    def get_one_ellipse_matrix(self, mu: torch.Tensor, sigma_inv: torch.Tensor, a_: torch.Tensor) -> torch.Tensor:
+        shape_W = self.shape[2:]
+        ellipse_fn = partial(self.ellipse_level_torch, mu=mu, sigma_inv=sigma_inv, a=a_)
+
+        XX, YY = torch.meshgrid(torch.arange(shape_W[0], device=self.device), torch.arange(shape_W[1], device=self.device))
+        coords = torch.vstack([XX.flatten(), YY.flatten()])
+
+        return ellipse_fn(coords).reshape(*shape_W)
+
+
+    def get_weights_from_ellipse(self, mu: torch.Tensor, sigma_inv: torch.Tensor, a_: torch.Tensor) -> torch.Tensor:
+        res = torch.FloatTensor(size=self.shape)
+
+        for chan1 in range(self.shape[0]):
+            for chan2 in range(self.shape[1]):
+                res[chan1, chan2] = self.get_one_ellipse_matrix(mu[chan1, chan2], sigma_inv[chan1, chan2], a_[chan1, chan2])
+
+        return res
