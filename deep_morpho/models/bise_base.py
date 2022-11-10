@@ -9,8 +9,8 @@ from torch import Tensor
 from .threshold_layer import dispatcher, ThresholdEnum
 from .binary_nn import BinaryNN
 from .bias_layer import BiasSoftplus, BiasRaw, BiasBiseSoftplusProjected, BiasBiseSoftplusReparametrized
-from .weights_layer import WeightsThresholdedBise, WeightsNormalizedBiSE, WeightsEllipse
-from ..initializer import InitBiseHeuristicWeights, BiseInitializer, InitSybiseConstantVarianceWeights
+from .weights_layer import WeightsThresholdedBise, WeightsNormalizedBiSE, WeightsEllipse, WeightsEllipseRoot
+from deep_morpho.initializer import InitBiseHeuristicWeights, BiseInitializer, InitSybiseConstantVarianceWeights
 from general.utils import set_borders_to
 
 
@@ -36,6 +36,7 @@ class BiseWeightsOptimEnum(Enum):
     THRESHOLDED = 0
     NORMALIZED = 1
     ELLIPSE = 2
+    ELLIPSE_ROOT = 3
 
 
 class BiSEBase(BinaryNN):
@@ -182,6 +183,8 @@ class BiSEBase(BinaryNN):
         elif self.weights_optim_mode == BiseWeightsOptimEnum.ELLIPSE:
             return WeightsEllipse(bise_module=self, **kwargs)
 
+        elif self.weights_optim_mode == BiseWeightsOptimEnum.ELLIPSE_ROOT:
+            return WeightsEllipseRoot(bise_module=self, **kwargs)
 
         raise NotImplementedError(f'self.bias_optim_mode must be in {BiseWeightsOptimEnum._member_names_}')
 
@@ -325,7 +328,7 @@ class BiSEBase(BinaryNN):
         """
         Get the closest learned selems as well as the bias corresponding to the operation (dilation or erosion).
         """
-        weights = torch.zeros_like(self.weight)
+        weights = torch.zeros_like(self._normalized_weight)
         bias = torch.zeros_like(self.bias)
         operations = torch.zeros_like(self.bias)
 

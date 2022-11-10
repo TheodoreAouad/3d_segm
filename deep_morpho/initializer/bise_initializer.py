@@ -16,6 +16,8 @@ class InitBiseEnum(Enum):
     IDENTITY = 5
     CUSTOM_CONSTANT_RANDOM_BIAS = 6
     CUSTOM_HEURISTIC_RANDOM_BIAS = 7
+    ELLIPSE = 8
+    ELLIPSE_ROOT = 9
 
 
 class BiseInitializer:
@@ -262,9 +264,30 @@ class InitBiseEllipseWeights(InitBiasFixed):
         param[:, :, :dim] = torch.tensor(shape) // 2
 
         # sigma_inv
-        sigma_inv = torch.zeros(dim, dim)
-        sigma_inv[torch.arange(dim), torch.arange(dim)] = torch.tensor([1e-3 for _ in range(dim)])
-        param[:, :, dim: dim + dim ** 2] = sigma_inv.view(-1)
+        sigma_inv = torch.zeros(*param.shape[:2], dim, dim)
+        sigma_inv[:, :, torch.arange(dim), torch.arange(dim)] = torch.tensor([.5 for _ in range(dim)]) + torch.randn(*param.shape[:2], dim) * .1
+        param[:, :, dim: dim + dim ** 2] = sigma_inv.view(*param.shape[:2], -1)
+
+        # a_
+        param[:, :, -1] = 1
+
+        module.set_weights_param(param)
+
+
+class InitBiseEllipseWeightsRoot(InitBiasFixed):
+    def init_weights(self, module):
+        param = torch.FloatTensor(size=module.weights_handler.param.shape)
+
+        shape = module.weights_handler.shape[2:]
+        dim = module.weights_handler.dim
+
+        # mu
+        param[:, :, :dim] = torch.tensor(shape) // 2
+
+        # sigma_inv
+        root_sigma_inv = torch.randn(*param.shape[:2], dim, dim) * .5
+        # root_sigma_inv[:, :, torch.arange(dim), torch.arange(dim)] = torch.randn(*param.shape[:2], dim)
+        param[:, :, dim: dim + dim ** 2] = root_sigma_inv.view(*param.shape[:2], -1)
 
         # a_
         param[:, :, -1] = 1

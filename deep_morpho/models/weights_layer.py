@@ -124,6 +124,18 @@ class WeightsEllipse(WeightsBise):
     def get_a(self, param: torch.Tensor) -> torch.Tensor:
         return param[:, :, -1]
 
+    def get_mu_grad(self, param: torch.Tensor) -> torch.Tensor:
+        if self.param.grad is not None:
+            return param.grad[:, :, :self.dim]
+
+    def get_sigma_inv_grad(self, param: torch.Tensor) -> torch.Tensor:
+        if self.param.grad is not None:
+            return param.grad[:, :, self.dim:self.dim + self.dim**2].reshape(*self.shape[:2] + (self.dim, self.dim))
+
+    def get_a_grad(self, param: torch.Tensor) -> torch.Tensor:
+        if self.param.grad is not None:
+            return param.grad[:, :, -1]
+
     @property
     def mu(self) -> torch.Tensor:
         return self.get_mu(self.param)
@@ -135,6 +147,18 @@ class WeightsEllipse(WeightsBise):
     @property
     def a_(self) -> torch.Tensor:
         return self.get_a(self.param)
+
+    @property
+    def mu_grad(self) -> torch.Tensor:
+        return self.get_mu_grad(self.param)
+
+    @property
+    def sigma_inv_grad(self) -> torch.Tensor:
+        return self.get_sigma_inv_grad(self.param)
+
+    @property
+    def a_grad(self) -> torch.Tensor:
+        return self.get_a_grad(self.param)
 
     @property
     def dim(self) -> int:
@@ -163,10 +187,27 @@ class WeightsEllipse(WeightsBise):
 
 
     def get_weights_from_ellipse(self, mu: torch.Tensor, sigma_inv: torch.Tensor, a_: torch.Tensor) -> torch.Tensor:
-        res = torch.FloatTensor(size=self.shape)
+        res = torch.FloatTensor(size=self.shape).to(self.device)
 
         for chan1 in range(self.shape[0]):
             for chan2 in range(self.shape[1]):
                 res[chan1, chan2] = self.get_one_ellipse_matrix(mu[chan1, chan2], sigma_inv[chan1, chan2], a_[chan1, chan2])
 
         return res
+
+
+class WeightsEllipseRoot(WeightsEllipse):
+    """Computes the sigma_inv of the ellipse using its square root. In practice, we learn the square root.
+    """
+
+    def get_sigma_inv(self, param: torch.Tensor) -> torch.Tensor:
+        A = param[:, :, self.dim:self.dim + self.dim**2].view((self.shape[0] * self.shape[1],) + (self.dim, self.dim))
+        # A = param[:, :, self.dim:self.dim + self.dim**2].reshape(*self.shape[:2] + (self.dim, self.dim))
+        At = A.transpose(-2, -1)
+
+        sigma_inv = torch.bmm(At, A)
+        return sigma_inv.reshape(self.shape[:2] + (self.dim, self.dim))
+
+    @property
+    def root_sigma_inv(self):
+        return super().get_sigma_inv(self.param)

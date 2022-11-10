@@ -20,7 +20,7 @@ from deep_morpho.utils import set_seed
 from deep_morpho.datasets.multi_rect_dataset import InputOutputGeneratorDataset, MultiRectDataset
 from deep_morpho.datasets.axspa_roi_dataset import AxspaROISimpleDataset
 from deep_morpho.datasets.sticks_noised_dataset import SticksNoisedGeneratorDataset
-from deep_morpho.models import LightningBiMoNN, BiSE  # COBiSE, BiSEC, COBiSEC
+from deep_morpho.models import LightningBiMoNN, BiSE, BiseWeightsOptimEnum  # COBiSE, BiSEC, COBiSEC
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
 from general.utils import format_time, log_console, create_logger, save_yaml, save_pickle, close_handlers
@@ -129,7 +129,7 @@ def main(args, logger):
     trainloader, valloader, testloader = get_dataloader(args)
     metrics = {
         'dice': lambda y_true, y_pred: masked_dice(y_true, y_pred,
-                        border=(args['kernel_size'] // 2, args['kernel_size'] // 2), threshold=0 if args['atomic_element'] == 'sybisel' else 0.5).mean(),    
+                        border=(args['kernel_size'] // 2, args['kernel_size'] // 2), threshold=0 if args['atomic_element'] == 'sybisel' else 0.5).mean(),
         # 'mse': lambda y_true, y_pred: ((y_true - y_pred) ** 2).mean()
     }
 
@@ -137,6 +137,14 @@ def main(args, logger):
         plot_pred_obs_fn = obs.PlotPredsGrayscale if "gray" in args['dataset_type'] else obs.PlotPreds
     else:
         plot_pred_obs_fn = partial(obs.PlotPreds, fig_kwargs={"vmax": 1, "vmin": -1 if args['atomic_element'] == 'sybisel' else 0})
+
+    if args['weights_optim_mode'] not in [BiseWeightsOptimEnum.ELLIPSE, BiseWeightsOptimEnum.ELLIPSE_ROOT]:
+        plot_grad_obs = obs.PlotGradientBise(freq=args['freq_imgs'])
+        plot_weights_fn = obs.PlotWeightsBiSE
+    else:
+        plot_grad_obs = obs.PlotGradientBiseEllipse(freq=1)
+        plot_weights_fn = obs.PlotWeightsBiseEllipse
+
 
     observables_dict = {
         # "SetSeed": obs.SetSeed(args['batch_seed']),
@@ -153,13 +161,14 @@ def main(args, logger):
         "InputAsPredMetric": obs.InputAsPredMetric(metrics),
         "CountInputs": obs.CountInputs(),
         "PlotParametersBiSE": obs.PlotParametersBiSE(freq=1),
-        "PlotWeightsBiSE": obs.PlotWeightsBiSE(freq=args['freq_imgs']),
+        "PlotParametersBiseEllipse": obs.PlotParametersBiseEllipse(freq=1),
+        "PlotWeightsBiSE": plot_weights_fn(freq=args['freq_imgs']),
         "PlotLUIParametersBiSEL": obs.PlotLUIParametersBiSEL(),
         "WeightsHistogramBiSE": obs.WeightsHistogramBiSE(freq=args['freq_imgs']),
         # "CheckMorpOperation": obs.CheckMorpOperation(
         #     selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50
         # ) if args['dataset_type'] == 'diskorect' else obs.Observable(),
-        "PlotGradientBise": obs.PlotGradientBise(freq=args['freq_imgs']),
+        "PlotGradientBise": plot_grad_obs,
         # "ExplosiveWeightGradientWatcher": obs.ExplosiveWeightGradientWatcher(freq=1, threshold=0.5),
         "ConvergenceMetrics": obs.ConvergenceMetrics(metrics),
         # "ShowSelemAlmostBinary": obs.ShowSelemAlmostBinary(freq=args['freq_imgs']),
@@ -185,6 +194,11 @@ def main(args, logger):
             ),
             "InputAsPredMetricGrayScale": obs.InputAsPredMetricGrayScale(metrics_gray_scale),
             "BinaryModeMetricGrayScale": obs.BinaryModeMetricGrayScale(metrics_gray_scale, freq=args['freq_imgs']),
+        })
+
+    if args['weights_optim_mode'] in [BiseWeightsOptimEnum.ELLIPSE, BiseWeightsOptimEnum.ELLIPSE_ROOT]:
+        observables_dict.update({
+            "PlotSigmaBiseEllipse": obs.PlotSigmaBiseEllipse(freq=args['freq_imgs'])
         })
 
 

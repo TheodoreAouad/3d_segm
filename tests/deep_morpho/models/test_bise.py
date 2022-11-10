@@ -7,6 +7,7 @@ from deep_morpho.initializer.bise_initializer import InitBiseConstantVarianceWei
 from deep_morpho.models import BiSE, InitBiseEnum, BiseBiasOptimEnum
 from deep_morpho.datasets import InputOutputGeneratorDataset, get_random_diskorect_channels
 from deep_morpho.models.bise_base import BiseWeightsOptimEnum
+from deep_morpho.initializer import InitBiseEllipseWeightsRoot
 from general.structuring_elements import disk
 from general.array_morphology import array_erosion, array_dilation
 from deep_morpho.morp_operations import ParallelMorpOperations
@@ -263,3 +264,18 @@ class TestBiSE:
                     assert (grads1[name] + grads2[name]).abs().sum() < 1e-5
                 else:
                     assert (grads1[name] - grads2[name]).abs().sum() < 1e-5
+
+    @staticmethod
+    def test_ellipse_device():
+        model = BiSE(
+            kernel_size=(7, 7),
+            initializer=InitBiseEllipseWeightsRoot(init_bias_value=1),
+            weights_optim_mode=BiseWeightsOptimEnum.ELLIPSE_ROOT,
+            bias_optim_mode=BiseBiasOptimEnum.POSITIVE,
+            out_channels=3,
+        )
+
+        model.cuda()
+        assert model.weights_handler.param.is_cuda
+        assert model.weights_handler.sigma_inv.is_cuda
+        assert model._normalized_weight.is_cuda

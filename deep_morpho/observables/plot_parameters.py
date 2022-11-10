@@ -54,9 +54,11 @@ class PlotWeightsBiSE(ObservableLayersChans):
 
     def on_train_end(self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule') -> None:
         for layer_idx, layer in enumerate(pl_module.model.layers):
-            to_add = {"weights": layer.weights, "bias_bise": layer.bias_bise, "activation_P_bise": layer.activation_P_bise}
-            if isinstance(layer, (BiSE, BiSEL)):
-                to_add["normalized_weights"] = layer._normalized_weight
+            to_add = {"bias_bise": layer.bias_bise, "activation_P_bise": layer.activation_P_bise}
+
+            to_add["weights"] = layer.weights
+
+            to_add["normalized_weights"] = layer._normalized_weight
             self.last_weights.append(to_add)
 
     def save(self, save_path: str):
@@ -148,11 +150,11 @@ class PlotParametersBiSE(ObservableLayersChans):
         trainer.logger.log_metrics(metrics, trainer.global_step)
         self.last_params[layer_idx] = last_params
 
-        trainer.logger.experiment.add_scalars(
-            f"comparative/weight_P/layer_{layer_idx}_chout_{chan_output}",
-            {f"chin_{chan_input}": layer.weight_P_bise[chan_output, chan_input]},
-            trainer.global_step
-        )
+        # trainer.logger.experiment.add_scalars(
+        #     f"comparative/weight_P/layer_{layer_idx}_chout_{chan_output}",
+        #     {f"chin_{chan_input}": layer.weight_P_bise[chan_output, chan_input]},
+        #     trainer.global_step
+        # )
         trainer.logger.experiment.add_scalars(
             f"comparative/activation_P/layer_{layer_idx}_chout_{chan_output}",
             {f"chin_{chan_input}": layer.activation_P_bise[chan_output, chan_input]},

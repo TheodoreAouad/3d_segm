@@ -7,7 +7,7 @@ from .bise_initializer import (
     InitNormalIdentity, InitIdentity, InitKaimingUniform, InitIdentitySybise, InitNormalIdentitySybise,
     InitKaimingUniformSybise, InitBiseHeuristicWeights, InitBiseConstantVarianceWeights, InitSybiseHeuristicWeights,
     InitSybiseConstantVarianceWeights, InitSybiseConstantVarianceWeightsRandomBias, InitBiseEnum,
-    InitSybiseHeuristicWeightsRandomBias
+    InitSybiseHeuristicWeightsRandomBias, InitBiseEllipseWeights, InitBiseEllipseWeightsRoot
 )
 
 
@@ -72,6 +72,11 @@ class BimonnInitializer:
             elif bise_init_method == InitBiseEnum.CUSTOM_CONSTANT:
                 return InitBiseConstantVarianceWeights
 
+            elif bise_init_method == InitBiseEnum.ELLIPSE:
+                return InitBiseEllipseWeights
+
+            elif bise_init_method == InitBiseEnum.ELLIPSE_ROOT:
+                return InitBiseEllipseWeightsRoot
 
         elif atomic_element == "sybisel":
             if bise_init_method == InitBiseEnum.IDENTITY:
