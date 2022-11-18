@@ -48,8 +48,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_66/sandbox"  # comp + op
     # "Bimonn_exp_64/sandbox"
     # "Bimonn_exp_68/sandbox/0"
-    "Bimonn_exp_71/sandbox/0"
-    # "Bimonn_exp_70/sandbox/0"
+    # "Bimonn_exp_71/sandbox/0"
+    "Bimonn_exp_70/sandbox/3"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -67,9 +67,9 @@ all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
     # "mnist",
-    # "mnist_gray",
+    "mnist_gray",
     # "inverted_mnist",
-    'diskorect',
+    # 'diskorect',
     # "sticks_noised",
 ]
 all_args['preprocessing'] = [  # for axspa roi
@@ -99,7 +99,7 @@ all_args['mnist_args'] = [
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
 all_args['mnist_gray_args'] = [
-    {"n_gray_scale_values": 20, "size": (50, 50), "invert_input_proba": 0, }
+    {"n_gray_scale_values": 10, "size": (100, 100), "invert_input_proba": 0, }
 ]
 
 all_args['sticks_noised_angles'] = [
@@ -132,9 +132,8 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    # 1e-1,
-    1e-2,
-    # 1,
+    0.1,
+    # 1e-2,
 ]
 
 # if max_plus, then the loss is MSELoss
@@ -164,7 +163,7 @@ all_args['num_workers'] = [
     20,
     # 0,
 ]
-all_args['freq_imgs'] = [300]
+all_args['freq_imgs'] = [100]
 all_args['n_epochs'] = [20]
 all_args['patience_loss'] = [2100]
 all_args['patience_reduce_lr'] = [700]
@@ -222,16 +221,16 @@ all_args['closest_selem_distance_fn'] = [
 ]
 all_args['bias_optim_mode'] = [
     # BiseBiasOptimEnum.RAW,
-    # BiseBiasOptimEnum.POSITIVE,
-    BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
+    BiseBiasOptimEnum.POSITIVE,
+    # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 all_args['bias_optim_args'] = [
     {"offset": 0}
 ]
 all_args['weights_optim_mode'] = [
-    # BiseWeightsOptimEnum.THRESHOLDED,
-    BiseWeightsOptimEnum.ELLIPSE_ROOT,
+    BiseWeightsOptimEnum.THRESHOLDED,
+    # BiseWeightsOptimEnum.ELLIPSE_ROOT,
     # BiseWeightsOptimEnum.NORMALIZED
 ]
 all_args['weights_optim_args'] = [
@@ -254,20 +253,22 @@ all_args['initializer_args'] = [
     {
         # "bise_init_method": InitBiseEnum.KAIMING_UNIFORM,
         # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC,
-        # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
-        "bise_init_method": InitBiseEnum.ELLIPSE_ROOT,
+        "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
+        "bise_init_args": {"init_bias_value": "auto", "mean_weight": "auto", "ub": 0.01},
+        
+        # "bise_init_method": InitBiseEnum.ELLIPSE_ROOT,
+        # "bise_init_args": {"init_bias_value": 2},
+        
         # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC_RANDOM_BIAS,
         # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
         # "bise_init_args": [{"init_bias_value": -1, "mean_weight": "auto", "ub": 0.01}, {"init_bias_value": 1, "mean_weight": "auto", "ub": 0.01}]
         # "bise_init_args": {"init_bias_value": 1, "mean_weight": "auto", "ub": 0.01}
-        # "bise_init_args": {"init_bias_value": "auto", "mean_weight": "auto", "ub": 0.01}
-        "bise_init_args": {"init_bias_value": 2},
     },
 
 ]
 
-# all_args['activation_P'] = [0]
-all_args['activation_P'] = [1]  # force non complementation
+all_args['activation_P'] = [0]
+# all_args['activation_P'] = [1]  # force non complementation
 all_args['constant_activation_P'] = [False]
 all_args['force_lui_identity'] = [False]
 all_args['constant_P_lui'] = [False]
@@ -398,7 +399,7 @@ for idx, args in enumerate(all_args):
         args['random_gen_args']['size'] = args['random_gen_args']['size'] + (args["morp_operation"].in_channels[0],)
 
     if args['dataset_type'] in ["mnist", "inverted_mnist", "mnist_gray"]:
-        args['freq_imgs'] = 300
+        # args['freq_imgs'] = 300
         args['n_inputs'] = 70_000
 
     if args['dataset_type'] == 'inverted_mnist':

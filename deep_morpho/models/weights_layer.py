@@ -53,7 +53,7 @@ class WeightsBise(nn.Module):
         return nn.Parameter(torch.FloatTensor(size=self.shape))
 
     def set_param_from_weights(self, new_weights: torch.Tensor) -> torch.Tensor:
-        assert new_weights.shape == self.weight.shape, f"Weights must be of same shape {self.weight.shape}"
+        assert new_weights.shape == self.bise_module.weight.shape, f"Weights must be of same shape {self.weight.shape}"
         new_param = self.from_weights_to_param(new_weights)
         self.set_param(new_param)
         return new_param

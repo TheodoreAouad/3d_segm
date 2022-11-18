@@ -277,7 +277,7 @@ def main(args, logger):
 
     logger.log_hyperparams(args, hyperparams)
 
-    if args['dataset_type'] in ["diskorect", "mnist", "inverted_mnist", "sticks_noised"]:
+    if args['dataset_type'] in ["diskorect", "mnist", "inverted_mnist", "sticks_noised", "mnist_gray"]:
         pathlib.Path(join(logger.log_dir, "target_SE")).mkdir(exist_ok=True, parents=True)
         figs_selems = args['morp_operation'].plot_selem_arrays()
         for (layer_idx, chan_input, chan_output), fig in figs_selems.items():
