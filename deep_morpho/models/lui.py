@@ -4,7 +4,7 @@ import torch
 
 from ..initializer import BiseInitializer, InitBiseHeuristicWeights, InitSybiseConstantVarianceWeights, InitBiseEnum
 
-from .bise_base import BiSEBase, ClosestSelemDistanceEnum, ClosestSelemEnum, BiseBiasOptimEnum, SyBiSEBase
+from .bise_base import BiSEBase, ClosestSelemEnum, BiseBiasOptimEnum, SyBiSEBase
 
 
 class BiSELUIExtender:
@@ -83,8 +83,8 @@ class LUI(BiSELUIExtender, BiSEBase):
         # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
         out_channels: int = 1,
         in_channels: int = 1,
-        closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST,
-        closest_selem_distance_fn: ClosestSelemDistanceEnum = ClosestSelemDistanceEnum.DISTANCE_TO_AND_BETWEEN_BOUNDS,
+        # closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST_DIST_TO_BOUNDS,
+        # closest_selem_args: Dict = {},
         bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED,
         force_identity: bool = False,
         *args,
@@ -107,8 +107,8 @@ class LUI(BiSELUIExtender, BiSEBase):
             out_channels=out_channels,
             in_channels=in_channels,
             do_mask_output=False,
-            closest_selem_method=closest_selem_method,
-            closest_selem_distance_fn=closest_selem_distance_fn,
+            # # closest_selem_method=closest_selem_method,
+            # # closest_selem_args=closest_selem_args,
             bias_optim_mode=bias_optim_mode,
             padding=0,
             *args,
@@ -131,8 +131,8 @@ class SyLUI(BiSELUIExtender, SyBiSEBase):
         initializer: BiseInitializer = InitSybiseConstantVarianceWeights(input_mean=0, mean_weight="auto"),
         in_channels: int = 1,
         out_channels: int = 1,
-        closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST,
-        closest_selem_distance_fn: ClosestSelemDistanceEnum = ClosestSelemDistanceEnum.DISTANCE_TO_AND_BETWEEN_BOUNDS,
+        # closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST_DIST_TO_BOUNDS,
+        # closest_selem_args: Dict = {},
         bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.RAW,
         force_identity: bool = False,
         mean_weight_value: float = "auto",
@@ -157,8 +157,8 @@ class SyLUI(BiSELUIExtender, SyBiSEBase):
             out_channels=out_channels,
             in_channels=in_channels,
             do_mask_output=False,
-            closest_selem_method=closest_selem_method,
-            closest_selem_distance_fn=closest_selem_distance_fn,
+            # # closest_selem_method=closest_selem_method,
+            # # closest_selem_args=closest_selem_args,
             bias_optim_mode=bias_optim_mode,
             mean_weight_value=mean_weight_value,
             padding=0,

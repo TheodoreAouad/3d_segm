@@ -6,7 +6,7 @@ import numpy as np
 
 from ..initializer import BiseInitializer, InitBiseHeuristicWeights, InitSybiseConstantVarianceWeights, InitBiseEnum
 
-from .bise_base import BiSEBase, BiseWeightsOptimEnum, ClosestSelemDistanceEnum, ClosestSelemEnum, BiseBiasOptimEnum, SyBiSEBase, BiseWeightsOptimEnum
+from .bise_base import BiSEBase, BiseWeightsOptimEnum, ClosestSelemEnum, BiseBiasOptimEnum, SyBiSEBase, BiseWeightsOptimEnum
 
 
 class BiSE(BiSEBase):
@@ -31,8 +31,8 @@ class BiSE(BiSEBase):
         # initializer_args: Dict = {"init_bias_value": 1},
         out_channels: int = 1,
         do_mask_output: bool = False,
-        closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST,
-        closest_selem_distance_fn: ClosestSelemDistanceEnum = ClosestSelemDistanceEnum.DISTANCE_TO_AND_BETWEEN_BOUNDS,
+        # closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST,
+        # closest_selem_args: Dict = {distance_agg_min},
         bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED,
         padding=None,
         padding_mode: str = "replicate",
@@ -55,8 +55,8 @@ class BiSE(BiSEBase):
             out_channels=out_channels,
             in_channels=1,
             do_mask_output=do_mask_output,
-            closest_selem_method=closest_selem_method,
-            closest_selem_distance_fn=closest_selem_distance_fn,
+            # closest_selem_method=closest_selem_method,
+            # closest_selem_args=closest_selem_args,
             bias_optim_mode=bias_optim_mode,
             padding=padding,
             padding_mode=padding_mode,
@@ -102,8 +102,8 @@ class SyBiSE(SyBiSEBase):
         initializer: BiseInitializer = InitSybiseConstantVarianceWeights(input_mean=0, mean_weight="auto"),
         out_channels: int = 1,
         do_mask_output: bool = False,
-        closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST,
-        closest_selem_distance_fn: ClosestSelemDistanceEnum = ClosestSelemDistanceEnum.DISTANCE_TO_AND_BETWEEN_BOUNDS,
+        # closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST,
+        # closest_selem_args: Dict = {distance_agg_min},
         bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.RAW,
         padding=None,
         padding_mode: str = "replicate",
@@ -126,8 +126,8 @@ class SyBiSE(SyBiSEBase):
             out_channels=out_channels,
             in_channels=1,
             do_mask_output=do_mask_output,
-            closest_selem_method=closest_selem_method,
-            closest_selem_distance_fn=closest_selem_distance_fn,
+            # closest_selem_method=closest_selem_method,
+            # closest_selem_args=closest_selem_args,
             bias_optim_mode=bias_optim_mode,
             padding=padding,
             padding_mode=padding_mode,
