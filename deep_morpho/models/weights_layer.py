@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple
 from functools import partial
 
 if TYPE_CHECKING:
@@ -176,14 +176,24 @@ class WeightsEllipse(WeightsBise):
         res = torch.bmm(A1[:, None, :], A2[..., None])
         return torch.exp(-res ** a_)
 
-    def get_one_ellipse_matrix(self, mu: torch.Tensor, sigma_inv: torch.Tensor, a_: torch.Tensor) -> torch.Tensor:
-        shape_W = self.shape[2:]
-        ellipse_fn = partial(self.ellipse_level, mu=mu, sigma_inv=sigma_inv, a_=a_)
+    @staticmethod
+    def ellipse_matrix(shape: Tuple, mu: torch.Tensor, sigma_inv: torch.Tensor, a_: torch.Tensor, device='cpu') -> torch.Tensor:
+        # ellipse_fn = partial(self.ellipse_level, mu=mu, sigma_inv=sigma_inv, a_=a_)
 
-        XX, YY = torch.meshgrid(torch.arange(shape_W[0], device=self.device), torch.arange(shape_W[1], device=self.device))
+        XX, YY = torch.meshgrid(torch.arange(shape[0], device=device), torch.arange(shape[1], device=device))
         coords = torch.vstack([XX.flatten(), YY.flatten()])
 
-        return ellipse_fn(coords).reshape(*shape_W)
+        return WeightsEllipse.ellipse_level(coords, mu=mu, sigma_inv=sigma_inv, a_=a_).reshape(*shape)
+
+    def get_one_ellipse_matrix(self, mu: torch.Tensor, sigma_inv: torch.Tensor, a_: torch.Tensor) -> torch.Tensor:
+        return self.ellipse_matrix(shape=self.shape[:2], mu=mu, sigma_inv=sigma_inv, a_=a_, device=self.device)
+        # shape_W = self.shape[2:]
+        # ellipse_fn = partial(self.ellipse_level, mu=mu, sigma_inv=sigma_inv, a_=a_)
+
+        # XX, YY = torch.meshgrid(torch.arange(shape_W[0], device=self.device), torch.arange(shape_W[1], device=self.device))
+        # coords = torch.vstack([XX.flatten(), YY.flatten()])
+
+        # return ellipse_fn(coords).reshape(*shape_W)
 
 
     def get_weights_from_ellipse(self, mu: torch.Tensor, sigma_inv: torch.Tensor, a_: torch.Tensor) -> torch.Tensor:

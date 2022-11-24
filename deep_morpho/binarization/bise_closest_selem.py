@@ -13,6 +13,7 @@ class ClosestSelemEnum(Enum):
     MIN_DIST = 1
     MAX_SECOND_DERIVATIVE = 2
     MIN_DIST_DIST_TO_BOUNDS = 3
+    MIN_DIST_DIST_TO_CST = 4
 
 
 class ClosestSelemDistanceEnum(Enum):
@@ -132,3 +133,38 @@ class BiseClosestMinDistBounds(BiseClosestSelemWithDistanceAgg):
 
     def __init__(self, *args, **kwargs):
         super().__init__(distance_fn=distance_fn_between_bounds, distance_agg_fn=distance_agg_min, *args, **kwargs)
+
+
+class BiseClosestMinDistOnCst(BiseClosestSelemWithDistanceAgg):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(distance_fn=self.distance_fn_selem, distance_agg_fn=distance_agg_min, *args, **kwargs)
+        self.distance_fn_bias = partial(distance_fn_between_bounds, self=self)
+
+    @staticmethod
+    def distance_fn_selem(self, normalized_weights: "torch.Tensor", bias: "torch.Tensor", operation: str, S: np.ndarray, v1: float, v2: float) -> float:
+        W = normalized_weights.cpu().detach().numpy()
+        return W.sum() - 1 / S.sum() * (W[S].sum()) ** 2
+
+    def find_closest_selem_and_operation_chan(
+        self, weights, bias, chout=0, v1=0, v2=1
+    ):
+        final_dist_selem = np.infty
+        final_dist_bias = np.infty
+
+        selems, dists = self.compute_selem_dist_for_operation_chan(
+            weights=weights, bias=bias, chout=chout, operation=None, v1=v1, v2=v2
+        )
+        new_selem, new_dist = self.distance_agg_fn(selems=selems, dists=dists)
+        if new_dist < final_dist_selem:
+            final_dist_selem = new_dist
+            final_selem = new_selem
+
+        for operation in ['dilation', 'erosion']:
+            dist_bias = self.distance_fn_bias(normalized_weights=weights[chout], bias=bias, operation=operation, S=final_selem, v1=v1, v2=v2)
+            if dist_bias < final_dist_bias:
+                final_operation = operation
+
+        final_dist = final_dist_selem + final_dist_bias
+
+        return final_dist, final_selem, final_operation
