@@ -160,10 +160,18 @@ class BiseClosestMinDistOnCst(BiseClosestSelemWithDistanceAgg):
             final_dist_selem = new_dist
             final_selem = new_selem
 
-        for operation in ['dilation', 'erosion']:
-            dist_bias = self.distance_fn_bias(normalized_weights=weights[chout], bias=bias, operation=operation, S=final_selem, v1=v1, v2=v2)
-            if dist_bias < final_dist_bias:
-                final_operation = operation
+        wsum = weights.sum()
+        if -bias <= wsum / 2:
+            final_operation = "dilation"
+        else:
+            final_operation = "erosion"
+
+        final_dist_bias = (-bias - wsum).abs().cpu().detach().numpy()
+
+        # for operation in ['dilation', 'erosion']:
+        #     dist_bias = self.distance_fn_bias(normalized_weights=weights[chout], bias=bias, operation=operation, S=final_selem, v1=v1, v2=v2)
+        #     if dist_bias < final_dist_bias:
+        #         final_operation = operation
 
         final_dist = final_dist_selem + final_dist_bias
 

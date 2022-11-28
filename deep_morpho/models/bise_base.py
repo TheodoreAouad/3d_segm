@@ -12,8 +12,8 @@ from .bias_layer import BiasSoftplus, BiasRaw, BiasBiseSoftplusProjected, BiasBi
 from .weights_layer import WeightsThresholdedBise, WeightsNormalizedBiSE, WeightsEllipse, WeightsEllipseRoot
 from deep_morpho.initializer import InitBiseHeuristicWeights, BiseInitializer, InitSybiseConstantVarianceWeights
 from deep_morpho.binarization import (
-    ClosestSelemEnum, BiseClosestMinDistBounds, distance_agg_min, distance_agg_max_second_derivative, 
-    ClosestSelemDistanceEnum, BiseClosestSelemWithDistanceAgg, distance_fn_to_bounds
+    ClosestSelemEnum, BiseClosestMinDistBounds, distance_agg_min, distance_agg_max_second_derivative,
+    ClosestSelemDistanceEnum, BiseClosestSelemWithDistanceAgg, distance_fn_to_bounds, BiseClosestMinDistOnCst
 )
 from general.utils import set_borders_to
 
@@ -43,7 +43,7 @@ class BiseWeightsOptimEnum(Enum):
     ELLIPSE_ROOT = 3
 
 
-conv_kwargs = {"in_channels", "out_channels", "kernel_size", "stride", "padding", "dilation", "groups", "bias", 
+conv_kwargs = {"in_channels", "out_channels", "kernel_size", "stride", "padding", "dilation", "groups", "bias",
     "padding_mode", "device", "dtype"}
 
 
@@ -135,13 +135,17 @@ class BiSEBase(BinaryNN):
         if self.closest_selem_method == ClosestSelemEnum.MIN_DIST_DIST_TO_BOUNDS:
             return BiseClosestMinDistBounds(bise_module=self, **kwargs)
 
-        if self.closest_selem_method == ClosestSelemEnum.MIN_DIST:
+        elif self.closest_selem_method == ClosestSelemEnum.MIN_DIST:
             kwargs['distance_agg_fn'] = distance_agg_min
+            kwargs['distance_fn'] = kwargs.get('distance_fn', distance_fn_to_bounds)
             return BiseClosestSelemWithDistanceAgg(bise_module=self, **kwargs)
-        
+
         elif self.closest_selem_method == ClosestSelemEnum.MAX_SECOND_DERIVATIVE:
             kwargs['distance_agg_fn'] = distance_agg_max_second_derivative
             return BiseClosestSelemWithDistanceAgg(bise_module=self, **kwargs)
+
+        elif self.closest_selem_method == ClosestSelemEnum.MIN_DIST_DIST_TO_CST:
+            return BiseClosestMinDistOnCst(bise_module=self, **kwargs)
 
 
     def create_bias_handler(self, **kwargs):

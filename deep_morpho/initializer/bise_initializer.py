@@ -128,31 +128,37 @@ class InitBiseHeuristicWeights(InitBiasFixed):
 
 
 class InitBiseConstantVarianceWeights(InitBiasFixed):
-    def __init__(self, init_bias_value: float = "auto", input_mean: float = 0.5, *args, **kwargs):
-        super().__init__(init_bias_value=init_bias_value)
+    def __init__(self, input_mean: float = 0.5, *args, **kwargs):
+        super().__init__(init_bias_value=0)
         self.input_mean = input_mean
 
     def init_weights(self, module):
         p = 1
         nb_params = torch.tensor(module._normalized_weights.shape[1:]).prod()
 
-        if self.init_bias_value == "auto":
-            # To keep track with previous experiment
-            # if self.input_mean > 0.7:
-            #     lb1 = 1/p * torch.sqrt(6*nb_params / (12 + 1/self.input_mean**2))
-            # else:
-            #     lb1 = 1/(2*p) * torch.sqrt(3/2 * nb_params)
-            lb1 = 1/p * torch.sqrt(6*nb_params / (12 + 1/self.input_mean**2))
-            lb2 = 1 / p * torch.sqrt(nb_params / 2)
-            self.init_bias_value = (lb1 + lb2) / 2
 
-        mean = self.init_bias_value / (self.input_mean * nb_params)
-        sigma = (2 * nb_params - 4 * self.init_bias_value**2 * p ** 2) / (p ** 2 * nb_params ** 2)
+        # To keep track with previous experiment
+        # if self.input_mean > 0.7:
+        #     lb1 = 1/p * torch.sqrt(6*nb_params / (12 + 1/self.input_mean**2))
+        # else:
+        #     lb1 = 1/(2*p) * torch.sqrt(3/2 * nb_params)
+        # lb1 = 1/p * torch.sqrt(6*nb_params / (12 + 1/self.input_mean**2))
+        # lb2 = 1 / p * torch.sqrt(nb_params / 2)
+        # self.init_bias_value = (lb1 + lb2) / 2
+
+        # mean = self.init_bias_value / (self.input_mean * nb_params)
+        # sigma = (2 * nb_params - 4 * self.init_bias_value**2 * p ** 2) / (p ** 2 * nb_params ** 2)
+
+        mean = (np.sqrt(3) + 2) / (2 * p * torch.sqrt(2 * nb_params))
+        sigma = 2 / (p ** 2 * nb_params) - mean ** 2
+
         diff = torch.sqrt(3 * sigma)
         lb = mean - diff
         ub = mean + diff
 
         new_weights = torch.rand_like(module.weights) * (lb - ub) + ub
+
+        self.init_bias_value = self.input_mean * new_weights.sum()
 
         module.set_param_from_weights(
             new_weights
