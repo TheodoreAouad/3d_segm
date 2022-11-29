@@ -212,7 +212,7 @@ def main(args, logger):
     elif isinstance(args["initializer_args"], list):
         args["initializer_args"][0]["input_mean"] = next(iter(trainloader))[0].mean().item()
 
-    # input_mean = 1/2  # DEBUG
+    args["initializer_args"]["input_mean"] = 1/2  # DEBUG
     model = LightningBiMoNN(
         model_args={
             "kernel_size": [args['kernel_size'] for _ in range(args['n_atoms'])],
@@ -231,7 +231,7 @@ def main(args, logger):
             "initializer_method": args["initializer_method"],
             "initializer_args": args["initializer_args"],
             "closest_selem_method": args['closest_selem_method'],
-            "closest_selem_distance_fn": args['closest_selem_distance_fn'],
+            # "closest_selem_distance_fn": args['closest_selem_distance_fn'],
             "bias_optim_mode": args['bias_optim_mode'],
             "bias_optim_args": args['bias_optim_args'],
             "weights_optim_mode": args['weights_optim_mode'],

@@ -158,11 +158,11 @@ class InitBiseConstantVarianceWeights(InitBiasFixed):
 
         new_weights = torch.rand_like(module.weights) * (lb - ub) + ub
 
-        self.init_bias_value = self.input_mean * new_weights.sum()
-
         module.set_param_from_weights(
             new_weights
         )
+
+        self.init_bias_value = self.input_mean * module._normalized_weights.sum()
 
 
 class InitSybiseHeuristicWeights(InitWeightsThenBias):

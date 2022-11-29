@@ -31,8 +31,8 @@ loss_dict = {
 
 all_args = {}
 
-# all_args['batch_seed'] = [2249939862]
-all_args['batch_seed'] = [None]
+all_args['batch_seed'] = [2249939862]
+# all_args['batch_seed'] = [None]
 
 all_args['n_try'] = [0]
 # all_args['n_try'] = range(1, 20)
@@ -49,7 +49,7 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_64/sandbox"
     # "Bimonn_exp_68/sandbox/0"
     # "Bimonn_exp_71/sandbox/0"
-    "Bimonn_exp_70/sandbox/3"
+    "Bimonn_exp_72/sandbox/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -67,9 +67,9 @@ all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
     # "mnist",
-    "mnist_gray",
+    # "mnist_gray",
     # "inverted_mnist",
-    # 'diskorect',
+    'diskorect',
     # "sticks_noised",
 ]
 all_args['preprocessing'] = [  # for axspa roi
@@ -158,7 +158,7 @@ all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
-all_args['batch_size'] = [32]
+all_args['batch_size'] = [256]
 all_args['num_workers'] = [
     20,
     # 0,
@@ -211,14 +211,16 @@ all_args['channels'] = [
 #     InitBiseEnum.CUSTOM_CONSTANT
 # ]
 all_args['closest_selem_method'] = [
-    ClosestSelemEnum.MIN_DIST
+    # ClosestSelemEnum.MIN_DIST
     # ClosestSelemEnum.MAX_SECOND_DERIVATIVE
+    ClosestSelemEnum.MIN_DIST_DIST_TO_CST
 ]
-all_args['closest_selem_distance_fn'] = [
+
+# all_args['closest_selem_distance_fn'] = [
     # ClosestSelemDistanceEnum.DISTANCE_BETWEEN_BOUNDS
     # ClosestSelemDistanceEnum.DISTANCE_TO_AND_BETWEEN_BOUNDS
-    ClosestSelemDistanceEnum.DISTANCE_TO_BOUNDS
-]
+    # ClosestSelemDistanceEnum.DISTANCE_TO_BOUNDS
+# ]
 all_args['bias_optim_mode'] = [
     # BiseBiasOptimEnum.RAW,
     BiseBiasOptimEnum.POSITIVE,
@@ -253,8 +255,9 @@ all_args['initializer_args'] = [
     {
         # "bise_init_method": InitBiseEnum.KAIMING_UNIFORM,
         # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC,
+
         "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
-        "bise_init_args": {"init_bias_value": "auto", "mean_weight": "auto", "ub": 0.01},
+        "bise_init_args": {},
         
         # "bise_init_method": InitBiseEnum.ELLIPSE_ROOT,
         # "bise_init_args": {"init_bias_value": 2},
@@ -426,7 +429,7 @@ for idx, args in enumerate(all_args):
         args['loss_regu'] = (loss_dict[args['loss_regu'][0]], args['loss_regu'][1])
         args['loss']['loss_regu'] = args['loss_regu']
 
-    for key in ['closest_selem_method', 'closest_selem_distance_fn', 'bias_optim_mode']:
+    for key in ['closest_selem_method', 'bias_optim_mode']:
         args[f'{key}_str'] = str(args[key])
 
     if args['dataset_type'] == 'mnist_gray':
