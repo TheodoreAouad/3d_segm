@@ -11,6 +11,7 @@ from deep_morpho.initializer import InitBiseEllipseWeightsRoot
 from general.structuring_elements import disk
 from general.array_morphology import array_erosion, array_dilation
 from deep_morpho.morp_operations import ParallelMorpOperations
+from general.array_morphology import array_erosion, array_dilation, array_union_chans, array_intersection_chans
 
 
 def softplus_inverse(x):
@@ -279,3 +280,74 @@ class TestBiSE:
         assert model.weights_handler.param.is_cuda
         assert model.weights_handler.sigma_inv.is_cuda
         assert model._normalized_weight.is_cuda
+
+
+class TestBiseProperties:
+
+    # deprecated
+    @staticmethod
+    def test_grad_bias():
+        model = BiSE(
+            kernel_size=(7, 7),
+            initializer=InitBiseConstantVarianceWeights(input_mean=.5),
+            weights_optim_mode=BiseWeightsOptimEnum.THRESHOLDED,
+            bias_optim_mode=BiseBiasOptimEnum.POSITIVE,
+        )
+
+        loss = nn.BCELoss()
+
+        dataset = InputOutputGeneratorDataset(
+            random_gen_fn=get_random_diskorect_channels,
+            random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)},
+            morp_operation=ParallelMorpOperations.dilation(('disk', 2)),
+            len_dataset=1000,
+            seed=100,
+            do_symetric_output=False,
+        )
+
+        x, _ = dataset[0]
+        y = array_erosion(x[0], disk(2), return_numpy_array=False).float()
+
+        loss1 = loss(model(x[None, ...]), y[None, None, ...])
+        loss1.backward()
+
+        grad1 = model.bias_handler.grad + 0
+
+        model.zero_grad()
+        y = array_dilation(1 - x[0], disk(2), return_numpy_array=False).float()
+        loss2 = loss(model(1 - x[None, ...]), y[None, None, ...])
+        loss2.backward()
+
+        grad2 = model.bias_handler.grad + 0
+
+        assert (grad1 + grad2).abs().sum() < 1e-6
+
+    @staticmethod
+    def test_bise_duality():
+        model = BiSE(
+            kernel_size=(7, 7),
+            initializer=InitBiseConstantVarianceWeights(input_mean=.5),
+            weights_optim_mode=BiseWeightsOptimEnum.THRESHOLDED,
+            bias_optim_mode=BiseBiasOptimEnum.POSITIVE,
+        )
+
+        model.set_bias(torch.tensor([-1]))
+
+        dataset = InputOutputGeneratorDataset(
+            random_gen_fn=get_random_diskorect_channels,
+            random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)},
+            morp_operation=ParallelMorpOperations.dilation(('disk', 2)),
+            len_dataset=1000,
+            seed=100,
+            do_symetric_output=False,
+        )
+
+        x, _ = dataset[0]
+
+        otp1 = model(1 - x)
+
+        model.set_bias(-(model._normalized_weight.sum() + model.bias))
+
+        otp2 = model(x)
+
+        assert (otp1 - (1 - otp2)).abs().mean() < 1e-6
