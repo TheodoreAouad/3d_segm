@@ -18,7 +18,7 @@ class InitBiseEnum(Enum):
     CUSTOM_HEURISTIC_RANDOM_BIAS = 7
     ELLIPSE = 8
     ELLIPSE_ROOT = 9
-
+    CUSTOM_CONSTANT_DUAL = 10
 
 class BiseInitializer:
 
@@ -165,7 +165,7 @@ class InitDualBiseConstantVarianceWeights(InitBiasFixed):
         p = 1
         nb_params = torch.tensor(module._normalized_weights.shape[1:]).prod()
 
-        mean = self.get_mean(p, nb_params)
+        mean = InitBiseConstantVarianceWeights.get_mean(p, nb_params)
         sigma = 2 / (p ** 2 * nb_params) - mean ** 2
 
         diff = torch.sqrt(3 * sigma)
