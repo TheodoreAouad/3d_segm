@@ -10,7 +10,7 @@ from .threshold_layer import dispatcher, ThresholdEnum
 from .binary_nn import BinaryNN
 from .bias_layer import BiasSoftplus, BiasRaw, BiasBiseSoftplusProjected, BiasBiseSoftplusReparametrized
 from .weights_layer import WeightsThresholdedBise, WeightsNormalizedBiSE, WeightsEllipse, WeightsEllipseRoot
-from deep_morpho.initializer import InitBiseHeuristicWeights, BiseInitializer, InitSybiseConstantVarianceWeights
+from deep_morpho.initializer import InitBiseHeuristicWeights, BiseInitializer, InitSybiseConstantVarianceWeights, InitBiseConstantVarianceWeights
 from deep_morpho.binarization import (
     ClosestSelemEnum, BiseClosestMinDistBounds, distance_agg_min, distance_agg_max_second_derivative,
     ClosestSelemDistanceEnum, BiseClosestSelemWithDistanceAgg, distance_fn_to_bounds, BiseClosestMinDistOnCst

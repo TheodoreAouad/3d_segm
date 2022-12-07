@@ -1,6 +1,7 @@
 from typing import Union, Dict
 
 import torch
+import numpy as np
 
 from ..initializer import BiseInitializer, InitBiseHeuristicWeights, InitSybiseConstantVarianceWeights, InitBiseEnum
 
@@ -43,8 +44,18 @@ class BiSELUIExtender:
     def update_binary_sets(self, *args, **kwargs):
         return self.update_binary_selems(*args, **kwargs)
 
+    def find_selem_and_operation_chan(self, *args, **kwargs):
+        if self.force_identity:
+            return np.array([True]), 'dilation'
+        return super().find_selem_and_operation_chan(*args, **kwargs)
+
     def find_set_and_operation_chan(self, *args, **kwargs):
         return self.find_selem_and_operation_chan(*args, **kwargs)
+
+    def find_closest_selem_and_operation_chan(self, *args, **kwargs):
+        if self.force_identity:
+            return np.array([True]), 'dilation'
+        return super().find_closest_selem_and_operation_chan(*args, **kwargs)
 
     def find_closest_set_and_operation_chan(self, *args, **kwargs):
         return self.find_closest_selem_and_operation_chan(*args, **kwargs)

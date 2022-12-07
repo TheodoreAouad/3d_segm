@@ -59,7 +59,7 @@ print('Parsing paths...')
 # )
 # SAVE_PATH.append('html_pages/mnist_grid_search.html')
 
-path_global = "/hdd/aouadt/these/projets/3d_segm/deep_morpho/results/results_tensorboards/Bimonn_exp_67/sandbox/sybisel/softplus/diskorect"
+path_global = "deep_morpho/results/results_tensorboards/Bimonn_exp_73/multi/0/bisel/softplus/diskorect/"
 all_paths = []
 for operation in os.listdir(path_global):
     if not os.path.isdir(join(path_global, operation)):
@@ -71,7 +71,7 @@ for operation in os.listdir(path_global):
 TB_PATHS.append(
     all_paths
 )
-SAVE_PATH.append('html_pages/67_diskorect.html')
+SAVE_PATH.append('html_pages/73_diskorect.html')
 
 
 # path_global = "/hdd/aouadt/these/projets/3d_segm/deep_morpho/results/results_tensorboards/Bimonn_exp_63/sandbox/sybisel/softplus/mnist"

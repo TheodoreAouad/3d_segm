@@ -96,7 +96,7 @@ def parse_yaml_dict_optimizer(yaml_str: str) -> Any:
 
 
 def parse_yaml_dict_bise_init_method(yaml_str: str) -> Any:
-    return regex_find_or_none(r"\n?\t?bise_init_method[^\n]+\n +- (\d)+", yaml_str)
+    return regex_find_or_none(r"\n?\t?bise_init_method[^\n]+\n +- (\d+)", yaml_str)
 
 
 # deprecated
@@ -141,7 +141,7 @@ def parse_yaml_bise_arguments(yaml_str: str, key: str) -> Any:
         if key == "bise_init_method":
             enum_int = parse_yaml_dict_bise_init_method(yaml_str)
         else:
-            enum_int = regex_find_or_none(rf"\n?{key}[^\n]+\n- (\d)+\n", yaml_str)
+            enum_int = regex_find_or_none(rf"\n?{key}[^\n]+\n- (\d+)\n", yaml_str)
 
         if enum_int is not None:
             res = str(key_to_enum[key](int(enum_int)))

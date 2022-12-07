@@ -1,0 +1,261 @@
+activation_P: 0
+atomic_element: bisel
+batch_seed: 2249939862
+batch_size: 256
+bias_optim_args:
+  offset: 0
+bias_optim_mode: !!python/object/apply:deep_morpho.models.bise_base.BiseBiasOptimEnum
+- 0
+bias_optim_mode_str: BiseBiasOptimEnum.RAW
+channels:
+- 1
+- 1
+- 1
+closest_selem_method: !!python/object/apply:deep_morpho.binarization.bise_closest_selem.ClosestSelemEnum
+- 4
+closest_selem_method_str: ClosestSelemEnum.MIN_DIST_DIST_TO_CST
+constant_P_lui: false
+constant_activation_P: false
+dataset_path: generate
+dataset_type: diskorect
+experiment_name: Bimonn_exp_73/multi/0
+experiment_subname: bisel/softplus/diskorect/opening/bsquare
+force_lui_identity: false
+freq_imgs: 300
+in_ram: true
+init_bimonn_str: InitBimonnEnum.INPUT_MEAN
+init_bise_str: InitBiseEnum.CUSTOM_CONSTANT_DUAL
+initializer_args:
+  bise_init_args: {}
+  bise_init_method: !!python/object/apply:deep_morpho.initializer.bise_initializer.InitBiseEnum
+  - 10
+initializer_method: !!python/object/apply:deep_morpho.initializer.bimonn_initializer.InitBimonnEnum
+- 2
+kernel_size: 7
+learning_rate: 0.1
+loss:
+  loss_data: &id001 !!python/object:torch.nn.modules.loss.BCELoss
+    _backward_hooks: !!python/object/apply:collections.OrderedDict
+    - []
+    _buffers: !!python/object/apply:collections.OrderedDict
+    - - - weight
+        - null
+    _forward_hooks: !!python/object/apply:collections.OrderedDict
+    - []
+    _forward_pre_hooks: !!python/object/apply:collections.OrderedDict
+    - []
+    _is_full_backward_hook: null
+    _load_state_dict_post_hooks: !!python/object/apply:collections.OrderedDict
+    - []
+    _load_state_dict_pre_hooks: !!python/object/apply:collections.OrderedDict
+    - []
+    _modules: !!python/object/apply:collections.OrderedDict
+    - []
+    _non_persistent_buffers_set: !!set {}
+    _parameters: !!python/object/apply:collections.OrderedDict
+    - []
+    _state_dict_hooks: !!python/object/apply:collections.OrderedDict
+    - []
+    reduction: mean
+    training: true
+loss_data: *id001
+loss_data_str: BCELoss
+loss_regu: None
+mnist_args:
+  invert_input_proba: 0
+  size: &id007 !!python/tuple
+  - 50
+  - 50
+  threshold: 30
+mnist_gray_args:
+  invert_input_proba: 0
+  n_gray_scale_values: 10
+  size: !!python/tuple
+  - 100
+  - 100
+morp_operation: !!python/object:deep_morpho.morp_operations.ParallelMorpOperations
+  device: cpu
+  do_complementation:
+  - - - false
+  - - - false
+  in_channels:
+  - 1
+  - 1
+  max_selem_shape:
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - &id002 !!python/object/apply:numpy.dtype
+      args:
+      - i8
+      - false
+      - true
+      state: !!python/tuple
+      - 3
+      - <
+      - null
+      - null
+      - null
+      - -1
+      - -1
+      - 0
+    - !!binary |
+      BwAAAAAAAAA=
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id002
+    - !!binary |
+      BwAAAAAAAAA=
+  name: opening/bsquare
+  operation_names:
+  - - - erosion
+      - union
+  - - - dilation
+      - union
+  operations:
+  - - - !!python/name:deep_morpho.morp_operations.%3Clambda%3E ''
+      - !!python/name:deep_morpho.morp_operations.%3Clambda%3E ''
+  - - - !!python/name:deep_morpho.morp_operations.%3Clambda%3E ''
+      - !!python/name:deep_morpho.morp_operations.%3Clambda%3E ''
+  operations_original:
+  - - - !!python/tuple
+        - erosion
+        - &id003 !!python/tuple
+          - bsquare
+          - 7
+        - false
+      - union
+  - - - !!python/tuple
+        - dilation
+        - *id003
+        - false
+      - union
+  out_channels:
+  - 1
+  - 1
+  selem_args:
+  - - - 7
+      - all
+  - - - 7
+      - all
+  selem_names:
+  - - - bsquare
+      - channels
+  - - - bsquare
+      - channels
+  selems:
+  - - - !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - &id004 !!python/name:numpy.ndarray ''
+        - !!python/tuple
+          - 0
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple
+          - 7
+          - 7
+        - &id005 !!python/object/apply:numpy.dtype
+          args:
+          - f8
+          - false
+          - true
+          state: !!python/tuple
+          - 3
+          - <
+          - null
+          - null
+          - null
+          - -1
+          - -1
+          - 0
+        - false
+        - !!binary |
+          AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+          AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+          AAAAAAAAAAAAAAAAAAAAAAAAAADwPwAAAAAAAPA/AAAAAAAA8D8AAAAAAAAAAAAAAAAAAAAAAAAA
+          AAAAAAAAAAAAAAAAAAAAAAAAAPA/AAAAAAAA8D8AAAAAAADwPwAAAAAAAAAAAAAAAAAAAAAAAAAA
+          AAAAAAAAAAAAAAAAAAAAAAAA8D8AAAAAAADwPwAAAAAAAPA/AAAAAAAAAAAAAAAAAAAAAAAAAAAA
+          AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+          AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+  - - - !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id004
+        - !!python/tuple
+          - 0
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple
+          - 7
+          - 7
+        - *id005
+        - false
+        - !!binary |
+          AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+          AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+          AAAAAAAAAAAAAAAAAAAAAAAAAADwPwAAAAAAAPA/AAAAAAAA8D8AAAAAAAAAAAAAAAAAAAAAAAAA
+          AAAAAAAAAAAAAAAAAAAAAAAAAPA/AAAAAAAA8D8AAAAAAADwPwAAAAAAAAAAAAAAAAAAAAAAAAAA
+          AAAAAAAAAAAAAAAAAAAAAAAA8D8AAAAAAADwPwAAAAAAAPA/AAAAAAAAAAAAAAAAAAAAAAAAAAAA
+          AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+          AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+  str_to_fn:
+    dilation: !!python/name:general.array_morphology.array_dilation ''
+    erosion: !!python/name:general.array_morphology.array_erosion ''
+  str_to_ui_fn:
+    intersection: !!python/name:general.array_morphology.array_intersection_chans ''
+    union: !!python/name:general.array_morphology.array_union_chans ''
+n_atoms: 2
+n_epochs: 1
+n_inputs: 2560000
+n_steps: 10000
+n_try: 0
+nb_batch_indep: 0
+num_workers: 20
+optimizer: !!python/name:torch.optim.adam.Adam ''
+patience_loss: 2100
+patience_reduce_lr: 700
+preprocessing: null
+random_gen_args:
+  border: &id006 !!python/tuple
+  - 0
+  - 0
+  max_shape: !!python/tuple
+  - 20
+  - 20
+  max_shape_holes: !!python/tuple
+  - 10
+  - 10
+  n_holes: 10
+  n_shapes: 20
+  noise_proba: 0.02
+  p_invert: 0.5
+  size: !!python/tuple
+  - 50
+  - 50
+  - 1
+random_gen_fn: !!python/name:deep_morpho.datasets.generate_forms3.get_random_diskorect_channels ''
+sticks_noised_angles:
+- 0
+- 90
+sticks_noised_args:
+  border: *id006
+  lengths_lim: !!python/tuple
+  - 12
+  - 15
+  n_shapes: 15
+  noise_proba: 0.1
+  p_invert: 0
+  size: *id007
+  widths_lim: *id006
+threshold_mode:
+  activation: tanh
+  weight: softplus
+train_test_split: !!python/tuple
+- 0.8
+- 0.2
+- 0
+weights_optim_args:
+  constant_P: true
+  factor: 1
+weights_optim_mode: !!python/object/apply:deep_morpho.models.bise_base.BiseWeightsOptimEnum
+- 1
