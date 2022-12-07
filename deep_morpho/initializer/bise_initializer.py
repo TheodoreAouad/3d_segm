@@ -19,6 +19,8 @@ class InitBiseEnum(Enum):
     ELLIPSE = 8
     ELLIPSE_ROOT = 9
     CUSTOM_CONSTANT_DUAL = 10
+    CUSTOM_CONSTANT_DUAL_RANDOM_BIAS = 11
+
 
 class BiseInitializer:
 
@@ -181,6 +183,18 @@ class InitDualBiseConstantVarianceWeights(InitBiasFixed):
         module.weights_handler.factor = mean * nb_params  # set the factor to have the right mean and variance
 
         self.init_bias_value = self.input_mean * module._normalized_weights.sum()
+
+
+class InitDualBiseConstantVarianceWeightsRandomBias(InitDualBiseConstantVarianceWeights):
+    def __init__(self, ub: float = 0.0001, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.ub = ub
+
+    def init_bias(self, module):
+        self.init_bias_value += float(uniform_sampling_bound(-self.ub, self.ub))
+        module.set_bias(
+            torch.zeros_like(module.bias) - self.init_bias_value
+        )
 
 
 class InitSybiseHeuristicWeights(InitWeightsThenBias):

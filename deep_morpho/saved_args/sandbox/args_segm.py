@@ -31,8 +31,8 @@ loss_dict = {
 
 all_args = {}
 
-# all_args['batch_seed'] = [2249939862]
-all_args['batch_seed'] = [None]
+all_args['batch_seed'] = [2249939862]
+# all_args['batch_seed'] = [None]
 
 all_args['n_try'] = [0]
 # all_args['n_try'] = range(1, 20)
@@ -49,7 +49,7 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_64/sandbox"
     # "Bimonn_exp_68/sandbox/0"
     # "Bimonn_exp_71/sandbox/0"
-    "Bimonn_exp_73/sandbox/1"
+    "Bimonn_exp_73/multi/1"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -66,10 +66,10 @@ all_args['experiment_name'] = [
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
-    # "mnist",
+    "mnist",
     # "mnist_gray",
     # "inverted_mnist",
-    'diskorect',
+    # 'diskorect',
     # "sticks_noised",
 ]
 all_args['preprocessing'] = [  # for axspa roi
@@ -133,7 +133,7 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 # TRAINING ARGS
 all_args['learning_rate'] = [
     0.1,
-    # 1e-2,
+    1e-2,
 ]
 
 # if max_plus, then the loss is MSELoss
@@ -145,8 +145,8 @@ all_args['loss_data_str'] = [
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
     "BCELoss",
-    # "MSELoss",
-    # "DiceLoss",
+    "MSELoss",
+    "DiceLoss",
     # "MaskedDiceLoss",
     # "NormalizedDiceLoss",
 ]
@@ -224,9 +224,9 @@ all_args['closest_selem_method'] = [
 # ]
 all_args['bias_optim_mode'] = [
     BiseBiasOptimEnum.RAW,
-    # BiseBiasOptimEnum.POSITIVE,
-    # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
-    # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+    BiseBiasOptimEnum.POSITIVE,
+    BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
+    BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 all_args['bias_optim_args'] = [
     {"offset": 0}
@@ -316,8 +316,8 @@ for idx, args in enumerate(all_args):
 
     if args['weights_optim_mode'] == BiseWeightsOptimEnum.NORMALIZED:
         args['initializer_args'] = {
-            'bise_init_method': InitBiseEnum.CUSTOM_CONSTANT_DUAL,
-            'bise_init_args': {},
+            'bise_init_method': InitBiseEnum.CUSTOM_CONSTANT_DUAL_RANDOM_BIAS,
+            'bise_init_args': {"ub": 1e-4},
         }
 
     args['init_bimonn_str'] = str(args["initializer_method"])
