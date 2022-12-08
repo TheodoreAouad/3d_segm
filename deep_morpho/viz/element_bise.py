@@ -8,20 +8,53 @@ MAX_WIDTH_COEF = 1
 BISE_INVERT_CODE = {v: k for (k, v) in BiSE.operation_code.items()}
 
 
-class ElementBiseWeightsChan(ElementImage):
+# class ElementBiseWeightsChan(ElementImage):
 
-    def __init__(self, model, chout=0, *args, **kwargs):
+#     def __init__(self, model, chout=0, *args, **kwargs):
+#         self.model = model
+#         self.chout = chout
+#         super().__init__(image=None, *args, **kwargs)
+
+#         self.imshow_kwargs['vmin'] = self.imshow_kwargs.get('vmin', 0)
+#         self.imshow_kwargs['vmax'] = self.imshow_kwargs.get('vmax', 1)
+#         # self.imshow_kwargs['cmap'] = self.imshow_kwargs.get('cmap', 'gray')
+
+#     @property
+#     def image(self):
+#         return self.model._normalized_weight[self.chout, 0].detach().cpu().numpy()
+
+
+class ElementBiseWeightsChan(ElementGrouper):
+    operation_elements_dict = {'dilation': ElementSymbolDilation, "erosion": ElementSymbolErosion}
+
+    def __init__(self, model, chout=0, size=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.model = model
         self.chout = chout
-        super().__init__(image=None, *args, **kwargs)
+        self.size = size if size is not None else self.model.weight.shape[-2:]
+        # super().__init__(image=None, *args, **kwargs)
 
-        self.imshow_kwargs['vmin'] = self.imshow_kwargs.get('vmin', 0)
-        self.imshow_kwargs['vmax'] = self.imshow_kwargs.get('vmax', 1)
+        # self.imshow_kwargs['vmin'] = self.imshow_kwargs.get('vmin', 0)
+        # self.imshow_kwargs['vmax'] = self.imshow_kwargs.get('vmax', 1)
         # self.imshow_kwargs['cmap'] = self.imshow_kwargs.get('cmap', 'gray')
 
-    @property
-    def image(self):
-        return self.model._normalized_weight[self.chout, 0].detach().cpu().numpy()
+        weights = self.model._normalized_weight[self.chout, 0].detach().cpu().numpy()
+        if -self.model.bias[self.chout] <= weights.sum():
+            operation = 'dilation'
+        else:
+            operation = 'erosion'
+
+        self.weights_element = ElementImage(weights, imshow_kwargs={"interpolation": "nearest", "vmin": 0}, size=self.size, **kwargs)
+
+        radius_operation = max(2, self.size / 4)
+        self.operation_element = self.operation_elements_dict[operation](
+            radius=radius_operation, xy_coords_mean=self.weights_element.xy_coords_mean + np.array([0, self.size / 2 + radius_operation / 2])
+            # radius=radius_operation, xy_coords_mean=self.selem_element.xy_coords_mean + np.array([0, self.kernel_shape[-1] / 2 + radius_operation / 2])
+        )
+        self.add_element(self.operation_element, key="operation")
+        self.add_element(self.weights_element, key="weights")
+
+
 
 
 class ElementBiseSelemChan(ElementGrouper):

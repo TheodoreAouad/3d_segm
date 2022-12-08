@@ -136,14 +136,14 @@ class InitBiseConstantVarianceWeights(InitBiasFixed):
 
     @staticmethod
     def get_mean(p, nb_params):
-        return (np.sqrt(3) + 2) / (2 * p * torch.sqrt(2 * nb_params))
+        return (np.sqrt(3) + 2) / (4 * p * torch.sqrt(nb_params))
 
     def init_weights(self, module):
         p = 1
         nb_params = torch.tensor(module._normalized_weights.shape[1:]).prod()
 
         mean = self.get_mean(p, nb_params)
-        sigma = 2 / (p ** 2 * nb_params) - mean ** 2
+        sigma = 1 / (p ** 2 * nb_params) - mean ** 2
 
         diff = torch.sqrt(3 * sigma)
         lb = mean - diff
@@ -168,7 +168,7 @@ class InitDualBiseConstantVarianceWeights(InitBiasFixed):
         nb_params = torch.tensor(module._normalized_weights.shape[1:]).prod()
 
         mean = InitBiseConstantVarianceWeights.get_mean(p, nb_params)
-        sigma = 2 / (p ** 2 * nb_params) - mean ** 2
+        sigma = 1 / (p ** 2 * nb_params) - mean ** 2
 
         diff = torch.sqrt(3 * sigma)
         lb = mean - diff
@@ -186,6 +186,18 @@ class InitDualBiseConstantVarianceWeights(InitBiasFixed):
 
 
 class InitDualBiseConstantVarianceWeightsRandomBias(InitDualBiseConstantVarianceWeights):
+    def __init__(self, ub: float = 0.0001, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.ub = ub
+
+    def init_bias(self, module):
+        self.init_bias_value += float(uniform_sampling_bound(-self.ub, self.ub))
+        module.set_bias(
+            torch.zeros_like(module.bias) - self.init_bias_value
+        )
+
+
+class InitBiseConstantVarianceWeightsRandomBias(InitBiseConstantVarianceWeights):
     def __init__(self, ub: float = 0.0001, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.ub = ub
