@@ -155,7 +155,7 @@ class InitBiseConstantVarianceWeights(InitBiasFixed):
             new_weights
         )
 
-        self.init_bias_value = self.input_mean * module._normalized_weights.sum()
+        self.init_bias_value = self.input_mean * module._normalized_weights.sum((1, 2, 3))
 
 
 class InitDualBiseConstantVarianceWeights(InitBiasFixed):
@@ -182,7 +182,7 @@ class InitDualBiseConstantVarianceWeights(InitBiasFixed):
 
         module.weights_handler.factor = mean * nb_params  # set the factor to have the right mean and variance
 
-        self.init_bias_value = self.input_mean * module._normalized_weights.sum()
+        self.init_bias_value = self.input_mean * module._normalized_weights.sum((1, 2, 3))
 
 
 class InitDualBiseConstantVarianceWeightsRandomBias(InitDualBiseConstantVarianceWeights):
