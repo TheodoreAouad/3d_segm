@@ -1,16 +1,18 @@
 from os.path import join
-from typing import Tuple, Any, Optional, Callable
+from typing import Tuple, Any, Optional, Callable, Union
 import cv2
 # import numpy as np
 
 from torchvision.datasets import MNIST
 from torch.utils.data.dataloader import DataLoader
 import torch
+import numpy as np
 
 from deep_morpho.morp_operations import ParallelMorpOperations
 from deep_morpho.gray_scale import level_sets_from_gray, gray_from_level_sets
 from deep_morpho.datasets.collate_fn_gray import collate_fn_gray_scale
 from deep_morpho.tensor_with_attributes import TensorGray
+from .gray_dataset import GrayScaleDataset
 # from general.utils import set_borders_to
 
 
@@ -99,7 +101,7 @@ class MnistMorphoDataset(MNIST):
         return trainloader, valloader, testloader
 
 
-class MnistGrayScaleDataset(MNIST):
+class MnistGrayScaleDataset(MNIST, GrayScaleDataset):
 
     def __init__(
         self,
@@ -115,11 +117,12 @@ class MnistGrayScaleDataset(MNIST):
         do_symetric_output: bool = False,
         **kwargs,
     ) -> None:
-        super().__init__(root, train, *kwargs)
+        super(MNIST).__init__(root, train, *kwargs)
+        super(GrayScaleDataset).__init__(n_gray_scale_values)
         self.morp_operation = morp_operation
         self.preprocessing = preprocessing
         self.n_inputs = n_inputs
-        self.n_gray_scale_values = n_gray_scale_values
+        # self.n_gray_scale_values = n_gray_scale_values
         self.size = size
         self.invert_input_proba = invert_input_proba
         self.do_symetric_output = do_symetric_output
@@ -192,126 +195,131 @@ class MnistGrayScaleDataset(MNIST):
         testloader = MnistGrayScaleDataset.get_loader(first_idx=n_inputs_val, n_inputs=n_inputs_test, train=False, *args, **kwargs)
         return trainloader, valloader, testloader
 
-    def level_sets_from_gray(self, input_: torch.Tensor, target: torch.Tensor):
-        input_ls, input_values = level_sets_from_gray(input_, n_values=self.n_gray_scale_values)
-        target_ls, _ = level_sets_from_gray(target, input_values)
-        input_ls.gray_values = input_values
+    def gray_from_level_sets(self, ar: Union[np.ndarray, torch.Tensor], values: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tensor]:
+        if self.do_symetric_output:
+            return gray_from_level_sets((ar > 0).float(), values)
+        return gray_from_level_sets(ar, values)
 
-        return input_ls, target_ls
+    # def level_sets_from_gray(self, input_: torch.Tensor, target: torch.Tensor):
+    #     input_ls, input_values = level_sets_from_gray(input_, n_values=self.n_gray_scale_values)
+    #     target_ls, _ = level_sets_from_gray(target, input_values)
+    #     input_ls.gray_values = input_values
 
-    @staticmethod
-    def gray_batch_from_level_sets_batch(batch_tensor: torch.Tensor, values: torch.Tensor, indexes: torch.Tensor) -> torch.Tensor:
-        """Given an input batch of level set tensor, the corresponding values and the corresponding indexes, recovers
-        the gray scale batch of tensor.
-        Usually, `values` and `indexes` are attributes of the inputs (batch[0]).
+    #     return input_ls, target_ls
 
-        Args:
-            batch_tensor (torch.Tensor): shape (sum_{batch size}{nb level sets} , 1 , W , L)
-            indexes (torch.Tensor): shape (batch size + 1,)
-            values (torch.Tensor): shape (sum_{batch size}{nb level sets},)
+    # @staticmethod
+    # def gray_batch_from_level_sets_batch(batch_tensor: torch.Tensor, values: torch.Tensor, indexes: torch.Tensor) -> torch.Tensor:
+    #     """Given an input batch of level set tensor, the corresponding values and the corresponding indexes, recovers
+    #     the gray scale batch of tensor.
+    #     Usually, `values` and `indexes` are attributes of the inputs (batch[0]).
 
-        Returns:
-            torch.Tensor: shape (batch size , 1 , W , L)
-        """
+    #     Args:
+    #         batch_tensor (torch.Tensor): shape (sum_{batch size}{nb level sets} , 1 , W , L)
+    #         indexes (torch.Tensor): shape (batch size + 1,)
+    #         values (torch.Tensor): shape (sum_{batch size}{nb level sets},)
 
-        final_tensor = []
+    #     Returns:
+    #         torch.Tensor: shape (batch size , 1 , W , L)
+    #     """
 
-        for idx in range(1, len(indexes)):
-            idx1 = indexes[idx - 1]
-            idx2 = indexes[idx]
-            input_tensor = gray_from_level_sets(batch_tensor[idx1:idx2, 0], values=values[idx1:idx2])
+    #     final_tensor = []
 
-            final_tensor.append(input_tensor)
+    #     for idx in range(1, len(indexes)):
+    #         idx1 = indexes[idx - 1]
+    #         idx2 = indexes[idx]
+    #         input_tensor = gray_from_level_sets(batch_tensor[idx1:idx2, 0], values=values[idx1:idx2])
 
-        return torch.stack(final_tensor)[:, None, ...]
+    #         final_tensor.append(input_tensor)
 
-    @staticmethod
-    def gray_from_level_sets_batch_idx(index: int, batch_tensor: torch.Tensor, values: torch.Tensor, indexes: torch.Tensor,) -> torch.Tensor:
-        """Get a gray image from its index in the batch tensor. The index must be below batch_size.
+    #     return torch.stack(final_tensor)[:, None, ...]
 
-        Args:
-            index(int): index of the tensor inside the original batch tensor.
-            batch_tensor (torch.Tensor): shape (sum_{batch size}{nb level sets} , 1 , W , L)
-            indexes (torch.Tensor): shape (batch size + 1,)
-            values (torch.Tensor): shape (sum_{batch size}{nb level sets},)
+    # @staticmethod
+    # def gray_from_level_sets_batch_idx(index: int, batch_tensor: torch.Tensor, values: torch.Tensor, indexes: torch.Tensor,) -> torch.Tensor:
+    #     """Get a gray image from its index in the batch tensor. The index must be below batch_size.
 
-        Returns:
-            torch.Tensor: shape (W , L)
-        """
-        return gray_from_level_sets(
-            batch_tensor[indexes[index]:indexes[index + 1], 0],
-            values=values[indexes[index]:indexes[index + 1]]
-        )
+    #     Args:
+    #         index(int): index of the tensor inside the original batch tensor.
+    #         batch_tensor (torch.Tensor): shape (sum_{batch size}{nb level sets} , 1 , W , L)
+    #         indexes (torch.Tensor): shape (batch size + 1,)
+    #         values (torch.Tensor): shape (sum_{batch size}{nb level sets},)
 
-    @staticmethod
-    def get_relevent_tensors_idx(idx: int, batch: torch.Tensor, preds: torch.Tensor) -> Tuple[torch.Tensor]:
-        """ Given the batch and the predictions, outputs all the useful tensors for a given idx.
+    #     Returns:
+    #         torch.Tensor: shape (W , L)
+    #     """
+    #     return gray_from_level_sets(
+    #         batch_tensor[indexes[index]:indexes[index + 1], 0],
+    #         values=values[indexes[index]:indexes[index + 1]]
+    #     )
 
-        Args:
-            idx (int): index of the original image
-            batch (torch.Tensor): batch of level sets
-            preds (torch.Tensor): preds of level sets
+    # @staticmethod
+    # def get_relevent_tensors_idx(idx: int, batch: torch.Tensor, preds: torch.Tensor) -> Tuple[torch.Tensor]:
+    #     """ Given the batch and the predictions, outputs all the useful tensors for a given idx.
 
-        Returns:
-            Tuple[torch.Tensor]: reconstructed image, prediction, reconstructed target, original img, original target
-        """
-        img = MnistGrayScaleDataset.gray_from_level_sets_batch_idx(
-            index=idx,
-            batch_tensor=batch[0],
-            values=batch[0].gray_values,
-            indexes=batch[0].indexes,
-        )
-        target = MnistGrayScaleDataset.gray_from_level_sets_batch_idx(
-            index=idx,
-            batch_tensor=batch[1],
-            values=batch[0].gray_values,
-            indexes=batch[0].indexes,
-        )
-        pred = MnistGrayScaleDataset.gray_from_level_sets_batch_idx(
-            index=idx,
-            batch_tensor=preds,
-            values=batch[0].gray_values,
-            indexes=batch[0].indexes,
-        )
+    #     Args:
+    #         idx (int): index of the original image
+    #         batch (torch.Tensor): batch of level sets
+    #         preds (torch.Tensor): preds of level sets
 
-        original_img = batch[0].original[idx, 0]
-        original_target = batch[1].original[idx, 0]
+    #     Returns:
+    #         Tuple[torch.Tensor]: reconstructed image, prediction, reconstructed target, original img, original target
+    #     """
+    #     img = MnistGrayScaleDataset.gray_from_level_sets_batch_idx(
+    #         index=idx,
+    #         batch_tensor=batch[0],
+    #         values=batch[0].gray_values,
+    #         indexes=batch[0].indexes,
+    #     )
+    #     target = MnistGrayScaleDataset.gray_from_level_sets_batch_idx(
+    #         index=idx,
+    #         batch_tensor=batch[1],
+    #         values=batch[0].gray_values,
+    #         indexes=batch[0].indexes,
+    #     )
+    #     pred = MnistGrayScaleDataset.gray_from_level_sets_batch_idx(
+    #         index=idx,
+    #         batch_tensor=preds,
+    #         values=batch[0].gray_values,
+    #         indexes=batch[0].indexes,
+    #     )
 
-        return img, pred, target, original_img, original_target
+    #     original_img = batch[0].original[idx, 0]
+    #     original_target = batch[1].original[idx, 0]
+
+    #     return img, pred, target, original_img, original_target
 
 
-    @staticmethod
-    def get_relevent_tensors_batch(batch: torch.Tensor, preds: torch.Tensor) -> Tuple[torch.Tensor]:
-        """ Given the batch and the predictions, outputs all the useful tensors for a given idx.
+    # @staticmethod
+    # def get_relevent_tensors_batch(batch: torch.Tensor, preds: torch.Tensor) -> Tuple[torch.Tensor]:
+    #     """ Given the batch and the predictions, outputs all the useful tensors for a given idx.
 
-        Args:
-            idx (int): index of the original image
-            batch (torch.Tensor): batch of level sets
-            preds (torch.Tensor): preds of level sets
+    #     Args:
+    #         idx (int): index of the original image
+    #         batch (torch.Tensor): batch of level sets
+    #         preds (torch.Tensor): preds of level sets
 
-        Returns:
-            Tuple[torch.Tensor]: reconstructed image, prediction, reconstructed target, original img, original target
-        """
-        img = MnistGrayScaleDataset.gray_batch_from_level_sets_batch(
-            batch_tensor=batch[0],
-            values=batch[0].gray_values,
-            indexes=batch[0].indexes,
-        )
-        target = MnistGrayScaleDataset.gray_batch_from_level_sets_batch(
-            batch_tensor=batch[1],
-            values=batch[0].gray_values,
-            indexes=batch[0].indexes,
-        )
-        pred = MnistGrayScaleDataset.gray_batch_from_level_sets_batch(
-            batch_tensor=preds,
-            values=batch[0].gray_values,
-            indexes=batch[0].indexes,
-        )
+    #     Returns:
+    #         Tuple[torch.Tensor]: reconstructed image, prediction, reconstructed target, original img, original target
+    #     """
+    #     img = MnistGrayScaleDataset.gray_batch_from_level_sets_batch(
+    #         batch_tensor=batch[0],
+    #         values=batch[0].gray_values,
+    #         indexes=batch[0].indexes,
+    #     )
+    #     target = MnistGrayScaleDataset.gray_batch_from_level_sets_batch(
+    #         batch_tensor=batch[1],
+    #         values=batch[0].gray_values,
+    #         indexes=batch[0].indexes,
+    #     )
+    #     pred = MnistGrayScaleDataset.gray_batch_from_level_sets_batch(
+    #         batch_tensor=preds,
+    #         values=batch[0].gray_values,
+    #         indexes=batch[0].indexes,
+    #     )
 
-        original_img = batch[0].original
-        original_target = batch[1].original
+    #     original_img = batch[0].original
+    #     original_target = batch[1].original
 
-        return img, pred, target, original_img, original_target
+    #     return img, pred, target, original_img, original_target
 
 
 class MnistClassifDataset(MNIST):

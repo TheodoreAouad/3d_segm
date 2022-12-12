@@ -1,4 +1,3 @@
-from functools import partial
 from typing import Tuple, Union
 
 import torch
@@ -46,7 +45,7 @@ def level_sets_from_gray(ar: Union[np.ndarray, torch.Tensor], values: Union[np.n
 
 
 def gray_from_level_sets(ar: Union[np.ndarray, torch.Tensor], values: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tensor]:
-    """ Given level sets and the corresponding values, outputs the corresponding gray scale array
+    """ Given level sets (in {0, 1}) and the corresponding values, outputs the corresponding gray scale array
     """
     v2 = values[1:] - values[:-1]
 

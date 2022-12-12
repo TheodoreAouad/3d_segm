@@ -1,18 +1,21 @@
 # import warnings
 # warnings.filterwarnings('error', message=".+leaf Tensor.+")
-
+print('Import native libraries ...')
 from functools import partial
 from time import time
 import os
 from os.path import join
 import pathlib
 
+print('Import libraries...')
 import torch
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+
+print('Import modules...')
 from deep_morpho.datasets.mnist_dataset import MnistMorphoDataset, MnistGrayScaleDataset
 from deep_morpho.utils import set_seed
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
@@ -28,6 +31,8 @@ from general.nn.utils import train_val_test_split
 from deep_morpho.metrics import masked_dice
 from deep_morpho.args_segm import all_args
 from general.code_saver import CodeSaver
+
+print('Imports done.')
 
 
 def get_dataloader(args):
