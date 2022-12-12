@@ -19,7 +19,7 @@ class ConvergenceMetrics(Observable):
     """
     class used to calculate and track metrics in the tensorboard
     """
-    def __init__(self, metrics, eps=1e-3):
+    def __init__(self, metrics, eps=1e-3, freq=1):
         self.metrics = metrics
         self.cur_value = {
             "train": {k: None for k in metrics.keys()},
@@ -33,16 +33,39 @@ class ConvergenceMetrics(Observable):
         }
         self.eps = eps
 
+        if not isinstance(freq, dict):
+            self.freq = {
+                "train": freq, "val": freq, "test": freq
+            }
+        else:
+            self.freq = freq
+        self.freq_idx = {"train": 1, "val": 1, "test": 1}
+
 
     def on_train_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
+        if self.freq_idx["train"] % self.freq["train"] != 0:
+            self.freq_idx["train"] += 1
+            return
+        self.freq_idx["train"] += 1
+
         inputs, targets = batch
         self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='train')
 
     def on_validation_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
+        if self.freq_idx["val"] % self.freq["val"] != 0:
+            self.freq_idx["val"] += 1
+            return
+        self.freq_idx["val"] += 1
+
         inputs, targets = batch
         self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='val')
 
     def on_test_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
+        if self.freq_idx["test"] % self.freq["test"] != 0:
+            self.freq_idx["test"] += 1
+            return
+        self.freq_idx["test"] += 1
+
         inputs, targets = batch
         self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='test')
 

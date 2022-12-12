@@ -12,13 +12,20 @@ class InputAsPredMetric(Observable):
     """
     class used to calculate and track metrics in the tensorboard
     """
-    def __init__(self, metrics, ):
+    def __init__(self, metrics, freq: int = 1):
         self.metrics = metrics
         self.tb_steps = {metric: {} for metric in self.metrics.keys()}
         self.last_value = {}
+        self.freq = freq
+        self.freq_idx = 1
         # self.last_value = {k: 0 for k in metrics.keys()}
 
     def on_train_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
+        if self.freq_idx % self.freq != 0:
+            self.freq_idx += 1
+            return
+        self.freq_idx += 1
+
         inputs, targets = batch
         if inputs.shape[1] < targets.shape[1]:
             inputs = torch.cat([inputs for _ in range(targets.shape[1])], axis=1)

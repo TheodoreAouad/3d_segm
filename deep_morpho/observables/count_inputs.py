@@ -10,9 +10,11 @@ from general.nn.observables import Observable
 
 class CountInputs(Observable):
 
-    def __init__(self):
+    def __init__(self, freq=1):
         super().__init__()
         self.n_inputs = 0
+        self.freq = freq
+        self.freq_idx = 1
 
     def on_train_batch_end(
         self,
@@ -24,7 +26,14 @@ class CountInputs(Observable):
         dataloader_idx: int,
     ) -> None:
         self.n_inputs += len(batch[0])
-        trainer.logger.experiment.add_scalar("n_inputs", self.n_inputs, trainer.global_step)
+
+        if self.freq_idx % self.freq == 0:
+            trainer.logger.experiment.add_scalar("n_inputs", self.n_inputs, trainer.global_step)
+            self.freq_idx += 1
+            return
+
+        self.freq_idx += 1
+
 
     def save(self, save_path: str):
         final_dir = join(save_path, self.__class__.__name__)

@@ -163,19 +163,19 @@ def main(args, logger):
         "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=600),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=600),
-        "InputAsPredMetric": obs.InputAsPredMetric(metrics),
-        "CountInputs": obs.CountInputs(),
-        "PlotParametersBiSE": obs.PlotParametersBiSE(freq=1),
-        "PlotParametersBiseEllipse": obs.PlotParametersBiseEllipse(freq=1),
+        "InputAsPredMetric": obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
+        "CountInputs": obs.CountInputs(freq=args['freq_scalars']),
+        "PlotParametersBiSE": obs.PlotParametersBiSE(freq=args['freq_scalars']),
+        "PlotParametersBiseEllipse": obs.PlotParametersBiseEllipse(freq=args['freq_scalars']),
         "PlotWeightsBiSE": plot_weights_fn(freq=args['freq_imgs']),
-        "PlotLUIParametersBiSEL": obs.PlotLUIParametersBiSEL(),
+        "PlotLUIParametersBiSEL": obs.PlotLUIParametersBiSEL(freq=args['freq_scalars']),
         "WeightsHistogramBiSE": obs.WeightsHistogramBiSE(freq=args['freq_imgs']),
         # "CheckMorpOperation": obs.CheckMorpOperation(
         #     selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50
         # ) if args['dataset_type'] == 'diskorect' else obs.Observable(),
         "PlotGradientBise": plot_grad_obs,
         # "ExplosiveWeightGradientWatcher": obs.ExplosiveWeightGradientWatcher(freq=1, threshold=0.5),
-        "ConvergenceMetrics": obs.ConvergenceMetrics(metrics),
+        "ConvergenceMetrics": obs.ConvergenceMetrics(metrics, freq=args['freq_scalars']),
         # "ShowSelemAlmostBinary": obs.ShowSelemAlmostBinary(freq=args['freq_imgs']),
         "ShowSelemBinary": obs.ShowSelemBinary(freq=args['freq_imgs']),
         "ShowClosestSelemBinary": obs.ShowClosestSelemBinary(freq=args['freq_imgs']),
@@ -187,8 +187,9 @@ def main(args, logger):
         "BatchEarlyStoppingBinaryDice": obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
         # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
         "BatchReduceLrOnPlateau": obs.BatchReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
-        "CheckLearningRate": obs.CheckLearningRate(freq=2),
+        "CheckLearningRate": obs.CheckLearningRate(freq=2 * args['freq_scalars']),
     }
+    # observables_dict = {}
 
     if "gray" in args['dataset_type']:
         metrics_gray_scale = {'mse': lambda y_true, y_pred: ((y_true - y_pred) ** 2).mean()}
