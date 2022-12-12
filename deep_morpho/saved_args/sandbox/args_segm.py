@@ -51,7 +51,7 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_68/sandbox/0"
     # "Bimonn_exp_71/sandbox/0"
     # "JMIV/sandbox/0/"
-    "Bimonn_exp_73/sandbox/2"
+    "Bimonn_exp_74/sandbox/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -101,7 +101,7 @@ all_args['mnist_args'] = [
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
 all_args['mnist_gray_args'] = [
-    {"n_gray_scale_values": 10, "size": (100, 100), "invert_input_proba": 0, }
+    {"n_gray_scale_values": 10, "size": (100, 100),}
 ]
 
 all_args['sticks_noised_angles'] = [
@@ -161,7 +161,7 @@ all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
-all_args['batch_size'] = [256]
+all_args['batch_size'] = [32]
 all_args['num_workers'] = [
     20,
     # 0,

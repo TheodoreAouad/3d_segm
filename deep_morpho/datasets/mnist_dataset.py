@@ -113,18 +113,16 @@ class MnistGrayScaleDataset(MNIST, GrayScaleDataset):
         preprocessing=None,
         root: str = ROOT_MNIST_DIR,
         train: bool = True,
-        invert_input_proba: bool = 0,
         do_symetric_output: bool = False,
         **kwargs,
     ) -> None:
-        super(MNIST).__init__(root, train, *kwargs)
-        super(GrayScaleDataset).__init__(n_gray_scale_values)
+        MNIST.__init__(self, root, train, **kwargs)
+        GrayScaleDataset.__init__(self, n_gray_scale_values)
         self.morp_operation = morp_operation
         self.preprocessing = preprocessing
         self.n_inputs = n_inputs
         # self.n_gray_scale_values = n_gray_scale_values
         self.size = size
-        self.invert_input_proba = invert_input_proba
         self.do_symetric_output = do_symetric_output
 
         if n_inputs != "all":
@@ -153,15 +151,14 @@ class MnistGrayScaleDataset(MNIST, GrayScaleDataset):
 
         input_, target = self.level_sets_from_gray(input_, target)
 
+        if self.do_symetric_output:
+            gray_values = input_.gray_values
+            input_ = 2 * input_ - 1
+            target = 2 * target - 1
+            input_.gray_values = gray_values
+
         input_.original = original_input
         target.original = original_target
-
-        if torch.rand(1) < self.invert_input_proba:
-            input_ = 1 - input_
-
-
-        if self.do_symetric_output:
-            return 2 * input_ - 1, 2 * target - 1
 
         return input_.float(), target.float()
         # debug
@@ -175,16 +172,15 @@ class MnistGrayScaleDataset(MNIST, GrayScaleDataset):
 
     @staticmethod
     def get_loader(
-        batch_size, n_inputs, morp_operation, train, first_idx=0, threshold=.5, size=(50, 50),
-        invert_input_proba=0, do_symetric_output=False, preprocessing=None, n_gray_scale_values="all",
+        batch_size, n_inputs, morp_operation, train, first_idx=0, size=(50, 50),
+        do_symetric_output=False, preprocessing=None, n_gray_scale_values="all",
     **kwargs):
         if n_inputs == 0:
             return DataLoader([])
         return DataLoader(
             MnistGrayScaleDataset(
                 morp_operation=morp_operation, n_inputs=n_inputs, first_idx=first_idx,
-                train=train, threshold=threshold, preprocessing=preprocessing,
-                size=size, invert_input_proba=invert_input_proba,
+                train=train, preprocessing=preprocessing, size=size,
                 do_symetric_output=do_symetric_output, n_gray_scale_values=n_gray_scale_values,
             ), batch_size=batch_size, collate_fn=collate_fn_gray_scale, **kwargs)
 
