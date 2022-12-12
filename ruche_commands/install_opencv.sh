@@ -7,7 +7,7 @@
 #SBATCH --ntasks=4
 #SBATCH --time=24:00:00
 #SBATCH --gres=gpu:1
-#SBATCH --partition=gpu
+#SBATCH --partition=gpu_test
 #SBATCH --export=NONE
 
 module purge
