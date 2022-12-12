@@ -51,7 +51,7 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_68/sandbox/0"
     # "Bimonn_exp_71/sandbox/0"
     # "JMIV/sandbox/0/"
-    "Bimonn_exp_74/sandbox/0"
+    "test_nb_file/sandbox/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -163,7 +163,7 @@ all_args['optimizer'] = [
 ]
 all_args['batch_size'] = [32]
 all_args['num_workers'] = [
-    10,
+    20,
     # 0,
 ]
 all_args['freq_imgs'] = [1000]

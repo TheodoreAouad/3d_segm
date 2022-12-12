@@ -12,6 +12,8 @@ class CodeSaver:
         self.src_path = src_path
         self.temporary_path = get_next_same_name(temporary_path, 'temporary') if temporary_path is not None else None
         self.ignore_patterns = self.apply_ignore_patterns(*ignore_patterns)
+        self.nb_final_save = 0
+        self.last_save_path = None
 
     def save_in_temporary_file(self, dst_path: str = None):
         # Save code
@@ -24,6 +26,8 @@ class CodeSaver:
     def save_in_final_file(self, dst):
         # Save code
         copytree(join(self.temporary_path, 'code'), dst, ignore=self.ignore_patterns)
+        self.nb_final_save += 1
+        self.last_save_path = dst
 
     def delete_temporary_file(self):
         rmtree(self.temporary_path)

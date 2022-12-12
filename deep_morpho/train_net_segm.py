@@ -331,7 +331,9 @@ if __name__ == '__main__':
     code_saver = CodeSaver(
         src_path=os.getcwd(),
         temporary_path="deep_morpho/results/results_tensorboards",
-        ignore_patterns=("*__pycache__*", "*results*", "data", "*.ipynb", '.git', 'ssm'),
+        ignore_patterns=("*__pycache__*", "*results*", "data", "*.ipynb", '.git', 'ssm', 'sampling',
+                        "tests", "Notebooks", "*geogebra*", ".github", ".idea", ".pytest_cache", ".vscode", "html_pages",
+                        "paper_writer", ),
     )
 
     code_saver.save_in_temporary_file()
@@ -349,7 +351,14 @@ if __name__ == '__main__':
         # name += f"_{args['atomic_element']}"
 
         logger = TensorBoardLogger("deep_morpho/results/results_tensorboards", name=name, default_hp_metric=False)
-        code_saver.save_in_final_file(join(logger.log_dir, 'code'))
+
+        if code_saver.nb_final_save == 0:
+            code_saver.save_in_final_file(join(logger.log_dir, 'code'))
+        else:
+            pathlib.Path(logger.log_dir).mkdir(exist_ok=True, parents=True)
+            with open(join(logger.log_dir, "code_path.txt"), 'w') as f:
+                print(code_saver.last_save_path, file=f)
+
         save_yaml(args, join(logger.log_dir, 'args.yaml'))
         # save_pickle(args, join(logger.log_dir, 'args.pkl'))
 
