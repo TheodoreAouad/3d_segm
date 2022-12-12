@@ -12,7 +12,6 @@ import pickle
 import json
 import yaml
 import numpy as np
-import nibabel as nib
 from scipy import ndimage
 from skimage.morphology import disk, dilation, erosion, label
 from skimage.transform import warp
@@ -186,19 +185,6 @@ def dict_cross(dic):
     """
 
     return list(ParameterGrid(dic))
-
-
-def convert_to_nii(ar: np.ndarray, affine: np.ndarray):
-    return nib.Nifti1Image(ar, affine)
-
-
-def save_as_nii(path: str, ar: np.ndarray, affine: np.ndarray, dtype: Optional[type] = None):
-    if dtype is not None:
-        ar = ar.astype(dtype)
-    nib_ar = convert_to_nii(ar, affine)
-    pathlib.Path(path).parent.mkdir(exist_ok=True, parents=True)
-    nib.save(nib_ar, path)
-    return path
 
 
 def apply_crop(ar: np.ndarray, crop_xs: Tuple, crop_ys: Tuple, crop_zs: Optional[Tuple] = None):
