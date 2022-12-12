@@ -6,6 +6,8 @@ from time import time
 import os
 from os.path import join
 import pathlib
+from importlib import import_module
+import argparse
 
 print('Import libraries...')
 import torch
@@ -29,8 +31,15 @@ from general.nn.observables import CalculateAndLogMetrics
 from general.utils import format_time, log_console, create_logger, save_yaml, save_pickle, close_handlers
 from general.nn.utils import train_val_test_split
 from deep_morpho.metrics import masked_dice
-from deep_morpho.args_segm import all_args
 from general.code_saver import CodeSaver
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--args", default="saved_args/sandbox/args_segm.py")
+path_args_module = parser.parse_args().args
+
+all_args = path_args_module.all_args
+# from deep_morpho.args_segm import all_args
 
 print('Imports done.')
 

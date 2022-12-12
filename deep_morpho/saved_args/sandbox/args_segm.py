@@ -163,7 +163,7 @@ all_args['optimizer'] = [
 ]
 all_args['batch_size'] = [256]
 all_args['num_workers'] = [
-    10,
+    20,
     # 0,
 ]
 all_args['freq_imgs'] = [1000]

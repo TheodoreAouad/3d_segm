@@ -1,528 +1,0 @@
-No modules loaded
-/gpfs/workdir/aouadt/test_1
-0
-Virtual environment activated
-Collecting package metadata (current_repodata.json): ...working... done
-Solving environment: ...working... 
-The environment is inconsistent, please check the package plan carefully
-The following packages are causing the inconsistency:
-
-  - defaults/linux-64::cfitsio==3.470=h5893167_7
-  - conda-forge/noarch::importlib-metadata==5.1.0=pyha770c72_0
-  - conda-forge/noarch::aiosignal==1.3.1=pyhd8ed1ab_0
-  - defaults/linux-64::libstdcxx-ng==11.2.0=h1234567_1
-  - defaults/linux-64::setuptools==65.5.0=py310h06a4308_0
-  - defaults/linux-64::libgfortran-ng==11.2.0=h00389a5_1
-  - defaults/linux-64::requests==2.28.1=py310h06a4308_0
-  - defaults/linux-64::pyqt==5.15.7=py310h6a678d5_1
-  - defaults/linux-64::pyqt5-sip==12.11.0=py310h6a678d5_1
-  - defaults/linux-64::ninja-base==1.10.2=hd09550d_5
-  - conda-forge/noarch::cachetools==5.2.0=pyhd8ed1ab_0
-  - conda-forge/linux-64::pyyaml==5.4.1=py310h5764c6d_4
-  - defaults/noarch::python-dateutil==2.8.2=pyhd3eb1b0_0
-  - defaults/linux-64::lz4-c==1.9.3=h295c915_1
-  - defaults/linux-64::libprotobuf==3.20.1=h4ff587b_0
-  - defaults/linux-64::zstd==1.5.2=ha4553b6_0
-  - defaults/linux-64::sip==6.6.2=py310h6a678d5_0
-  - defaults/linux-64::tornado==6.2=py310h5eee18b_0
-  - conda-forge/noarch::tensorboard-plugin-wit==1.8.1=pyhd8ed1ab_0
-  - defaults/linux-64::expat==2.4.9=h6a678d5_0
-  - conda-forge/noarch::fsspec==2022.11.0=pyhd8ed1ab_0
-  - defaults/linux-64::mkl_fft==1.3.1=py310hd6ae3a3_0
-  - conda-forge/linux-64::multidict==6.0.2=py310h5764c6d_2
-  - defaults/linux-64::pytz==2022.1=py310h06a4308_0
-  - defaults/linux-64::urllib3==1.26.13=py310h06a4308_0
-  - defaults/linux-64::mkl-service==2.4.0=py310h7f8727e_0
-  - defaults/linux-64::charls==2.2.0=h2531618_0
-  - defaults/linux-64::pytorch==1.12.1=cpu_py310he8d8e81_0
-  - defaults/linux-64::libnghttp2==1.46.0=hce63b2e_0
-  - defaults/linux-64::typing-extensions==4.4.0=py310h06a4308_0
-  - conda-forge/noarch::click==8.1.3=unix_pyhd8ed1ab_2
-  - defaults/linux-64::certifi==2022.9.24=py310h06a4308_0
-  - conda-forge/noarch::google-auth-oauthlib==0.4.6=pyhd8ed1ab_0
-  - conda-forge/linux-64::python_abi==3.10=2_cp310
-  - defaults/linux-64::icu==58.2=he6710b0_3
-  - defaults/linux-64::blosc==1.21.0=h4ff587b_1
-  - conda-forge/noarch::zipp==3.11.0=pyhd8ed1ab_0
-  - defaults/linux-64::matplotlib==3.6.2=py310h06a4308_0
-  - conda-forge/linux-64::tensorboard-data-server==0.6.1=py310h597c629_4
-  - defaults/linux-64::libllvm10==10.0.1=hbcb73fb_5
-  - defaults/linux-64::scikit-image==0.19.3=py310h6a678d5_1
-  - defaults/linux-64::future==0.18.2=py310h06a4308_1
-  - conda-forge/noarch::oauthlib==3.2.2=pyhd8ed1ab_0
-  - defaults/noarch::tifffile==2021.7.2=pyhd3eb1b0_2
-  - conda-forge/noarch::absl-py==1.3.0=pyhd8ed1ab_0
-  - defaults/linux-64::lcms2==2.12=h3be6417_0
-  - defaults/linux-64::nss==3.74=h0370c37_0
-  - defaults/linux-64::pandas==1.5.2=py310h1128e8f_0
-  - defaults/noarch::charset-normalizer==2.0.4=pyhd3eb1b0_0
-  - defaults/linux-64::grpcio==1.42.0=py310hce63b2e_0
-  - defaults/linux-64::matplotlib-base==3.6.2=py310h945d387_0
-  - conda-forge/noarch::pyasn1==0.4.8=py_0
-  - defaults/linux-64::torchvision==0.13.1=cpu_py310h164cc8f_0
-  - defaults/linux-64::numpy==1.23.4=py310hd5efca6_0
-  - conda-forge/linux-64::yarl==1.8.1=py310h5764c6d_0
-  - defaults/linux-64::idna==3.4=py310h06a4308_0
-  - defaults/noarch::six==1.16.0=pyhd3eb1b0_1
-  - conda-forge/noarch::pytorch-lightning==1.3.1=pyhd8ed1ab_0
-  - defaults/linux-64::libaec==1.0.4=he6710b0_1
-  - defaults/linux-64::openjpeg==2.4.0=h3ad879b_0
-  - defaults/linux-64::libclang==10.0.1=default_hb85057a_2
-  - defaults/linux-64::brotlipy==0.7.0=py310h7f8727e_1002
-  - defaults/linux-64::pysocks==1.7.1=py310h06a4308_0
-  - defaults/noarch::pycparser==2.21=pyhd3eb1b0_0
-  - defaults/linux-64::imageio==2.19.3=py310h06a4308_0
-  - defaults/noarch::partd==1.2.0=pyhd3eb1b0_1
-  - defaults/linux-64::pip==22.3.1=py310h06a4308_0
-  - defaults/linux-64::libtiff==4.4.0=hecacb30_2
-  - defaults/linux-64::cffi==1.15.1=py310h5eee18b_3
-  - conda-forge/noarch::tqdm==4.64.1=pyhd8ed1ab_0
-  - conda-forge/noarch::pyu2f==0.1.5=pyhd8ed1ab_0
-  - defaults/linux-64::pillow==9.2.0=py310hace64e9_1
-  - defaults/linux-64::numpy-base==1.23.4=py310h8e6c178_0
-  - defaults/linux-64::kiwisolver==1.4.2=py310h295c915_0
-  - defaults/linux-64::fontconfig==2.14.1=hef1e5e3_0
-  - defaults/linux-64::pcre==8.45=h295c915_0
-  - conda-forge/noarch::tensorboard==2.11.0=pyhd8ed1ab_0
-  - conda-forge/noarch::pydeprecate==0.3.0=pyhd8ed1ab_0
-  - conda-forge/noarch::markdown==3.4.1=pyhd8ed1ab_0
-  - conda-forge/noarch::torchmetrics==0.3.2=pyhd8ed1ab_0
-  - conda-forge/noarch::async-timeout==4.0.2=pyhd8ed1ab_0
-  - conda-forge/noarch::werkzeug==2.2.2=pyhd8ed1ab_0
-  - defaults/linux-64::qt-main==5.15.2=h327a75a_7
-  - defaults/linux-64::libxkbcommon==1.0.1=hfa300c1_0
-  - defaults/noarch::packaging==21.3=pyhd3eb1b0_0
-  - defaults/linux-64::libwebp==1.2.4=h11a3e52_0
-  - defaults/noarch::munkres==1.1.4=py_0
-  - defaults/linux-64::mkl_random==1.2.2=py310h00e6091_0
-  - defaults/linux-64::pyparsing==3.0.9=py310h06a4308_0
-  - defaults/linux-64::numexpr==2.8.4=py310h8879344_0
-  - conda-forge/noarch::blinker==1.5=pyhd8ed1ab_0
-  - conda-forge/noarch::pyasn1-modules==0.2.7=py_0
-  - defaults/linux-64::libffi==3.4.2=h6a678d5_6
-  - defaults/linux-64::dask-core==2022.7.0=py310h06a4308_0
-  - defaults/linux-64::dbus==1.13.18=hb2f20db_0
-  - defaults/linux-64::cryptography==38.0.1=py310h9ce1e76_0
-  - defaults/linux-64::libzopfli==1.0.3=he6710b0_0
-  - conda-forge/noarch::rsa==4.9=pyhd8ed1ab_0
-  - defaults/linux-64::contourpy==1.0.5=py310hdb19cb5_0
-  - defaults/linux-64::nspr==4.33=h295c915_0
-  - defaults/linux-64::pywavelets==1.4.1=py310h5eee18b_0
-  - defaults/linux-64::ninja==1.10.2=h06a4308_5
-  - conda-forge/linux-64::aiohttp==3.8.3=py310h5764c6d_1
-  - defaults/linux-64::libxml2==2.9.14=h74e7548_0
-  - conda-forge/noarch::pyjwt==2.6.0=pyhd8ed1ab_0
-  - defaults/linux-64::glib==2.69.1=he621ea3_2
-  - defaults/noarch::toml==0.10.2=pyhd3eb1b0_0
-  - defaults/linux-64::zfp==0.5.5=h295c915_6
-  - defaults/linux-64::lerc==3.0=h295c915_0
-  - defaults/noarch::cycler==0.11.0=pyhd3eb1b0_0
-  - conda-forge/linux-64::frozenlist==1.3.3=py310h5764c6d_0
-  - defaults/noarch::flit-core==3.6.0=pyhd3eb1b0_0
-  - conda-forge/noarch::colorama==0.4.6=pyhd8ed1ab_0
-  - defaults/linux-64::locket==1.0.0=py310h06a4308_0
-  - defaults/linux-64::gst-plugins-base==1.14.0=h8213a91_2
-  - defaults/linux-64::ply==3.11=py310h06a4308_0
-  - defaults/linux-64::networkx==2.8.4=py310h06a4308_0
-  - defaults/noarch::fonttools==4.25.0=pyhd3eb1b0_0
-  - conda-forge/noarch::attrs==22.1.0=pyh71513ae_1
-  - defaults/linux-64::qtwebkit==5.212=h4eab89a_4
-  - defaults/noarch::wheel==0.37.1=pyhd3eb1b0_0
-  - defaults/linux-64::qt-webengine==5.15.9=hd2b0992_4
-  - defaults/noarch::pyopenssl==22.0.0=pyhd3eb1b0_0
-  - defaults/linux-64::bottleneck==1.3.5=py310ha9d4c09_0
-  - defaults/linux-64::python==3.10.8=h7a1cb2a_1
-  - conda-forge/linux-64::protobuf==3.20.1=py310hd8f1fbe_0
-  - defaults/linux-64::imagecodecs==2021.8.26=py310hecf7e94_1
-  - defaults/linux-64::scipy==1.9.3=py310hd5efca6_0
-  - defaults/linux-64::cytoolz==0.12.0=py310h5eee18b_0
-  - defaults/linux-64::typing_extensions==4.4.0=py310h06a4308_0
-  - defaults/linux-64::snappy==1.1.9=h295c915_0
-  - defaults/linux-64::libxslt==1.1.35=h4e12654_0
-  - defaults/linux-64::gstreamer==1.14.0=h28cd5cc_2
-  - defaults/linux-64::brunsli==0.1=h2531618_0
-  - defaults/linux-64::libcurl==7.86.0=h91b91d3_0
-  - conda-forge/linux-64::markupsafe==2.1.1=py310h5764c6d_2
-  - conda-forge/noarch::google-auth==2.15.0=pyh1a96a4e_0
-  - defaults/linux-64::toolz==0.12.0=py310h06a4308_0
-  - defaults/noarch::cloudpickle==2.0.0=pyhd3eb1b0_0
-  - conda-forge/noarch::requests-oauthlib==1.3.1=pyhd8ed1ab_0
-failed with initial frozen solve. Retrying with flexible solve.
-Solving environment: ...working... failed with repodata from current_repodata.json, will retry with next repodata source.
-Collecting package metadata (repodata.json): ...working... done
-Solving environment: ...working... 
-The environment is inconsistent, please check the package plan carefully
-The following packages are causing the inconsistency:
-
-  - defaults/linux-64::cfitsio==3.470=h5893167_7
-  - conda-forge/noarch::importlib-metadata==5.1.0=pyha770c72_0
-  - conda-forge/noarch::aiosignal==1.3.1=pyhd8ed1ab_0
-  - defaults/linux-64::libstdcxx-ng==11.2.0=h1234567_1
-  - defaults/linux-64::setuptools==65.5.0=py310h06a4308_0
-  - defaults/linux-64::libgfortran-ng==11.2.0=h00389a5_1
-  - defaults/linux-64::requests==2.28.1=py310h06a4308_0
-  - defaults/linux-64::pyqt==5.15.7=py310h6a678d5_1
-  - defaults/linux-64::pyqt5-sip==12.11.0=py310h6a678d5_1
-  - defaults/linux-64::ninja-base==1.10.2=hd09550d_5
-  - conda-forge/noarch::cachetools==5.2.0=pyhd8ed1ab_0
-  - conda-forge/linux-64::pyyaml==5.4.1=py310h5764c6d_4
-  - defaults/noarch::python-dateutil==2.8.2=pyhd3eb1b0_0
-  - defaults/linux-64::lz4-c==1.9.3=h295c915_1
-  - defaults/linux-64::libprotobuf==3.20.1=h4ff587b_0
-  - defaults/linux-64::zstd==1.5.2=ha4553b6_0
-  - defaults/linux-64::sip==6.6.2=py310h6a678d5_0
-  - defaults/linux-64::tornado==6.2=py310h5eee18b_0
-  - conda-forge/noarch::tensorboard-plugin-wit==1.8.1=pyhd8ed1ab_0
-  - defaults/linux-64::expat==2.4.9=h6a678d5_0
-  - conda-forge/noarch::fsspec==2022.11.0=pyhd8ed1ab_0
-  - defaults/linux-64::mkl_fft==1.3.1=py310hd6ae3a3_0
-  - conda-forge/linux-64::multidict==6.0.2=py310h5764c6d_2
-  - defaults/linux-64::pytz==2022.1=py310h06a4308_0
-  - defaults/linux-64::urllib3==1.26.13=py310h06a4308_0
-  - defaults/linux-64::mkl-service==2.4.0=py310h7f8727e_0
-  - defaults/linux-64::charls==2.2.0=h2531618_0
-  - defaults/linux-64::pytorch==1.12.1=cpu_py310he8d8e81_0
-  - defaults/linux-64::libnghttp2==1.46.0=hce63b2e_0
-  - defaults/linux-64::typing-extensions==4.4.0=py310h06a4308_0
-  - conda-forge/noarch::click==8.1.3=unix_pyhd8ed1ab_2
-  - defaults/linux-64::certifi==2022.9.24=py310h06a4308_0
-  - conda-forge/noarch::google-auth-oauthlib==0.4.6=pyhd8ed1ab_0
-  - conda-forge/linux-64::python_abi==3.10=2_cp310
-  - defaults/linux-64::icu==58.2=he6710b0_3
-  - defaults/linux-64::blosc==1.21.0=h4ff587b_1
-  - conda-forge/noarch::zipp==3.11.0=pyhd8ed1ab_0
-  - defaults/linux-64::matplotlib==3.6.2=py310h06a4308_0
-  - conda-forge/linux-64::tensorboard-data-server==0.6.1=py310h597c629_4
-  - defaults/linux-64::libllvm10==10.0.1=hbcb73fb_5
-  - defaults/linux-64::scikit-image==0.19.3=py310h6a678d5_1
-  - defaults/linux-64::future==0.18.2=py310h06a4308_1
-  - conda-forge/noarch::oauthlib==3.2.2=pyhd8ed1ab_0
-  - defaults/noarch::tifffile==2021.7.2=pyhd3eb1b0_2
-  - conda-forge/noarch::absl-py==1.3.0=pyhd8ed1ab_0
-  - defaults/linux-64::lcms2==2.12=h3be6417_0
-  - defaults/linux-64::nss==3.74=h0370c37_0
-  - defaults/linux-64::pandas==1.5.2=py310h1128e8f_0
-  - defaults/noarch::charset-normalizer==2.0.4=pyhd3eb1b0_0
-  - defaults/linux-64::grpcio==1.42.0=py310hce63b2e_0
-  - defaults/linux-64::matplotlib-base==3.6.2=py310h945d387_0
-  - conda-forge/noarch::pyasn1==0.4.8=py_0
-  - defaults/linux-64::torchvision==0.13.1=cpu_py310h164cc8f_0
-  - defaults/linux-64::numpy==1.23.4=py310hd5efca6_0
-  - conda-forge/linux-64::yarl==1.8.1=py310h5764c6d_0
-  - defaults/linux-64::idna==3.4=py310h06a4308_0
-  - defaults/noarch::six==1.16.0=pyhd3eb1b0_1
-  - conda-forge/noarch::pytorch-lightning==1.3.1=pyhd8ed1ab_0
-  - defaults/linux-64::libaec==1.0.4=he6710b0_1
-  - defaults/linux-64::openjpeg==2.4.0=h3ad879b_0
-  - defaults/linux-64::libclang==10.0.1=default_hb85057a_2
-  - defaults/linux-64::brotlipy==0.7.0=py310h7f8727e_1002
-  - defaults/linux-64::pysocks==1.7.1=py310h06a4308_0
-  - defaults/noarch::pycparser==2.21=pyhd3eb1b0_0
-  - defaults/linux-64::imageio==2.19.3=py310h06a4308_0
-  - defaults/noarch::partd==1.2.0=pyhd3eb1b0_1
-  - defaults/linux-64::pip==22.3.1=py310h06a4308_0
-  - defaults/linux-64::libtiff==4.4.0=hecacb30_2
-  - defaults/linux-64::cffi==1.15.1=py310h5eee18b_3
-  - conda-forge/noarch::tqdm==4.64.1=pyhd8ed1ab_0
-  - conda-forge/noarch::pyu2f==0.1.5=pyhd8ed1ab_0
-  - defaults/linux-64::pillow==9.2.0=py310hace64e9_1
-  - defaults/linux-64::numpy-base==1.23.4=py310h8e6c178_0
-  - defaults/linux-64::kiwisolver==1.4.2=py310h295c915_0
-  - defaults/linux-64::fontconfig==2.14.1=hef1e5e3_0
-  - defaults/linux-64::pcre==8.45=h295c915_0
-  - conda-forge/noarch::tensorboard==2.11.0=pyhd8ed1ab_0
-  - conda-forge/noarch::pydeprecate==0.3.0=pyhd8ed1ab_0
-  - conda-forge/noarch::markdown==3.4.1=pyhd8ed1ab_0
-  - conda-forge/noarch::torchmetrics==0.3.2=pyhd8ed1ab_0
-  - conda-forge/noarch::async-timeout==4.0.2=pyhd8ed1ab_0
-  - conda-forge/noarch::werkzeug==2.2.2=pyhd8ed1ab_0
-  - defaults/linux-64::qt-main==5.15.2=h327a75a_7
-  - defaults/linux-64::libxkbcommon==1.0.1=hfa300c1_0
-  - defaults/noarch::packaging==21.3=pyhd3eb1b0_0
-  - defaults/linux-64::libwebp==1.2.4=h11a3e52_0
-  - defaults/noarch::munkres==1.1.4=py_0
-  - defaults/linux-64::mkl_random==1.2.2=py310h00e6091_0
-  - defaults/linux-64::pyparsing==3.0.9=py310h06a4308_0
-  - defaults/linux-64::numexpr==2.8.4=py310h8879344_0
-  - conda-forge/noarch::blinker==1.5=pyhd8ed1ab_0
-  - conda-forge/noarch::pyasn1-modules==0.2.7=py_0
-  - defaults/linux-64::libffi==3.4.2=h6a678d5_6
-  - defaults/linux-64::dask-core==2022.7.0=py310h06a4308_0
-  - defaults/linux-64::dbus==1.13.18=hb2f20db_0
-  - defaults/linux-64::cryptography==38.0.1=py310h9ce1e76_0
-  - defaults/linux-64::libzopfli==1.0.3=he6710b0_0
-  - conda-forge/noarch::rsa==4.9=pyhd8ed1ab_0
-  - defaults/linux-64::contourpy==1.0.5=py310hdb19cb5_0
-  - defaults/linux-64::nspr==4.33=h295c915_0
-  - defaults/linux-64::pywavelets==1.4.1=py310h5eee18b_0
-  - defaults/linux-64::ninja==1.10.2=h06a4308_5
-  - conda-forge/linux-64::aiohttp==3.8.3=py310h5764c6d_1
-  - defaults/linux-64::libxml2==2.9.14=h74e7548_0
-  - conda-forge/noarch::pyjwt==2.6.0=pyhd8ed1ab_0
-  - defaults/linux-64::glib==2.69.1=he621ea3_2
-  - defaults/noarch::toml==0.10.2=pyhd3eb1b0_0
-  - defaults/linux-64::zfp==0.5.5=h295c915_6
-  - defaults/linux-64::lerc==3.0=h295c915_0
-  - defaults/noarch::cycler==0.11.0=pyhd3eb1b0_0
-  - conda-forge/linux-64::frozenlist==1.3.3=py310h5764c6d_0
-  - defaults/noarch::flit-core==3.6.0=pyhd3eb1b0_0
-  - conda-forge/noarch::colorama==0.4.6=pyhd8ed1ab_0
-  - defaults/linux-64::locket==1.0.0=py310h06a4308_0
-  - defaults/linux-64::gst-plugins-base==1.14.0=h8213a91_2
-  - defaults/linux-64::ply==3.11=py310h06a4308_0
-  - defaults/linux-64::networkx==2.8.4=py310h06a4308_0
-  - defaults/noarch::fonttools==4.25.0=pyhd3eb1b0_0
-  - conda-forge/noarch::attrs==22.1.0=pyh71513ae_1
-  - defaults/linux-64::qtwebkit==5.212=h4eab89a_4
-  - defaults/noarch::wheel==0.37.1=pyhd3eb1b0_0
-  - defaults/linux-64::qt-webengine==5.15.9=hd2b0992_4
-  - defaults/noarch::pyopenssl==22.0.0=pyhd3eb1b0_0
-  - defaults/linux-64::bottleneck==1.3.5=py310ha9d4c09_0
-  - defaults/linux-64::python==3.10.8=h7a1cb2a_1
-  - conda-forge/linux-64::protobuf==3.20.1=py310hd8f1fbe_0
-  - defaults/linux-64::imagecodecs==2021.8.26=py310hecf7e94_1
-  - defaults/linux-64::scipy==1.9.3=py310hd5efca6_0
-  - defaults/linux-64::cytoolz==0.12.0=py310h5eee18b_0
-  - defaults/linux-64::typing_extensions==4.4.0=py310h06a4308_0
-  - defaults/linux-64::snappy==1.1.9=h295c915_0
-  - defaults/linux-64::libxslt==1.1.35=h4e12654_0
-  - defaults/linux-64::gstreamer==1.14.0=h28cd5cc_2
-  - defaults/linux-64::brunsli==0.1=h2531618_0
-  - defaults/linux-64::libcurl==7.86.0=h91b91d3_0
-  - conda-forge/linux-64::markupsafe==2.1.1=py310h5764c6d_2
-  - conda-forge/noarch::google-auth==2.15.0=pyh1a96a4e_0
-  - defaults/linux-64::toolz==0.12.0=py310h06a4308_0
-  - defaults/noarch::cloudpickle==2.0.0=pyhd3eb1b0_0
-  - conda-forge/noarch::requests-oauthlib==1.3.1=pyhd8ed1ab_0
-failed with initial frozen solve. Retrying with flexible solve.
-Solving environment: ...working... Building graph of deps:   0%|          | 0/185 [00:00<?, ?it/s]Examining pydeprecate:   0%|          | 0/185 [00:00<?, ?it/s] Examining opencv:   1%|          | 1/185 [00:00<00:07, 24.60it/s]Examining markdown:   1%|          | 2/185 [00:05<08:18,  2.72s/it]Examining markdown:   2%|▏         | 3/185 [00:05<05:30,  1.82s/it]Examining ply:   2%|▏         | 3/185 [00:06<05:30,  1.82s/it]     Examining ply:   2%|▏         | 4/185 [00:06<04:22,  1.45s/it]Examining libxkbcommon:   2%|▏         | 4/185 [00:06<04:22,  1.45s/it]Examining libxkbcommon:   3%|▎         | 5/185 [00:06<03:09,  1.06s/it]Examining pytorch-lightning:   3%|▎         | 5/185 [00:06<03:09,  1.06s/it]Examining qtwebkit:   3%|▎         | 6/185 [00:06<03:08,  1.06s/it]         Examining glib:   4%|▍         | 7/185 [00:06<03:07,  1.06s/it]    Examining fftw:   4%|▍         | 8/185 [00:06<03:06,  1.06s/it]Examining fftw:   5%|▍         | 9/185 [00:06<02:11,  1.33it/s]Examining pytorch:   5%|▍         | 9/185 [00:06<02:11,  1.33it/s]Examining mkl_random:   5%|▌         | 10/185 [00:16<02:11,  1.33it/s]Examining mkl_random:   6%|▌         | 11/185 [00:16<06:03,  2.09s/it]Examining fonttools:   6%|▌         | 11/185 [00:19<06:03,  2.09s/it] Examining fonttools:   6%|▋         | 12/185 [00:19<06:36,  2.29s/it]Examining pyqt:   6%|▋         | 12/185 [00:20<06:36,  2.29s/it]     Examining pyqt:   7%|▋         | 13/185 [00:20<05:31,  1.93s/it]Examining pyasn1-modules:   7%|▋         | 13/185 [00:21<05:31,  1.93s/it]Examining pyasn1-modules:   8%|▊         | 14/185 [00:21<04:21,  1.53s/it]Examining cryptography:   8%|▊         | 14/185 [00:21<04:21,  1.53s/it]  Examining cryptography:   8%|▊         | 15/185 [00:21<03:25,  1.21s/it]Examining cloudpickle:   8%|▊         | 15/185 [00:24<03:25,  1.21s/it] Examining cloudpickle:   9%|▊         | 16/185 [00:24<04:38,  1.65s/it]Examining frozenlist:   9%|▊         | 16/185 [00:25<04:38,  1.65s/it] Examining frozenlist:   9%|▉         | 17/185 [00:25<04:03,  1.45s/it]Examining brunsli:   9%|▉         | 17/185 [00:25<04:03,  1.45s/it]   Examining krb5:  10%|▉         | 18/185 [00:25<04:01,  1.45s/it]   Examining c-ares:  10%|█         | 19/185 [00:25<04:00,  1.45s/it]Examining c-ares:  11%|█         | 20/185 [00:25<02:49,  1.02s/it]Examining idna:  11%|█         | 20/185 [00:25<02:49,  1.02s/it]  Examining kiwisolver:  11%|█▏        | 21/185 [00:26<02:48,  1.02s/it]Examining kiwisolver:  12%|█▏        | 22/185 [00:26<02:21,  1.15it/s]Examining partd:  12%|█▏        | 22/185 [00:26<02:21,  1.15it/s]     Examining partd:  12%|█▏        | 23/185 [00:26<01:55,  1.40it/s]Examining zipp:  12%|█▏        | 23/185 [00:27<01:55,  1.40it/s] Examining zipp:  13%|█▎        | 24/185 [00:27<01:42,  1.58it/s]Examining libxml2:  13%|█▎        | 24/185 [00:27<01:42,  1.58it/s]Examining libxml2:  14%|█▎        | 25/185 [00:27<01:43,  1.54it/s]Examining pyasn1:  14%|█▎        | 25/185 [00:27<01:43,  1.54it/s] Examining pyqt5-sip:  14%|█▍        | 26/185 [00:28<01:43,  1.54it/s]Examining pyqt5-sip:  15%|█▍        | 27/185 [00:28<01:25,  1.85it/s]Examining libgomp:  15%|█▍        | 27/185 [00:28<01:25,  1.85it/s]  Examining libgomp:  15%|█▌        | 28/185 [00:28<01:05,  2.40it/s]Examining freetype:  15%|█▌        | 28/185 [00:28<01:05,  2.40it/s]Examining cachetools:  16%|█▌        | 29/185 [00:28<01:04,  2.40it/s]Examining pip:  16%|█▌        | 30/185 [00:29<01:04,  2.40it/s]       Examining pip:  17%|█▋        | 31/185 [00:29<00:50,  3.04it/s]Examining scipy:  17%|█▋        | 31/185 [00:32<00:50,  3.04it/s]Examining scipy:  17%|█▋        | 32/185 [00:32<03:01,  1.18s/it]Examining libllvm10:  17%|█▋        | 32/185 [00:44<03:01,  1.18s/it]Examining libllvm10:  18%|█▊        | 33/185 [00:44<11:11,  4.42s/it]Examining libpng:  18%|█▊        | 33/185 [00:44<11:11,  4.42s/it]   Examining contourpy:  18%|█▊        | 34/185 [00:44<11:06,  4.42s/it]Examining tensorboard-plugin-wit:  19%|█▉        | 35/185 [00:44<11:02,  4.42s/it]Examining tensorboard-plugin-wit:  19%|█▉        | 36/185 [00:44<07:43,  3.11s/it]Examining brotli:  19%|█▉        | 36/185 [00:44<07:43,  3.11s/it]                Examining brotli:  20%|██        | 37/185 [00:44<05:30,  2.23s/it]Examining gst-plugins-base:  20%|██        | 37/185 [00:44<05:30,  2.23s/it]Examining tornado:  21%|██        | 38/185 [00:44<05:28,  2.23s/it]         Examining tifffile:  21%|██        | 39/185 [00:45<05:25,  2.23s/it]Examining tifffile:  22%|██▏       | 40/185 [00:45<03:56,  1.63s/it]Examining toml:  22%|██▏       | 40/185 [00:48<03:56,  1.63s/it]    Examining toml:  22%|██▏       | 41/185 [00:48<04:50,  2.02s/it]Examining yaml:  22%|██▏       | 41/185 [00:48<04:50,  2.02s/it]Examining yaml:  23%|██▎       | 42/185 [00:48<03:39,  1.53s/it]Examining protobuf:  23%|██▎       | 42/185 [00:48<03:39,  1.53s/it]Examining libprotobuf:  23%|██▎       | 43/185 [00:49<03:37,  1.53s/it]Examining libprotobuf:  24%|██▍       | 44/185 [00:49<03:02,  1.29s/it]Examining pillow:  24%|██▍       | 44/185 [00:50<03:02,  1.29s/it]     Examining ninja:  24%|██▍       | 45/185 [00:51<03:00,  1.29s/it] Examining ninja:  25%|██▍       | 46/185 [00:51<02:39,  1.15s/it]Examining brotli-bin:  25%|██▍       | 46/185 [00:51<02:39,  1.15s/it]Examining brotli-bin:  25%|██▌       | 47/185 [00:51<02:03,  1.12it/s]Examining requests:  25%|██▌       | 47/185 [00:51<02:03,  1.12it/s]  Examining libbrotlidec:  26%|██▌       | 48/185 [00:52<02:02,  1.12it/s]Examining libbrotlidec:  26%|██▋       | 49/185 [00:52<01:44,  1.30it/s]Examining python-dateutil:  26%|██▋       | 49/185 [00:52<01:44,  1.30it/s]Examining typing-extensions:  27%|██▋       | 50/185 [00:53<01:44,  1.30it/s]Examining typing-extensions:  28%|██▊       | 51/185 [00:53<01:20,  1.65it/s]Examining libwebp:  28%|██▊       | 51/185 [00:53<01:20,  1.65it/s]          Examining libwebp:  28%|██▊       | 52/185 [00:53<01:02,  2.12it/s]Examining matplotlib-base:  28%|██▊       | 52/185 [00:53<01:02,  2.12it/s]Examining pyyaml:  29%|██▊       | 53/185 [00:57<01:02,  2.12it/s]         Examining pyyaml:  29%|██▉       | 54/185 [00:57<02:09,  1.01it/s]Examining libxslt:  29%|██▉       | 54/185 [00:58<02:09,  1.01it/s]Examining libxslt:  30%|██▉       | 55/185 [00:58<01:51,  1.16it/s]Examining libcurl:  30%|██▉       | 55/185 [00:58<01:51,  1.16it/s]Examining cytoolz:  30%|███       | 56/185 [00:58<01:50,  1.16it/s]Examining libbrotlicommon:  31%|███       | 57/185 [00:58<01:49,  1.16it/s]Examining libbrotlicommon:  31%|███▏      | 58/185 [00:58<01:21,  1.55it/s]Examining pytz:  31%|███▏      | 58/185 [00:58<01:21,  1.55it/s]           Examining intel-openmp:  32%|███▏      | 59/185 [00:59<01:21,  1.55it/s]Examining intel-openmp:  32%|███▏      | 60/185 [00:59<01:10,  1.78it/s]Examining pysocks:  32%|███▏      | 60/185 [00:59<01:10,  1.78it/s]     Examining libgfortran5:  33%|███▎      | 61/185 [00:59<01:09,  1.78it/s]Examining libgfortran5:  34%|███▎      | 62/185 [00:59<00:51,  2.38it/s]Examining tensorboard-data-server:  34%|███▎      | 62/185 [00:59<00:51,  2.38it/s]Examining matplotlib:  34%|███▍      | 63/185 [00:59<00:51,  2.38it/s]             Examining pcre:  35%|███▍      | 64/185 [01:06<00:50,  2.38it/s]      Examining pcre:  35%|███▌      | 65/185 [01:06<01:56,  1.03it/s]Examining dask-core:  35%|███▌      | 65/185 [01:06<01:56,  1.03it/s]Examining certifi:  36%|███▌      | 66/185 [01:10<01:55,  1.03it/s]  Examining certifi:  36%|███▌      | 67/185 [01:10<02:22,  1.21s/it]Examining expat:  36%|███▌      | 67/185 [01:11<02:22,  1.21s/it]  Examining expat:  37%|███▋      | 68/185 [01:11<02:16,  1.17s/it]Examining werkzeug:  37%|███▋      | 68/185 [01:11<02:16,  1.17s/it]Examining torchmetrics:  37%|███▋      | 69/185 [01:11<02:15,  1.17s/it]Examining torchmetrics:  38%|███▊      | 70/185 [01:11<01:46,  1.08it/s]Examining libevent:  38%|███▊      | 70/185 [01:11<01:46,  1.08it/s]    Examining libev:  38%|███▊      | 71/185 [01:11<01:45,  1.08it/s]   Examining tensorboard:  39%|███▉      | 72/185 [01:11<01:44,  1.08it/s]Examining jxrlib:  39%|███▉      | 73/185 [01:19<01:43,  1.08it/s]     Examining jxrlib:  40%|████      | 74/185 [01:19<02:14,  1.21s/it]Examining giflib:  40%|████      | 74/185 [01:19<02:14,  1.21s/it]Examining attrs:  41%|████      | 75/185 [01:19<02:13,  1.21s/it] Examining icu:  41%|████      | 76/185 [01:20<02:12,  1.21s/it]  Examining icu:  42%|████▏     | 77/185 [01:20<01:41,  1.07it/s]Examining dbus:  42%|████▏     | 77/185 [01:20<01:41,  1.07it/s]Examining readline:  42%|████▏     | 78/185 [01:20<01:40,  1.07it/s]Examining lz4-c:  43%|████▎     | 79/185 [01:20<01:39,  1.07it/s]   Examining tzdata:  43%|████▎     | 80/185 [01:20<01:38,  1.07it/s]Examining async-timeout:  44%|████▍     | 81/185 [01:20<01:37,  1.07it/s]Examining imageio:  44%|████▍     | 82/185 [01:20<01:36,  1.07it/s]      Examining imageio:  45%|████▍     | 83/185 [01:20<01:08,  1.49it/s]Examining blinker:  45%|████▍     | 83/185 [01:24<01:08,  1.49it/s]Examining blinker:  45%|████▌     | 84/185 [01:24<02:42,  1.61s/it]Examining pywavelets:  45%|████▌     | 84/185 [01:24<02:42,  1.61s/it]Examining pywavelets:  46%|████▌     | 85/185 [01:24<01:58,  1.18s/it]Examining absl-py:  46%|████▌     | 85/185 [01:27<01:58,  1.18s/it]   Examining absl-py:  46%|████▋     | 86/185 [01:27<02:50,  1.72s/it]Examining wheel:  46%|████▋     | 86/185 [01:28<02:50,  1.72s/it]  Examining wheel:  47%|████▋     | 87/185 [01:28<02:27,  1.51s/it]Examining typing_extensions:  47%|████▋     | 87/185 [01:30<02:27,  1.51s/it]Examining typing_extensions:  48%|████▊     | 88/185 [01:30<02:26,  1.51s/it]Examining zlib:  48%|████▊     | 88/185 [01:30<02:26,  1.51s/it]             Examining zlib:  48%|████▊     | 89/185 [01:30<01:54,  1.20s/it]Examining libnghttp2:  48%|████▊     | 89/185 [01:30<01:54,  1.20s/it]Examining ninja-base:  49%|████▊     | 90/185 [01:30<01:53,  1.20s/it]Examining colorama:  49%|████▉     | 91/185 [01:30<01:52,  1.20s/it]  Examining six:  50%|████▉     | 92/185 [01:31<01:51,  1.20s/it]     Examining six:  50%|█████     | 93/185 [01:31<01:20,  1.14it/s]Examining fontconfig:  50%|█████     | 93/185 [01:31<01:20,  1.14it/s]Examining fontconfig:  51%|█████     | 94/185 [01:31<01:09,  1.32it/s]Examining locket:  51%|█████     | 94/185 [01:31<01:09,  1.32it/s]    Examining tqdm:  51%|█████▏    | 95/185 [01:31<01:08,  1.32it/s]  Examining tqdm:  52%|█████▏    | 96/185 [01:31<00:50,  1.76it/s]Examining libwebp-base:  52%|█████▏    | 96/185 [01:34<00:50,  1.76it/s]Examining libwebp-base:  52%|█████▏    | 97/185 [01:34<01:43,  1.17s/it]Examining yarl:  52%|█████▏    | 97/185 [01:34<01:43,  1.17s/it]        Examining jpeg:  53%|█████▎    | 98/185 [01:34<01:41,  1.17s/it]Examining jpeg:  54%|█████▎    | 99/185 [01:34<01:17,  1.10it/s]Examining google-auth-oauthlib:  54%|█████▎    | 99/185 [01:34<01:17,  1.10it/s]Examining blas:  54%|█████▍    | 100/185 [01:35<01:17,  1.10it/s]               Examining blas:  55%|█████▍    | 101/185 [01:35<01:03,  1.33it/s]Examining libzopfli:  55%|█████▍    | 101/185 [01:35<01:03,  1.33it/s]Examining lerc:  55%|█████▌    | 102/185 [01:35<01:02,  1.33it/s]     Examining libstdcxx-ng:  56%|█████▌    | 103/185 [01:35<01:01,  1.33it/s]Examining @/linux-64::__glibc==2.17=0:  56%|█████▌    | 104/185 [01:35<01:00,  1.33it/s]Examining _openmp_mutex:  57%|█████▋    | 105/185 [01:35<01:00,  1.33it/s]              Examining pycparser:  57%|█████▋    | 106/185 [01:35<00:59,  1.33it/s]    Examining nss:  58%|█████▊    | 107/185 [01:36<00:58,  1.33it/s]      Examining nss:  58%|█████▊    | 108/185 [01:36<00:41,  1.84it/s]Examining charls:  58%|█████▊    | 108/185 [01:36<00:41,  1.84it/s]Examining qt-main:  59%|█████▉    | 109/185 [01:36<00:41,  1.84it/s]Examining pyopenssl:  59%|█████▉    | 110/185 [01:36<00:40,  1.84it/s]Examining snappy:  60%|██████    | 111/185 [01:37<00:40,  1.84it/s]   Examining snappy:  61%|██████    | 112/185 [01:37<00:33,  2.20it/s]Examining xz:  61%|██████    | 112/185 [01:37<00:33,  2.20it/s]    Examining libbrotlienc:  61%|██████    | 113/185 [01:37<00:32,  2.20it/s]Examining libclang:  62%|██████▏   | 114/185 [01:37<00:32,  2.20it/s]    Examining zfp:  62%|██████▏   | 115/185 [01:37<00:31,  2.20it/s]     Examining sqlite:  63%|██████▎   | 116/185 [01:37<00:31,  2.20it/s]Examining grpcio:  63%|██████▎   | 117/185 [01:37<00:30,  2.20it/s]Examining qt-webengine:  64%|██████▍   | 118/185 [01:39<00:30,  2.20it/s]Examining qt-webengine:  64%|██████▍   | 119/185 [01:39<00:26,  2.48it/s]Examining libgcc-ng:  64%|██████▍   | 119/185 [01:39<00:26,  2.48it/s]   Examining libedit:  65%|██████▍   | 120/185 [01:39<00:26,  2.48it/s]  Examining scikit-image:  65%|██████▌   | 121/185 [01:39<00:25,  2.48it/s]Examining _libgcc_mutex:  66%|██████▌   | 122/185 [01:48<00:25,  2.48it/s]Examining _libgcc_mutex:  66%|██████▋   | 123/185 [01:48<01:02,  1.01s/it]Examining pyjwt:  66%|██████▋   | 123/185 [01:48<01:02,  1.01s/it]        Examining pkgs/main/linux-64::python==3.10.8=h7a1cb2a_1:  67%|██████▋   | 124/185 [01:49<01:01,  1.01s/it]Examining pkgs/main/linux-64::python==3.10.8=h7a1cb2a_1:  68%|██████▊   | 125/185 [01:49<00:51,  1.17it/s]Examining pandas:  68%|██████▊   | 125/185 [01:49<00:51,  1.17it/s]                                       Examining openssl:  68%|██████▊   | 126/185 [02:00<00:50,  1.17it/s]Examining openssl:  69%|██████▊   | 127/185 [02:00<02:05,  2.16s/it]Examining requests-oauthlib:  69%|██████▊   | 127/185 [02:00<02:05,  2.16s/it]Examining libgfortran-ng:  69%|██████▉   | 128/185 [02:00<02:02,  2.16s/it]   Examining libgfortran-ng:  70%|██████▉   | 129/185 [02:00<01:27,  1.57s/it]Examining urllib3:  70%|██████▉   | 129/185 [02:00<01:27,  1.57s/it]       Examining cfitsio:  70%|███████   | 130/185 [02:03<01:26,  1.57s/it]Examining cfitsio:  71%|███████   | 131/185 [02:03<01:23,  1.55s/it]Examining torchvision:  71%|███████   | 131/185 [02:03<01:23,  1.55s/it]Examining libffi:  71%|███████▏  | 132/185 [02:09<01:22,  1.55s/it]     Examining libffi:  72%|███████▏  | 133/185 [02:09<01:42,  1.97s/it]Examining brotlipy:  72%|███████▏  | 133/185 [02:09<01:42,  1.97s/it]Examining multidict:  72%|███████▏  | 134/185 [02:09<01:40,  1.97s/it]Examining multidict:  73%|███████▎  | 135/185 [02:09<01:10,  1.42s/it]Examining cycler:  73%|███████▎  | 135/185 [02:10<01:10,  1.42s/it]   Examining cycler:  74%|███████▎  | 136/185 [02:10<00:57,  1.17s/it]Examining libdeflate:  74%|███████▎  | 136/185 [02:10<00:57,  1.17s/it]Examining libdeflate:  74%|███████▍  | 137/185 [02:10<00:41,  1.15it/s]Examining libpq:  74%|███████▍  | 137/185 [02:10<00:41,  1.15it/s]     Examining numpy:  75%|███████▍  | 138/185 [02:10<00:40,  1.15it/s]Examining networkx:  75%|███████▌  | 139/185 [02:19<00:39,  1.15it/s]Examining networkx:  76%|███████▌  | 140/185 [02:19<01:09,  1.54s/it]Examining fsspec:  76%|███████▌  | 140/185 [02:20<01:09,  1.54s/it]  Examining fsspec:  76%|███████▌  | 141/185 [02:20<00:57,  1.31s/it]Examining nspr:  76%|███████▌  | 141/185 [02:21<00:57,  1.31s/it]  Examining nspr:  77%|███████▋  | 142/185 [02:21<00:52,  1.22s/it]Examining libssh2:  77%|███████▋  | 142/185 [02:21<00:52,  1.22s/it]Examining setuptools:  77%|███████▋  | 143/185 [02:21<00:51,  1.22s/it]Examining sip:  78%|███████▊  | 144/185 [02:23<00:49,  1.22s/it]       Examining sip:  78%|███████▊  | 145/185 [02:23<00:43,  1.10s/it]Examining ld_impl_linux-64:  78%|███████▊  | 145/185 [02:24<00:43,  1.10s/it]Examining ld_impl_linux-64:  79%|███████▉  | 146/185 [02:24<00:36,  1.06it/s]Examining @/linux-64::__cuda==11.4=0:  79%|███████▉  | 146/185 [02:24<00:36,  1.06it/s]Examining libtiff:  79%|███████▉  | 147/185 [02:24<00:35,  1.06it/s]                   Examining flit-core:  80%|████████  | 148/185 [02:24<00:34,  1.06it/s]Examining importlib-metadata:  81%|████████  | 149/185 [02:24<00:33,  1.06it/s]Examining importlib-metadata:  81%|████████  | 150/185 [02:24<00:23,  1.47it/s]Examining rsa:  81%|████████  | 150/185 [02:25<00:23,  1.47it/s]               Examining rsa:  82%|████████▏ | 151/185 [02:25<00:20,  1.68it/s]Examining ncurses:  82%|████████▏ | 151/185 [02:25<00:20,  1.68it/s]Examining ncurses:  82%|████████▏ | 152/185 [02:25<00:18,  1.83it/s]Examining imagecodecs:  82%|████████▏ | 152/185 [02:25<00:18,  1.83it/s]Examining numpy-base:  83%|████████▎ | 153/185 [02:27<00:17,  1.83it/s] Examining numpy-base:  83%|████████▎ | 154/185 [02:27<00:18,  1.64it/s]Examining aiohttp:  83%|████████▎ | 154/185 [02:32<00:18,  1.64it/s]   Examining aiohttp:  84%|████████▍ | 155/185 [02:32<01:00,  2.02s/it]Examining gstreamer:  84%|████████▍ | 155/185 [02:33<01:00,  2.02s/it]Examining gstreamer:  84%|████████▍ | 156/185 [02:33<00:52,  1.82s/it]Examining mkl_fft:  84%|████████▍ | 156/185 [02:33<00:52,  1.82s/it]  Examining charset-normalizer:  85%|████████▍ | 157/185 [02:39<00:51,  1.82s/it]Examining charset-normalizer:  85%|████████▌ | 158/185 [02:39<00:56,  2.09s/it]Examining openjpeg:  85%|████████▌ | 158/185 [02:39<00:56,  2.09s/it]          Examining numexpr:  86%|████████▌ | 159/185 [02:39<00:54,  2.09s/it] Examining tk:  86%|████████▋ | 160/185 [02:51<00:52,  2.09s/it]     Examining tk:  87%|████████▋ | 161/185 [02:51<01:04,  2.68s/it]Examining click:  87%|████████▋ | 161/185 [02:51<01:04,  2.68s/it]Examining pyparsing:  88%|████████▊ | 162/185 [02:52<01:01,  2.68s/it]Examining pyparsing:  88%|████████▊ | 163/185 [02:52<00:43,  1.96s/it]Examining ca-certificates:  88%|████████▊ | 163/185 [02:52<00:43,  1.96s/it]Examining ca-certificates:  89%|████████▊ | 164/185 [02:52<00:33,  1.59s/it]Examining packaging:  89%|████████▊ | 164/185 [02:52<00:33,  1.59s/it]      Examining bottleneck:  89%|████████▉ | 165/185 [02:53<00:31,  1.59s/it]Examining bottleneck:  90%|████████▉ | 166/185 [02:53<00:23,  1.23s/it]Examining zstd:  90%|████████▉ | 166/185 [02:55<00:23,  1.23s/it]      Examining zstd:  90%|█████████ | 167/185 [02:55<00:27,  1.54s/it]Examining blosc:  90%|█████████ | 167/185 [02:55<00:27,  1.54s/it]Examining toolz:  91%|█████████ | 168/185 [02:55<00:26,  1.54s/it]Examining google-auth:  91%|█████████▏| 169/185 [02:56<00:24,  1.54s/it]Examining google-auth:  92%|█████████▏| 170/185 [02:56<00:17,  1.14s/it]Examining mkl:  92%|█████████▏| 170/185 [02:58<00:17,  1.14s/it]        Examining mkl:  92%|█████████▏| 171/185 [02:58<00:18,  1.35s/it]Examining libxcb:  92%|█████████▏| 171/185 [02:58<00:18,  1.35s/it]Examining aiosignal:  93%|█████████▎| 172/185 [02:58<00:17,  1.35s/it]Examining bzip2:  94%|█████████▎| 173/185 [02:58<00:16,  1.35s/it]    Examining python_abi:  94%|█████████▍| 174/185 [02:58<00:14,  1.35s/it]Examining pyu2f:  95%|█████████▍| 175/185 [02:58<00:13,  1.35s/it]     Examining future:  95%|█████████▌| 176/185 [02:58<00:12,  1.35s/it]Examining future:  96%|█████████▌| 177/185 [02:58<00:07,  1.05it/s]Examining lcms2:  96%|█████████▌| 177/185 [02:58<00:07,  1.05it/s] Examining mkl-service:  96%|█████████▌| 178/185 [02:58<00:06,  1.05it/s]Examining mkl-service:  97%|█████████▋| 179/185 [02:58<00:04,  1.42it/s]Examining libaec:  97%|█████████▋| 179/185 [02:59<00:04,  1.42it/s]     Examining cffi:  97%|█████████▋| 180/185 [02:59<00:03,  1.42it/s]  Examining cffi:  98%|█████████▊| 181/185 [02:59<00:02,  1.70it/s]Examining libuuid:  98%|█████████▊| 181/185 [03:00<00:02,  1.70it/s]Examining libuuid:  98%|█████████▊| 182/185 [03:00<00:02,  1.42it/s]Examining oauthlib:  98%|█████████▊| 182/185 [03:00<00:02,  1.42it/s]Examining markupsafe:  99%|█████████▉| 183/185 [03:01<00:01,  1.42it/s]Examining markupsafe:  99%|█████████▉| 184/185 [03:01<00:00,  1.59it/s]Examining munkres:  99%|█████████▉| 184/185 [03:01<00:00,  1.59it/s]   Examining munkres: 100%|██████████| 185/185 [03:01<00:00,  1.84it/s]                                                                    Determining conflicts:   0%|          | 0/185 [00:00<?, ?it/s]Examining conflict for pydeprecate pytorch-lightning:   0%|          | 0/185 [00:00<?, ?it/s]Examining conflict for pydeprecate opencv markdown ply pytorch-lightning pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist idna kiwisolver partd zipp pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions matplotlib-base pyyaml cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs typing_extensions async-timeout imageio blinker pywavelets absl-py wheel colorama six locket tqdm yarl google-auth-oauthlib pycparser pyopenssl grpcio scikit-image pyjwt python pandas requests-oauthlib urllib3 torchvision brotlipy multidict cycler numpy networkx fsspec setuptools sip ld_impl_linux-64 flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp mkl_fft charset-normalizer numexpr click pyparsing packaging bottleneck toolz google-auth aiosignal python_abi pyu2f future mkl-service cffi oauthlib markupsafe munkres:   1%|          | 1/185 [00:00<00:00, 1298.14it/s]Examining conflict for pydeprecate opencv markdown ply libxkbcommon pytorch-lightning qtwebkit pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist idna kiwisolver partd zipp libxml2 pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit gst-plugins-base tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions libwebp matplotlib-base pyyaml libxslt cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs typing_extensions async-timeout imageio blinker pywavelets absl-py wheel colorama six fontconfig locket tqdm yarl google-auth-oauthlib pycparser qt-main pyopenssl xz grpcio qt-webengine scikit-image pyjwt python pandas requests-oauthlib urllib3 torchvision brotlipy multidict cycler numpy networkx fsspec setuptools sip libtiff flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp gstreamer mkl_fft charset-normalizer openjpeg numexpr click pyparsing packaging bottleneck zstd blosc toolz google-auth aiosignal python_abi pyu2f future lcms2 mkl-service cffi oauthlib markupsafe munkres:   1%|          | 2/185 [01:02<1:35:42, 31.38s/it]Examining conflict for pydeprecate opencv markdown ply libxkbcommon pytorch-lightning qtwebkit pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist idna kiwisolver partd zipp libxml2 pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit gst-plugins-base tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions libwebp matplotlib-base pyyaml libxslt cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs typing_extensions async-timeout imageio blinker pywavelets absl-py wheel colorama six fontconfig locket tqdm yarl google-auth-oauthlib pycparser qt-main pyopenssl xz grpcio qt-webengine scikit-image pyjwt python pandas requests-oauthlib urllib3 torchvision brotlipy multidict cycler numpy networkx fsspec setuptools sip libtiff flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp gstreamer mkl_fft charset-normalizer openjpeg numexpr click pyparsing packaging bottleneck zstd blosc toolz google-auth aiosignal python_abi pyu2f future lcms2 mkl-service cffi oauthlib markupsafe munkres:   2%|▏         | 3/185 [01:02<1:03:27, 20.92s/it]Examining conflict for pydeprecate opencv markdown ply pytorch-lightning qtwebkit glib pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist idna kiwisolver partd zipp pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit gst-plugins-base tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions matplotlib-base pyyaml cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs dbus typing_extensions async-timeout imageio blinker pywavelets absl-py wheel colorama six locket tqdm yarl google-auth-oauthlib pycparser qt-main pyopenssl libclang grpcio qt-webengine scikit-image pyjwt python pandas requests-oauthlib urllib3 torchvision libffi brotlipy multidict cycler numpy networkx fsspec setuptools sip flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp gstreamer mkl_fft charset-normalizer numexpr click pyparsing packaging bottleneck toolz google-auth aiosignal python_abi pyu2f future mkl-service cffi oauthlib markupsafe munkres:   2%|▏         | 3/185 [02:05<1:03:27, 20.92s/it]                                                           Examining conflict for pydeprecate opencv markdown ply pytorch-lightning qtwebkit glib pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist idna kiwisolver partd zipp pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit gst-plugins-base tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions matplotlib-base pyyaml cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs dbus typing_extensions async-timeout imageio blinker pywavelets absl-py wheel colorama six locket tqdm yarl google-auth-oauthlib pycparser qt-main pyopenssl libclang grpcio qt-webengine scikit-image pyjwt python pandas requests-oauthlib urllib3 torchvision libffi brotlipy multidict cycler numpy networkx fsspec setuptools sip flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp gstreamer mkl_fft charset-normalizer numexpr click pyparsing packaging bottleneck toolz google-auth aiosignal python_abi pyu2f future mkl-service cffi oauthlib markupsafe munkres:   2%|▏         | 4/185 [02:05<1:41:14, 33.56s/it]Examining conflict for pydeprecate opencv markdown ply pytorch-lightning pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist krb5 idna kiwisolver partd zipp pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions matplotlib-base pyyaml libcurl cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics libevent tensorboard attrs typing_extensions async-timeout imageio blinker pywavelets absl-py wheel libnghttp2 colorama six locket tqdm yarl google-auth-oauthlib pycparser qt-main pyopenssl grpcio qt-webengine scikit-image pyjwt python pandas openssl requests-oauthlib urllib3 cfitsio torchvision brotlipy multidict cycler libpq numpy networkx fsspec libssh2 setuptools sip flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp mkl_fft charset-normalizer numexpr click pyparsing packaging bottleneck toolz google-auth aiosignal python_abi pyu2f future mkl-service cffi oauthlib markupsafe munkres:   2%|▏         | 4/185 [03:08<1:41:14, 33.56s/it]Examining conflict for pydeprecate opencv markdown ply pytorch-lightning pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist krb5 idna kiwisolver partd zipp pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions matplotlib-base pyyaml libcurl cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics libevent tensorboard attrs typing_extensions async-timeout imageio blinker pywavelets absl-py wheel libnghttp2 colorama six locket tqdm yarl google-auth-oauthlib pycparser qt-main pyopenssl grpcio qt-webengine scikit-image pyjwt python pandas openssl requests-oauthlib urllib3 cfitsio torchvision brotlipy multidict cycler libpq numpy networkx fsspec libssh2 setuptools sip flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp mkl_fft charset-normalizer numexpr click pyparsing packaging bottleneck toolz google-auth aiosignal python_abi pyu2f future mkl-service cffi oauthlib markupsafe munkres:   3%|▎         | 5/185 [03:08<2:06:55, 42.31s/it]Examining conflict for pydeprecate opencv markdown ply pytorch-lightning qtwebkit pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist idna kiwisolver partd zipp pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions matplotlib-base pyyaml cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs typing_extensions async-timeout imageio blinker pywavelets absl-py wheel colorama six locket tqdm yarl google-auth-oauthlib pycparser nss qt-main pyopenssl sqlite grpcio qt-webengine scikit-image pyjwt python pandas requests-oauthlib urllib3 torchvision brotlipy multidict cycler numpy networkx fsspec setuptools sip flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp mkl_fft charset-normalizer numexpr click pyparsing packaging bottleneck toolz google-auth aiosignal python_abi pyu2f future mkl-service cffi oauthlib markupsafe munkres:   3%|▎         | 5/185 [04:12<2:06:55, 42.31s/it]                                           Examining conflict for pydeprecate opencv markdown ply pytorch-lightning qtwebkit pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist idna kiwisolver partd zipp pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions matplotlib-base pyyaml cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs typing_extensions async-timeout imageio blinker pywavelets absl-py wheel colorama six locket tqdm yarl google-auth-oauthlib pycparser nss qt-main pyopenssl sqlite grpcio qt-webengine scikit-image pyjwt python pandas requests-oauthlib urllib3 torchvision brotlipy multidict cycler numpy networkx fsspec setuptools sip flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp mkl_fft charset-normalizer numexpr click pyparsing packaging bottleneck toolz google-auth aiosignal python_abi pyu2f future mkl-service cffi oauthlib markupsafe munkres:   3%|▎         | 6/185 [04:12<2:25:27, 48.75s/it]Examining conflict for pydeprecate opencv markdown ply pytorch-lightning pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist krb5 idna kiwisolver partd zipp pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions matplotlib-base pyyaml libcurl cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs typing_extensions async-timeout imageio blinker pywavelets absl-py wheel colorama six locket tqdm yarl google-auth-oauthlib pycparser pyopenssl grpcio scikit-image pyjwt python pandas requests-oauthlib urllib3 torchvision brotlipy multidict cycler libpq numpy networkx fsspec setuptools sip flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp mkl_fft charset-normalizer numexpr tk click pyparsing packaging bottleneck toolz google-auth aiosignal python_abi pyu2f future mkl-service cffi oauthlib markupsafe munkres:   3%|▎         | 6/185 [05:15<2:25:27, 48.75s/it]                   Examining conflict for pydeprecate opencv markdown ply pytorch-lightning pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist krb5 idna kiwisolver partd zipp pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions matplotlib-base pyyaml libcurl cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs typing_extensions async-timeout imageio blinker pywavelets absl-py wheel colorama six locket tqdm yarl google-auth-oauthlib pycparser pyopenssl grpcio scikit-image pyjwt python pandas requests-oauthlib urllib3 torchvision brotlipy multidict cycler libpq numpy networkx fsspec setuptools sip flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp mkl_fft charset-normalizer numexpr tk click pyparsing packaging bottleneck toolz google-auth aiosignal python_abi pyu2f future mkl-service cffi oauthlib markupsafe munkres:   4%|▍         | 7/185 [05:15<2:37:50, 53.21s/it]Examining conflict for pydeprecate opencv markdown ply pytorch-lightning pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist krb5 idna kiwisolver partd zipp pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions matplotlib-base pyyaml cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs readline typing_extensions async-timeout imageio blinker pywavelets absl-py wheel colorama six locket tqdm yarl google-auth-oauthlib pycparser nss pyopenssl sqlite grpcio libedit scikit-image pyjwt python pandas requests-oauthlib urllib3 torchvision brotlipy multidict cycler libpq numpy networkx fsspec setuptools sip flit-core importlib-metadata rsa ncurses imagecodecs numpy-base aiohttp mkl_fft charset-normalizer numexpr click pyparsing packaging bottleneck toolz google-auth aiosignal python_abi pyu2f future mkl-service cffi oauthlib markupsafe munkres:   4%|▍         | 7/185 [06:18<2:37:50, 53.21s/it]Examining conflict for pydeprecate opencv markdown ply pytorch-lightning pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist krb5 idna kiwisolver partd zipp pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions matplotlib-base pyyaml cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs readline typing_extensions async-timeout imageio blinker pywavelets absl-py wheel colorama six locket tqdm yarl google-auth-oauthlib pycparser nss pyopenssl sqlite grpcio libedit scikit-image pyjwt python pandas requests-oauthlib urllib3 torchvision brotlipy multidict cycler libpq numpy networkx fsspec setuptools sip flit-core importlib-metadata rsa ncurses imagecodecs numpy-base aiohttp mkl_fft charset-normalizer numexpr click pyparsing packaging bottleneck toolz google-auth aiosignal python_abi pyu2f future mkl-service cffi oauthlib markupsafe munkres:   4%|▍         | 8/185 [06:18<2:44:50, 55.88s/it]Examining conflict for pydeprecate opencv markdown ply pytorch-lightning qtwebkit pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist idna kiwisolver partd zipp pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions matplotlib-base pyyaml cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs readline typing_extensions async-timeout imageio blinker pywavelets absl-py wheel colorama six locket tqdm yarl google-auth-oauthlib pycparser nss qt-main pyopenssl sqlite grpcio scikit-image pyjwt python pandas requests-oauthlib urllib3 torchvision brotlipy multidict cycler libpq numpy networkx fsspec setuptools sip flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp mkl_fft charset-normalizer numexpr click pyparsing packaging bottleneck toolz google-auth aiosignal python_abi pyu2f future mkl-service cffi oauthlib markupsafe munkres:   4%|▍         | 8/185 [07:19<2:44:50, 55.88s/it]    Examining conflict for pydeprecate opencv markdown ply pytorch-lightning qtwebkit pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist idna kiwisolver partd zipp pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions matplotlib-base pyyaml cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs readline typing_extensions async-timeout imageio blinker pywavelets absl-py wheel colorama six locket tqdm yarl google-auth-oauthlib pycparser nss qt-main pyopenssl sqlite grpcio scikit-image pyjwt python pandas requests-oauthlib urllib3 torchvision brotlipy multidict cycler libpq numpy networkx fsspec setuptools sip flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp mkl_fft charset-normalizer numexpr click pyparsing packaging bottleneck toolz google-auth aiosignal python_abi pyu2f future mkl-service cffi oauthlib markupsafe munkres:   5%|▍         | 9/185 [07:19<2:48:45, 57.53s/it]Examining conflict for pydeprecate opencv markdown ply libxkbcommon pytorch-lightning qtwebkit glib pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist krb5 idna kiwisolver partd zipp libxml2 pyasn1 pyqt5-sip freetype cachetools pip scipy libllvm10 libpng contourpy tensorboard-plugin-wit gst-plugins-base tifffile tornado toml protobuf libprotobuf pillow ninja requests python-dateutil typing-extensions libwebp matplotlib-base pyyaml libxslt libcurl cytoolz pytz intel-openmp pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs dbus typing_extensions async-timeout imageio blinker pywavelets absl-py wheel zlib libnghttp2 colorama six fontconfig locket tqdm yarl google-auth-oauthlib pycparser nss qt-main pyopenssl libclang sqlite grpcio qt-webengine scikit-image pyjwt python pandas requests-oauthlib urllib3 cfitsio torchvision brotlipy multidict cycler libpq numpy networkx fsspec libssh2 setuptools sip libtiff flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp gstreamer mkl_fft charset-normalizer openjpeg numexpr tk click pyparsing packaging bottleneck zstd blosc toolz google-auth mkl aiosignal python_abi pyu2f future lcms2 mkl-service cffi oauthlib markupsafe munkres:   5%|▍         | 9/185 [08:20<2:48:45, 57.53s/it]Examining conflict for pydeprecate opencv markdown ply libxkbcommon pytorch-lightning qtwebkit glib pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist krb5 idna kiwisolver partd zipp libxml2 pyasn1 pyqt5-sip freetype cachetools pip scipy libllvm10 libpng contourpy tensorboard-plugin-wit gst-plugins-base tifffile tornado toml protobuf libprotobuf pillow ninja requests python-dateutil typing-extensions libwebp matplotlib-base pyyaml libxslt libcurl cytoolz pytz intel-openmp pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs dbus typing_extensions async-timeout imageio blinker pywavelets absl-py wheel zlib libnghttp2 colorama six fontconfig locket tqdm yarl google-auth-oauthlib pycparser nss qt-main pyopenssl libclang sqlite grpcio qt-webengine scikit-image pyjwt python pandas requests-oauthlib urllib3 cfitsio torchvision brotlipy multidict cycler libpq numpy networkx fsspec libssh2 setuptools sip libtiff flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp gstreamer mkl_fft charset-normalizer openjpeg numexpr tk click pyparsing packaging bottleneck zstd blosc toolz google-auth mkl aiosignal python_abi pyu2f future lcms2 mkl-service cffi oauthlib markupsafe munkres:   5%|▌         | 10/185 [08:20<2:51:17, 58.73s/it]Examining conflict for pydeprecate opencv markdown ply pytorch-lightning pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist idna kiwisolver partd zipp pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions matplotlib-base pyyaml cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs typing_extensions async-timeout imageio blinker pywavelets absl-py wheel colorama six fontconfig locket tqdm yarl google-auth-oauthlib pycparser qt-main pyopenssl grpcio qt-webengine scikit-image pyjwt python pandas requests-oauthlib urllib3 torchvision brotlipy multidict cycler numpy networkx fsspec setuptools sip flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp mkl_fft charset-normalizer numexpr click pyparsing packaging bottleneck toolz google-auth aiosignal python_abi pyu2f future mkl-service cffi libuuid oauthlib markupsafe munkres:   5%|▌         | 10/185 [09:22<2:51:17, 58.73s/it]                                                                                                                                                                                                                                              Examining conflict for pydeprecate opencv markdown ply pytorch-lightning pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist idna kiwisolver partd zipp pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions matplotlib-base pyyaml cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs typing_extensions async-timeout imageio blinker pywavelets absl-py wheel colorama six fontconfig locket tqdm yarl google-auth-oauthlib pycparser qt-main pyopenssl grpcio qt-webengine scikit-image pyjwt python pandas requests-oauthlib urllib3 torchvision brotlipy multidict cycler numpy networkx fsspec setuptools sip flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp mkl_fft charset-normalizer numexpr click pyparsing packaging bottleneck toolz google-auth aiosignal python_abi pyu2f future mkl-service cffi libuuid oauthlib markupsafe munkres:   6%|▌         | 11/185 [09:22<2:53:05, 59.69s/it]Examining conflict for pydeprecate opencv markdown ply libxkbcommon pytorch-lightning qtwebkit glib fftw pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist brunsli krb5 c-ares idna kiwisolver partd zipp libxml2 pyasn1 pyqt5-sip freetype cachetools pip scipy libllvm10 libpng contourpy tensorboard-plugin-wit brotli gst-plugins-base tifffile tornado toml yaml protobuf libprotobuf pillow ninja brotli-bin requests libbrotlidec python-dateutil typing-extensions libwebp matplotlib-base pyyaml libxslt libcurl cytoolz libbrotlicommon pytz intel-openmp pysocks tensorboard-data-server matplotlib pcre dask-core certifi expat werkzeug torchmetrics libevent libev tensorboard jxrlib giflib attrs icu dbus readline lz4-c typing_extensions async-timeout imageio blinker pywavelets absl-py wheel zlib libnghttp2 ninja-base colorama six fontconfig locket tqdm libwebp-base yarl jpeg google-auth-oauthlib blas libzopfli lerc pycparser nss charls qt-main pyopenssl snappy xz libbrotlienc libclang zfp sqlite grpcio qt-webengine libgcc-ng libedit scikit-image pyjwt python pandas openssl requests-oauthlib urllib3 cfitsio torchvision libffi brotlipy multidict cycler libdeflate libpq numpy networkx fsspec nspr libssh2 setuptools sip libtiff flit-core importlib-metadata rsa ncurses imagecodecs numpy-base aiohttp gstreamer mkl_fft charset-normalizer openjpeg numexpr tk click pyparsing packaging bottleneck zstd blosc toolz google-auth mkl libxcb aiosignal bzip2 python_abi pyu2f future lcms2 mkl-service libaec cffi libuuid oauthlib markupsafe munkres:   6%|▌         | 11/185 [10:24<2:53:05, 59.69s/it]Examining conflict for pydeprecate opencv markdown ply libxkbcommon pytorch-lightning qtwebkit glib fftw pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist brunsli krb5 c-ares idna kiwisolver partd zipp libxml2 pyasn1 pyqt5-sip freetype cachetools pip scipy libllvm10 libpng contourpy tensorboard-plugin-wit brotli gst-plugins-base tifffile tornado toml yaml protobuf libprotobuf pillow ninja brotli-bin requests libbrotlidec python-dateutil typing-extensions libwebp matplotlib-base pyyaml libxslt libcurl cytoolz libbrotlicommon pytz intel-openmp pysocks tensorboard-data-server matplotlib pcre dask-core certifi expat werkzeug torchmetrics libevent libev tensorboard jxrlib giflib attrs icu dbus readline lz4-c typing_extensions async-timeout imageio blinker pywavelets absl-py wheel zlib libnghttp2 ninja-base colorama six fontconfig locket tqdm libwebp-base yarl jpeg google-auth-oauthlib blas libzopfli lerc pycparser nss charls qt-main pyopenssl snappy xz libbrotlienc libclang zfp sqlite grpcio qt-webengine libgcc-ng libedit scikit-image pyjwt python pandas openssl requests-oauthlib urllib3 cfitsio torchvision libffi brotlipy multidict cycler libdeflate libpq numpy networkx fsspec nspr libssh2 setuptools sip libtiff flit-core importlib-metadata rsa ncurses imagecodecs numpy-base aiohttp gstreamer mkl_fft charset-normalizer openjpeg numexpr tk click pyparsing packaging bottleneck zstd blosc toolz google-auth mkl libxcb aiosignal bzip2 python_abi pyu2f future lcms2 mkl-service libaec cffi libuuid oauthlib markupsafe munkres:   6%|▋         | 12/185 [10:24<2:53:39, 60.23s/it]Examining conflict for pydeprecate opencv markdown ply pytorch-lightning pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist idna kiwisolver partd zipp pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions matplotlib-base pyyaml cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs typing_extensions async-timeout imageio blinker pywavelets absl-py wheel colorama six locket tqdm yarl google-auth-oauthlib pycparser pyopenssl grpcio scikit-image pyjwt python pandas requests-oauthlib urllib3 torchvision brotlipy multidict cycler numpy networkx fsspec setuptools sip flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp mkl_fft charset-normalizer numexpr click pyparsing packaging bottleneck zstd toolz google-auth aiosignal python_abi pyu2f future mkl-service cffi oauthlib markupsafe munkres:   6%|▋         | 12/185 [11:26<2:53:39, 60.23s/it]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Examining conflict for pydeprecate opencv markdown ply pytorch-lightning pytorch mkl_random fonttools pyqt pyasn1-modules cryptography cloudpickle frozenlist idna kiwisolver partd zipp pyasn1 pyqt5-sip cachetools pip scipy contourpy tensorboard-plugin-wit tifffile tornado toml protobuf pillow ninja requests python-dateutil typing-extensions matplotlib-base pyyaml cytoolz pytz pysocks tensorboard-data-server matplotlib dask-core certifi werkzeug torchmetrics tensorboard attrs typing_extensions async-timeout imageio blinker pywavelets absl-py wheel colorama six locket tqdm yarl google-auth-oauthlib pycparser pyopenssl grpcio scikit-image pyjwt python pandas requests-oauthlib urllib3 torchvision brotlipy multidict cycler numpy networkx fsspec setuptools sip flit-core importlib-metadata rsa imagecodecs numpy-base aiohttp mkl_fft charset-normalizer numexpr click pyparsing packaging bottleneck zstd toolz google-auth aiosignal python_abi pyu2f future mkl-service cffi oauthlib markupsafe munkres:   7%|▋         | 13/185 [11:26<2:54:13, 60.78s/it]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-Found conflicts! Looking for incompatible packages.
-This can take several minutes.  Press CTRL-C to abort.
-failed
-
-# >>>>>>>>>>>>>>>>>>>>>> ERROR REPORT <<<<<<<<<<<<<<<<<<<<<<
-
-    Traceback (most recent call last):
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/cli/install.py", line 265, in install
-        should_retry_solve=(_should_retry_unfrozen or repodata_fn != repodata_fns[-1]),
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/core/solve.py", line 117, in solve_for_transaction
-        should_retry_solve)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/core/solve.py", line 158, in solve_for_diff
-        force_remove, should_retry_solve)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/core/solve.py", line 281, in solve_final_state
-        ssc = self._run_sat(ssc)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/common/io.py", line 88, in decorated
-        return f(*args, **kwds)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/core/solve.py", line 808, in _run_sat
-        should_retry_solve=ssc.should_retry_solve
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/common/io.py", line 88, in decorated
-        return f(*args, **kwds)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/resolve.py", line 1316, in solve
-        raise UnsatisfiableError({})
-    conda.exceptions.UnsatisfiableError: 
-    Did not find conflicting dependencies. If you would like to know which
-    packages conflict ensure that you have enabled unsatisfiable hints.
-    
-    conda config --set unsatisfiable_hints True
-                
-    
-    During handling of the above exception, another exception occurred:
-    
-    Traceback (most recent call last):
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/exceptions.py", line 1079, in __call__
-        return func(*args, **kwargs)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/cli/main.py", line 84, in _main
-        exit_code = do_call(args, p)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/cli/conda_argparse.py", line 82, in do_call
-        return getattr(module, func_name)(args, parser)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/cli/main_install.py", line 20, in execute
-        install(args, parser, 'install')
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/cli/install.py", line 299, in install
-        should_retry_solve=(repodata_fn != repodata_fns[-1]),
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/core/solve.py", line 117, in solve_for_transaction
-        should_retry_solve)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/core/solve.py", line 158, in solve_for_diff
-        force_remove, should_retry_solve)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/core/solve.py", line 281, in solve_final_state
-        ssc = self._run_sat(ssc)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/common/io.py", line 88, in decorated
-        return f(*args, **kwds)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/core/solve.py", line 808, in _run_sat
-        should_retry_solve=ssc.should_retry_solve
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/common/io.py", line 88, in decorated
-        return f(*args, **kwds)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/resolve.py", line 1318, in solve
-        self.find_conflicts(specs, specs_to_add, history_specs)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/resolve.py", line 347, in find_conflicts
-        bad_deps = self.build_conflict_map(specs, specs_to_add, history_specs)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/resolve.py", line 507, in build_conflict_map
-        root, search_node, dep_graph, num_occurances)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/resolve.py", line 369, in breadth_first_search_for_dep_graph
-        last_spec = MatchSpec.union((path[-1], target_paths[-1][-1]))[0]
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/models/match_spec.py", line 481, in union
-        return cls.merge(match_specs, union=True)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/models/match_spec.py", line 475, in merge
-        reduce(lambda x, y: x._merge(y, union), group) if len(group) > 1 else group[0]
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/models/match_spec.py", line 475, in <lambda>
-        reduce(lambda x, y: x._merge(y, union), group) if len(group) > 1 else group[0]
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/models/match_spec.py", line 502, in _merge
-        final = this_component.union(that_component)
-      File "/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/python3.7/site-packages/conda/models/match_spec.py", line 764, in union
-        return '|'.join(options)
-    TypeError: sequence item 0: expected str instance, Channel found
-
-`$ /gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/bin/conda install -c conda-forge/label/gcc7 opencv`
-
-  environment variables:
-             ACLOCAL_PATH=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199
-                          /libxml2-2.9.9-ylcnc4x76hjim2fkvgdgfyyu5x3kqltp/share/aclocal:/gpfs/so
-                          fts/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020
-                          .02-jamygl2koq6hlcw6vpl7w6wajowcplw6/share/aclocal
-                 CIO_TEST=<not set>
-        CMAKE_PREFIX_PATH=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199
-                          /cuda-10.2.89-eusvgnyhblxgc5hlzx7rqlybtcz6wzo2:/gpfs/softs/spack/opt/s
-                          pack/linux-centos7-cascadelake/intel-19.0.3.199/libxml2-2.9.9-ylcnc4x7
-                          6hjim2fkvgdgfyyu5x3kqltp:/gpfs/softs/spack/opt/spack/linux-centos7-cas
-                          cadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6
-        CONDA_DEFAULT_ENV=torchenv
-                CONDA_EXE=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anacon
-                          da3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/bin/conda
-             CONDA_PREFIX=/gpfs/users/aouadt/.conda/envs/torchenv
-    CONDA_PROMPT_MODIFIER=(torchenv)
-         CONDA_PYTHON_EXE=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anacon
-                          da3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/bin/python
-               CONDA_ROOT=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anacon
-                          da3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6
-              CONDA_SHLVL=1
-                    CPATH=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199
-                          /cuda-10.2.89-eusvgnyhblxgc5hlzx7rqlybtcz6wzo2/include:/gpfs/softs/spa
-                          ck/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199/libxml2-2.9.9-
-                          ylcnc4x76hjim2fkvgdgfyyu5x3kqltp/include:/gpfs/softs/spack/opt/spack/l
-                          inux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6v
-                          pl7w6wajowcplw6/include
-         EAR_INSTALL_PATH=/gpfs/softs/ear
-          LD_LIBRARY_PATH=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199
-                          /cuda-10.2.89-eusvgnyhblxgc5hlzx7rqlybtcz6wzo2/lib64:/gpfs/softs/spack
-                          /opt/spack/linux-centos7-cascadelake/intel-19.0.3.199/libxml2-2.9.9-yl
-                          cnc4x76hjim2fkvgdgfyyu5x3kqltp/lib:/gpfs/softs/spack/opt/spack/linux-c
-                          entos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6w
-                          ajowcplw6/lib
-             LIBRARY_PATH=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199
-                          /cuda-10.2.89-eusvgnyhblxgc5hlzx7rqlybtcz6wzo2/lib64:/gpfs/softs/spack
-                          /opt/spack/linux-centos7-cascadelake/intel-19.0.3.199/libxml2-2.9.9-yl
-                          cnc4x76hjim2fkvgdgfyyu5x3kqltp/lib:/gpfs/softs/spack/opt/spack/linux-c
-                          entos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6w
-                          ajowcplw6/lib
-                  MANPATH=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199
-                          /libxml2-2.9.9-ylcnc4x76hjim2fkvgdgfyyu5x3kqltp/share/man:/gpfs/softs/
-                          spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-
-                          jamygl2koq6hlcw6vpl7w6wajowcplw6/share/man:/gpfs/softs/spack/opt/spack
-                          /linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw
-                          6vpl7w6wajowcplw6/man
-               MODULEPATH=/gpfs/softs/modules/modulefiles/compilers:/gpfs/softs/modules/modulefi
-                          les/debuggers_and_profilers:/gpfs/softs/modules/modulefiles/languages:
-                          /gpfs/softs/modules/modulefiles/libraries:/gpfs/softs/modules/modulefi
-                          les/other:/gpfs/softs/modules/modulefiles/softwares:/gpfs/softs/module
-                          s/modulefiles/tools
-                     PATH=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anacon
-                          da3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/bin:/gpfs/users/aouadt/.c
-                          onda/envs/torchenv/bin:/gpfs/softs/spack/opt/spack/linux-centos7-casca
-                          delake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/co
-                          ndabin:/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/intel-19.
-                          0.3.199/cuda-10.2.89-eusvgnyhblxgc5hlzx7rqlybtcz6wzo2/bin:/gpfs/softs/
-                          spack/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199/libxml2-2.9
-                          .9-ylcnc4x76hjim2fkvgdgfyyu5x3kqltp/bin:/gpfs/softs/spack/opt/spack/li
-                          nux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vp
-                          l7w6wajowcplw6/bin:/usr/lib64/qt-3.3/bin:/usr/lpp/mmfs/bin:/usr/local/
-                          bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/gpfs/users/aouadt/.local/
-                          bin:/gpfs/users/aouadt/bin
-          PKG_CONFIG_PATH=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199
-                          /libxml2-2.9.9-ylcnc4x76hjim2fkvgdgfyyu5x3kqltp/lib/pkgconfig:/gpfs/so
-                          fts/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020
-                          .02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/pkgconfig
-               PYTHONPATH=:.
-       REQUESTS_CA_BUNDLE=<not set>
-            SSL_CERT_FILE=<not set>
-__LMOD_REF_COUNT_ACLOCAL_PATH=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199
-                          /libxml2-2.9.9-ylcnc4x76hjim2fkvgdgfyyu5x3kqltp/share/aclocal:1;/gpfs/
-                          softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-20
-                          20.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/share/aclocal:1
-__LMOD_REF_COUNT_CMAKE_PREFIX_PATH=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199
-                          /cuda-10.2.89-eusvgnyhblxgc5hlzx7rqlybtcz6wzo2:1;/gpfs/softs/spack/opt
-                          /spack/linux-centos7-cascadelake/intel-19.0.3.199/libxml2-2.9.9-ylcnc4
-                          x76hjim2fkvgdgfyyu5x3kqltp:1;/gpfs/softs/spack/opt/spack/linux-centos7
-                          -cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcp
-                          lw6:1
-   __LMOD_REF_COUNT_CPATH=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199
-                          /cuda-10.2.89-eusvgnyhblxgc5hlzx7rqlybtcz6wzo2/include:1;/gpfs/softs/s
-                          pack/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199/libxml2-2.9.
-                          9-ylcnc4x76hjim2fkvgdgfyyu5x3kqltp/include:1;/gpfs/softs/spack/opt/spa
-                          ck/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hl
-                          cw6vpl7w6wajowcplw6/include:1
-__LMOD_REF_COUNT_LD_LIBRARY_PATH=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199
-                          /cuda-10.2.89-eusvgnyhblxgc5hlzx7rqlybtcz6wzo2/lib64:1;/gpfs/softs/spa
-                          ck/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199/libxml2-2.9.9-
-                          ylcnc4x76hjim2fkvgdgfyyu5x3kqltp/lib:1;/gpfs/softs/spack/opt/spack/lin
-                          ux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl
-                          7w6wajowcplw6/lib:1
-__LMOD_REF_COUNT_LIBRARY_PATH=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199
-                          /cuda-10.2.89-eusvgnyhblxgc5hlzx7rqlybtcz6wzo2/lib64:1;/gpfs/softs/spa
-                          ck/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199/libxml2-2.9.9-
-                          ylcnc4x76hjim2fkvgdgfyyu5x3kqltp/lib:1;/gpfs/softs/spack/opt/spack/lin
-                          ux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl
-                          7w6wajowcplw6/lib:1
- __LMOD_REF_COUNT_MANPATH=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199
-                          /libxml2-2.9.9-ylcnc4x76hjim2fkvgdgfyyu5x3kqltp/share/man:1;/gpfs/soft
-                          s/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.0
-                          2-jamygl2koq6hlcw6vpl7w6wajowcplw6/share/man:1;/gpfs/softs/spack/opt/s
-                          pack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6
-                          hlcw6vpl7w6wajowcplw6/man:1
-__LMOD_REF_COUNT_MODULEPATH=/gpfs/softs/modules/modulefiles/compilers:1;/gpfs/softs/modules/module
-                          files/debuggers_and_profilers:1;/gpfs/softs/modules/modulefiles/langua
-                          ges:1;/gpfs/softs/modules/modulefiles/libraries:1;/gpfs/softs/modules/
-                          modulefiles/other:1;/gpfs/softs/modules/modulefiles/softwares:1;/gpfs/
-                          softs/modules/modulefiles/tools:1
-    __LMOD_REF_COUNT_PATH=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199
-                          /cuda-10.2.89-eusvgnyhblxgc5hlzx7rqlybtcz6wzo2/bin:1;/gpfs/softs/spack
-                          /opt/spack/linux-centos7-cascadelake/intel-19.0.3.199/libxml2-2.9.9-yl
-                          cnc4x76hjim2fkvgdgfyyu5x3kqltp/bin:1;/gpfs/softs/spack/opt/spack/linux
-                          -centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w
-                          6wajowcplw6/bin:1;/usr/lib64/qt-3.3/bin:1;/usr/lpp/mmfs/bin:1;/usr/loc
-                          al/bin:1;/bin:1;/usr/bin:1;/usr/local/sbin:1;/usr/sbin:1;/gpfs/users/a
-                          ouadt/.local/bin:1;/gpfs/users/aouadt/bin:1
-__LMOD_REF_COUNT_PKG_CONFIG_PATH=/gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/intel-19.0.3.199
-                          /libxml2-2.9.9-ylcnc4x76hjim2fkvgdgfyyu5x3kqltp/lib/pkgconfig:1;/gpfs/
-                          softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-20
-                          20.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/lib/pkgconfig:1
-
-     active environment : torchenv
-    active env location : /gpfs/users/aouadt/.conda/envs/torchenv
-            shell level : 1
-       user config file : /gpfs/users/aouadt/.condarc
- populated config files : 
-          conda version : 4.8.2
-    conda-build version : 3.18.11
-         python version : 3.7.6.final.0
-       virtual packages : __cuda=11.4
-                          __glibc=2.17
-       base environment : /gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6  (read only)
-           channel URLs : https://conda.anaconda.org/conda-forge/label/gcc7/linux-64
-                          https://conda.anaconda.org/conda-forge/label/gcc7/noarch
-                          https://repo.anaconda.com/pkgs/main/linux-64
-                          https://repo.anaconda.com/pkgs/main/noarch
-                          https://repo.anaconda.com/pkgs/r/linux-64
-                          https://repo.anaconda.com/pkgs/r/noarch
-          package cache : /gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/pkgs
-                          /gpfs/users/aouadt/.conda/pkgs
-       envs directories : /gpfs/users/aouadt/.conda/envs
-                          /gpfs/softs/spack/opt/spack/linux-centos7-cascadelake/gcc-9.2.0/anaconda3-2020.02-jamygl2koq6hlcw6vpl7w6wajowcplw6/envs
-               platform : linux-64
-             user-agent : conda/4.8.2 requests/2.22.0 CPython/3.7.6 Linux/3.10.0-1160.el7.x86_64 centos/7.9.2009 glibc/2.17
-                UID:GID : 2224:1006
-             netrc file : None
-           offline mode : False
-
-
-An unexpected error has occurred. Conda has prepared the above report.
-
-python scripts have finished

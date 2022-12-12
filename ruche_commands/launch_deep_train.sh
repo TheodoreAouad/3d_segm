@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=test_1
-#SBATCH --output=logs_test_1.txt
+#SBATCH --job-name=erodila_75
+#SBATCH --output=ruche_logs/erodila_75.txt
 #SBATCH --mail-user=theodore.aouad@centralesupelec.fr
 #SBATCH --mail-type=ALL
 #SBATCH --nodes=1
-#SBATCH --cpus-per-task=10
-#SBATCH --time=24:00:00
+#SBATCH --cpus-per-task=20
+#SBATCH --time=24:0:00
 #SBATCH --gres=gpu:1
 #SBATCH --partition=gpu
 #SBATCH --export=NONE
@@ -17,6 +17,7 @@ cd $WORKDIR/3d_segm
 pwd
 
 echo $CUDA_VISIBLE_DEVICES
+nproc
 
 source $WORKDIR/virtual_envs/torchenv/bin/activate
 echo 'Virtual environment activated'
