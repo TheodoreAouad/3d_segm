@@ -51,7 +51,7 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_68/sandbox/0"
     # "Bimonn_exp_71/sandbox/0"
     # "JMIV/sandbox/0/"
-    "test_nb_file/sandbox/0"
+    "Bimonn_exp_75/multi/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -134,7 +134,7 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    # 0.1,
+    1e-2,
     1e-1,
 ]
 
@@ -147,8 +147,8 @@ all_args['loss_data_str'] = [
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
     "BCELoss",
-    # "MSELoss",
-    # "DiceLoss",
+    "MSELoss",
+    "DiceLoss",
     # "MaskedDiceLoss",
     # "NormalizedDiceLoss",
 ]
@@ -159,11 +159,11 @@ all_args['loss_regu'] = [
 ]
 all_args['optimizer'] = [
     optim.Adam,
-    # optim.SGD
+    optim.SGD
 ]
-all_args['batch_size'] = [32]
+all_args['batch_size'] = [256]
 all_args['num_workers'] = [
-    20,
+    10,
     # 0,
 ]
 all_args['freq_imgs'] = [1000]
@@ -261,7 +261,7 @@ all_args['initializer_args'] = [
         # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC,
 
         "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
-        "bise_init_args": {"ub": 1e-4},
+        "bise_init_args": {"ub": 1e-4, "max_output_value": 0.95},
 
         # "bise_init_method": InitBiseEnum.ELLIPSE_ROOT,
         # "bise_init_args": {"init_bias_value": 2},
