@@ -35,10 +35,12 @@ from general.code_saver import CodeSaver
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--args", default="saved_args/sandbox/args_segm.py")
+parser.add_argument("--args", default="deep_morpho/saved_args/sandbox/args_segm.py")
 path_args_module = parser.parse_args().args
+path_args_module = path_args_module.replace(".py", "").replace("/", ".")
 
-all_args = path_args_module.all_args
+print(path_args_module)
+all_args = import_module(path_args_module).all_args
 # from deep_morpho.args_segm import all_args
 
 print('Imports done.')
