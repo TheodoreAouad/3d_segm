@@ -1,7 +1,6 @@
 from typing import Tuple, Union
 
 import numpy as np
-import cv2
 from matplotlib.patches import Rectangle
 
 from .element import Element

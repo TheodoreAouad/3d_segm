@@ -1,7 +1,8 @@
 from os.path import join
 from typing import Tuple, Any, Optional, Callable, Union
-import cv2
+# import cv2
 # import numpy as np
+from PIL import Image
 
 from torchvision.datasets import MNIST
 from torch.utils.data.dataloader import DataLoader
@@ -47,11 +48,14 @@ class MnistMorphoDataset(MNIST):
             self.data = self.data[first_idx:n_inputs+first_idx]
 
 
+    def resize_image(self, img: np.ndarray) -> np.ndarray:
+        img_int8 = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
+        return np.array(Image.fromarray(img_int8).resize((self.size[1], self.size[0]), Image.Resampling.BICUBIC))
+        # return cv2.resize(img, (self.size[1], self.size[0]), interpolation=cv2.INTER_CUBIC)
+
+
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
-        input_ = (
-            cv2.resize(self.data[index].numpy(), (self.size[1], self.size[0]), interpolation=cv2.INTER_CUBIC)
-            >= (self.threshold)
-        )[..., None]
+        input_ = (self.resize_image(self.data[index].numpy()) >= (self.threshold))[..., None]
 
         if torch.rand(1) < self.invert_input_proba:
             input_ = 1 - input_
