@@ -5,6 +5,7 @@ import numpy as np
 import torch.nn as nn
 import torch
 
+from deep_morpho.threshold_fn import tanh_threshold_inverse, sigmoid_threshold_inverse, arctan_threshold_inverse
 from general.utils import uniform_sampling_bound
 
 
@@ -130,18 +131,33 @@ class InitBiseHeuristicWeights(InitBiasFixed):
 
 
 class InitBiseConstantVarianceWeights(InitBiasFixed):
-    def __init__(self, input_mean: float = 0.5, *args, **kwargs):
+    THRESH_STR_TO_FN = {
+        "tanh": tanh_threshold_inverse,
+        "sigmoid": sigmoid_threshold_inverse,
+        "arctan": arctan_threshold_inverse,
+    }
+
+    def __init__(self, input_mean: float = 0.5, max_output_value: float = 0.95, *args, **kwargs):
+        """ 
+        Args:
+            input_mean (float): mean of the input of the bise layer.
+            max_output_value (float): if p_activation = 1, the maximum desired output from the init (in other words, \xi(bias))
+        """
         super().__init__(init_bias_value=0)
         self.input_mean = input_mean
+        self.max_output_value = 0.95
 
     @staticmethod
     def get_mean(p, nb_params):
         return (np.sqrt(3) + 2) / (4 * p * torch.sqrt(nb_params))
 
-    def init_weights(self, module):
-        p = 1
-        nb_params = torch.tensor(module._normalized_weights.shape[1:]).prod()
+    def get_init_p(self, nb_params):
+        thresh_inv = THRESH_STR_TO_FN[module['threshold_mode']['activation']]
+        return (np.sqrt(3) + 2) * torch.sqrt(nb_params) / (4 * 2 * thresh_inv(self.max_output_value))
 
+    def init_weights(self, module):
+        nb_params = torch.tensor(module._normalized_weights.shape[1:]).prod()
+        p = self.get_init_p(nb_params)
         mean = self.get_mean(p, nb_params)
         sigma = 1 / (p ** 2 * nb_params) - mean ** 2
 
@@ -158,16 +174,13 @@ class InitBiseConstantVarianceWeights(InitBiasFixed):
         self.init_bias_value = self.input_mean * module._normalized_weights.sum((1, 2, 3))
 
 
-class InitDualBiseConstantVarianceWeights(InitBiasFixed):
-    def __init__(self, input_mean: float = 0.5, *args, **kwargs):
-        super().__init__(init_bias_value=0)
-        self.input_mean = input_mean
+class InitDualBiseConstantVarianceWeights(InitBiseConstantVarianceWeights):
 
     def init_weights(self, module):
-        p = 1
         nb_params = torch.tensor(module._normalized_weights.shape[1:]).prod()
+        p = self.get_init_p(nb_params)
 
-        mean = InitBiseConstantVarianceWeights.get_mean(p, nb_params)
+        mean = self.get_mean(p, nb_params)
         sigma = 1 / (p ** 2 * nb_params) - mean ** 2
 
         diff = torch.sqrt(3 * sigma)
