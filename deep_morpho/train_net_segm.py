@@ -289,17 +289,20 @@ def main(args, logger):
         for (layer_idx, chan_input, chan_output), fig in figs_selems.items():
             fig.savefig(join(logger.log_dir, "target_SE", f"target_SE_l_{layer_idx}_chin_{chan_input}_chout_{chan_output}.png"))
             logger.experiment.add_figure(f"target_SE/target_SE_l_{layer_idx}_chin_{chan_input}_chout_{chan_output}", fig)
+            plt.close(fig)
 
         pathlib.Path(join(logger.log_dir, "target_UI")).mkdir(exist_ok=True, parents=True)
         figs_ui = args['morp_operation'].plot_ui_arrays()
         for (layer_idx, chan_output), fig in figs_ui.items():
             fig.savefig(join(logger.log_dir, "target_UI", f"target_UI_l_{layer_idx}_chin_chout_{chan_output}.png"))
             logger.experiment.add_figure(f"target_UI/target_UI_l_{layer_idx}_chin_chout_{chan_output}", fig)
+            plt.close(fig)
 
         pathlib.Path(join(logger.log_dir, "morp_operations")).mkdir(exist_ok=True, parents=True)
         fig_morp_operation = args['morp_operation'].vizualise().fig
         fig_morp_operation.savefig(join(logger.log_dir, "morp_operations", "morp_operations.png"))
         logger.experiment.add_figure("target_operations/morp_operations", fig_morp_operation)
+        plt.close(fig_morp_operation)
         # for selem_idx, selem in enumerate(args['morp_operation'].selems):
         #     fig, ax = plt.subplots(); ax.imshow(selem); ax.set_title(args['morp_operation'].operations[selem_idx])
         #     fig.savefig(join(logger.log_dir, "target_SE", f"target_SE_{selem_idx}.png"))
@@ -377,14 +380,14 @@ if __name__ == '__main__':
         log_console(logger.log_dir, logger=console_logger)
         log_console(args['morp_operation'], logger.log_dir, logger=console_logger)
 
-        results.append(main(args, logger))
+        # results.append(main(args, logger))
 
-        # try:
-        #     main(args, logger)
-        # except Exception:
-        #     console_logger.exception(
-        #         f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
-        #     bugged.append(args_idx+1)
+        try:
+            main(args, logger)
+        except Exception:
+            console_logger.exception(
+                f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
+            bugged.append(args_idx+1)
 
         log_console("Done.", logger=console_logger)
 

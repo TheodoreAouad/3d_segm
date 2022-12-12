@@ -67,5 +67,6 @@ class PlotBimonn(Observable):
 
         for key, fig in self.last_figs.items():
             fig.savefig(join(final_dir, f"model_{key}.png"))
+            plt.close(fig)
 
         return self.last_figs

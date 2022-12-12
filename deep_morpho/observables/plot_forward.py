@@ -85,6 +85,7 @@ class PlotBimonnForward(Observable):
 
         for key, fig in self.last_figs.items():
             fig.savefig(join(final_dir, f"forward_{key}.png"))
+            plt.close(fig)
 
         return self.last_figs
 
@@ -160,5 +161,6 @@ class PlotBimonnHistogram(Observable):
 
         for key, fig in self.last_figs.items():
             fig.savefig(join(final_dir, f"histogram_{key}.png"))
+            plt.close(fig)
 
         return self.last_figs

@@ -167,6 +167,7 @@ def main(args, logger):
     for (layer_idx, chan_input, chan_output), fig in figs_selems.items():
         fig.savefig(join(logger.log_dir, "target_SE", f"target_SE_l_{layer_idx}_chin_{chan_input}_chout_{chan_output}.png"))
         logger.experiment.add_figure(f"target_SE/target_SE_l_{layer_idx}_chin_{chan_input}_chout_{chan_output}", fig)
+        plt.close(fig)
 
     # pathlib.Path(join(logger.log_dir, "target_UI")).mkdir(exist_ok=True, parents=True)
     # figs_ui = args['morp_operation'].plot_ui_arrays()
@@ -178,6 +179,7 @@ def main(args, logger):
     fig_morp_operation = args['morp_operation'].vizualise().fig
     fig_morp_operation.savefig(join(logger.log_dir, "morp_operations", "morp_operations.png"))
     logger.experiment.add_figure("target_operations/morp_operations", fig_morp_operation)
+    plt.close(fig_morp_operation)
 
     trainer = Trainer(
         max_epochs=args['n_epochs'],

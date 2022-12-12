@@ -79,6 +79,7 @@ class PlotWeightsBiSE(ObservableLayersChans):
 
                         fig.savefig(join(final_dir, "png", f"{key}_layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}.png"))
                         np.save(join(final_dir, "npy", f"{key}_layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}.npy"), weight[chan_output, chan_input].cpu().detach())
+                        plt.close(fig)
 
         return self.last_weights
 

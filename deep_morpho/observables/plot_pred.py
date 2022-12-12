@@ -89,6 +89,7 @@ class PlotPreds(Observable):
                 final_dir = join(save_path, self.__class__.__name__)
                 pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
                 self.saved_fig[state].savefig(join(final_dir, f"input_pred_target_{state}.png"))
+                plt.close(self.saved_fig[state])
 
         return self.saved_fig
 
@@ -172,5 +173,6 @@ class PlotPredsClassif(Observable):
                 final_dir = join(save_path, self.__class__.__name__)
                 pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
                 self.saved_fig[state].savefig(join(final_dir, f"input_pred_target_{state}.png"))
+                plt.close(self.saved_fig[state])
 
         return self.saved_fig

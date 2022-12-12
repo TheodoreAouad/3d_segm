@@ -179,6 +179,7 @@ class ShowSelemAlmostBinary(Observable):
         for layer_idx, (selem, operation) in self.last_selem_and_op.items():
             fig = self.selem_fig(selem, operation)
             fig.savefig(join(final_dir, f"layer_{layer_idx}.png"))
+            plt.close(fig)
             saved.append(fig)
 
         return saved
@@ -234,6 +235,7 @@ class ShowSelemBinary(ObservableLayersChans):
         for (layer_idx, chan_input, chan_output), (selem, operation) in self.last_selem_and_op.items():
             fig = self.selem_fig(selem, operation)
             fig.savefig(join(final_dir, f"layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}.png"))
+            plt.close(fig)
             saved.append(fig)
 
         return saved
@@ -292,6 +294,7 @@ class ShowLUISetBinary(ObservableLayersChans):
         for (layer_idx, chan_output), (C, operation) in self.last_set_and_op.items():
             fig = self.set_fig(C, operation)
             fig.savefig(join(final_dir, f"layer_{layer_idx}_chout_{chan_output}.png"))
+            plt.close(fig)
             saved.append(fig)
 
         return saved
@@ -361,6 +364,7 @@ class ShowClosestSelemBinary(ObservableLayersChans):
 
             fig = self.selem_fig(selem, f"{operation} dist {distance}")
             fig.savefig(join(png_dir, f"{filename}.png"))
+            plt.close(fig)
             saved.append(fig)
             np.save(join(numpy_dir, f'{filename}.npy'), selem.astype(np.uint8))
 

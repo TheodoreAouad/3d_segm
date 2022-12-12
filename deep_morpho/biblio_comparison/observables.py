@@ -54,6 +54,7 @@ class PlotWeights(ObservableLayers):
         for layer_idx, weight in enumerate(self.last_weights):
             fig = self.get_figure_weights(weight)
             fig.savefig(join(final_dir, f"layer_{layer_idx}.png"))
+            plt.close(fig)
 
         return self.last_weights
 
@@ -148,5 +149,6 @@ class PlotBiblioModel(Observable):
         pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
 
         self.last_fig.savefig(join(final_dir, "model.png"))
+        plt.close(self.last_fig)
 
         return self.last_fig
