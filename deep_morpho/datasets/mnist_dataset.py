@@ -10,14 +10,21 @@ import torch
 import numpy as np
 
 from deep_morpho.morp_operations import ParallelMorpOperations
-from deep_morpho.gray_scale import level_sets_from_gray, gray_from_level_sets
+# from deep_morpho.gray_scale import level_sets_from_gray, gray_from_level_sets
 from deep_morpho.datasets.collate_fn_gray import collate_fn_gray_scale
 from deep_morpho.tensor_with_attributes import TensorGray
 from .gray_dataset import GrayScaleDataset
 # from general.utils import set_borders_to
 
 
-ROOT_MNIST_DIR = join('/', 'hdd', 'datasets', 'MNIST')
+# ROOT_MNIST_DIR = join('/', 'hdd', 'datasets', 'MNIST')
+with open('deep_morpho/datasets/root_mnist_dir.txt', 'r') as f:
+    ROOT_MNIST_DIR = f.read()
+
+
+def resize_image(img: np.ndarray, size: Tuple) -> np.ndarray:
+    img_int8 = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
+    return np.array(Image.fromarray(img_int8).resize((size[1], size[0]), Image.Resampling.BICUBIC))
 
 
 class MnistMorphoDataset(MNIST):
@@ -48,14 +55,12 @@ class MnistMorphoDataset(MNIST):
             self.data = self.data[first_idx:n_inputs+first_idx]
 
 
-    def resize_image(self, img: np.ndarray) -> np.ndarray:
-        img_int8 = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
-        return np.array(Image.fromarray(img_int8).resize((self.size[1], self.size[0]), Image.Resampling.BICUBIC))
+
         # return cv2.resize(img, (self.size[1], self.size[0]), interpolation=cv2.INTER_CUBIC)
 
 
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
-        input_ = (self.resize_image(self.data[index].numpy()) >= (self.threshold))[..., None]
+        input_ = (self.resize_image(self.data[index].numpy(), self.size) >= (self.threshold))[..., None]
 
         if torch.rand(1) < self.invert_input_proba:
             input_ = 1 - input_
@@ -134,9 +139,10 @@ class MnistGrayScaleDataset(MNIST, GrayScaleDataset):
 
 
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
-        input_ = (
-            cv2.resize(self.data[index].numpy(), (self.size[1], self.size[0]), interpolation=cv2.INTER_CUBIC)
-        )[..., None]
+        # input_ = (
+        #     cv2.resize(self.data[index].numpy(), (self.size[1], self.size[0]), interpolation=cv2.INTER_CUBIC)
+        # )[..., None]
+        input_ = (self.resize_image(self.data[index].numpy(), self.size) >= (self.threshold))[..., None]
 
         # target = torch.tensor(self.morp_operation(input_)).float()
         # input_ = torch.tensor(input_).float()
@@ -197,8 +203,8 @@ class MnistGrayScaleDataset(MNIST, GrayScaleDataset):
 
     def gray_from_level_sets(self, ar: Union[np.ndarray, torch.Tensor], values: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tensor]:
         if self.do_symetric_output:
-            return gray_from_level_sets((ar > 0).float(), values)
-        return gray_from_level_sets(ar, values)
+            return super().gray_from_level_sets((ar > 0).float(), values)
+        return super().gray_from_level_sets(ar, values)
 
     # def level_sets_from_gray(self, input_: torch.Tensor, target: torch.Tensor):
     #     input_ls, input_values = level_sets_from_gray(input_, n_values=self.n_gray_scale_values)
