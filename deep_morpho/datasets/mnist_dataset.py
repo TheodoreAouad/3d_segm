@@ -43,7 +43,7 @@ class MnistMorphoDataset(MNIST):
         do_symetric_output: bool = False,
         **kwargs,
     ) -> None:
-        super().__init__(root, train, *kwargs)
+        super().__init__(root, train, **kwargs)
         self.morp_operation = morp_operation
         self.threshold = threshold
         self.preprocessing = preprocessing
@@ -60,7 +60,7 @@ class MnistMorphoDataset(MNIST):
 
 
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
-        input_ = (self.resize_image(self.data[index].numpy(), self.size) >= (self.threshold))[..., None]
+        input_ = (resize_image(self.data[index].numpy(), self.size) >= (self.threshold))[..., None]
 
         if torch.rand(1) < self.invert_input_proba:
             input_ = 1 - input_
@@ -142,7 +142,7 @@ class MnistGrayScaleDataset(MNIST, GrayScaleDataset):
         # input_ = (
         #     cv2.resize(self.data[index].numpy(), (self.size[1], self.size[0]), interpolation=cv2.INTER_CUBIC)
         # )[..., None]
-        input_ = (self.resize_image(self.data[index].numpy(), self.size) >= (self.threshold))[..., None]
+        input_ = (resize_image(self.data[index].numpy(), self.size))[..., None]
 
         # target = torch.tensor(self.morp_operation(input_)).float()
         # input_ = torch.tensor(input_).float()

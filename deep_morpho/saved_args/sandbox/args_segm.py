@@ -51,7 +51,7 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_68/sandbox/0"
     # "Bimonn_exp_71/sandbox/0"
     # "JMIV/sandbox/0/"
-    "Bimonn_exp_75/multi/0"
+    "tests/multi/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -69,9 +69,9 @@ all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
     # "mnist",
-    # "mnist_gray",
+    "mnist_gray",
     # "inverted_mnist",
-    'diskorect',
+    # 'diskorect',
     # "sticks_noised",
 ]
 all_args['preprocessing'] = [  # for axspa roi
@@ -97,7 +97,7 @@ all_args['random_gen_args'] = [
     # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 1, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
 ]
 all_args['mnist_args'] = [
-    {"threshold": 30, "size": (50, 50), "invert_input_proba": 0, },
+    {"threshold": 30, "size": (50, 50), "invert_input_proba": 0,},
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
 all_args['mnist_gray_args'] = [
@@ -135,7 +135,7 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 # TRAINING ARGS
 all_args['learning_rate'] = [
     1e-2,
-    1e-1,
+    # 1e-1,
 ]
 
 # if max_plus, then the loss is MSELoss
@@ -147,8 +147,8 @@ all_args['loss_data_str'] = [
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
     "BCELoss",
-    "MSELoss",
-    "DiceLoss",
+    # "MSELoss",
+    # "DiceLoss",
     # "MaskedDiceLoss",
     # "NormalizedDiceLoss",
 ]
@@ -159,7 +159,7 @@ all_args['loss_regu'] = [
 ]
 all_args['optimizer'] = [
     optim.Adam,
-    optim.SGD
+    # optim.SGD
 ]
 all_args['batch_size'] = [256]
 all_args['num_workers'] = [
@@ -226,10 +226,10 @@ all_args['closest_selem_method'] = [
     # ClosestSelemDistanceEnum.DISTANCE_TO_BOUNDS
 # ]
 all_args['bias_optim_mode'] = [
-    BiseBiasOptimEnum.RAW,
+    # BiseBiasOptimEnum.RAW,
     BiseBiasOptimEnum.POSITIVE,
-    BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
-    BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+    # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
+    # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 all_args['bias_optim_args'] = [
     {"offset": 0}
