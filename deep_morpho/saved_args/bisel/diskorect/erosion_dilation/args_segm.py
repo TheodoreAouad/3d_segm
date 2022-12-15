@@ -160,7 +160,7 @@ all_args['loss_regu'] = [
 ]
 all_args['optimizer'] = [
     optim.Adam,
-    optim.SGD
+    # optim.SGD
 ]
 all_args['batch_size'] = [256]
 all_args['num_workers'] = [
@@ -451,7 +451,6 @@ for idx, args in enumerate(all_args):
     already_seen_path = f"deep_morpho/results/results_tensorboards/{args['experiment_name']}/{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset_type']}/seen_args.txt"
     if not os.path.exists(already_seen_path):
         continue
-    print('Deleting already seen args...')
     with open(already_seen_path, "r") as f:
         already_seen = f.read()
     if str((
@@ -465,6 +464,7 @@ for idx, args in enumerate(all_args):
     )) in already_seen:
         to_remove.append(idx)
 
+print(f'Deleting {len(to_remove)} already seen args...')
 for idx in to_remove[::-1]:
     del all_args[idx]
 # assert False
