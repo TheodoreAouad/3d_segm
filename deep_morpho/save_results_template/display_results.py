@@ -4,6 +4,7 @@ import os
 from os.path import join
 import re
 
+import pandas as pd
 from tqdm import tqdm
 
 from general.utils import load_json
@@ -152,10 +153,41 @@ class DisplayResults:
         table_html += "</table>"
         return table_html
 
-    def write_html_from_dict_deep_morpho(self, results_dict: List[Dict], save_path: str, title: str = "", show_table: bool = True, show_details: bool = True):
+    def write_summary(self, results_dict, changing_args):
+        for r in results_dict:
+            r.update(r['args'])
+
+        df = pd.DataFrame(results_dict)
+        df['dice'] = df['dice'].astype(float)
+        df['binary_mode_dice'] = df['binary_mode_dice'].astype(float)
+        df['operation'] = df['experiment_subname'].apply(lambda x: pathlib.Path(x).parent.stem)
+        df['selem'] = df['experiment_subname'].apply(lambda x: pathlib.Path(x).stem)
+
+        html_binary = pd.DataFrame(
+            df.loc[df['binary_mode_dice'] == 1, ["operation", "selem"]].value_counts().sort_values()
+        ).sort_values(by=['operation', 'selem']).to_html()
+
+        html_real = pd.DataFrame(
+            df.loc[df['dice'] > 0.99, ["operation", "selem"]].value_counts().sort_values()
+        ).sort_values(by=['operation', 'selem']).to_html()
+
+        changing = set(changing_args).difference(["experiment_subname", "name", "n_atoms"])
+
+        new_cols = {'dcross': 'dc', 'disk': 'di', 'hstick': 'hs', 'bcomplex': 'bc', 'bdiamond': 'bd', 'bsquare': 'bs', 'scross': 'sc'}
+        df_all = df.pivot_table(index=changing, columns=['operation', 'selem'], values=['binary_mode_dice'], aggfunc='mean').rename(columns=new_cols)
+        html_pivot_binary = df_all.style.background_gradient(cmap='RdBu', vmin=0, vmax=1).format('{:.2f}').to_html()
+
+
+        df_all = df.pivot_table(index=changing, columns=['operation', 'selem'], values=['dice'], aggfunc='mean').rename(columns=new_cols)
+        html_pivot_real = df_all.style.background_gradient(cmap='RdBu', vmin=0, vmax=1).format('{:.2f}').to_html()
+
+        return f'Binary{html_binary}\n\n Real{html_real}\n\n Binary{html_pivot_binary}\n\n Real{html_pivot_real}'
+
+    def write_html_from_dict_deep_morpho(self, results_dict: List[Dict], save_path: str, title: str = "",
+            show_table: bool = True, show_details: bool = True, show_summary: bool = True):
         html = html_template()
 
-        tb_paths = [res["tb_path"] for res in results_dict]
+        # tb_paths = [res["tb_path"] for res in results_dict]
 
         global_args, changing_args = detect_identical_values([results['args'] for results in results_dict], verbose=self.verbose)
 
@@ -166,16 +198,19 @@ class DisplayResults:
             table_html = self.write_all_tables(results_dict, changing_args)
         if show_details:
             results_html = self.write_all_results(results_dict, changing_args)
+        if show_summary:
+            summary_html = self.write_summary(results_dict, changing_args)
 
 
         html = html.format(
             css_file=self.css_content,
             title=title,
-            tb_paths=tb_paths,
+            # tb_paths=tb_paths,
             global_args=global_args,
             changing_args=changing_args,
             table=table_html,
             results=results_html,
+            summary=summary_html,
         )
 
         pathlib.Path(save_path).parent.mkdir(exist_ok=True, parents=True)

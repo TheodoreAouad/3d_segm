@@ -8,12 +8,12 @@ def html_template():
         <title>{title}</title>
       </head>
       <body>
-        <h2>Tensorboard paths</h2>
-        <p>{tb_paths}</p>
         <h2>Global Args</h2>
         <p>{global_args}</p>
         <h2>Changing args</h2>
         <p>{changing_args}</p>
+        <h2>Summary</h2>
+        <p>{summary}</p>
         <h2>Table</h2>
         <p>{table}</p>
         <h2>Results</h2>

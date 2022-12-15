@@ -2,6 +2,7 @@ import warnings
 import numpy as np
 import torch.optim as optim
 import torch.nn as nn
+import os
 
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
 from deep_morpho.datasets.sticks_noised_dataset import SticksNoisedGeneratorDataset
@@ -51,7 +52,7 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_68/sandbox/0"
     # "Bimonn_exp_71/sandbox/0"
     # "JMIV/sandbox/0/"
-    "tests/multi/0"
+    "Bimonn_exp_75/multi/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -68,10 +69,10 @@ all_args['experiment_name'] = [
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
-    # "mnist",
+    "mnist",
     # "mnist_gray",
     # "inverted_mnist",
-    'diskorect',
+    # 'diskorect',
     # "sticks_noised",
 ]
 all_args['preprocessing'] = [  # for axspa roi
@@ -97,7 +98,7 @@ all_args['random_gen_args'] = [
     # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 1, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
 ]
 all_args['mnist_args'] = [
-    {"threshold": 30, "size": (50, 50), "invert_input_proba": 0,},
+    {"threshold": 30, "size": (50, 50), "invert_input_proba": 0, },
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
 all_args['mnist_gray_args'] = [
@@ -135,7 +136,7 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 # TRAINING ARGS
 all_args['learning_rate'] = [
     1e-2,
-    # 1e-1,
+    1e-1,
 ]
 
 # if max_plus, then the loss is MSELoss
@@ -147,8 +148,8 @@ all_args['loss_data_str'] = [
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
     "BCELoss",
-    # "MSELoss",
-    # "DiceLoss",
+    "MSELoss",
+    "DiceLoss",
     # "MaskedDiceLoss",
     # "NormalizedDiceLoss",
 ]
@@ -159,9 +160,9 @@ all_args['loss_regu'] = [
 ]
 all_args['optimizer'] = [
     optim.Adam,
-    # optim.SGD
+    optim.SGD
 ]
-all_args['batch_size'] = [32]
+all_args['batch_size'] = [256]
 all_args['num_workers'] = [
     20,
     # 0,
@@ -226,10 +227,10 @@ all_args['closest_selem_method'] = [
     # ClosestSelemDistanceEnum.DISTANCE_TO_BOUNDS
 # ]
 all_args['bias_optim_mode'] = [
-    # BiseBiasOptimEnum.RAW,
+    BiseBiasOptimEnum.RAW,
     BiseBiasOptimEnum.POSITIVE,
-    # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
-    # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+    BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
+    BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 all_args['bias_optim_args'] = [
     {"offset": 0}
@@ -447,23 +448,25 @@ for idx, args in enumerate(all_args):
         assert "gray" not in args['morp_operation'].name
 
 
-#     already_seen_path = f"deep_morpho/results/results_tensorboards/Bimonn_exp_63/multi/sybisel/softplus/diskorect/seen_args.txt"
-#     with open(already_seen_path, "r") as f:
-#         already_seen = f.read()
-#     if str((
-#         args['morp_operation'].name.split('/')[0],
-#         args['morp_operation'].selem_names[0][-1][0],
-#         # str(args["init_weight_mode"]).split(".")[-1],
-#         # str(args["bias_optim_mode"]).split(".")[-1],
-#         args["loss_data_str"],
-#         str(args["learning_rate"])
-#     )) in already_seen:
-#         to_remove.append(idx)
+    already_seen_path = f"deep_morpho/results/results_tensorboards/{args['experiment_name']}/{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset_type']}/seen_args.txt"
+    if not os.path.exists(already_seen_path):
+        continue
+    print('Deleting already seen args...')
+    with open(already_seen_path, "r") as f:
+        already_seen = f.read()
+    if str((
+        args['morp_operation'].name.split('/')[0],
+        args['morp_operation'].selem_names[0][-1][0],
+        # str(args["init_weight_mode"]).split(".")[-1],
+        # str(args["bias_optim_mode"]).split(".")[-1],
+        args["loss_data_str"],
+        str(args["learning_rate"]),
+        args["optimizer"].__name__, args["bias_optim_mode"].__str__().split(".")[-1]
+    )) in already_seen:
+        to_remove.append(idx)
 
-# for idx in to_remove[::-1]:
-#     del all_args[idx]
-
-# print(len(to_remove))
+for idx in to_remove[::-1]:
+    del all_args[idx]
 # assert False
 
 # pass

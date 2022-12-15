@@ -11,10 +11,15 @@ def list_dir_joined(folder: str):
 
 
 
-for dataset in ['diskorect']:
+for dataset in [
+        'mnist',
+        'diskorect',
+        'inverted_mnist',
+        'mnist_gray'
+    ]:
     seen_args = []
 
-    path_global = f"deep_morpho/results/results_tensorboards/Bimonn_exp_63/multi/sybisel/softplus/{dataset}/"
+    path_global = f"deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/0/bisel/softplus/{dataset}/"
     all_paths = []
     for operation in tqdm(os.listdir(path_global)):
         if not os.path.isdir(join(path_global, operation)):
@@ -22,7 +27,8 @@ for dataset in ['diskorect']:
         for selem in os.listdir(join(path_global, operation)):
             for version in os.listdir(join(path_global, operation, selem)):
                 args = load_args(join(path_global, operation, selem, version, "args.yaml"))
-                seen_args.append((operation, selem, args["loss_data_str"], args["learning_rate"]))
+                seen_args.append((operation, selem, args["loss_data_str"], args["learning_rate"],
+                                args["optimizer"], args["bias_optim_mode"],))
                 # seen_args.append((operation, selem, args["init_weight_mode"], args["bias_optim_mode"], args["loss_data_str"], args["learning_rate"]))
     print(dataset, len(seen_args))
     with open(f"{path_global}/seen_args.txt", "w") as f:
