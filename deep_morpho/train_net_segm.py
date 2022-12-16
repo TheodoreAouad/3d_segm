@@ -234,7 +234,7 @@ def main(args, logger):
         model_args={
             "kernel_size": [args['kernel_size'] for _ in range(args['n_atoms'])],
             "channels": args['channels'],
-            "atomic_element": args["atomic_element"] if args["atomic_element"] != "conv" else "bise",
+            "atomic_element": args["atomic_element"].replace('dual_', ''),
             "threshold_mode": args['threshold_mode'],
             "activation_P": args['activation_P'],
             "constant_activation_P": args['constant_activation_P'],

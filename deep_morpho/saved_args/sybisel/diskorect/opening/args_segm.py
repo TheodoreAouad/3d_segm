@@ -181,8 +181,8 @@ all_args['patience_reduce_lr'] = [700]
 # ]
 all_args['atomic_element'] = [
     # "bisel",
-    "dual_bisel",
-    # "sybisel",
+    # "dual_bisel",
+    "sybisel",
 ]
 all_args['n_atoms'] = [
     'adapt',
@@ -229,7 +229,7 @@ all_args['closest_selem_method'] = [
 # ]
 all_args['bias_optim_mode'] = [
     BiseBiasOptimEnum.RAW,
-    BiseBiasOptimEnum.POSITIVE,
+   # BiseBiasOptimEnum.POSITIVE,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]

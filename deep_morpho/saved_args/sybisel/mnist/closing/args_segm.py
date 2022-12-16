@@ -69,10 +69,10 @@ all_args['experiment_name'] = [
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
-    # "mnist",
+    "mnist",
     # "mnist_gray",
     # "inverted_mnist",
-    'diskorect',
+    # 'diskorect',
     # "sticks_noised",
 ]
 all_args['preprocessing'] = [  # for axspa roi
@@ -181,8 +181,8 @@ all_args['patience_reduce_lr'] = [700]
 # ]
 all_args['atomic_element'] = [
     # "bisel",
-    "dual_bisel",
-    # "sybisel",
+    # "dual_bisel",
+    "sybisel",
 ]
 all_args['n_atoms'] = [
     'adapt',
@@ -229,7 +229,7 @@ all_args['closest_selem_method'] = [
 # ]
 all_args['bias_optim_mode'] = [
     BiseBiasOptimEnum.RAW,
-    BiseBiasOptimEnum.POSITIVE,
+   # BiseBiasOptimEnum.POSITIVE,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]

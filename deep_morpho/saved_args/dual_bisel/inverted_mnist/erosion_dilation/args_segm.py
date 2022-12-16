@@ -71,8 +71,8 @@ all_args['dataset_type'] = [
     # 'axspa_roi',
     # "mnist",
     # "mnist_gray",
-    # "inverted_mnist",
-    'diskorect',
+    "inverted_mnist",
+    # 'diskorect',
     # "sticks_noised",
 ]
 all_args['preprocessing'] = [  # for axspa roi
