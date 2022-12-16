@@ -3,7 +3,7 @@ import os
 
 i = 0
 for atomic in [
-    'bisel',
+    # 'bisel',
     'dual_bisel',
     'sybisel',
 ]:
