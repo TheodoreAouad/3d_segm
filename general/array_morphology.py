@@ -58,6 +58,14 @@ def array_intersection(ars: np.ndarray, axis: int = -1) -> np.ndarray:
     return ars.sum(axis) == ars.shape[axis]
 
 
+def array_intersection_gray(ars: np.ndarray, axis: int = -1) -> np.ndarray:
+    return ars.min(axis)
+
+
+def array_union_gray(ars: np.ndarray, axis: int = -1) -> np.ndarray:
+    return ars.max(axis)
+
+
 def array_union(ars: np.ndarray, axis: int = -1) -> np.ndarray:
     return ars.sum(axis) > 0
 
@@ -76,3 +84,11 @@ def array_intersection_chans(ar, chans: Union[str, List[int]] = 'all') -> np.nda
 
 def array_union_chans(ar, chans: Union[str, List[int]] = 'all') -> np.ndarray:
     return fn_chans(ar, array_union, chans)
+
+
+def array_intersection_gray_chans(ar, chans: Union[str, List[int]] = 'all') -> np.ndarray:
+    return fn_chans(ar, array_intersection_gray, chans)
+
+
+def array_union_gray_chans(ar, chans: Union[str, List[int]] = 'all') -> np.ndarray:
+    return fn_chans(ar, array_union_gray, chans)

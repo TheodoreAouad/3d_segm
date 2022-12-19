@@ -7,13 +7,14 @@ import torch
 import skimage.morphology as morp
 
 from general.structuring_elements import *
-from general.array_morphology import array_erosion, array_dilation, array_union_chans, array_intersection_chans
+from general.array_morphology import (
+    array_erosion, array_dilation, array_union_chans, array_intersection_chans, array_intersection_gray_chans, array_union_gray_chans
+)
 from .viz.morp_operations_viz import MorpOperationsVizualiser
 
 
 # erosion, dilation, union, intersection = morp.binary_erosion, morp.binary_dilation, array_union_chans, array_intersection_chans
 erosion, dilation, union, intersection = array_erosion, array_dilation, array_union_chans, array_intersection_chans
-
 
 class ParallelMorpOperations:
     """
@@ -377,7 +378,8 @@ class ParallelMorpOperations:
                 [[('dilation', selem, False), 'union']],
             ],
             str_to_fn={"dilation": morp.dilation, "erosion": morp.erosion},
-            str_to_ui_fn={"intersection": lambda *x: x[0][..., 0], "union": lambda *x: x[0][..., 0]},
+            str_to_ui_fn={"intersection": array_intersection_gray_chans, "union": array_union_gray_chans},
+            # str_to_ui_fn={"intersection": lambda *x: x[0][..., 0], "union": lambda *x: x[0][..., 0]},
             *args,
             **kwargs
         )
@@ -403,7 +405,8 @@ class ParallelMorpOperations:
                 [[('erosion', selem, False), 'union']],
             ],
             str_to_fn={"dilation": morp.dilation, "erosion": morp.erosion},
-            str_to_ui_fn={"intersection": lambda *x: x[0][..., 0], "union": lambda *x: x[0][..., 0]},
+            str_to_ui_fn={"intersection": array_intersection_gray_chans, "union": array_union_gray_chans},
+            # str_to_ui_fn={"intersection": lambda *x: x[0][..., 0], "union": lambda *x: x[0][..., 0]},
             *args,
             **kwargs
         )
@@ -424,7 +427,44 @@ class ParallelMorpOperations:
         )
 
     @staticmethod
+    def white_tophat_gray(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        assert False, "Not Ready"
+        kwargs["name"] = kwargs.get("name", 'white_tophat')
+        identity = ('dilation', ('disk', 0), False)
+        return ParallelMorpOperations(
+            operations=[
+                [
+                    [identity, 'union'],
+                    [('erosion', selem, False), 'union'],
+                ],
+                [[identity, ('dilation', selem, True), 'intersection']]
+            ],
+            str_to_fn={"dilation": morp.dilation, "erosion": morp.erosion},
+            str_to_ui_fn={"intersection": array_intersection_gray_chans, "union": array_union_gray_chans},
+            **kwargs
+        )
+
+    @staticmethod
     def black_tophat(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        kwargs["name"] = kwargs.get("name", 'black_tophat')
+        identity1 = ('dilation', ('disk', 0), False)
+        identity2 = ('dilation', ('disk', 0), True)
+        return ParallelMorpOperations(
+            operations=[
+                [
+                    [identity1, 'union'],
+                    [('dilation', selem, False), 'union'],
+                ],
+                [[identity2, ('erosion', selem, False), 'intersection']]
+            ],
+            str_to_fn={"dilation": morp.dilation, "erosion": morp.erosion},
+            str_to_ui_fn={"intersection": array_intersection_gray_chans, "union": array_union_gray_chans},
+            **kwargs
+        )
+
+    @staticmethod
+    def black_tophat_gray(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        assert False, "Not Ready"
         kwargs["name"] = kwargs.get("name", 'black_tophat')
         identity1 = ('dilation', ('disk', 0), False)
         identity2 = ('dilation', ('disk', 0), True)

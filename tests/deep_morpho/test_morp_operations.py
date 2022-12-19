@@ -105,7 +105,7 @@ class TestParallelMorpOperations:
             inpt[:, -n:] = 0
 
             ero1 = erosion(inpt[..., 0], morp_operation.selems[0][0][0])
-            ero2 = morp_operation(inpt).squeeze().numpy()
+            ero2 = morp_operation(inpt).squeeze()
             assert np.abs(ero1 - ero2).sum() == 0
 
     @staticmethod
@@ -120,7 +120,7 @@ class TestParallelMorpOperations:
             inpt[:, -n:] = 0
 
             ero1 = dilation(inpt[..., 0], morp_operation.selems[0][0][0])
-            ero2 = morp_operation(inpt).squeeze().numpy()
+            ero2 = morp_operation(inpt).squeeze()
             assert np.abs(ero1 - ero2).sum() == 0
 
     @staticmethod
@@ -134,7 +134,7 @@ class TestParallelMorpOperations:
             inpt[:, :n] = 0
             inpt[:, -n:] = 0
             ero1 = opening(inpt[..., 0], morp_operation.selems[0][0][0])
-            ero2 = morp_operation(inpt).squeeze().numpy()
+            ero2 = morp_operation(inpt).squeeze()
             assert np.abs(ero1 - ero2).sum() == 0
 
     @staticmethod
@@ -149,7 +149,7 @@ class TestParallelMorpOperations:
             inpt[:, -n:] = 0
 
             ero1 = closing(inpt[..., 0], morp_operation.selems[0][0][0])
-            ero2 = morp_operation(inpt).squeeze().numpy()
+            ero2 = morp_operation(inpt).squeeze()
             assert np.abs(ero1 - ero2).sum() == 0
 
     @staticmethod
@@ -166,7 +166,7 @@ class TestParallelMorpOperations:
             inpt[:, -n:] = 0
 
             ero1 = white_tophat(inpt[..., 0], selem)
-            ero2 = morp_operation(inpt).squeeze().numpy()
+            ero2 = morp_operation(inpt).squeeze()
             assert np.abs(ero1 - ero2).sum() == 0
 
 
@@ -184,8 +184,103 @@ class TestParallelMorpOperations:
             inpt[:, -n:] = 0
 
             ero1 = black_tophat(inpt[..., 0], selem)
-            ero2 = morp_operation(inpt).squeeze().numpy()
+            ero2 = morp_operation(inpt).squeeze()
             assert np.abs(ero1 - ero2).sum() == 0
+
+    @staticmethod
+    def test_erosion_gray():
+        for selem in [('hstick', 7), ('vstick', 7), ('disk', 3), ('scross', 7), ('dcross', 7), ('square', 7)]:
+            morp_operation = ParallelMorpOperations.erosion_gray(selem)
+            inpt = np.random.rand(50, 50, 1)
+            n = morp_operation.selems[0][0][0].shape[0] // 2 + 1
+            inpt[:n] = 0
+            inpt[-n:] = 0
+            inpt[:, :n] = 0
+            inpt[:, -n:] = 0
+
+            ero1 = erosion(inpt[..., 0], morp_operation.selems[0][0][0])
+            ero2 = morp_operation(inpt).squeeze()
+            assert np.abs(ero1 - ero2).sum() == 0
+
+    @staticmethod
+    def test_dilation_gray():
+        for selem in [('hstick', 7), ('vstick', 7), ('disk', 3), ('scross', 7), ('dcross', 7), ('square', 7)]:
+            morp_operation = ParallelMorpOperations.dilation_gray(selem)
+            inpt = np.random.rand(50, 50, 1)
+            n = morp_operation.selems[0][0][0].shape[0] // 2 + 1
+            inpt[:n] = 0
+            inpt[-n:] = 0
+            inpt[:, :n] = 0
+            inpt[:, -n:] = 0
+
+            ero1 = dilation(inpt[..., 0], morp_operation.selems[0][0][0])
+            ero2 = morp_operation(inpt).squeeze()
+            assert np.abs(ero1 - ero2).sum() == 0
+
+    @staticmethod
+    def test_opening_gray():
+        for selem in [('hstick', 7), ('vstick', 7), ('disk', 3), ('scross', 7), ('dcross', 7), ('square', 7)]:
+            morp_operation = ParallelMorpOperations.opening_gray(selem)
+            inpt = np.random.rand(50, 50, 1)
+            n = morp_operation.selems[0][0][0].shape[0] // 2 + 1
+            inpt[:n] = 0
+            inpt[-n:] = 0
+            inpt[:, :n] = 0
+            inpt[:, -n:] = 0
+            ero1 = opening(inpt[..., 0], morp_operation.selems[0][0][0])
+            ero2 = morp_operation(inpt).squeeze()
+            assert np.abs(ero1 - ero2).sum() == 0
+
+    @staticmethod
+    def test_closing_gray():
+        for selem in [('hstick', 7), ('vstick', 7), ('disk', 3), ('scross', 7), ('dcross', 7), ('square', 7)]:
+            morp_operation = ParallelMorpOperations.closing_gray(selem)
+            inpt = np.random.rand(50, 50, 1)
+            n = morp_operation.selems[0][0][0].shape[0] // 2 + 1
+            inpt[:n] = 0
+            inpt[-n:] = 0
+            inpt[:, :n] = 0
+            inpt[:, -n:] = 0
+
+            ero1 = closing(inpt[..., 0], morp_operation.selems[0][0][0])
+            ero2 = morp_operation(inpt).squeeze()
+            assert np.abs(ero1 - ero2).sum() == 0
+
+    @staticmethod
+    def test_white_tophat_gray():
+        for selem_arg in [('hstick', 7), ('vstick', 7), ('disk', 3), ('scross', 7), ('dcross', 7), ('square', 7)]:
+            morp_operation = ParallelMorpOperations.white_tophat_gray(selem_arg)
+            selem = morp_operation._erodila_selem_converter(selem_arg)[0]
+
+            inpt = np.random.rand(50, 50, 1)
+            n = selem.shape[0] // 2 + 1
+            inpt[:n] = 0
+            inpt[-n:] = 0
+            inpt[:, :n] = 0
+            inpt[:, -n:] = 0
+
+            ero1 = white_tophat(inpt[..., 0], selem)
+            ero2 = morp_operation(inpt).squeeze()
+            assert np.abs(ero1 - ero2).sum() == 0
+
+
+    @staticmethod
+    def test_black_tophat_gray():
+        for selem_arg in [('hstick', 7), ('vstick', 7), ('disk', 3), ('scross', 7), ('dcross', 7), ('square', 7)]:
+            morp_operation = ParallelMorpOperations.black_tophat_gray(selem_arg)
+            selem = morp_operation._erodila_selem_converter(selem_arg)[0]
+
+            inpt = np.random.rand(50, 50, 1)
+            n = selem.shape[0] // 2 + 1
+            inpt[:n] = 0
+            inpt[-n:] = 0
+            inpt[:, :n] = 0
+            inpt[:, -n:] = 0
+
+            ero1 = black_tophat(inpt[..., 0], selem)
+            ero2 = morp_operation(inpt).squeeze()
+            assert np.abs(ero1 - ero2).sum() == 0
+
 
     @staticmethod
     def test_concatenate1():

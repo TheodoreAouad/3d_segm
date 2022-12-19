@@ -144,7 +144,7 @@ class BiseClosestMinDistOnCst(BiseClosestSelemWithDistanceAgg):
     @staticmethod
     def distance_fn_selem(self, normalized_weights: "torch.Tensor", bias: "torch.Tensor", operation: str, S: np.ndarray, v1: float, v2: float) -> float:
         W = normalized_weights.cpu().detach().numpy()
-        return W.sum() - 1 / S.sum() * (W[S].sum()) ** 2
+        return (W ** 2).sum() - 1 / S.sum() * (W[S].sum()) ** 2
 
     def find_closest_selem_and_operation_chan(
         self, weights, bias, chout=0, v1=0, v2=1

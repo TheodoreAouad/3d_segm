@@ -59,63 +59,90 @@ print('Parsing paths...')
 # )
 # SAVE_PATH.append('html_pages/mnist_grid_search.html')
 
-path_global = "deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/0/bisel/softplus/diskorect/"
-all_paths = []
-for operation in os.listdir(path_global):
-    if not os.path.isdir(join(path_global, operation)):
-        continue
-    for selem in os.listdir(join(path_global, operation)):
-        all_paths += sorted(list_dir_joined(join(path_global, operation, selem)), key=lambda x: int(
-            re.findall(r'version_(\d+)$', x)[0]
-        ))
-TB_PATHS.append(
-    all_paths
-)
-SAVE_PATH.append('html_pages/75_diskorect.html')
+for model in [
+    'bisel',
+    # 'dual_bisel',
+    # 'sybisel',
+]:
+    for dataset in [
+        'diskorect',
+        'mnist',
+        'inverted_mnist',
+        'mnist_gray'
+    ]:
+        path_global = f"deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/0/{model}/softplus/{dataset}/"
+        all_paths = []
+        for operation in os.listdir(path_global):
+            if not os.path.isdir(join(path_global, operation)):
+                continue
+            for selem in os.listdir(join(path_global, operation)):
+                all_paths += sorted(list_dir_joined(join(path_global, operation, selem)), key=lambda x: int(
+                    re.findall(r'version_(\d+)$', x)[0]
+                ))
+        TB_PATHS.append(
+            all_paths
+        )
+        SAVE_PATH.append(f'html_pages/75_{model}_{dataset}.html')
 
 
-path_global = "deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/0/bisel/softplus/mnist_gray/"
-all_paths = []
-for operation in os.listdir(path_global):
-    if not os.path.isdir(join(path_global, operation)):
-        continue
-    for selem in os.listdir(join(path_global, operation)):
-        all_paths += sorted(list_dir_joined(join(path_global, operation, selem)), key=lambda x: int(
-            re.findall(r'version_(\d+)$', x)[0]
-        ))
-TB_PATHS.append(
-    all_paths
-)
-SAVE_PATH.append('html_pages/75_mnist_gray.html')
+
+# path_global = "deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/0/bisel/softplus/diskorect/"
+# all_paths = []
+# for operation in os.listdir(path_global):
+#     if not os.path.isdir(join(path_global, operation)):
+#         continue
+#     for selem in os.listdir(join(path_global, operation)):
+#         all_paths += sorted(list_dir_joined(join(path_global, operation, selem)), key=lambda x: int(
+#             re.findall(r'version_(\d+)$', x)[0]
+#         ))
+# TB_PATHS.append(
+#     all_paths
+# )
+# SAVE_PATH.append('html_pages/75_diskorect.html')
 
 
-path_global = "deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/0/bisel/softplus/mnist/"
-all_paths = []
-for operation in os.listdir(path_global):
-    if not os.path.isdir(join(path_global, operation)):
-        continue
-    for selem in os.listdir(join(path_global, operation)):
-        all_paths += sorted(list_dir_joined(join(path_global, operation, selem)), key=lambda x: int(
-            re.findall(r'version_(\d+)$', x)[0]
-        ))
-TB_PATHS.append(
-    all_paths
-)
-SAVE_PATH.append('html_pages/75_mnist.html')
+# path_global = "deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/0/bisel/softplus/mnist_gray/"
+# all_paths = []
+# for operation in os.listdir(path_global):
+#     if not os.path.isdir(join(path_global, operation)):
+#         continue
+#     for selem in os.listdir(join(path_global, operation)):
+#         all_paths += sorted(list_dir_joined(join(path_global, operation, selem)), key=lambda x: int(
+#             re.findall(r'version_(\d+)$', x)[0]
+#         ))
+# TB_PATHS.append(
+#     all_paths
+# )
+# SAVE_PATH.append('html_pages/75_mnist_gray.html')
 
-path_global = "deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/0/bisel/softplus/inverted_mnist/"
-all_paths = []
-for operation in os.listdir(path_global):
-    if not os.path.isdir(join(path_global, operation)):
-        continue
-    for selem in os.listdir(join(path_global, operation)):
-        all_paths += sorted(list_dir_joined(join(path_global, operation, selem)), key=lambda x: int(
-            re.findall(r'version_(\d+)$', x)[0]
-        ))
-TB_PATHS.append(
-    all_paths
-)
-SAVE_PATH.append('html_pages/75_inverted_mnist.html')
+
+# path_global = "deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/0/bisel/softplus/mnist/"
+# all_paths = []
+# for operation in os.listdir(path_global):
+#     if not os.path.isdir(join(path_global, operation)):
+#         continue
+#     for selem in os.listdir(join(path_global, operation)):
+#         all_paths += sorted(list_dir_joined(join(path_global, operation, selem)), key=lambda x: int(
+#             re.findall(r'version_(\d+)$', x)[0]
+#         ))
+# TB_PATHS.append(
+#     all_paths
+# )
+# SAVE_PATH.append('html_pages/75_mnist.html')
+
+# path_global = "deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/0/bisel/softplus/inverted_mnist/"
+# all_paths = []
+# for operation in os.listdir(path_global):
+#     if not os.path.isdir(join(path_global, operation)):
+#         continue
+#     for selem in os.listdir(join(path_global, operation)):
+#         all_paths += sorted(list_dir_joined(join(path_global, operation, selem)), key=lambda x: int(
+#             re.findall(r'version_(\d+)$', x)[0]
+#         ))
+# TB_PATHS.append(
+#     all_paths
+# )
+# SAVE_PATH.append('html_pages/75_inverted_mnist.html')
 
 # path_global = "/hdd/aouadt/these/projets/3d_segm/deep_morpho/results/results_tensorboards/Bimonn_exp_63/multi/sybisel/softplus/inverted_mnist"
 # all_paths = []
