@@ -347,7 +347,7 @@ if __name__ == '__main__':
         temporary_path="deep_morpho/results/results_tensorboards",
         ignore_patterns=("*__pycache__*", "*results*", "data", "*.ipynb", '.git', 'ssm', 'sampling',
                         "tests", "Notebooks", "*geogebra*", ".github", ".idea", ".pytest_cache", ".vscode", "html_pages",
-                        "paper_writer", ),
+                        "paper_writer", "ruche_logs", ),
     )
 
     code_saver.save_in_temporary_file()

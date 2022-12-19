@@ -4,7 +4,7 @@ import os
 i = 0
 for atomic in [
     # 'bisel',
-    'dual_bisel',
+    # 'dual_bisel',
     'sybisel',
 ]:
     for dataset in [

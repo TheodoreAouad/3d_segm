@@ -146,12 +146,12 @@ all_args['loss_data_str'] = [
     # "MaskedMSELoss",
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
-    # "BCENormalizedLoss",
-    "BCELoss",
+    "BCENormalizedLoss",
+    # "BCELoss",
     "MSELoss",
-    "DiceLoss",
+    # "DiceLoss",
     # "MaskedDiceLoss",
-    # "NormalizedDiceLoss",
+    "NormalizedDiceLoss",
 ]
 all_args['loss_regu'] = [
     # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
@@ -162,7 +162,7 @@ all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
-all_args['batch_size'] = [32]
+all_args['batch_size'] = [256]
 all_args['num_workers'] = [
     20,
     # 0,

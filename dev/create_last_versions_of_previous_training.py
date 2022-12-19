@@ -24,7 +24,8 @@ for key in all_versions.keys():
 #             if not os.path.isdir(join(experiment_multi_path, dataset, operation, selem)):
 #                 continue
 
-    pathlib.Path(
-        join(experiment_multi_path, dataset, operation, selem, f"version_{all_versions[key]}")
-    ).mkdir(exist_ok=True, parents=True)
+    # pathlib.Path(
+    #     join(experiment_multi_path, dataset, operation, selem, f"version_{all_versions[key]}")
+    # ).mkdir(exist_ok=True, parents=True)
+    os.rmdir(join(experiment_multi_path, dataset, operation, selem, f"version_{all_versions[key]}"))
     print(join(experiment_multi_path, dataset, operation, selem, f"version_{all_versions[key]}"))
