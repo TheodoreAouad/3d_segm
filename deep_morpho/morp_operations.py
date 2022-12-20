@@ -16,6 +16,7 @@ from .viz.morp_operations_viz import MorpOperationsVizualiser
 # erosion, dilation, union, intersection = morp.binary_erosion, morp.binary_dilation, array_union_chans, array_intersection_chans
 erosion, dilation, union, intersection = array_erosion, array_dilation, array_union_chans, array_intersection_chans
 
+
 class ParallelMorpOperations:
     """
     Class to apply sequences of intersection / union of dilations / erosions
@@ -120,7 +121,7 @@ class ParallelMorpOperations:
         op_fn2 = lambda x: op_fn(x, selem, )
 
         if len(args) == 3 and args[-1]:
-            final_operation = lambda x:  1 - op_fn2(x)
+            final_operation = lambda x: 1 - op_fn2(x)
             # final_operation = lambda x: ~op_fn2(x)
             do_complementation = True
         else:
@@ -426,23 +427,6 @@ class ParallelMorpOperations:
             **kwargs
         )
 
-    @staticmethod
-    def white_tophat_gray(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
-        assert False, "Not Ready"
-        kwargs["name"] = kwargs.get("name", 'white_tophat')
-        identity = ('dilation', ('disk', 0), False)
-        return ParallelMorpOperations(
-            operations=[
-                [
-                    [identity, 'union'],
-                    [('erosion', selem, False), 'union'],
-                ],
-                [[identity, ('dilation', selem, True), 'intersection']]
-            ],
-            str_to_fn={"dilation": morp.dilation, "erosion": morp.erosion},
-            str_to_ui_fn={"intersection": array_intersection_gray_chans, "union": array_union_gray_chans},
-            **kwargs
-        )
 
     @staticmethod
     def black_tophat(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
@@ -459,23 +443,6 @@ class ParallelMorpOperations:
             ],
             str_to_fn={"dilation": morp.dilation, "erosion": morp.erosion},
             str_to_ui_fn={"intersection": array_intersection_gray_chans, "union": array_union_gray_chans},
-            **kwargs
-        )
-
-    @staticmethod
-    def black_tophat_gray(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
-        assert False, "Not Ready"
-        kwargs["name"] = kwargs.get("name", 'black_tophat')
-        identity1 = ('dilation', ('disk', 0), False)
-        identity2 = ('dilation', ('disk', 0), True)
-        return ParallelMorpOperations(
-            operations=[
-                [
-                    [identity1, 'union'],
-                    [('dilation', selem, False), 'union'],
-                ],
-                [[identity2, ('erosion', selem, False), 'intersection']]
-            ],
             **kwargs
         )
 
@@ -633,3 +600,50 @@ class ParallelMorpOperations:
         res.name = name
 
         return res
+
+
+class ParallelMorpOperationsGrayTopHats(ParallelMorpOperations):
+
+    def __init__(self, *args, tophat_fn, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.tophat_fn = tophat_fn
+
+    def apply_ops(self, ar):
+        return self.tophat_fn(ar[..., 0], self.selem_tophat)[..., None]
+
+    @property
+    def selem_tophat(self):
+        return self.selems[0][1][0]
+
+    @staticmethod
+    def white_tophat_gray(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        kwargs["name"] = kwargs.get("name", 'white_tophat')
+        identity = ('dilation', ('disk', 0), False)
+        return ParallelMorpOperationsGrayTopHats(
+            operations=[
+                [
+                    [identity, 'union'],
+                    [('erosion', selem, False), 'union'],
+                ],
+                [[identity, ('dilation', selem, True), 'intersection']]
+            ],
+            tophat_fn=morp.white_tophat,
+            **kwargs
+        )
+
+    @staticmethod
+    def black_tophat_gray(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        kwargs["name"] = kwargs.get("name", 'black_tophat')
+        identity1 = ('dilation', ('disk', 0), False)
+        identity2 = ('dilation', ('disk', 0), True)
+        return ParallelMorpOperationsGrayTopHats(
+            operations=[
+                [
+                    [identity1, 'union'],
+                    [('dilation', selem, False), 'union'],
+                ],
+                [[identity2, ('erosion', selem, False), 'intersection']]
+            ],
+            tophat_fn=morp.black_tophat,
+            **kwargs
+        )

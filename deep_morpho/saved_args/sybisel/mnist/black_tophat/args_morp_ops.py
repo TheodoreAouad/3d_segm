@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from general.structuring_elements import *
 
-from deep_morpho.morp_operations import ParallelMorpOperations
+from deep_morpho.morp_operations import ParallelMorpOperations, ParallelMorpOperationsGrayTopHats
 
 if torch.cuda.is_available():
     device = 'cuda'
@@ -51,7 +51,8 @@ selems = []
 #     # morp_operations.append(ParallelMorpOperations.erosion_gray((op, size), name=f"erosion_gray/{op}"))
 #     # morp_operations.append(ParallelMorpOperations.closing_gray((op, size), name=f"closing_gray/{op}"))
 #     # morp_operations.append(ParallelMorpOperations.opening_gray((op, size), name=f"opening_gray/{op}"))
-
+    # morp_operations.append(ParallelMorpOperationsGrayTopHats.white_tophat_gray((op, size), name=f"white_tophat_gray/{op}"))
+    # morp_operations.append(ParallelMorpOperationsGrayTopHats.black_tophat_gray((op, size), name=f"black_tophat_gray/{op}"))
 
 for op in [
     'disk',

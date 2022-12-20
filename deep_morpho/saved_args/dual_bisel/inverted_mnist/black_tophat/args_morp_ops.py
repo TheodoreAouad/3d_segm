@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from general.structuring_elements import *
 
-from deep_morpho.morp_operations import ParallelMorpOperations
+from deep_morpho.morp_operations import ParallelMorpOperations, ParallelMorpOperationsGrayTopHats
 
 if torch.cuda.is_available():
     device = 'cuda'

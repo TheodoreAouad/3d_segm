@@ -4,7 +4,7 @@ import torch
 import numpy as np
 from skimage.morphology import erosion, dilation, closing, opening, white_tophat, black_tophat
 
-from deep_morpho.morp_operations import ParallelMorpOperations
+from deep_morpho.morp_operations import ParallelMorpOperations, ParallelMorpOperationsGrayTopHats
 
 
 class TestParallelMorpOperations:
@@ -249,7 +249,7 @@ class TestParallelMorpOperations:
     @staticmethod
     def test_white_tophat_gray():
         for selem_arg in [('hstick', 7), ('vstick', 7), ('disk', 3), ('scross', 7), ('dcross', 7), ('square', 7)]:
-            morp_operation = ParallelMorpOperations.white_tophat_gray(selem_arg)
+            morp_operation = ParallelMorpOperationsGrayTopHats.white_tophat_gray(selem_arg)
             selem = morp_operation._erodila_selem_converter(selem_arg)[0]
 
             inpt = np.random.rand(50, 50, 1)
@@ -267,7 +267,7 @@ class TestParallelMorpOperations:
     @staticmethod
     def test_black_tophat_gray():
         for selem_arg in [('hstick', 7), ('vstick', 7), ('disk', 3), ('scross', 7), ('dcross', 7), ('square', 7)]:
-            morp_operation = ParallelMorpOperations.black_tophat_gray(selem_arg)
+            morp_operation = ParallelMorpOperationsGrayTopHats.black_tophat_gray(selem_arg)
             selem = morp_operation._erodila_selem_converter(selem_arg)[0]
 
             inpt = np.random.rand(50, 50, 1)
