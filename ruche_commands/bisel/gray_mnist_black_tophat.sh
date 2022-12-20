@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=dual_bisel_gray_mnist_black_tophat_75
-#SBATCH --output=ruche_logs/dual_bisel_gray_mnist_black_tophat_75.txt
+#SBATCH --job-name=bisel_gray_mnist_black_tophat_75
+#SBATCH --output=ruche_logs/bisel_gray_mnist_black_tophat_75.txt
 #SBATCH --mail-user=theodore.aouad@centralesupelec.fr
 #SBATCH --mail-type=ALL
 #SBATCH --nodes=1
@@ -22,7 +22,7 @@ nproc
 source $WORKDIR/virtual_envs/torchenv/bin/activate
 echo 'Virtual environment activated'
 
-python deep_morpho/train_net_segm.py --args deep_morpho/saved_args/dual_bisel/gray_mnist/black_tophat/args_segm.py
+python deep_morpho/train_net_segm.py --args deep_morpho/saved_args/bisel/gray_mnist/black_tophat/args_segm.py
 
 wait
 echo 'python scripts have finished'
