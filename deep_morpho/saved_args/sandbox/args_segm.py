@@ -320,6 +320,9 @@ for idx, args in enumerate(all_args):
     #     args['random_gen_args']['p_invert'] = 0
 
 
+    if args['atomic_element'] == "dual_bisel":
+        args['weights_optim_mode'] = BiseWeightsOptimEnum.NORMALIZED
+
     if args['weights_optim_mode'] == BiseWeightsOptimEnum.NORMALIZED:
         args['initializer_args'] = {
             'bise_init_method': InitBiseEnum.CUSTOM_CONSTANT_DUAL_RANDOM_BIAS,
@@ -425,8 +428,6 @@ for idx, args in enumerate(all_args):
         # args['init_bias_value_bise'] = 0
         # args['init_bias_value_lui'] = 0
 
-    elif args['atomic_element'] == "dual_bisel":
-        args['weights_optim_mode'] = BiseWeightsOptimEnum.NORMALIZED
 
     args['loss'] = {"loss_data": args['loss_data']}
 

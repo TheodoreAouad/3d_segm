@@ -61,8 +61,8 @@ print('Parsing paths...')
 
 for model in [
     'bisel',
-    # 'dual_bisel',
-    # 'sybisel',
+    'dual_bisel',
+    'sybisel',
 ]:
     for dataset in [
         'diskorect',
