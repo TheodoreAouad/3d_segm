@@ -71,7 +71,8 @@ all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
     # "mnist",
-    "mnist_gray",
+    # "mnist_gray",
+    "fashionmnist",
     # "inverted_mnist",
     # 'diskorect',
     # "sticks_noised",
@@ -105,6 +106,11 @@ all_args['mnist_args'] = [
 all_args['mnist_gray_args'] = [
     {"n_gray_scale_values": 10, "size": (100, 100),}
 ]
+
+all_args['fashionmnist_gray_args'] = [
+    {"n_gray_scale_values": 20, "size": (50, 50), }
+]
+
 
 all_args['sticks_noised_angles'] = [
     # [0, 90],
@@ -181,8 +187,8 @@ all_args['patience_reduce_lr'] = [700]
 #     4,
 # ]
 all_args['atomic_element'] = [
-    # "bisel",
-    "dual_bisel",
+    "bisel",
+    # "dual_bisel",
     # "sybisel",
 ]
 all_args['n_atoms'] = [
@@ -362,7 +368,7 @@ for idx, args in enumerate(all_args):
     #     args['init_bias_value_bise'] = "auto"
     #     args['init_bias_value_lui'] = "auto"
 
-    if args['dataset_type'] in ["diskorect", 'mnist', 'inverted_mnist', 'sticks_noised', 'mnist_gray']:
+    if args['dataset_type'] in ["diskorect", 'mnist', 'inverted_mnist', 'sticks_noised', 'mnist_gray', 'fashionmnist']:
         # args['kernel_size'] = 'adapt'
 
 
@@ -410,7 +416,7 @@ for idx, args in enumerate(all_args):
         # args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
         args['random_gen_args']['size'] = args['random_gen_args']['size'] + (args["morp_operation"].in_channels[0],)
 
-    if args['dataset_type'] in ["mnist", "inverted_mnist", "mnist_gray"]:
+    if args['dataset_type'] in ["mnist", "inverted_mnist", "mnist_gray", "fashionmnist"]:
         # args['freq_imgs'] = 300
         args['n_inputs'] = 70_000
 
@@ -442,7 +448,7 @@ for idx, args in enumerate(all_args):
     for key in ['closest_selem_method', 'bias_optim_mode']:
         args[f'{key}_str'] = str(args[key])
 
-    if args['dataset_type'] == 'mnist_gray':
+    if args['dataset_type'] in ['mnist_gray', 'fashionmnist']:
         assert "gray" in args['morp_operation'].name
     else:
         assert "gray" not in args['morp_operation'].name

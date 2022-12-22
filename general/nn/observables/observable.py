@@ -14,7 +14,7 @@ class Observable(pl.callbacks.Callback):
 
     """
 
-    def __init__(self, hp_metrics_mode: Union[str, List, Tuple] = 'all', ignore_hp_metrics: Tuple = (), *args, **kwargs):
+    def __init__(self, hp_metrics_mode: Union[str, List, Tuple] = 'all', ignore_hp_metrics: Tuple = (), freq=1, *args, **kwargs):
         """
 
         Args:
@@ -28,6 +28,8 @@ class Observable(pl.callbacks.Callback):
         self.ignore_hp_metrics = ignore_hp_metrics
         self._hp_metrics = {}  # metrics to log into the hparams of tensorboard
         self.logger = None
+        self.freq = freq
+        self.freq_idx = 0
 
     @property
     def hp_metrics(self) -> Dict[str, Any]:

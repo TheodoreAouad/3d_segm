@@ -10,7 +10,9 @@ class CalculateAndLogMetrics(Observable):
     """
     class used to calculate and track metrics in the tensorboard
     """
-    def __init__(self, metrics, keep_preds_for_epoch=True):
+    def __init__(self, metrics, keep_preds_for_epoch=True, freq={"train": 1, "val": 1, "test": 1}):
+        self.freq = freq
+        self.freq_idx = {"train": 1, "val": 1, "test": 1}
         self.metrics = metrics
         self.last_value = {k: 0 for k in metrics.keys()}
         self.keep_preds_for_epoch = keep_preds_for_epoch
@@ -30,16 +32,22 @@ class CalculateAndLogMetrics(Observable):
         )
 
     def on_train_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
-        inputs, targets = batch
-        self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='train')
+        self.freq_idx['train'] += 1
+        if self.freq_idx['train'] % self.freq['train'] == 0:
+            inputs, targets = batch
+            self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='train')
 
     def on_validation_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
-        inputs, targets = batch
-        self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='val')
+        self.freq_idx['val'] += 1
+        if self.freq_idx['val'] % self.freq['val'] == 0:
+            inputs, targets = batch
+            self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='val')
 
     def on_test_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
-        inputs, targets = batch
-        self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='test')
+        self.freq_idx['test'] += 1
+        if self.freq_idx['test'] % self.freq['test'] == 0:
+            inputs, targets = batch
+            self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='test')
 
     def _calculate_and_log_metrics(self, trainer, pl_module, targets, preds, state='train', batch_or_epoch='batch', suffix=""):
         key = f"{state}{suffix}"

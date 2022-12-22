@@ -20,9 +20,11 @@ class SetSeed(Observable):
 
 class RandomObservable(Observable):
     def on_batch_start(self, trainer, *args, **kwargs):
-        trainer.logger.experiment.add_scalar('random/numpy', np.random.rand(), trainer.global_step)
-        trainer.logger.experiment.add_scalar('random/random', random.random(), trainer.global_step)
-        trainer.logger.experiment.add_scalar('random/torch', torch.rand(1), trainer.global_step)
+        self.freq_idx += 1
+        if self.freq_idx % self.freq == 0:
+            trainer.logger.experiment.add_scalar('random/numpy', np.random.rand(), trainer.global_step)
+            trainer.logger.experiment.add_scalar('random/random', random.random(), trainer.global_step)
+            trainer.logger.experiment.add_scalar('random/torch', torch.rand(1), trainer.global_step)
 
 
 class CheckSeed(Observable):

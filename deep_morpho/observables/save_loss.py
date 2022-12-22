@@ -9,9 +9,7 @@ from general.nn.observables import Observable
 class SaveLoss(Observable):
 
     def __init__(self, freq: int = 100, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.freq = freq
-        self.idx = 0
+        super().__init__(freq=freq, *args, **kwargs)
 
     def on_train_batch_end(
         self,
@@ -23,12 +21,14 @@ class SaveLoss(Observable):
         dataloader_idx: int,
     ) -> None:
         """Called when the train batch ends."""
-        trainer.logger.experiment.add_scalars(
-            "loss/train", {k: v for k, v in outputs.items() if 'loss' in k}, trainer.global_step
-        )
-        trainer.logged_metrics.update(
-            **{f"loss/train/{k}": v for k, v in outputs.items() if 'loss' in k}
-        )
+        self.freq_idx += 1
+        if self.freq_idx % self.freq == 0:
+            trainer.logger.experiment.add_scalars(
+                "loss/train", {k: v for k, v in outputs.items() if 'loss' in k}, trainer.global_step
+            )
+            trainer.logged_metrics.update(
+                **{f"loss/train/{k}": v for k, v in outputs.items() if 'loss' in k}
+            )
         # for k, v in outputs.items():
         #     if 'loss' in k:
         #         trainer.log(f"loss/train/{k}", v)

@@ -100,6 +100,11 @@ class BinaryModeMetricGrayScale(BinaryModeMetric):
 
 class InputAsPredMetricGrayScale(InputAsPredMetric):
     def on_train_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
+        if self.freq_idx % self.freq != 0:
+            self.freq_idx += 1
+            return
+        self.freq_idx += 1
+
         inputs, preds, targets, original_inputs, original_targets = MnistGrayScaleDataset.get_relevent_tensors_batch(batch, preds)
         self._calculate_and_log_metrics(trainer, pl_module, targets, inputs.squeeze(), state='train', suffix='_rec')
         self._calculate_and_log_metrics(trainer, pl_module, original_targets, inputs.squeeze(), state='train', suffix='_ori')
@@ -194,20 +199,26 @@ class PlotPredsGrayscale(PlotPreds):
 
 
 class CalculateAndLogMetricGrayScale(CalculateAndLogMetrics):
-    def __init__(self, metrics, keep_preds_for_epoch=False):
-        super().__init__(metrics, keep_preds_for_epoch)
+    def __init__(self, metrics, keep_preds_for_epoch=False, *args, **kwargs):
+        super().__init__(metrics, keep_preds_for_epoch, *args, **kwargs)
 
     def on_train_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
-        inputs, preds, targets, original_inputs, original_targets = MnistGrayScaleDataset.get_relevent_tensors_batch(batch, preds)
-        self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='train', suffix="_rec")
-        self._calculate_and_log_metrics(trainer, pl_module, original_targets, preds, state='train', suffix="_ori")
+        self.freq_idx['train'] += 1
+        if self.freq_idx['train'] % self.freq['train'] == 0:
+            inputs, preds, targets, original_inputs, original_targets = MnistGrayScaleDataset.get_relevent_tensors_batch(batch, preds)
+            self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='train', suffix="_rec")
+            self._calculate_and_log_metrics(trainer, pl_module, original_targets, preds, state='train', suffix="_ori")
 
     def on_validation_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
-        inputs, preds, targets, original_inputs, original_targets = MnistGrayScaleDataset.get_relevent_tensors_batch(batch, preds)
-        self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='val', suffix="_rec")
-        self._calculate_and_log_metrics(trainer, pl_module, original_targets, preds, state='val', suffix="_ori")
+        self.freq_idx['val'] += 1
+        if self.freq_idx['val'] % self.freq['val'] == 0:
+            inputs, preds, targets, original_inputs, original_targets = MnistGrayScaleDataset.get_relevent_tensors_batch(batch, preds)
+            self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='val', suffix="_rec")
+            self._calculate_and_log_metrics(trainer, pl_module, original_targets, preds, state='val', suffix="_ori")
 
     def on_test_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
-        inputs, preds, targets, original_inputs, original_targets = MnistGrayScaleDataset.get_relevent_tensors_batch(batch, preds)
-        self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='test', suffix="_rec")
-        self._calculate_and_log_metrics(trainer, pl_module, original_targets, preds, state='test', suffix="_ori")
+        self.freq_idx['test'] += 1
+        if self.freq_idx['test'] % self.freq['test'] == 0:
+            inputs, preds, targets, original_inputs, original_targets = MnistGrayScaleDataset.get_relevent_tensors_batch(batch, preds)
+            self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='test', suffix="_rec")
+            self._calculate_and_log_metrics(trainer, pl_module, original_targets, preds, state='test', suffix="_ori")

@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 
 print('Import modules...')
 from deep_morpho.datasets.mnist_dataset import MnistMorphoDataset, MnistGrayScaleDataset
+from deep_morpho.datasets.fashionmnist_dataset import FashionMnistGrayScaleDataset
 from deep_morpho.utils import set_seed
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
@@ -134,6 +135,22 @@ def get_dataloader(args):
             **args['mnist_gray_args']
         )
 
+    elif args['dataset_type'] == "fashionmnist":
+        prop_train, prop_val, prop_test = args['train_test_split']
+        trainloader, valloader, testloader = FashionMnistGrayScaleDataset.get_train_val_test_loader(
+            n_inputs_train=int(prop_train * args['n_inputs']),
+            n_inputs_val=int(prop_val * args['n_inputs']),
+            n_inputs_test=int(prop_test * args['n_inputs']),
+            batch_size=args['batch_size'],
+            morp_operation=args['morp_operation'],
+            preprocessing=args['preprocessing'],
+            # shuffle=True,
+            num_workers=args['num_workers'],
+            do_symetric_output=args['atomic_element'] == 'sybisel',
+            **args['fashionmnist_gray_args']
+        )
+
+
     return trainloader, valloader, testloader
 
 
@@ -149,8 +166,8 @@ def main(args, logger):
         # 'mse': lambda y_true, y_pred: ((y_true - y_pred) ** 2).mean()
     }
 
-    if "gray" in args['dataset_type']:
-        plot_pred_obs_fn = obs.PlotPredsGrayscale if "gray" in args['dataset_type'] else obs.PlotPreds
+    if args['dataset_type'] in ['mnist_gray', 'fashionmnist']:
+        plot_pred_obs_fn = obs.PlotPredsGrayscale
     else:
         plot_pred_obs_fn = partial(obs.PlotPreds, fig_kwargs={"vmax": 1, "vmin": -1 if args['atomic_element'] == 'sybisel' else 0})
 
@@ -164,11 +181,12 @@ def main(args, logger):
 
     observables_dict = {
         # "SetSeed": obs.SetSeed(args['batch_seed']),
-        "RandomObservable": obs.RandomObservable(),
-        "SaveLoss": obs.SaveLoss(),
+        "RandomObservable": obs.RandomObservable(freq=args['freq_scalars']),
+        "SaveLoss": obs.SaveLoss(freq=1),
         "CalculateAndLogMetric": CalculateAndLogMetrics(
             metrics=metrics,
             keep_preds_for_epoch=False,
+            freq={'train': args['freq_scalars'], 'val': 10, "test": 10},
         ),
         "PlotPreds": plot_pred_obs_fn(freq={'train': args['freq_imgs'], 'val': 39}, ),
         "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
@@ -193,7 +211,7 @@ def main(args, logger):
         # "ShowLUISetBinary": obs.ShowLUISetBinary(freq=args['freq_imgs']),
         "BinaryModeMetric": obs.BinaryModeMetric(metrics, freq=args['freq_imgs']),
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
-        "ConvergenceBinary": obs.ConvergenceBinary(freq=100),
+        "ConvergenceBinary": obs.ConvergenceBinary(freq=args['freq_imgs']),
         "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
         "BatchEarlyStoppingBinaryDice": obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
         # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
@@ -202,14 +220,15 @@ def main(args, logger):
     }
     # observables_dict = {}
 
-    if "gray" in args['dataset_type']:
+    if args['dataset_type'] in ['mnist_gray', 'fashionmnist']:
         metrics_gray_scale = {'mse': lambda y_true, y_pred: ((y_true - y_pred) ** 2).mean()}
         observables_dict.update({
             "CalculateAndLogMetricGrayScale": obs.CalculateAndLogMetricGrayScale(
                 metrics=metrics_gray_scale,
                 keep_preds_for_epoch=False,
+            freq={'train': args['freq_scalars'], 'val': 10, "test": 10},
             ),
-            "InputAsPredMetricGrayScale": obs.InputAsPredMetricGrayScale(metrics_gray_scale),
+            "InputAsPredMetricGrayScale": obs.InputAsPredMetricGrayScale(metrics_gray_scale, freq=args['freq_scalars']),
             "BinaryModeMetricGrayScale": obs.BinaryModeMetricGrayScale(metrics_gray_scale, freq=args['freq_imgs']),
         })
 
@@ -391,14 +410,14 @@ if __name__ == '__main__':
         log_console(logger.log_dir, logger=console_logger)
         log_console(args['morp_operation'], logger.log_dir, logger=console_logger)
 
-        # results.append(main(args, logger))
+        results.append(main(args, logger))
 
-        try:
-            main(args, logger)
-        except Exception:
-            console_logger.exception(
-                f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
-            bugged.append(args_idx+1)
+        # try:
+        #     main(args, logger)
+        # except Exception:
+        #     console_logger.exception(
+        #         f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
+        #     bugged.append(args_idx+1)
 
         log_console("Done.", logger=console_logger)
 
