@@ -3,20 +3,21 @@ import os
 
 i = 0
 for atomic in [
-    # 'bisel',
-    'dual_bisel',
-    # 'sybisel',
+    'bisel',
+    # 'dual_bisel',
+    'sybisel',
 ]:
     for dataset in [
         # 'diskorect',
         # 'mnist',
         # 'inverted_mnist',
-        'gray_mnist',
+        # 'gray_mnist',
+        'fashionmnist'
     ]:
         for operation in [
-            # 'erodila',
-            # 'ope',
-            # 'clo',
+            'erodila',
+            'ope',
+            'clo',
             'black_tophat',
             'white_tophat'
         ]:
