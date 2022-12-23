@@ -2,8 +2,9 @@ import torch
 import torch.nn as nn
 import numpy as np
 import pytest
-from deep_morpho.initializer.bise_initializer import InitBiseConstantVarianceWeights, InitBiseHeuristicWeights
+from skimage.morphology import dilation, erosion, opening, closing, disk
 
+from deep_morpho.initializer.bise_initializer import InitBiseConstantVarianceWeights, InitBiseHeuristicWeights, InitDualBiseConstantVarianceWeights
 from deep_morpho.models import BiSE, InitBiseEnum, BiseBiasOptimEnum
 from deep_morpho.datasets import InputOutputGeneratorDataset, get_random_diskorect_channels
 from deep_morpho.models.bise_base import BiseWeightsOptimEnum
@@ -202,70 +203,6 @@ class TestBiSE:
         )
         layer
 
-
-    @staticmethod
-    def test_duality_training():
-        layer = BiSE(
-            kernel_size=(7, 7),
-            threshold_mode={'weight': 'softplus', 'activation': 'tanh'},
-            activation_P=1,
-            # init_bias_value=1/2,
-            # input_mean=1/2,
-            # init_weight_mode=InitBiseEnum.CUSTOM_HEURISTIC,
-            # initializer_method=InitBiseEnum.CUSTOM_HEURISTIC,
-            # initializer_args={"input_mean": .5, "init_bias_value": .5},
-            initializer=InitBiseHeuristicWeights(input_mean=.5, init_bias_value=.5),
-            out_channels=1,
-            bias_optim_mode=BiseBiasOptimEnum.POSITIVE,
-            bias_optim_args={"offset": 0},
-            weights_optim_mode=BiseWeightsOptimEnum.NORMALIZED,
-        )
-
-        dataset = InputOutputGeneratorDataset(
-            random_gen_fn=get_random_diskorect_channels,
-            random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)},
-            morp_operation=ParallelMorpOperations.dilation(('disk', 2)),
-            len_dataset=1000,
-            seed=100,
-            do_symetric_output=False,
-        )
-
-        x, y = dataset[0]
-        x = x.unsqueeze(0)
-        y = y.unsqueeze(0)
-
-        loss = nn.BCELoss()
-
-        out1 = layer(x)
-        value_loss1 = loss(out1, y)
-        value_loss1.backward()
-
-
-        grads1 = {}
-        for name, param in layer.named_parameters():
-            if param.grad is not None:
-                grads1[name] = param.grad + 0
-                param.grad.zero_()
-
-        out2 = layer(1 - x)
-        value_loss2 = loss(out2, 1 - y)
-        value_loss2.backward()
-
-
-        grads2 = {}
-        for name, param in layer.named_parameters():
-            if param.grad is not None:
-                grads2[name] = param.grad + 0
-
-
-        assert (value_loss1 - value_loss2).abs().sum() < 1e-5
-        for name, param in layer.named_parameters():
-            if param.grad is not None:
-                if "bias" in name:
-                    assert (grads1[name] + grads2[name]).abs().sum() < 1e-5
-                else:
-                    assert (grads1[name] - grads2[name]).abs().sum() < 1e-5
-
     @staticmethod
     def test_ellipse_device():
         model = BiSE(
@@ -351,3 +288,83 @@ class TestBiseProperties:
         otp2 = model(x)
 
         assert (otp1 - (1 - otp2)).abs().mean() < 1e-6
+
+
+    @staticmethod
+    def test_duality_training():
+        def test_surrogate(bise_optim_mode, dual_ops):
+            layer = BiSE(
+                kernel_size=(7, 7),
+                threshold_mode={'weight': 'softplus', 'activation': 'tanh'},
+                activation_P=1,
+                initializer=InitDualBiseConstantVarianceWeights(input_mean=.5,),
+                out_channels=1,
+                bias_optim_mode=bise_optim_mode,
+                bias_optim_args={"offset": 0},
+                weights_optim_mode=BiseWeightsOptimEnum.NORMALIZED,
+            )
+
+            # dataset = InputOutputGeneratorDataset(
+            #     random_gen_fn=get_random_diskorect_channels,
+            #     random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)},
+            #     morp_operation=ParallelMorpOperations.dilation(('disk', 2)),
+            #     len_dataset=1000,
+            #     seed=100,
+            #     do_symetric_output=False,
+            # )
+
+            selem = disk(2)
+            x = get_random_diskorect_channels(
+                **{'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
+            )[..., 0]
+
+            op_dil, op_ero = dual_ops
+
+            y_dil = op_dil(x, selem)
+            y_ero = op_ero(1 - x, selem)
+
+            x_dil = torch.tensor(x)[None, None, ...].float()
+            y_dil = torch.tensor(y_dil)[None, None, ...].float()
+
+            x_ero = torch.tensor(1 - x)[None, None, ...].float()
+            y_ero = torch.tensor(y_ero)[None, None, ...].float()
+
+            loss = nn.BCELoss()
+
+            out_dil = layer(x_dil)
+            loss_dil = loss(out_dil, y_dil)
+            loss_dil.backward()
+
+            grads_dil = {}
+            for name, param in layer.named_parameters():
+                if param.grad is not None:
+                    grads_dil[name] = param.grad + 0
+                    param.grad.zero_()
+
+
+            out_ero = layer(x_ero)
+            loss_ero = loss(out_ero, y_ero)
+            loss_ero.backward()
+
+            grads_ero = {}
+            for name, param in layer.named_parameters():
+                if param.grad is not None:
+                    grads_ero[name] = param.grad + 0
+
+
+            assert (loss_dil - loss_ero).abs().sum() < 1e-5
+            nb_params = 0
+            for name, param in layer.named_parameters():
+                if param.grad is not None:
+                    if "bias" in name:
+                        assert ((grads_dil[name] + grads_ero[name]) / grads_dil[name]).abs().mean() < 1e-3
+                    else:
+                        assert ((grads_dil[name] - grads_ero[name]) / grads_dil[name]).abs().mean() < 1e-3
+                    nb_params += 1
+            assert nb_params > 0
+
+        for bise_optim_mode in [
+            BiseBiasOptimEnum.RAW, BiseBiasOptimEnum.POSITIVE, BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED, BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+        ]:
+            for dual_ops in [(dilation, erosion), (opening, closing)]:
+                test_surrogate(bise_optim_mode, dual_ops)
