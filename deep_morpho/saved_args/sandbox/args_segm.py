@@ -69,12 +69,12 @@ all_args['experiment_name'] = [
 # DATA ARGS
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
-    # 'axspa_roi',
+    'axspa_roi',
     # "mnist",
     # "mnist_gray",
     # "fashionmnist",
     # "inverted_mnist",
-    'diskorect',
+    # 'diskorect',
     # "sticks_noised",
 ]
 all_args['preprocessing'] = [  # for axspa roi
@@ -204,7 +204,8 @@ all_args['kernel_size'] = [
     # 21,
 ]
 all_args['channels'] = [
-    'adapt',
+    # 'adapt',
+    [2, 1],
     # [1] * 3
     # [1, 1, 1]
     # [
@@ -349,6 +350,10 @@ for idx, args in enumerate(all_args):
         args['n_atoms'] = len(args['channels']) - 1
         args['experiment_subname'] = f"{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset_type']}/"
 
+        args['patience_loss'] = 360
+        args['patience_reduce_lr'] = 120
+
+
         if args["kernel_size"] == "adapt":
             size = np.ceil(41 / args['n_atoms'])
             if size // 2 == 0:
@@ -450,7 +455,7 @@ for idx, args in enumerate(all_args):
 
     if args['dataset_type'] in ['mnist_gray', 'fashionmnist']:
         assert "gray" in args['morp_operation'].name
-    else:
+    elif args['dataset_type'] != "axspa_roi":
         assert "gray" not in args['morp_operation'].name
 
 

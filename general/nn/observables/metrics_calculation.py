@@ -56,7 +56,8 @@ class CalculateAndLogMetrics(Observable):
             self.last_value[metric_name] = metric
             # pl_module.log(f"mean_metrics_{batch_or_epoch}/{metric_name}/{state}", metric)
             if batch_or_epoch == 'batch':
-                step = self.tb_steps[metric_name].get(key, 0)
+                # step = self.tb_steps[metric_name].get(key, 0)
+                step = trainer.global_step
             else:
                 step = trainer.current_epoch
 
@@ -71,8 +72,8 @@ class CalculateAndLogMetrics(Observable):
                 {f"metrics_{batch_or_epoch}/{metric_name}{suffix}_{state}": metric}
             )
 
-            if batch_or_epoch == 'batch':
-                self.tb_steps[metric_name][key] = step + 1
+            # if batch_or_epoch == 'batch':
+            #     self.tb_steps[metric_name][key] = step + 1
 
             # f"metrics_multi_label_{batch_or_epoch}/{metric_name}/{state}", {f'label_{name_label}': metric}, step
             # trainer.logger.experiment.add_scalars(metric_name, {f'{metric_name}_{state}': metric})

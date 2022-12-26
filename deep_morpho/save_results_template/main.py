@@ -60,15 +60,16 @@ print('Parsing paths...')
 # SAVE_PATH.append('html_pages/mnist_grid_search.html')
 
 for model in [
-    # 'bisel',
-    'dual_bisel',
+    'bisel',
+    # 'dual_bisel',
     # 'sybisel',
 ]:
     for dataset in [
-        'diskorect',
+        # 'diskorect',
         # 'mnist',
         # 'inverted_mnist',
-        # 'mnist_gray'
+        # 'mnist_gray',
+        'fashionmnist',
     ]:
         path_global = f"deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/0/{model}/softplus/{dataset}/"
         all_paths = []
