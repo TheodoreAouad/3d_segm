@@ -1,10 +1,11 @@
 import os
+import time
 
 
 i = 0
 for atomic in [
     # 'bisel',
-    'dual_bisel',
+    # 'dual_bisel',
     'sybisel',
 ]:
     for dataset in [
@@ -25,6 +26,7 @@ for atomic in [
             if os.path.exists(file_path):
                 os.system(f"sbatch {file_path}")
                 print(f"sbatch {file_path}")
+                time.sleep(.5)
                 i += 1
 
 print(f"Launched {i} commands.")

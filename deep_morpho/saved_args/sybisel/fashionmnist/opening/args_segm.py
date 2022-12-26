@@ -153,12 +153,12 @@ all_args['loss_data_str'] = [
     # "MaskedMSELoss",
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
-    # "BCENormalizedLoss",
-    "BCELoss",
+    "BCENormalizedLoss",
+    # "BCELoss",
     "MSELoss",
-    "DiceLoss",
+    # "DiceLoss",
     # "MaskedDiceLoss",
-    # "NormalizedDiceLoss",
+    "NormalizedDiceLoss",
 ]
 all_args['loss_regu'] = [
     # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
