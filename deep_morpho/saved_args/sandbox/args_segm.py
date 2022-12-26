@@ -169,7 +169,7 @@ all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
-all_args['batch_size'] = [32]
+all_args['batch_size'] = [256]
 all_args['num_workers'] = [
     20,
     # 0,
@@ -192,20 +192,20 @@ all_args['atomic_element'] = [
     # "sybisel",
 ]
 all_args['n_atoms'] = [
-    'adapt',
-    # 2
-    # 2
+    # 'adapt',
+    11,
 ]
 
 all_args['kernel_size'] = [
     # 7,
-    # 3
-    "adapt",
+    3
+    # "adapt",
     # 21,
 ]
 all_args['channels'] = [
-    'adapt',
-    # [1] * 3
+    # 'adapt',
+    # [2, 1],
+    [1] * 12
     # [1, 1, 1]
     # [
     #     2, 2, 2, 2, 2, 2, 1
@@ -349,6 +349,10 @@ for idx, args in enumerate(all_args):
         args['n_atoms'] = len(args['channels']) - 1
         args['experiment_subname'] = f"{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset_type']}/"
 
+        args['patience_loss'] = 360
+        args['patience_reduce_lr'] = 120
+
+
         if args["kernel_size"] == "adapt":
             size = np.ceil(41 / args['n_atoms'])
             if size // 2 == 0:
@@ -376,19 +380,6 @@ for idx, args in enumerate(all_args):
             # args["kernel_size"] = args["morp_operation"].selems[0][0][0].shape[0]
             args["kernel_size"] = int(max(args['morp_operation'].max_selem_shape))
 
-        # kwargs_loss = {}
-        # if "Normalized" in args['loss_data_str'] and args['atomic_element'] == 'sybisel':
-        #     kwargs_loss.update({"vmin": -1, "vmax": 1})
-        #     # args['loss_data'] = loss_dict[args['loss_data_str']](
-        #     #     border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]),
-        #     #     vmin=-1, vmax=1,
-        #     # )
-        # if "Masked" in args['loss_data_str']:
-        #     kwargs_loss.update({"border": np.array([args['kernel_size'] // 2, args['kernel_size'] // 2])})
-        #     # args['loss_data'] = loss_dict[args['loss_data_str']]()
-        #     # args['loss_data'] = loss_dict[args['loss_data_str']](border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]))
-        # args['loss_data'] = loss_dict[args['loss_data_str']](**kwargs_loss)
-
         args['experiment_subname'] = f"{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset_type']}/{args['morp_operation'].name}"
 
         if args['channels'] == 'adapt':
@@ -400,10 +391,6 @@ for idx, args in enumerate(all_args):
     kwargs_loss = {}
     if "Normalized" in args['loss_data_str'] and args['atomic_element'] == 'sybisel':
         kwargs_loss.update({"vmin": -1, "vmax": 1})
-        # args['loss_data'] = loss_dict[args['loss_data_str']](
-        #     border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]),
-        #     vmin=-1, vmax=1,
-        # )
 
     args['loss_data'] = loss_dict[args['loss_data_str']](**kwargs_loss)
 
@@ -450,7 +437,8 @@ for idx, args in enumerate(all_args):
 
     if args['dataset_type'] in ['mnist_gray', 'fashionmnist']:
         assert "gray" in args['morp_operation'].name
-    else:
+        args['batch_size'] = 32
+    elif args['dataset_type'] != "axspa_roi":
         assert "gray" not in args['morp_operation'].name
 
 
