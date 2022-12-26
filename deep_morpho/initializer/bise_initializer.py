@@ -21,6 +21,8 @@ class InitBiseEnum(Enum):
     ELLIPSE_ROOT = 9
     CUSTOM_CONSTANT_DUAL = 10
     CUSTOM_CONSTANT_DUAL_RANDOM_BIAS = 11
+    CUSTOM_CONSTANT_CONSTANT_WEIGHTS = 12
+    CUSTOM_CONSTANT_CONSTANT_WEIGHTS_DUAL = 13
 
 
 class BiseInitializer:
@@ -174,6 +176,45 @@ class InitBiseConstantVarianceWeights(InitBiasFixed):
         self.init_bias_value = self.input_mean * module._normalized_weights.sum((1, 2, 3))
 
 
+class InitBiseConstantVarianceConstantWeights(InitBiseConstantVarianceWeights):
+    """We init the LUI with a mean weights instead of a random uniform function. We take the same mean for simplicity.
+    """
+
+    def init_weights(self, module):
+        nb_params = torch.tensor(module._normalized_weights.shape[1:]).prod()
+        p = self.get_init_p(nb_params, module)
+
+        mean = self.get_mean(p, nb_params)
+        new_weights = torch.ones_like(module.weights) * mean / nb_params
+
+        module.set_param_from_weights(
+            new_weights
+        )
+
+
+        self.init_bias_value = self.input_mean * module._normalized_weights.sum((1, 2, 3))
+
+
+class InitDualBiseConstantVarianceConstantWeights(InitBiseConstantVarianceWeights):
+    """We init the LUI with a mean weights instead of a random uniform function. We take the same mean for simplicity.
+    """
+
+    def init_weights(self, module):
+        nb_params = torch.tensor(module._normalized_weights.shape[1:]).prod()
+        p = self.get_init_p(nb_params, module)
+
+        mean = self.get_mean(p, nb_params)
+        new_weights = torch.ones_like(module.weights) * mean / nb_params
+
+        module.set_param_from_weights(
+            new_weights
+        )
+
+        module.weights_handler.factor = mean * nb_params  # set the factor to have the right mean and variance
+
+        self.init_bias_value = self.input_mean * module._normalized_weights.sum((1, 2, 3))
+
+
 class InitDualBiseConstantVarianceWeights(InitBiseConstantVarianceWeights):
 
     def init_weights(self, module):
@@ -196,6 +237,7 @@ class InitDualBiseConstantVarianceWeights(InitBiseConstantVarianceWeights):
         module.weights_handler.factor = mean * nb_params  # set the factor to have the right mean and variance
 
         self.init_bias_value = self.input_mean * module._normalized_weights.sum((1, 2, 3))
+
 
 
 class InitDualBiseConstantVarianceWeightsRandomBias(InitDualBiseConstantVarianceWeights):

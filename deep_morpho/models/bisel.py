@@ -114,7 +114,7 @@ class BiSELBase(BinaryNN):
 
     def _init_luis(self):
         luis = []
-        lui_initializer = self.initializer.get_bise_initializers(self)
+        lui_initializer = self.initializer.get_lui_initializers(self)
         for idx in range(self.out_channels):
             layer = self.lui_module(
                 in_channels=self.in_channels,

@@ -142,8 +142,8 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-2,
-    # 1e-1,
+    # 1e-2,
+    1e-1,
 ]
 
 # if max_plus, then the loss is MSELoss
@@ -205,7 +205,10 @@ all_args['kernel_size'] = [
 ]
 all_args['channels'] = [
     # 'adapt',
-    [2, 1],
+    # [2, 1],
+    # [2, 2, 1],
+    # [2] * 7 + [1],
+    [2, 1, 1, 1, 1, 1, 2, 1]
     # [1] * 3
     # [1, 1, 1]
     # [
@@ -237,9 +240,9 @@ all_args['closest_selem_method'] = [
 # ]
 all_args['bias_optim_mode'] = [
     # BiseBiasOptimEnum.RAW,
-    BiseBiasOptimEnum.POSITIVE,
+    # BiseBiasOptimEnum.POSITIVE,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
-    # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+    BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 all_args['bias_optim_args'] = [
     {"offset": 0}
@@ -271,7 +274,8 @@ all_args['initializer_args'] = [
         # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC,
 
         "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
-        "bise_init_args": {"ub": 1e-4, "max_output_value": 0.95},
+        "lui_init_method": InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS,
+        "bise_init_args": {"ub": 1e-1, "max_output_value": 0.95},
 
         # "bise_init_method": InitBiseEnum.ELLIPSE_ROOT,
         # "bise_init_args": {"init_bias_value": 2},
@@ -284,9 +288,8 @@ all_args['initializer_args'] = [
 
 ]
 
-all_args['activation_P'] = [0]
-# all_args['activation_P'] = [1]  # force non complementation
-all_args['constant_activation_P'] = [False]
+all_args['activation_P'] = [3]
+all_args['constant_activation_P'] = [True]
 all_args['force_lui_identity'] = [False]
 all_args['constant_P_lui'] = [False]
 
@@ -331,10 +334,10 @@ for idx, args in enumerate(all_args):
         args['weights_optim_mode'] = BiseWeightsOptimEnum.NORMALIZED
 
     if args['weights_optim_mode'] == BiseWeightsOptimEnum.NORMALIZED:
-        args['initializer_args'] = {
+        args['initializer_args'].update({
             'bise_init_method': InitBiseEnum.CUSTOM_CONSTANT_DUAL_RANDOM_BIAS,
-            'bise_init_args': {"ub": 1e-4},
-        }
+            'lui_init_method': InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_DUAL,
+        })
 
     args['init_bimonn_str'] = str(args["initializer_method"])
     if isinstance(args["initializer_args"], dict):
@@ -346,6 +349,7 @@ for idx, args in enumerate(all_args):
         args['dataset_path'] = "data/deep_morpho/axspa_roi/axspa_roi.csv"
         args['morp_operation'] = []
         args['freq_imgs'] = 20
+        args['freq_scalars'] = 1
         args['batch_size'] = 16
         args['n_atoms'] = len(args['channels']) - 1
         args['experiment_subname'] = f"{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset_type']}/"
@@ -356,7 +360,7 @@ for idx, args in enumerate(all_args):
 
         if args["kernel_size"] == "adapt":
             size = np.ceil(41 / args['n_atoms'])
-            if size // 2 == 0:
+            if size % 2 == 0:
                 size += 1
             args['kernel_size'] = int(size)
 

@@ -39,7 +39,7 @@ class ElementBiseWeightsChan(ElementGrouper):
         # self.imshow_kwargs['cmap'] = self.imshow_kwargs.get('cmap', 'gray')
 
         weights = self.model._normalized_weight[self.chout, 0].detach().cpu().numpy()
-        if -self.model.bias[self.chout] <= weights.sum():
+        if -self.model.bias[self.chout] <= weights.sum() / 2:
             operation = 'dilation'
         else:
             operation = 'erosion'
