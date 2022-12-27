@@ -144,13 +144,21 @@ class PlotParametersBiSE(ObservableLayersChans):
     ):
         metrics = {}
         last_params = {}
+        weights = layer._normalized_weight[chan_output, chan_input]
+
 
         bias_bise = layer.bias_bise[chan_output, chan_input]
-        weights_sum = layer._normalized_weight[chan_output, chan_input].sum() / 2
+        weights_sum = weights.sum() / 2
+        lb_bias = weights.min()
+        ub_bias = 2 * weights_sum
 
         metrics[f'params/activation_P/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}'] = layer.activation_P_bise[chan_output, chan_input]
         metrics[f'params/bias_bise/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}'] = bias_bise
-        metrics[f'params/bise_B-Wsum/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}'] = -bias_bise - weights_sum
+
+        metrics[f'monitor/bise_B-Wsum/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}'] = -bias_bise - weights_sum
+        # We want lb < -bias < ub
+        metrics[f'monitor/bias_lb/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}'] = -bias_bise - lb_bias
+        metrics[f'monitor/bias_ub/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}'] = ub_bias + bias_bise
 
         trainer.logger.log_metrics(metrics, trainer.global_step)
         self.last_params[layer_idx] = last_params
@@ -174,6 +182,16 @@ class PlotParametersBiSE(ObservableLayersChans):
         trainer.logger.experiment.add_scalars(
             f"comparative/bise_B-Wsum/layer_{layer_idx}_chout_{chan_output}",
             {f"chin_{chan_input}": -bias_bise - weights_sum},
+            trainer.global_step
+        )
+        trainer.logger.experiment.add_scalars(
+            f"comparative/bias_lb/layer_{layer_idx}_chout_{chan_output}",
+            {f"chin_{chan_input}": -bias_bise - lb_bias},
+            trainer.global_step
+        )
+        trainer.logger.experiment.add_scalars(
+            f"comparative/bias_ub/layer_{layer_idx}_chout_{chan_output}",
+            {f"chin_{chan_input}": ub_bias + bias_bise},
             trainer.global_step
         )
 

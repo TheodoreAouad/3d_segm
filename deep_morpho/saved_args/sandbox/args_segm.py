@@ -35,8 +35,8 @@ all_args = {}
 # all_args['batch_seed'] = [2249939862]
 all_args['batch_seed'] = [None]
 
-all_args['n_try'] = [0]
-# all_args['n_try'] = [0, 1, 2, 3, 4]
+# all_args['n_try'] = [0]
+all_args['n_try'] = [0, 1, 2, 3, 4]
 # all_args['n_try'] = range(1, 20)
 
 all_args['experiment_name'] = [
@@ -51,8 +51,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_64/sandbox"
     # "Bimonn_exp_68/sandbox/0"
     # "Bimonn_exp_71/sandbox/0"
-    # "JMIV/sandbox/0/"
-    "Bimonn_exp_75/sandbox/0"
+    "JMIV/multi/1/"
+    # "Bimonn_exp_75/sandbox/1"
     # "test/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
@@ -69,12 +69,12 @@ all_args['experiment_name'] = [
 # DATA ARGS
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
-    'axspa_roi',
+    # 'axspa_roi',
     # "mnist",
     # "mnist_gray",
     # "fashionmnist",
     # "inverted_mnist",
-    # 'diskorect',
+    'diskorect',
     # "sticks_noised",
 ]
 all_args['preprocessing'] = [  # for axspa roi
@@ -154,8 +154,8 @@ all_args['loss_data_str'] = [
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
-    # "BCELoss",
-    "MSELoss",
+    "BCELoss",
+    # "MSELoss",
     # "DiceLoss",
     # "MaskedDiceLoss",
     # "NormalizedDiceLoss",
@@ -169,12 +169,12 @@ all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
-all_args['batch_size'] = [32]
+all_args['batch_size'] = [256]
 all_args['num_workers'] = [
     20,
     # 0,
 ]
-all_args['freq_imgs'] = [1000]
+all_args['freq_imgs'] = [250]
 all_args['freq_scalars'] = [20]
 all_args['n_epochs'] = [20]
 all_args['patience_loss'] = [2100]
@@ -193,22 +193,20 @@ all_args['atomic_element'] = [
 ]
 all_args['n_atoms'] = [
     'adapt',
-    # 2
-    # 2
+    # 11
 ]
 
 all_args['kernel_size'] = [
-    # 7,
     # 3
     "adapt",
-    # 21,
 ]
 all_args['channels'] = [
-    # 'adapt',
+    'adapt',
+    # [1] * 12
     # [2, 1],
     # [2, 2, 1],
     # [2] * 7 + [1],
-    [2, 1, 1, 1, 1, 1, 2, 1]
+    # [2, 1, 1, 1, 1, 1, 2, 1]
     # [1] * 3
     # [1, 1, 1]
     # [
@@ -275,7 +273,7 @@ all_args['initializer_args'] = [
 
         "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
         "lui_init_method": InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS,
-        "bise_init_args": {"ub": 1e-1, "max_output_value": 0.95},
+        "bise_init_args": {"ub": 1e-1, "max_output_value": 0.95, "p_for_init": "auto"},
 
         # "bise_init_method": InitBiseEnum.ELLIPSE_ROOT,
         # "bise_init_args": {"init_bias_value": 2},
@@ -288,8 +286,8 @@ all_args['initializer_args'] = [
 
 ]
 
-all_args['activation_P'] = [3]
-all_args['constant_activation_P'] = [True]
+all_args['activation_P'] = [0]
+all_args['constant_activation_P'] = [False]
 all_args['force_lui_identity'] = [False]
 all_args['constant_P_lui'] = [False]
 

@@ -139,7 +139,14 @@ class InitBiseConstantVarianceWeights(InitBiasFixed):
         "arctan": arctan_threshold_inverse,
     }
 
-    def __init__(self, input_mean: float = 0.5, max_output_value: float = 0.95, *args, **kwargs):
+    def __init__(
+        self,
+        input_mean: float = 0.5,
+        max_output_value: float = 0.95,
+        p_for_init: float = "auto",
+        *args,
+        **kwargs
+    ):
         r"""
         Args:
             input_mean (float): mean of the input of the bise layer.
@@ -148,18 +155,25 @@ class InitBiseConstantVarianceWeights(InitBiasFixed):
         super().__init__(init_bias_value=0)
         self.input_mean = input_mean
         self.max_output_value = 0.95
+        self.p_for_init = p_for_init
 
     @staticmethod
     def get_mean(p, nb_params):
         return (np.sqrt(3) + 2) / (4 * p * torch.sqrt(nb_params))
 
+    @staticmethod
+    def _get_init_p(nb_params, thresh_inv, max_output_value):
+        return (np.sqrt(3) + 2) * torch.sqrt(nb_params) / (4 * 2 * thresh_inv(torch.tensor(max_output_value)))
+
     def get_init_p(self, nb_params, module):
         thresh_inv = self.THRESH_STR_TO_FN[module.threshold_mode['activation']]
-        return (np.sqrt(3) + 2) * torch.sqrt(nb_params) / (4 * 2 * thresh_inv(torch.tensor(self.max_output_value)))
+        # return (np.sqrt(3) + 2) * torch.sqrt(nb_params) / (4 * 2 * thresh_inv(torch.tensor(self.max_output_value)))
+        return self._get_init_p(nb_params, thresh_inv, self.max_output_value)
 
     def init_weights(self, module):
         nb_params = torch.tensor(module._normalized_weights.shape[1:]).prod()
-        p = self.get_init_p(nb_params, module)
+        p = self.get_init_p(nb_params, module) if self.p_for_init == 'auto' else self.p_for_init
+        # p = 1
         mean = self.get_mean(p, nb_params)
         sigma = 1 / (p ** 2 * nb_params) - mean ** 2
 
