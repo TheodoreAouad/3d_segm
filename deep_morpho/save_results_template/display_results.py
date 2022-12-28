@@ -1,11 +1,12 @@
 import pathlib
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import os
 from os.path import join
 import re
 
 import pandas as pd
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 from general.utils import load_json
 from .html_template import html_template
@@ -23,6 +24,7 @@ class DisplayResults:
         else:
             self.css_content = ''
         self.verbose = verbose
+        self.df = None
 
     def write_results(self, i, results, changing_args):
         results_html = ''
@@ -154,37 +156,50 @@ class DisplayResults:
         return table_html
 
     def write_summary(self, results_dict, changing_args):
-        for r in results_dict:
-            r.update(r['args'])
+        # for r in results_dict:
+        #     r.update(r['args'])
 
-        df = pd.DataFrame(results_dict)
-        df['dice'] = df['dice'].astype(float)
-        df['binary_mode_dice'] = df['binary_mode_dice'].astype(float)
-        df['operation'] = df['experiment_subname'].apply(lambda x: pathlib.Path(x).parent.stem)
-        df['selem'] = df['experiment_subname'].apply(lambda x: pathlib.Path(x).stem)
+        # df = pd.DataFrame(results_dict)
+        # df['dice'] = df['dice'].astype(float)
+        # df['binary_mode_dice'] = df['binary_mode_dice'].astype(float)
+        # df['operation'] = df['experiment_subname'].apply(lambda x: pathlib.Path(x).parent.stem)
+        # df['selem'] = df['experiment_subname'].apply(lambda x: pathlib.Path(x).stem)
+        if self.df is None:
+            self.df = self._get_df_from_results(results_dict)
 
         html_binary = pd.DataFrame(
-            df.loc[df['binary_mode_dice'] == 1, ["operation", "selem"]].value_counts().sort_values()
+            self.df.loc[self.df['binary_mode_dice'] == 1, ["operation", "selem"]].value_counts().sort_values()
         ).sort_values(by=['operation', 'selem']).to_html()
 
         html_real = pd.DataFrame(
-            df.loc[df['dice'] > 0.99, ["operation", "selem"]].value_counts().sort_values()
+            self.df.loc[self.df['dice'] > 0.99, ["operation", "selem"]].value_counts().sort_values()
         ).sort_values(by=['operation', 'selem']).to_html()
 
         changing = set(changing_args).difference(["experiment_subname", "name", "n_atoms"])
 
         new_cols = {'dcross': 'dc', 'disk': 'di', 'hstick': 'hs', 'bcomplex': 'bc', 'bdiamond': 'bd', 'bsquare': 'bs', 'scross': 'sc'}
-        df_all = df.pivot_table(index=changing, columns=['operation', 'selem'], values=['binary_mode_dice'], aggfunc='mean').rename(columns=new_cols)
+        df_all = self.df.pivot_table(index=changing, columns=['operation', 'selem'], values=['binary_mode_dice'], aggfunc='mean').rename(columns=new_cols)
         html_pivot_binary = df_all.style.background_gradient(cmap='RdBu', vmin=0, vmax=1).format('{:.2f}').to_html()
 
 
-        df_all = df.pivot_table(index=changing, columns=['operation', 'selem'], values=['dice'], aggfunc='mean').rename(columns=new_cols)
+        df_all = self.df.pivot_table(index=changing, columns=['operation', 'selem'], values=['dice'], aggfunc='mean').rename(columns=new_cols)
         html_pivot_real = df_all.style.background_gradient(cmap='RdBu', vmin=0, vmax=1).format('{:.2f}').to_html()
 
         return f'Binary{html_binary}\n\n Real{html_real}\n\n Binary{html_pivot_binary}\n\n Real{html_pivot_real}'
 
+    def write_boxplot(self, results_dict):
+        if self.df is None:
+            self.df = self._get_df_from_results(results_dict)
+
+        fig_binary = self.draw_boxplot(self.df, 'binary_mode_dice')
+        fig_real = self.draw_boxplot(self.df, 'dice')
+
+        html_boxplot = f"<span>{plot_to_html(fig_binary, close_fig=True)}</span><span>{plot_to_html(fig_real, close_fig=True)}</span>"
+
+        return html_boxplot
+
     def write_html_from_dict_deep_morpho(self, results_dict: List[Dict], save_path: str, title: str = "",
-            show_table: bool = True, show_details: bool = True, show_summary: bool = True):
+            show_table: bool = True, show_details: bool = True, show_summary: bool = True, show_boxplot: bool = True,):
         html = html_template()
 
         # tb_paths = [res["tb_path"] for res in results_dict]
@@ -200,6 +215,8 @@ class DisplayResults:
             results_html = self.write_all_results(results_dict, changing_args)
         if show_summary:
             summary_html = self.write_summary(results_dict, changing_args)
+        if show_boxplot:
+            boxplot_html = self.write_boxplot(results_dict)
 
 
         html = html.format(
@@ -211,6 +228,7 @@ class DisplayResults:
             table=table_html,
             results=results_html,
             summary=summary_html,
+            boxplot=boxplot_html,
         )
 
         pathlib.Path(save_path).parent.mkdir(exist_ok=True, parents=True)
@@ -461,3 +479,55 @@ class DisplayResults:
             results_dict.append(self.get_results_from_tensorboard(tb_path, load_long_args=load_long_args))
 
         return results_dict
+
+    def _get_df_from_results(self, results_dict: List[Dict]) -> pd.DataFrame:
+        for r in results_dict:
+            r.update(r['args'])
+
+        df = pd.DataFrame(results_dict)
+        df['dice'] = df['dice'].astype(float)
+        df['binary_mode_dice'] = df['binary_mode_dice'].astype(float)
+        df['operation'] = df['experiment_subname'].apply(lambda x: pathlib.Path(x).parent.stem)
+        df['selem'] = df['experiment_subname'].apply(lambda x: pathlib.Path(x).stem)
+
+        return df
+
+    def get_df_from_tb_paths(self, tb_paths: List[str], show_details: bool = False) -> Tuple[pd.DataFrame, List, List]:
+        results_dict = self.get_all_results_from_tensorboard(tb_paths, load_long_args=show_details)
+        global_args, changing_args = detect_identical_values([results['args'] for results in results_dict], verbose=self.verbose)
+        return self._get_df_from_results(results_dict), global_args, changing_args
+
+    @staticmethod
+    def draw_boxplot(df, column, title=''):
+        cdict = {
+            "dilation": "cyan", "erosion": "red", "opening": "lime", "closing": "green", "white_tophat": "orange", 
+            "black_tophat": "darksalmon"
+        }
+
+        for key, value in list(cdict.items()):
+            cdict[key + "_gray"] = value
+
+        # plt.figure()
+        fig, ax = plt.subplots(1, 1, figsize=(15, 5))
+        box = df.boxplot(
+            column=column, by=['operation', 'selem'], rot=45, ax=ax, return_type="both", patch_artist=True,
+        )
+
+        colors = []
+        for xtick in box[column].ax.get_xticklabels():
+            op = xtick.get_text()[1:-1].split(',')[0]
+            colors.append(cdict[op])
+            xtick.set_color(cdict[op])
+
+        for patch, flier, color in zip(box[column].lines['boxes'], box[column].lines['fliers'], colors):
+            patch.set_facecolor(color)
+            # patch.set_color(color)
+            flier.set_markeredgecolor(color)
+            patch.set_alpha(.4)
+
+        ax.set_xticklabels(ax.get_xticklabels(), ha="right")
+        ax.set_xlabel(None)
+        fig.suptitle(title)
+        fig.tight_layout()
+
+        return fig

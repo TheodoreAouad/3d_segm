@@ -35,8 +35,8 @@ all_args = {}
 # all_args['batch_seed'] = [2249939862]
 all_args['batch_seed'] = [None]
 
-# all_args['n_try'] = [0]
-all_args['n_try'] = [0, 1, 2, 3, 4]
+all_args['n_try'] = [0]
+# all_args['n_try'] = [0, 1, 2, 3, 4]
 # all_args['n_try'] = range(1, 20)
 
 all_args['experiment_name'] = [
@@ -51,8 +51,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_64/sandbox"
     # "Bimonn_exp_68/sandbox/0"
     # "Bimonn_exp_71/sandbox/0"
-    "JMIV/multi/1/"
-    # "Bimonn_exp_75/sandbox/1"
+    # "JMIV/multi/1/"
+    "Bimonn_exp_75/multi/0"
     # "test/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
@@ -142,8 +142,8 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    # 1e-2,
-    1e-1,
+    1e-2,
+    # 1e-1,
 ]
 
 # if max_plus, then the loss is MSELoss
@@ -154,8 +154,8 @@ all_args['loss_data_str'] = [
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
-    "BCELoss",
-    # "MSELoss",
+    # "BCELoss",
+    "MSELoss",
     # "DiceLoss",
     # "MaskedDiceLoss",
     # "NormalizedDiceLoss",
@@ -174,7 +174,7 @@ all_args['num_workers'] = [
     20,
     # 0,
 ]
-all_args['freq_imgs'] = [250]
+all_args['freq_imgs'] = [1000]
 all_args['freq_scalars'] = [20]
 all_args['n_epochs'] = [20]
 all_args['patience_loss'] = [2100]
@@ -239,8 +239,8 @@ all_args['closest_selem_method'] = [
 all_args['bias_optim_mode'] = [
     # BiseBiasOptimEnum.RAW,
     # BiseBiasOptimEnum.POSITIVE,
-    # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
-    BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+    BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
+    # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 all_args['bias_optim_args'] = [
     {"offset": 0}

@@ -14,6 +14,8 @@ def html_template():
         <p>{changing_args}</p>
         <h2>Summary</h2>
         <p>{summary}</p>
+        <h2>Boxplot</h2>
+        <p>{boxplot}</p>
         <h2>Table</h2>
         <p>{table}</p>
         <h2>Results</h2>
