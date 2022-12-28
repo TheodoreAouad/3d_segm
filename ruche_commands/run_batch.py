@@ -5,14 +5,14 @@ import time
 i = 0
 for atomic in [
     # 'bisel',
-    # 'dual_bisel',
-    'sybisel',
+    'dual_bisel',
+    # 'sybisel',
 ]:
     for dataset in [
-        # 'diskorect',
-        # 'mnist',
-        # 'inverted_mnist',
-        # 'gray_mnist',
+        'diskorect',
+        'mnist',
+        'inverted_mnist',
+        'gray_mnist',
         'fashionmnist'
     ]:
         for operation in [
