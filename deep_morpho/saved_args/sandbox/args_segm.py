@@ -52,8 +52,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_68/sandbox/0"
     # "Bimonn_exp_71/sandbox/0"
     # "JMIV/multi/1/"
-    "Bimonn_exp_75/sandbox/0"
-    # "test/0"
+    # "Bimonn_exp_75/sandbox/0"
+    "test/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -71,10 +71,10 @@ all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
     # "mnist_gray",
-    # "fashionmnist",
+    "fashionmnist",
     # "mnist",
     # "inverted_mnist",
-    'diskorect',
+    # 'diskorect',
     # "sticks_noised",
 ]
 all_args['preprocessing'] = [  # for axspa roi
@@ -169,7 +169,7 @@ all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
-all_args['batch_size'] = [256]
+all_args['batch_size'] = [32]
 all_args['num_workers'] = [
     20,
     # 0,
