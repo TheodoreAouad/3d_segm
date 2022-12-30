@@ -230,8 +230,8 @@ all_args['closest_selem_method'] = [
 all_args['bias_optim_mode'] = [
     BiseBiasOptimEnum.RAW,
     BiseBiasOptimEnum.POSITIVE,
-    # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
-    # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+    BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
+    BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 all_args['bias_optim_args'] = [
     {"offset": 0}
