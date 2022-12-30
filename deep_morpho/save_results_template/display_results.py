@@ -7,11 +7,21 @@ import re
 import pandas as pd
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+from tensorboard.backend.event_processing import event_accumulator
 
 from general.utils import load_json
 from .html_template import html_template
 from .utils import detect_identical_values, plot_to_html, load_png_as_fig
 from .load_args import load_args
+
+
+def extract_last_value_from_tb(path_tb_file: str) -> float:
+    ea = event_accumulator.EventAccumulator(
+        path_tb_file,
+        size_guidance={event_accumulator.SCALARS: 0},
+    )
+    _absorb_print = ea.Reload()
+    return ea.Scalars(ea.Tags()['scalars'][0])[-1].value
 
 
 class DisplayResults:
@@ -393,6 +403,18 @@ class DisplayResults:
 
         return res
 
+    @staticmethod
+    def update_results_loss_train_loss(tb_path):
+        res = {}
+        res['loss_train'] = extract_last_value_from_tb(join(tb_path, "loss_train_loss"))
+        return res
+
+    @staticmethod
+    def update_results_loss_train_loss_data(tb_path):
+        res = {}
+        res['loss_train_data'] = extract_last_value_from_tb(join(tb_path, "loss_train_loss_data"))
+        return res
+
     def get_results_from_tensorboard(self, tb_path: str, load_long_args: bool = True,):
         res = {
             "args": {},
@@ -444,6 +466,12 @@ class DisplayResults:
             if not load_long_args and obs_name in long_args:
                 continue
             res.update(getattr(self, f"update_results_{obs_name}")(join(obs_path, obs_name)))
+
+        for obs_name in [
+            "loss_train_loss",
+            "loss_train_loss_data",
+        ]:
+            res.update(getattr(self, f"update_results_{obs_name}")(tb_path))
 
         # res.update(self.update_results_target_SE(join(tb_path, "target_SE")))
         if load_long_args:
