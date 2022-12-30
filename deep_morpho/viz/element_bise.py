@@ -8,22 +8,6 @@ MAX_WIDTH_COEF = 1
 BISE_INVERT_CODE = {v: k for (k, v) in BiSE.operation_code.items()}
 
 
-# class ElementBiseWeightsChan(ElementImage):
-
-#     def __init__(self, model, chout=0, *args, **kwargs):
-#         self.model = model
-#         self.chout = chout
-#         super().__init__(image=None, *args, **kwargs)
-
-#         self.imshow_kwargs['vmin'] = self.imshow_kwargs.get('vmin', 0)
-#         self.imshow_kwargs['vmax'] = self.imshow_kwargs.get('vmax', 1)
-#         # self.imshow_kwargs['cmap'] = self.imshow_kwargs.get('cmap', 'gray')
-
-#     @property
-#     def image(self):
-#         return self.model._normalized_weight[self.chout, 0].detach().cpu().numpy()
-
-
 class ElementBiseWeightsChan(ElementGrouper):
     operation_elements_dict = {'dilation': ElementSymbolDilation, "erosion": ElementSymbolErosion}
 

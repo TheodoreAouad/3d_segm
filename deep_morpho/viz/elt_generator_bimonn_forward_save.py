@@ -62,7 +62,7 @@ class EltGeneratorConnectLuiBiseForwardSave(EltGeneratorConnectLuiBiseForwardSav
 class EltGeneratorConnectLuiBiseClosestForwardSave(EltGeneratorConnectLuiBiseForwardSaveBase):
 
     def infer_width(self, model, chin):
-        return float(model.closest_set[0, chin])
+        return float(model.closest_set[chin])
 
 
 

@@ -160,7 +160,7 @@ class BiseClosestMinDistOnCst(BiseClosestSelemWithDistanceAgg):
             final_dist_selem = new_dist
             final_selem = new_selem
 
-        wsum = weights.sum()
+        wsum = weights[chout].sum()
         if -bias[chout] <= wsum / 2:
             final_operation = "dilation"
         else:

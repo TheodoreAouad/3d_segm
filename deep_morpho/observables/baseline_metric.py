@@ -40,7 +40,8 @@ class InputAsPredMetric(Observable):
             self.last_value[f'{metric_name}{suffix}'] = metric
             # pl_module.log(f"mean_metrics_{batch_or_epoch}/{metric_name}/{state}", metric)
             if batch_or_epoch == 'batch':
-                step = self.tb_steps[metric_name].get(key, 0)
+                # step = self.tb_steps[metric_name].get(key, 0)
+                step = trainer.global_step
             else:
                 step = trainer.current_epoch
 

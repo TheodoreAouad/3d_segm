@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib.patches import Polygon
 
-from general.nn.viz import Element, ElementGrouper, ElementSymbolIntersection, ElementSymbolUnion
+from general.nn.viz import Element, ElementGrouper, ElementSymbolIntersection, ElementSymbolUnion, ElementNO
 from ..models import LUI, BiSEBase
 
 
@@ -50,19 +50,29 @@ class ElementLui(ElementGrouper):
         self.imshow_kwargs['color'] = self.imshow_kwargs.get('color', 'k')
 
         self.element_lui_operation = None
+        self.element_no = None
 
         self.element_lui_coefs = ElementLuiCoefs(model, imshow_kwargs, shape=shape, *args, **kwargs)
         self.add_element(self.element_lui_coefs, key="coefs")
 
 
+        shape = self.element_lui_coefs.shape * OPERATION_FACTOR
         if self.model.is_activated[0]:
             operation = LUI_INVERT_CODE[self.model.learned_operation[0]]
-            shape = self.element_lui_coefs.shape * OPERATION_FACTOR
             self.element_lui_operation = self.operation_element_dicts[operation](
                 width=shape[0], height=shape[1],
-                xy_coords_mean=self.element_lui_coefs.xy_coords_mean + np.array([0, self.element_lui_coefs.shape[-1] / 2 + 2])
+                xy_coords_mean=(self.element_lui_coefs.xy_coords_mean +
+                                np.array([-self.element_lui_coefs.shape[0] / 3, self.element_lui_coefs.shape[-1] / 2 + 2]))
             )
             self.add_element(self.element_lui_operation, key="operation")
+
+        if self.model.activation_P[0] < 0:
+            self.element_no = ElementNO(
+                width=shape[0],
+                xy_coords_mean=(self.element_lui_coefs.xy_coords_mean +
+                                np.array([self.element_lui_coefs.shape[0] / 3, self.element_lui_coefs.shape[-1] / 2 + 2]))
+            )
+            self.add_element(self.element_no, key="no")
 
 
 class ElementLuiClosest(ElementGrouper):
@@ -86,6 +96,15 @@ class ElementLuiClosest(ElementGrouper):
         shape = self.element_lui_coefs.shape * OPERATION_FACTOR
         self.element_lui_operation = self.operation_element_dicts[operation](
             width=shape[0], height=shape[1],
-            xy_coords_mean=self.element_lui_coefs.xy_coords_mean + np.array([0, self.element_lui_coefs.shape[-1] / 2 + 2])
+            xy_coords_mean=(self.element_lui_coefs.xy_coords_mean + 
+                            np.array([-self.element_lui_coefs.shape[0] / 3, self.element_lui_coefs.shape[-1] / 2 + 2]))
         )
         self.add_element(self.element_lui_operation, key="operation")
+
+        if self.model.activation_P[0] < 0:
+            self.element_no = ElementNO(
+                width=shape[0],
+                xy_coords_mean=(self.element_lui_coefs.xy_coords_mean +
+                                np.array([self.element_lui_coefs.shape[0] / 3, self.element_lui_coefs.shape[-1] / 2 + 2]))
+            )
+            self.add_element(self.element_no, key="no")

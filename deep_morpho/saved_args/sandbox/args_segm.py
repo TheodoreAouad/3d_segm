@@ -52,8 +52,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_68/sandbox/0"
     # "Bimonn_exp_71/sandbox/0"
     # "JMIV/multi/1/"
-    # "Bimonn_exp_75/sandbox/0"
-    "test/0"
+    "Bimonn_exp_75/sandbox/0"
+    # "test/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -71,11 +71,11 @@ all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
     # "mnist_gray",
-    "fashionmnist",
+    # "fashionmnist",
     # "mnist",
     # "inverted_mnist",
     # 'diskorect',
-    # "sticks_noised",
+    "sticks_noised",
 ]
 all_args['preprocessing'] = [  # for axspa roi
     None,
@@ -115,15 +115,16 @@ all_args['fashionmnist_gray_args'] = [
 all_args['sticks_noised_angles'] = [
     # [0, 90],
     # [30, 60],
-    [0, 90],
+    # [0, 90],
+    [0, 45, 90]
     # np.linspace(0, 180, 5),
     # np.linspace(0, 160, 5),
     # [30, 120],
 ]
 all_args['sticks_noised_args'] = [
     {
-        "size": (50, 50),
-        "n_shapes": 15,
+        "size": (70, 70),
+        "n_shapes": 30,
         "lengths_lim": (12, 15),
         "widths_lim": (0, 0),
         "p_invert": 0,
@@ -131,7 +132,7 @@ all_args['sticks_noised_args'] = [
         "noise_proba": 0.1,
     }
 ]
-all_args['n_steps'] = [1000]
+all_args['n_steps'] = [10000]
 all_args['nb_batch_indep'] = [0]
 # all_args['n_inputs'] = [
 #     3_000_000,
@@ -142,8 +143,8 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    # 1e-2,
-    1e-1,
+    1e-2,
+    # 1e-1,
 ]
 
 # if max_plus, then the loss is MSELoss
@@ -169,7 +170,7 @@ all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
-all_args['batch_size'] = [32]
+all_args['batch_size'] = [256]
 all_args['num_workers'] = [
     20,
     # 0,
@@ -187,8 +188,8 @@ all_args['patience_reduce_lr'] = [700]
 #     4,
 # ]
 all_args['atomic_element'] = [
-    # "bisel",
-    "dual_bisel",
+    "bisel",
+    # "dual_bisel",
     # "sybisel",
 ]
 all_args['n_atoms'] = [
@@ -198,10 +199,13 @@ all_args['n_atoms'] = [
 
 all_args['kernel_size'] = [
     # 3
-    "adapt",
+    5
+    # "adapt",
 ]
 all_args['channels'] = [
     'adapt',
+    # [1, 1, 1]
+    # [1, 2, 2, 1]
     # [1] * 12
     # [2, 1],
     # [2, 2, 1],
@@ -272,8 +276,8 @@ all_args['initializer_args'] = [
         # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC,
 
         "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
-        "lui_init_method": InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS,
-        "bise_init_args": {"ub": 1e-1, "max_output_value": 0.95, "p_for_init": "auto"},
+        "lui_init_method": InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS,
+        "bise_init_args": {"ub": 1e-2, "max_output_value": 0.95, "p_for_init": "auto"},
 
         # "bise_init_method": InitBiseEnum.ELLIPSE_ROOT,
         # "bise_init_args": {"init_bias_value": 2},
@@ -334,7 +338,7 @@ for idx, args in enumerate(all_args):
     if args['weights_optim_mode'] == BiseWeightsOptimEnum.NORMALIZED:
         args['initializer_args'].update({
             'bise_init_method': InitBiseEnum.CUSTOM_CONSTANT_DUAL_RANDOM_BIAS,
-            'lui_init_method': InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_DUAL,
+            'lui_init_method': InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_DUAL_RANDOM_BIAS,
         })
 
     args['init_bimonn_str'] = str(args["initializer_method"])

@@ -23,6 +23,8 @@ class InitBiseEnum(Enum):
     CUSTOM_CONSTANT_DUAL_RANDOM_BIAS = 11
     CUSTOM_CONSTANT_CONSTANT_WEIGHTS = 12
     CUSTOM_CONSTANT_CONSTANT_WEIGHTS_DUAL = 13
+    CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS = 14
+    CUSTOM_CONSTANT_CONSTANT_WEIGHTS_DUAL_RANDOM_BIAS = 15
 
 
 class BiseInitializer:
@@ -209,6 +211,18 @@ class InitBiseConstantVarianceConstantWeights(InitBiseConstantVarianceWeights):
         self.init_bias_value = self.input_mean * module._normalized_weights.sum((1, 2, 3))
 
 
+class InitBiseConstantVarianceConstantWeightsRandomBias(InitBiseConstantVarianceConstantWeights):
+    def __init__(self, ub: float = 0.0001, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.ub = ub
+
+    def init_bias(self, module):
+        self.init_bias_value += float(uniform_sampling_bound(-self.ub, self.ub))
+        module.set_bias(
+            torch.zeros_like(module.bias) - self.init_bias_value
+        )
+
+
 class InitDualBiseConstantVarianceConstantWeights(InitBiseConstantVarianceWeights):
     """We init the LUI with a mean weights instead of a random uniform function. We take the same mean for simplicity.
     """
@@ -227,6 +241,18 @@ class InitDualBiseConstantVarianceConstantWeights(InitBiseConstantVarianceWeight
         module.weights_handler.factor = mean * nb_params  # set the factor to have the right mean and variance
 
         self.init_bias_value = self.input_mean * module._normalized_weights.sum((1, 2, 3))
+
+
+class InitDualBiseConstantVarianceConstantWeightsRandomBias(InitDualBiseConstantVarianceConstantWeights):
+    def __init__(self, ub: float = 0.0001, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.ub = ub
+
+    def init_bias(self, module):
+        self.init_bias_value += float(uniform_sampling_bound(-self.ub, self.ub))
+        module.set_bias(
+            torch.zeros_like(module.bias) - self.init_bias_value
+        )
 
 
 class InitDualBiseConstantVarianceWeights(InitBiseConstantVarianceWeights):
