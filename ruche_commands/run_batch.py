@@ -19,7 +19,7 @@ for atomic in [
             # 'erodila',
             # 'ope',
             # 'clo',
-            # 'black_tophat',
+            'black_tophat',
             'white_tophat'
         ]:
             file_path = f'ruche_commands/{atomic}/{dataset}_{operation}.sh'
