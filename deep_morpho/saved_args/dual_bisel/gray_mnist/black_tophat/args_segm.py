@@ -263,6 +263,7 @@ all_args['initializer_args'] = [
         # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC,
 
         "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
+        "lui_init_method": InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS,
         "bise_init_args": {"ub": 1e-4, "max_output_value": 0.95},
 
         # "bise_init_method": InitBiseEnum.ELLIPSE_ROOT,
@@ -323,10 +324,10 @@ for idx, args in enumerate(all_args):
         args['weights_optim_mode'] = BiseWeightsOptimEnum.NORMALIZED
 
     if args['weights_optim_mode'] == BiseWeightsOptimEnum.NORMALIZED:
-        args['initializer_args'] = {
+        args['initializer_args'].update({
             'bise_init_method': InitBiseEnum.CUSTOM_CONSTANT_DUAL_RANDOM_BIAS,
-            'bise_init_args': {"ub": 1e-4},
-        }
+            'lui_init_method': InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_DUAL_RANDOM_BIAS,
+        })
 
     args['init_bimonn_str'] = str(args["initializer_method"])
     if isinstance(args["initializer_args"], dict):

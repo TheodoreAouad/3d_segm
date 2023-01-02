@@ -52,7 +52,7 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_68/sandbox/0"
     # "Bimonn_exp_71/sandbox/0"
     # "JMIV/multi/1/"
-    "Bimonn_exp_75/sandbox/0"
+    "Bimonn_exp_75/multi/0"
     # "test/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
@@ -70,12 +70,12 @@ all_args['experiment_name'] = [
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
-    # "mnist_gray",
+    "mnist_gray",
     # "fashionmnist",
     # "mnist",
     # "inverted_mnist",
     # 'diskorect',
-    "sticks_noised",
+    # "sticks_noised",
 ]
 all_args['preprocessing'] = [  # for axspa roi
     None,
@@ -143,8 +143,8 @@ all_args['train_test_split'] = [(0.8, 0.2, 0)]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-2,
-    # 1e-1,
+    # 1e-2,
+    1e-1,
 ]
 
 # if max_plus, then the loss is MSELoss
@@ -156,8 +156,8 @@ all_args['loss_data_str'] = [
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
     # "BCELoss",
-    "MSELoss",
-    # "DiceLoss",
+    # "MSELoss",
+    "DiceLoss",
     # "MaskedDiceLoss",
     # "NormalizedDiceLoss",
 ]
@@ -170,12 +170,12 @@ all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
-all_args['batch_size'] = [256]
+all_args['batch_size'] = [32]
 all_args['num_workers'] = [
     20,
     # 0,
 ]
-all_args['freq_imgs'] = [250]
+all_args['freq_imgs'] = [1000]
 all_args['freq_scalars'] = [20]
 all_args['n_epochs'] = [20]
 all_args['patience_loss'] = [2100]
@@ -242,9 +242,9 @@ all_args['closest_selem_method'] = [
 # ]
 all_args['bias_optim_mode'] = [
     # BiseBiasOptimEnum.RAW,
-    BiseBiasOptimEnum.POSITIVE,
+    # BiseBiasOptimEnum.POSITIVE,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
-    # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+    BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 all_args['bias_optim_args'] = [
     {"offset": 0}
@@ -481,9 +481,9 @@ for idx, args in enumerate(all_args):
     )) in already_seen:
         to_remove.append(idx)
 
-print(f'Deleting {len(to_remove)} already seen args...')
-for idx in to_remove[::-1]:
-    del all_args[idx]
+# print(f'Deleting {len(to_remove)} already seen args...')
+# for idx in to_remove[::-1]:
+#     del all_args[idx]
 # assert False
 
 # pass
