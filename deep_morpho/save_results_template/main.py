@@ -17,8 +17,8 @@ TB_PATHS = []
 SAVE_PATH = []
 
 for model in [
-    'bisel',
-    # 'dual_bisel',
+    # 'bisel',
+    'dual_bisel',
     # 'sybisel',
 ]:
     for dataset in [
@@ -37,10 +37,16 @@ for model in [
                 all_paths += sorted(list_dir_joined(join(path_global, operation, selem)), key=lambda x: int(
                     re.findall(r'version_(\d+)$', x)[0]
                 ))
-        TB_PATHS.append(
-            all_paths
-        )
-        SAVE_PATH.append(f'html_pages/experiments/75_{model}_{dataset}.html')
+        # TB_PATHS.append(
+        #     all_paths
+        # )
+
+        savepath = f'html_pages/experiments/75_{model}_{dataset}.html'
+        SAVE_PATH.append(savepath)
+
+        title = str(pathlib.Path(savepath).stem)
+        html = DisplayResults().save(all_paths, savepath, title, show_table=True, show_details=False)
+        print(savepath)
 
 
 # JMIV
@@ -117,11 +123,11 @@ for model in [
 # Version BiSES
 # html = write_html_deep_morpho(TB_PATHS, SAVE_PATH, TITLE)
 
-print('Loading HTML web pages...')
+# print('Loading HTML web pages...')
 
-for tb, savepath in tqdm(zip(TB_PATHS, SAVE_PATH)):
-    title = str(pathlib.Path(savepath).stem)
-    html = DisplayResults().save(tb, savepath, title, show_table=True, show_details=False)
+# for tb, savepath in tqdm(zip(TB_PATHS, SAVE_PATH)):
+#     title = str(pathlib.Path(savepath).stem)
+#     html = DisplayResults().save(tb, savepath, title, show_table=True, show_details=False)
     # webbrowser.open(savepath, new=0)
 
 print(SAVE_PATH)

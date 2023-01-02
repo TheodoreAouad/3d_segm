@@ -21,6 +21,8 @@ def extract_last_value_from_tb(path_tb_file: str) -> float:
         size_guidance={event_accumulator.SCALARS: 0},
     )
     _absorb_print = ea.Reload()
+    if len(ea.Tags()['scalars']) == 0:
+        return None
     return ea.Scalars(ea.Tags()['scalars'][0])[-1].value
 
 
@@ -406,13 +408,29 @@ class DisplayResults:
     @staticmethod
     def update_results_loss_train_loss(tb_path):
         res = {}
-        res['loss_train'] = extract_last_value_from_tb(join(tb_path, "loss_train_loss"))
+
+        obs_path = join(tb_path, "observables", "SaveLoss", "last_loss.json")
+        if os.path.exists(obs_path):
+            loss_dict = load_json(join(obs_path))
+            res['loss_train'] = loss_dict["loss"]
+
+        else:
+            res['loss_train'] = extract_last_value_from_tb(join(tb_path, "loss_train_loss"))
+
         return res
 
     @staticmethod
     def update_results_loss_train_loss_data(tb_path):
         res = {}
-        res['loss_train_data'] = extract_last_value_from_tb(join(tb_path, "loss_train_loss_data"))
+
+        obs_path = join(tb_path, "observables", "SaveLoss", "last_loss.json")
+        if os.path.exists(obs_path):
+            loss_dict = load_json(join(obs_path))
+            res['loss_train_data'] = loss_dict["loss_data"]
+
+        else:
+            res['loss_train_data'] = extract_last_value_from_tb(join(tb_path, "loss_train_loss_data"))
+
         return res
 
     def get_results_from_tensorboard(self, tb_path: str, load_long_args: bool = True,):
@@ -528,7 +546,7 @@ class DisplayResults:
     @staticmethod
     def draw_boxplot(df, column, title=''):
         cdict = {
-            "dilation": "cyan", "erosion": "red", "opening": "lime", "closing": "green", "white_tophat": "orange", 
+            "dilation": "cyan", "erosion": "red", "opening": "lime", "closing": "green", "white_tophat": "orange",
             "black_tophat": "darksalmon"
         }
 
