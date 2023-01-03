@@ -17,15 +17,15 @@ TB_PATHS = []
 SAVE_PATH = []
 
 for model in [
-    # 'bisel',
-    'dual_bisel',
+    'bisel',
+    # 'dual_bisel',
     # 'sybisel',
 ]:
     for dataset in [
         # 'diskorect',
         # 'mnist',
-        # 'inverted_mnist',
-        'mnist_gray',
+        'inverted_mnist',
+        # 'mnist_gray',
         # 'fashionmnist',
     ]:
         path_global = f"deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/0/{model}/softplus/{dataset}/"
