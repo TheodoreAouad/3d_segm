@@ -7,51 +7,43 @@ import warnings
 from deep_morpho.models import BiseBiasOptimEnum, ClosestSelemDistanceEnum, ClosestSelemEnum, InitBiseEnum, InitBimonnEnum
 
 
-def load_args(path: str) -> Dict:
-    all_keys_line = [
-        "experiment_name",
-        "experiment_subname",
-        "name",
-        "dataset_type",
-        "dataset_path",
-        "n_inputs",
-        "learning_rate",
-        "batch_size",
-        "num_workers",
-        "freq_imgs",
-        "n_epochs",
-        "n_atoms",
-        "atomic_element",
-        "kernel_size",
-        "init_weight_mode",
-        "activation_P",
-        "constant_activation_P",
-        "constant_weight_P",
-        "threshold_mode",
-        "alpha_init",
-        "share_weights",
-        "loss",
-        "patience_loss",
-        "patience_reduce_lr",
-        "init_weight_mode",
-        "closest_selem_method",
-        "closest_selem_distance_fn",
-        "bias_optim_mode",
-        "loss_data_str",
-    ]
-    bise_keys = ["init_weight_mode", "initializer_method", "initializer_args", "bise_init_method", "closest_selem_method", "closest_selem_distance_fn", "bias_optim_mode"]
+all_keys_line = [
+    "experiment_name",
+    "experiment_subname",
+    "name",
+    "dataset_type",
+    "dataset_path",
+    "n_inputs",
+    "learning_rate",
+    "batch_size",
+    "num_workers",
+    "freq_imgs",
+    "n_epochs",
+    "n_atoms",
+    "atomic_element",
+    "kernel_size",
+    "init_weight_mode",
+    "activation_P",
+    "constant_activation_P",
+    "constant_weight_P",
+    "threshold_mode",
+    "alpha_init",
+    "share_weights",
+    "loss",
+    "patience_loss",
+    "patience_reduce_lr",
+    "init_weight_mode",
+    "closest_selem_method",
+    "closest_selem_distance_fn",
+    "bias_optim_mode",
+    "loss_data_str",
+]
+bise_keys = ["init_weight_mode", "initializer_method", "initializer_args", "bise_init_method", "closest_selem_method", "closest_selem_distance_fn", "bias_optim_mode"]
 
 
-    args = {k: None for k in all_keys_line + bise_keys + ['optimizer', 'operations', 'loss_data', ]}
 
-    if not os.path.exists(path):
-        warnings.warn(f"{path} not found.")
-        return args
-
-    with open(path, "r") as f:
-        yaml_str = f.read()
-
-
+def load_args_from_str(yaml_str: str,) -> Dict:
+    args = {}
     # args['loss'] = parse_yaml_dict_loss(yaml_str)
     args['optimizer'] = parse_yaml_dict_optimizer(yaml_str)
     # args['operations'] = parse_yaml_dict_operations(yaml_str)
@@ -65,6 +57,18 @@ def load_args(path: str) -> Dict:
         args[bise_key] = parse_yaml_bise_arguments(yaml_str, bise_key)
 
     return args
+
+
+def load_args(path: str) -> Dict:
+    if not os.path.exists(path):
+        warnings.warn(f"{path} not found.")
+        args = {k: None for k in all_keys_line + bise_keys + ['optimizer', 'operations', 'loss_data', ]}
+        return args
+
+    with open(path, "r") as f:
+        yaml_str = f.read()
+
+    return load_args_from_str(yaml_str)
 
 
 def regex_find_or_none(regex: str, st: str, group_nb: int = -1):

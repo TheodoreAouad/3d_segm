@@ -414,7 +414,7 @@ class DisplayResults:
             loss_dict = load_json(join(obs_path))
             res['loss_train'] = loss_dict["loss"]
 
-        else:
+        elif os.path.exists(join(tb_path, "loss_train_loss")):
             res['loss_train'] = extract_last_value_from_tb(join(tb_path, "loss_train_loss"))
 
         return res
@@ -428,7 +428,7 @@ class DisplayResults:
             loss_dict = load_json(join(obs_path))
             res['loss_train_data'] = loss_dict["loss_data"]
 
-        else:
+        elif os.path.exists(join(tb_path, "loss_train_loss_data")):
             res['loss_train_data'] = extract_last_value_from_tb(join(tb_path, "loss_train_loss_data"))
 
         return res

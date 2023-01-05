@@ -17,14 +17,14 @@ TB_PATHS = []
 SAVE_PATH = []
 
 for model in [
-    'bisel',
-    # 'dual_bisel',
+    # 'bisel',
+    'dual_bisel',
     # 'sybisel',
 ]:
     for dataset in [
-        # 'diskorect',
+        'diskorect',
         # 'mnist',
-        'inverted_mnist',
+        # 'inverted_mnist',
         # 'mnist_gray',
         # 'fashionmnist',
     ]:
