@@ -18,7 +18,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 print('Import modules...')
-from deep_morpho.datasets.mnist_dataset import MnistMorphoDataset, MnistGrayScaleDataset
+from deep_morpho.datasets.mnist_dataset import MnistMorphoDataset, MnistGrayScaleDataset, MnistClassifDataset
 from deep_morpho.datasets.fashionmnist_dataset import FashionMnistGrayScaleDataset
 from deep_morpho.utils import set_seed
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
@@ -26,12 +26,15 @@ from deep_morpho.utils import set_seed
 from deep_morpho.datasets.multi_rect_dataset import InputOutputGeneratorDataset, MultiRectDataset
 from deep_morpho.datasets.axspa_roi_dataset import AxspaROISimpleDataset
 from deep_morpho.datasets.sticks_noised_dataset import SticksNoisedGeneratorDataset
-from deep_morpho.models import LightningBiMoNN, BiSE, BiseWeightsOptimEnum  # COBiSE, BiSEC, COBiSEC
+from deep_morpho.models import (
+    LightningBiMoNN, BiSE, BiseWeightsOptimEnum, LightningBiMoNNClassifierMaxPool,
+    LightningBiMoNNClassifierMaxPoolNotBinary
+)  # COBiSE, BiSEC, COBiSEC
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
 from general.utils import format_time, log_console, create_logger, save_yaml, save_pickle, close_handlers
 from general.nn.utils import train_val_test_split
-from deep_morpho.metrics import masked_dice
+from deep_morpho.metrics import masked_dice, accuracy
 from general.code_saver import CodeSaver
 
 
@@ -150,6 +153,18 @@ def get_dataloader(args):
             **args['fashionmnist_gray_args']
         )
 
+    elif args['dataset_type'] == "classif_mnist":
+        prop_train, prop_val, prop_test = args['train_test_split']
+        trainloader, valloader, testloader = MnistClassifDataset.get_train_val_test_loader(
+            n_inputs_train=int(prop_train * args['n_inputs']),
+            n_inputs_val=int(prop_val * args['n_inputs']),
+            n_inputs_test=int(prop_test * args['n_inputs']),
+            batch_size=args['batch_size'],
+            preprocessing=args['preprocessing'],
+            num_workers=args['num_workers'],
+            do_symetric_output=args['atomic_element'] == 'sybisel',
+            **args['mnist_args']
+        )
 
     return trainloader, valloader, testloader
 
@@ -160,16 +175,28 @@ def main(args, logger):
         f.write(f"{args['seed']}")
 
     trainloader, valloader, testloader = get_dataloader(args)
-    metrics = {
-        'dice': lambda y_true, y_pred: masked_dice(y_true, y_pred,
-                        border=(args['kernel_size'] // 2, args['kernel_size'] // 2), threshold=0 if args['atomic_element'] == 'sybisel' else 0.5).mean(),
-        # 'mse': lambda y_true, y_pred: ((y_true - y_pred) ** 2).mean()
-    }
+    if "classif" in args['dataset_type']:
+        metrics = {"accuracy": accuracy}
+    else:
+        metrics = {
+            'dice': lambda y_true, y_pred: masked_dice(
+                y_true,
+                y_pred,
+                border=(args['kernel_size'] // 2, args['kernel_size'] // 2),
+                threshold=0 if args['atomic_element'] == 'sybisel' else 0.5
+            ).mean(),
+            # 'mse': lambda y_true, y_pred: ((y_true - y_pred) ** 2).mean()
+        }
 
     if args['dataset_type'] in ['mnist_gray', 'fashionmnist']:
         plot_pred_obs_fn = obs.PlotPredsGrayscale
+        binary_mode_fn = obs.BinaryModeMetric
+    elif "classif" in args['dataset_type']:
+        plot_pred_obs_fn = obs.PlotPredsClassif
+        binary_mode_fn = obs.BinaryModeMetricClassif
     else:
         plot_pred_obs_fn = partial(obs.PlotPreds, fig_kwargs={"vmax": 1, "vmin": -1 if args['atomic_element'] == 'sybisel' else 0})
+        binary_mode_fn = obs.BinaryModeMetric
 
     if args['weights_optim_mode'] not in [BiseWeightsOptimEnum.ELLIPSE, BiseWeightsOptimEnum.ELLIPSE_ROOT]:
         plot_grad_obs = obs.PlotGradientBise(freq=args['freq_imgs'])
@@ -188,32 +215,32 @@ def main(args, logger):
             keep_preds_for_epoch=False,
             freq={'train': args['freq_scalars'], 'val': 10, "test": 10},
         ),
-        "PlotPreds": plot_pred_obs_fn(freq={'train': args['freq_imgs'], 'val': 39}, ),
-        "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
-        "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
+        "PlotPreds": plot_pred_obs_fn(freq={'train': args['freq_imgs'], 'val': 10000 // args['batch_size']}, ),
+        # "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
+        # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),
-        "InputAsPredMetric": obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
+        # "InputAsPredMetric": obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
         "CountInputs": obs.CountInputs(freq=args['freq_scalars']),
-        "PlotParametersBiSE": obs.PlotParametersBiSE(freq=args['freq_scalars']),
+        # "PlotParametersBiSE": obs.PlotParametersBiSE(freq=args['freq_scalars']),
         "PlotParametersBiseEllipse": obs.PlotParametersBiseEllipse(freq=args['freq_scalars']),
-        "PlotWeightsBiSE": plot_weights_fn(freq=args['freq_imgs']),
-        "PlotLUIParametersBiSEL": obs.PlotLUIParametersBiSEL(freq=args['freq_scalars']),
-        "WeightsHistogramBiSE": obs.WeightsHistogramBiSE(freq=args['freq_imgs']),
+        # "PlotWeightsBiSE": plot_weights_fn(freq=args['freq_imgs']),
+        # "PlotLUIParametersBiSEL": obs.PlotLUIParametersBiSEL(freq=args['freq_scalars']),
+        # "WeightsHistogramBiSE": obs.WeightsHistogramBiSE(freq=args['freq_imgs']),
         # "CheckMorpOperation": obs.CheckMorpOperation(
         #     selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50
         # ) if args['dataset_type'] == 'diskorect' else obs.Observable(),
-        "PlotGradientBise": plot_grad_obs,
+        # "PlotGradientBise": plot_grad_obs,
         # "ExplosiveWeightGradientWatcher": obs.ExplosiveWeightGradientWatcher(freq=1, threshold=0.5),
         "ConvergenceMetrics": obs.ConvergenceMetrics(metrics, freq=args['freq_scalars']),
         # "ShowSelemAlmostBinary": obs.ShowSelemAlmostBinary(freq=args['freq_imgs']),
-        "ShowSelemBinary": obs.ShowSelemBinary(freq=args['freq_imgs']),
-        "ShowClosestSelemBinary": obs.ShowClosestSelemBinary(freq=args['freq_imgs']),
+        # "ShowSelemBinary": obs.ShowSelemBinary(freq=args['freq_imgs']),
+        # "ShowClosestSelemBinary": obs.ShowClosestSelemBinary(freq=args['freq_imgs']),
         # "ShowLUISetBinary": obs.ShowLUISetBinary(freq=args['freq_imgs']),
-        "BinaryModeMetric": obs.BinaryModeMetric(metrics, freq=args['freq_imgs']),
+        "BinaryModeMetric": binary_mode_fn(metrics, freq={"train": args['freq_imgs'], "val": 10000 // args['batch_size']}, do_plot_figure=True),
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
-        "ConvergenceBinary": obs.ConvergenceBinary(freq=args['freq_imgs']),
+        # "ConvergenceBinary": obs.ConvergenceBinary(freq=args['freq_imgs']),
         "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
-        "BatchEarlyStoppingBinaryDice": obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
+        # "BatchEarlyStoppingBinaryDice": obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
         # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
         "BatchReduceLrOnPlateau": obs.BatchReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
         "CheckLearningRate": obs.CheckLearningRate(freq=2 * args['freq_scalars']),
@@ -243,42 +270,53 @@ def main(args, logger):
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
 
     # init_bias_value = next(iter(trainloader))[0].mean()
+    inpt = next(iter(trainloader))[0]
     if isinstance(args["initializer_args"], dict):
-        args["initializer_args"]["input_mean"] = next(iter(trainloader))[0].mean().item()
+        args["initializer_args"]["input_mean"] = inpt.mean().item()
     elif isinstance(args["initializer_args"], list):
-        args["initializer_args"][0]["input_mean"] = next(iter(trainloader))[0].mean().item()
+        args["initializer_args"][0]["input_mean"] = inpt.mean().item()
 
-    args["initializer_args"]["input_mean"] = 1/2  # DEBUG
-    model = LightningBiMoNN(
-        model_args={
-            "kernel_size": [args['kernel_size'] for _ in range(args['n_atoms'])],
-            "channels": args['channels'],
-            "atomic_element": args["atomic_element"].replace('dual_', ''),
-            "threshold_mode": args['threshold_mode'],
-            "activation_P": args['activation_P'],
-            "constant_activation_P": args['constant_activation_P'],
-            "constant_P_lui": args['constant_P_lui'],
-            # "init_weight_mode": args["init_weight_mode"],
-            # "alpha_init": args["alpha_init"],
-            "lui_kwargs": {"force_identity": args['force_lui_identity']},
-            # "init_bias_value_bise": args['init_bias_value_bise'],
-            # "init_bias_value_lui": args['init_bias_value_lui'],
-            # "input_mean": input_mean,
-            "initializer_method": args["initializer_method"],
-            "initializer_args": args["initializer_args"],
-            "closest_selem_method": args['closest_selem_method'],
-            # "closest_selem_distance_fn": args['closest_selem_distance_fn'],
-            "bias_optim_mode": args['bias_optim_mode'],
-            "bias_optim_args": args['bias_optim_args'],
-            "weights_optim_mode": args['weights_optim_mode'],
-            "weights_optim_args": args['weights_optim_args'],
-            # "constant_weight_P": args['constant_weight_P'],
-        },
-        learning_rate=args['learning_rate'],
-        loss=args['loss'],
-        optimizer=args['optimizer'],
-        observables=observables,
+    # args["initializer_args"]["input_mean"] = 1/2  # DEBUG
+
+    model_args={
+        "kernel_size": [args['kernel_size'] for _ in range(args['n_atoms'])],
+        "channels": args['channels'],
+        "atomic_element": args["atomic_element"].replace('dual_', ''),
+        "threshold_mode": args['threshold_mode'],
+        "activation_P": args['activation_P'],
+        "constant_activation_P": args['constant_activation_P'],
+        "constant_P_lui": args['constant_P_lui'],
+        # "init_weight_mode": args["init_weight_mode"],
+        # "alpha_init": args["alpha_init"],
+        "lui_kwargs": {"force_identity": args['force_lui_identity']},
+        # "init_bias_value_bise": args['init_bias_value_bise'],
+        # "init_bias_value_lui": args['init_bias_value_lui'],
+        # "input_mean": input_mean,
+        "initializer_method": args["initializer_method"],
+        "initializer_args": args["initializer_args"],
+        "closest_selem_method": args['closest_selem_method'],
+        # "closest_selem_distance_fn": args['closest_selem_distance_fn'],
+        "bias_optim_mode": args['bias_optim_mode'],
+        "bias_optim_args": args['bias_optim_args'],
+        "weights_optim_mode": args['weights_optim_mode'],
+        "weights_optim_args": args['weights_optim_args'],
+        # "constant_weight_P": args['constant_weight_P'],
+    }
+
+    if "classif" in args['dataset_type']:
+        model_args.update({
+            'input_size': inpt.shape[-2:],
+            'n_classes': trainloader.dataset.n_classes,
+        })
+        lightning_model = LightningBiMoNNClassifierMaxPoolNotBinary
+    else:
+        lightning_model = LightningBiMoNN
+
+    model = lightning_model(
+        model_args=model_args, learning_rate=args['learning_rate'], loss=args['loss'],
+        optimizer=args['optimizer'], observables=observables,
     )
+
     if isinstance(model.model.layers[0], (BiSE)):
         ys = model.model.layers[0].activation_threshold_fn(xs).detach()
         fig, ax = plt.subplots(); ax.plot(xs, ys); ax.set_title(args['threshold_mode'])
@@ -286,7 +324,8 @@ def main(args, logger):
 
     model.to(device)
 
-    logger.experiment.add_graph(model, torch.ones(1, args['channels'][0], 50, 50).to(device))
+    logger.experiment.add_graph(model, inpt[0].unsqueeze(0).to(device))
+    # logger.experiment.add_graph(model, torch.ones(1, args['channels'][0], inpt.shape[-2], inpt.shape[-1]).to(device))
     hyperparams = dict(
         # **{f'{k}_{layer_idx}': -1 for k in [
         #     f"weights/sum_norm_weights",

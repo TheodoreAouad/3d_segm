@@ -96,11 +96,13 @@ class PlotPreds(Observable):
 
 class PlotPredsClassif(Observable):
 
-    def __init__(self, freq: Dict = {"train": 100, "val": 10}, *args, **kwargs):
+    def __init__(self, freq: Dict = {"train": 100, "val": 10}, figsize_atom=(4, 4), n_imgs=10, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.freq = freq
         self.idx = {"train": 0, "val": 0}
         self.saved_fig = {"train": None, "val": None}
+        self.figsize_atom = figsize_atom
+        self.n_imgs = n_imgs
 
     def on_validation_batch_end_with_preds(
         self,
@@ -113,9 +115,16 @@ class PlotPredsClassif(Observable):
     ) -> None:
         if self.idx['val'] % self.freq['val'] == 0:
             idx = 0
-            img, target = batch[0][idx], batch[1][idx]
-            pred = preds[idx]
-            fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [img, pred, target]], title=f'val | epoch {trainer.current_epoch}')
+            # img, target = batch[0][idx], batch[1][idx]
+            # pred = preds[idx]
+            # fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [img, pred, target]], title=f'val | epoch {trainer.current_epoch}')
+            # fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [batch[0], preds, batch[1]]], title=f'val | epoch {trainer.current_epoch}')
+            fig = self.plot_pred(
+                *[k.cpu().detach().numpy() for k in [batch[0], preds, batch[1]]],
+                figsize_atom=self.figsize_atom,
+                n_imgs=self.n_imgs,
+                title=f'val | epoch {trainer.current_epoch}',
+            )
             trainer.logger.experiment.add_figure("preds/val/input_pred_target", fig, self.idx['val'])
             self.saved_fig['val'] = fig
 
@@ -134,34 +143,43 @@ class PlotPredsClassif(Observable):
         if self.idx['train'] % self.freq["train"] == 0:
             with torch.no_grad():
                 # idx = random.choice(range(len(batch[0])))
-                idx = 0
-                img, target = batch[0][idx], batch[1][idx]
-                pred = preds[idx]
-                fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [img, pred, target]], title='train')
+                # idx = 0
+                # img, target = batch[0][idx], batch[1][idx]
+                # pred = preds[idx]
+                fig = self.plot_pred(
+                    *[k.cpu().detach().numpy() for k in [batch[0], preds, batch[1]]],
+                    figsize_atom=self.figsize_atom,
+                    n_imgs=self.n_imgs,
+                    title='train',
+                )
                 trainer.logger.experiment.add_figure("preds/train/input_pred_target", fig, trainer.global_step)
                 self.saved_fig['train'] = fig
 
         self.idx['train'] += 1
 
     @staticmethod
-    def plot_pred(img, pred, target, title=''):
-        fig, axs = plt.subplots(1, 2, figsize=(8, 4))
-        n_classes = len(pred)
+    def plot_pred(imgs, preds, targets, figsize_atom, n_imgs, title='',):
+        n_imgs = min(n_imgs, len(imgs))
+        W, L = figsize_atom
+        fig, axs = plt.subplots(n_imgs, 2, figsize=(2 * W, L * n_imgs))
+        n_classes = len(preds[0])
 
-        axs[0].imshow(img[0])
-        axs[0].set_title(target.argmax())
+        for ax_idx in range(n_imgs):
+            img, pred, target = imgs[ax_idx], preds[ax_idx], targets[ax_idx]
+            axs[ax_idx, 0].imshow(img[0])
+            axs[ax_idx, 0].set_title(target.argmax())
 
-        pred_label = pred.argmax()
+            pred_label = pred.argmax()
 
-        colors = ["red" for _ in range(n_classes)]
-        colors[pred_label] = "green"
+            colors = ["red" for _ in range(n_classes)]
+            colors[pred_label] = "green"
 
-        axs[1].barh(range(n_classes), pred, tick_label=range(n_classes), color=colors)
-        axs[1].set_xlim(0, 1)
-        axs[1].set_title(f'pred: {pred.argmax()}')
+            axs[ax_idx, 1].barh(range(n_classes), pred, tick_label=range(n_classes), color=colors)
+            axs[ax_idx, 1].set_xlim(0, 1)
+            axs[ax_idx, 1].set_title(f'pred: {pred.argmax()}')
 
-        for idx, value in enumerate(pred):
-            axs[1].text(value.item(), idx, f'{value.item():.2f}')
+            for idx, value in enumerate(pred):
+                axs[ax_idx, 1].text(value.item(), idx, f'{value.item():.2f}')
 
         fig.suptitle(title)
 

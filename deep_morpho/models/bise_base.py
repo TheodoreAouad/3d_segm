@@ -221,71 +221,6 @@ class BiSEBase(BinaryNN):
             return (kernel_size, kernel_size)
         return kernel_size
 
-    # def init_weights_and_bias(self):
-    #     self.init_weights()
-    #     self.init_bias()
-
-    # def init_weights(self):
-    #     if self.init_weight_mode == InitBiseEnum.NORMAL:
-    #         self.set_param_from_weights(self._init_normal_identity(self.kernel_size, self.out_channels))
-    #     elif self.init_weight_mode == InitBiseEnum.IDENTITY:
-    #         self._init_as_identity()
-    #     elif self.init_weight_mode == InitBiseEnum.KAIMING_UNIFORM:
-    #         self.set_param_from_weights(self.weight + 1)
-    #     elif self.init_weight_mode == InitBiseEnum.CUSTOM_HEURISTIC:
-    #         nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
-    #         mean = self.init_bias_value / (self.input_mean * nb_params)
-    #         std = .5
-    #         lb = mean * (1 - std)
-    #         ub = mean * (1 + std)
-    #         self.set_param_from_weights(
-    #             torch.rand_like(self.weights) * (lb - ub) + ub
-    #         )
-    #     elif self.init_weight_mode == InitBiseEnum.CUSTOM_CONSTANT:
-    #         p = 1
-    #         nb_params = torch.tensor(self._normalized_weights.shape[1:]).prod()
-
-    #         if self.init_bias_value == "auto":
-    #             # To keep trakc with previous experiment
-    #             # if self.input_mean > 0.7:
-    #             #     lb1 = 1/p * torch.sqrt(6*nb_params / (12 + 1/self.input_mean**2))
-    #             # else:
-    #             #     lb1 = 1/(2*p) * torch.sqrt(3/2 * nb_params)
-    #             lb1 = 1/p * torch.sqrt(6*nb_params / (12 + 1/self.input_mean**2))
-    #             lb2 = 1 / p * torch.sqrt(nb_params / 2)
-    #             self.init_bias_value = (lb1 + lb2) / 2
-
-    #         mean = self.init_bias_value / (self.input_mean * nb_params)
-    #         sigma = (2 * nb_params - 4 * self.init_bias_value**2 * p ** 2) / (p ** 2 * nb_params ** 2)
-    #         diff = torch.sqrt(3 * sigma)
-    #         lb = mean - diff
-    #         ub = mean + diff
-
-    #         new_weights = torch.rand_like(self.weights) * (lb - ub) + ub
-    #         self.set_param_from_weights(
-    #             # new_weights / new_weights.sum()  # DEBUG
-    #             new_weights
-    #         )
-    #     else:
-    #         warnings.warn(f"init weight mode {self.init_weight_mode} not recognized.")
-    #     pass
-
-    # def init_bias(self):
-    #     self.set_bias(
-    #         torch.zeros_like(self.bias) - self.init_bias_value
-    #     )
-
-    # @staticmethod
-    # def _init_normal_identity(kernel_size, chan_output, std=0.3, mean=1):
-    #     weights = torch.randn((chan_output,) + kernel_size)[:, None, ...] * std - mean
-    #     weights[..., kernel_size[0] // 2, kernel_size[1] // 2] += 2*mean
-    #     return weights
-
-    # def _init_as_identity(self):
-    #     self.conv.weight.data.fill_(-1)
-    #     shape = self.conv.weight.shape
-    #     self.conv.weight.data[..., shape[-2]//2, shape[-1]//2] = 1
-
     def activation_threshold_fn(self, x):
         return self.activation_threshold_layer.threshold_fn(x)
 
@@ -296,6 +231,16 @@ class BiSEBase(BinaryNN):
         if self.binary_mode:
             return self.forward_binary(x)
 
+        return self._forward(x)
+        # output = self.conv._conv_forward(x, self._normalized_weight, self.bias, )
+        # output = self.activation_threshold_layer(output)
+
+        # if self.do_mask_output:
+        #     return self.mask_output(output)
+
+        # return output
+
+    def _forward(self, x: Tensor) -> Tensor:
         output = self.conv._conv_forward(x, self._normalized_weight, self.bias, )
         output = self.activation_threshold_layer(output)
 

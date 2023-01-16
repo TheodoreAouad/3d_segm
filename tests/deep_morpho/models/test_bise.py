@@ -45,6 +45,14 @@ class TestBiSE:
         layer(inpt)
 
     @staticmethod
+    def test_bise_forward_odd():
+        layer = BiSE((7, 7), threshold_mode='sigmoid')
+        inpt = torch.rand((1, 1, 51, 51))
+        otp = layer(inpt)
+        assert otp.shape == (1, 1, 51, 51)
+
+
+    @staticmethod
     def test_bise_forward_multi_channels():
         layer = BiSE((7, 7), out_channels=5)
         inpt = torch.rand(10, 1, 50, 50)

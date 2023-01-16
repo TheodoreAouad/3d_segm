@@ -53,43 +53,16 @@ class BiSELBase(BinaryNN):
         self.constant_P_lui = constant_P_lui
         self.bise_kwargs = bise_kwargs
 
-        # self.initializer_method = initializer_method
-        # self.initializer_args = initializer_args
-        # self.initializer = self.create_initializer(**self.initializer_args)
         self.initializer = initializer
-
-        # self.bise_initializer_method = bise_initializer_method
-        # self.bise_initializer_args = bise_initializer_args
-        # self.lui_initializer_method = lui_initializer_method if lui_initializer_method is not None else bise_initializer_method
-        # self.lui_initializer_args = lui_initializer_args if lui_initializer_args is not None else bise_initializer_args
-        # self.init_bias_value_bise = init_bias_value_bise
-        # self.init_bias_value_lui = init_bias_value_lui
-        # self.input_mean = input_mean
-        # self.lui_input_mean = lui_input_mean
-        # self.init_weight_mode = init_weight_mode
 
         self.lui_kwargs = lui_kwargs
         self.lui_kwargs['constant_activation_P'] = self.constant_P_lui
-        self.lui_kwargs = {k: v for k, v in bise_kwargs.items() if k not in self.lui_kwargs}
+        self.lui_kwargs = {k: v for k, v in bise_kwargs.items() if k not in self.lui_kwargs and k in self.lui_args}
 
         self.bises = self._init_bises()
         self.luis = self._init_luis()
 
         self.initializer.post_initialize(self)
-
-    # def create_initializer(self, **kwargs):
-    #     if isinstance(self.initializer_method, InitBiseEnum):
-    #         if "bise" in kwargs.keys() and "lui" in kwargs.keys():
-    #             args_bise = kwargs["bise"]
-    #             args_lui = kwargs["lui"]
-    #         else:
-    #             args_bise = args_lui = kwargs
-    #         return BiselInitIdenticalMethod(initializer_method=self.initializer_method, initializer_args_bise=args_bise, initializer_args_lui=args_lui)
-
-    #     if self.initializer_method == InitBiselEnum.DIFFERENT_INIT:
-    #         return BiselInitializer(initializer_method=self.initializer_method, initializer_args=kwargs)
-
-    #     raise NotImplementedError("Init method not recognized.")
 
     @staticmethod
     def _init_threshold_mode(threshold_mode):
@@ -240,6 +213,23 @@ class BiSELBase(BinaryNN):
         """
         return torch.cat([layer.coefs for layer in self.luis], axis=0)
 
+    @property
+    def bises_args(self):
+        return self._bises_args()
+
+    @staticmethod
+    def _bises_args():
+        return [
+            'kernel_size', 'weight_P', 'threshold_mode', 'activation_P',
+            'out_channels', "constant_activation_P",
+            "constant_weight_P",
+            "closest_selem_method", "closest_selem_distance_fn",
+            "bias_optim_mode", "bias_optim_args", "weights_optim_mode", "weights_optim_args",
+        ]
+
+    @property
+    def lui_args(self):
+        return set(self.bises_args).difference(["padding"]).union(["in_channels"])
 
 
 class BiSEL(BiSELBase):

@@ -1,5 +1,6 @@
 from os.path import join
 from typing import Tuple, Any, Optional, Callable
+import warnings
 
 from torchvision.datasets import MNIST
 from torch.utils.data.dataloader import DataLoader
@@ -41,46 +42,6 @@ class MnistMorphoDataset(MnistBaseDataset, MNIST):
             invert_input_proba=invert_input_proba,
             do_symetric_output=do_symetric_output,
         )
-    #     self.morp_operation = morp_operation
-    #     self.threshold = threshold
-    #     self.preprocessing = preprocessing
-    #     self.size = size
-    #     self.invert_input_proba = invert_input_proba
-    #     self.do_symetric_output = do_symetric_output
-
-    #     if n_inputs != "all":
-    #         self.data = self.data[first_idx:n_inputs+first_idx]
-
-
-
-    #     # return cv2.resize(img, (self.size[1], self.size[0]), interpolation=cv2.INTER_CUBIC)
-
-
-    # def __getitem__(self, index: int) -> Tuple[Any, Any]:
-    #     input_ = (resize_image(self.data[index].numpy(), self.size) >= (self.threshold))[..., None]
-
-    #     if torch.rand(1) < self.invert_input_proba:
-    #         input_ = 1 - input_
-
-    #     # input_[..., 0] = set_borders_to(input_[..., 0], np.array(self.morp_operation.max_selem_shape[0]) // 2, value=0)
-
-    #     target = torch.tensor(self.morp_operation(input_)).float()
-    #     input_ = torch.tensor(input_).float()
-
-    #     input_ = input_.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)
-    #     target = target.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)
-
-    #     # target = target != self.data['value_bg'].iloc[idx]
-
-    #     if self.preprocessing is not None:
-    #         input_ = self.preprocessing(input_)
-    #         target = self.preprocessing(target)
-
-    #     if self.do_symetric_output:
-    #         return 2 * input_ - 1, 2 * target - 1
-
-    #     return input_.float(), target.float()
-
 
     @property
     def processed_folder(self) -> str:
@@ -170,16 +131,24 @@ class MnistClassifDataset(MNIST):
         threshold: float = 30,
         first_idx: int = 0,
         train: bool = True,
-        transform: Optional[Callable] = None,
-        target_transform: Optional[Callable] = None,
-        invert_input_proba: bool = 0,
-        download: bool = False,
+        invert_input_proba: float = 0,
+        preprocessing=None,
+        do_symetric_output: bool = False,
+        size=None,
+        **kwargs
     ) -> None:
-        super().__init__(root=root, train=train, transform=transform, target_transform=target_transform, download=download)
+        super().__init__(root=root, train=train, **kwargs)
         self.n_inputs = n_inputs
         self.first_idx = first_idx
         self.threshold = threshold
         self.invert_input_proba = invert_input_proba
+        self.n_classes = 10
+        self.preprocessing = preprocessing
+        self.do_symetric_output = do_symetric_output
+        
+        warnings.warn("Size not used yet on classif.")
+        self.size = size  # WARNING: not used
+
         if n_inputs != "all":
             self.data = self.data[first_idx:n_inputs+first_idx]
             self.targets = self.targets[first_idx:n_inputs+first_idx]
@@ -197,13 +166,14 @@ class MnistClassifDataset(MNIST):
 
         input_ = input_.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)
 
-        # target = target != self.data['value_bg'].iloc[idx]
-
         if self.transform is not None:
             input_ = self.transform(input_)
 
         if self.target_transform is not None:
             target = self.target_transform(target)
+
+        if self.do_symetric_output:
+            input_ = 2 * input_ - 1
 
         return input_, target
 
@@ -212,13 +182,17 @@ class MnistClassifDataset(MNIST):
         return join(self.root, 'processed')
 
     @staticmethod
-    def get_loader(batch_size, n_inputs, train, first_idx=0, threshold=.5, invert_input_proba=0, **kwargs):
+    def get_loader(
+        batch_size, n_inputs, train, preprocessing, first_idx=0,
+        threshold=.5, invert_input_proba=0, do_symetric_output=False, 
+        size=(28, 28), **kwargs):
         if n_inputs == 0:
             return DataLoader([])
         return DataLoader(
             MnistClassifDataset(
                 n_inputs=n_inputs, first_idx=first_idx,
                 train=train, threshold=threshold, invert_input_proba=invert_input_proba,
+                preprocessing=preprocessing, do_symetric_output=do_symetric_output, size=size,
             ), batch_size=batch_size, **kwargs)
 
     @staticmethod

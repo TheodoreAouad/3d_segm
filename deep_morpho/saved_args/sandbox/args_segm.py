@@ -52,8 +52,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_68/sandbox/0"
     # "Bimonn_exp_71/sandbox/0"
     # "JMIV/multi/1/"
-    "Bimonn_exp_75/multi/0"
-    # "test/0"
+    # "Bimonn_exp_75/multi/0"
+    "test_classif/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -70,12 +70,13 @@ all_args['experiment_name'] = [
 all_args['morp_operation'] = morp_operations
 all_args['dataset_type'] = [
     # 'axspa_roi',
-    "mnist_gray",
+    # "mnist_gray",
     # "fashionmnist",
     # "mnist",
     # "inverted_mnist",
     # 'diskorect',
     # "sticks_noised",
+    "classif_mnist"
 ]
 all_args['preprocessing'] = [  # for axspa roi
     None,
@@ -155,9 +156,9 @@ all_args['loss_data_str'] = [
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
-    # "BCELoss",
+    "BCELoss",
     # "MSELoss",
-    "DiceLoss",
+    # "DiceLoss",
     # "MaskedDiceLoss",
     # "NormalizedDiceLoss",
 ]
@@ -175,7 +176,7 @@ all_args['num_workers'] = [
     20,
     # 0,
 ]
-all_args['freq_imgs'] = [1000]
+all_args['freq_imgs'] = [250]
 all_args['freq_scalars'] = [20]
 all_args['n_epochs'] = [20]
 all_args['patience_loss'] = [2100]
@@ -203,7 +204,8 @@ all_args['kernel_size'] = [
     # "adapt",
 ]
 all_args['channels'] = [
-    'adapt',
+    # 'adapt',
+    [1, 20, 20,]
     # [1, 1, 1]
     # [1, 2, 2, 1]
     # [1] * 12
@@ -242,9 +244,9 @@ all_args['closest_selem_method'] = [
 # ]
 all_args['bias_optim_mode'] = [
     # BiseBiasOptimEnum.RAW,
-    # BiseBiasOptimEnum.POSITIVE,
+    BiseBiasOptimEnum.POSITIVE,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
-    BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+    # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 all_args['bias_optim_args'] = [
     {"offset": 0}
@@ -305,7 +307,7 @@ all_args['threshold_mode'] = [
 ]
 
 
-if all_args['dataset_type'] == ['axspa_roi'] or all_args['dataset_type'] == ["sticks_noised"]:
+if all_args['dataset_type'] in [[k] for k in ['axspa_roi', "sticks_noised", "classif_mnist"]]:
     all_args['morp_operation'] = [None]
 
 all_args = dict_cross(all_args)
@@ -408,6 +410,13 @@ for idx, args in enumerate(all_args):
         if args["n_atoms"] == 'adapt':
             args['n_atoms'] = len(args['morp_operation'])
 
+    else:
+        args['experiment_subname'] = f"{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset_type']}"
+
+    if args['dataset_type'] == "classif_mnist":
+        if args['n_atoms'] == "adapt":
+            args["n_atoms"] = len(args['channels']) - 1
+
     kwargs_loss = {}
     if "Normalized" in args['loss_data_str'] and args['atomic_element'] == 'sybisel':
         kwargs_loss.update({"vmin": -1, "vmax": 1})
@@ -427,7 +436,7 @@ for idx, args in enumerate(all_args):
         # args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
         args['random_gen_args']['size'] = args['random_gen_args']['size'] + (args["morp_operation"].in_channels[0],)
 
-    if args['dataset_type'] in ["mnist", "inverted_mnist", "mnist_gray", "fashionmnist"]:
+    if args['dataset_type'] in ["mnist", "inverted_mnist", "mnist_gray", "fashionmnist", "classif_mnist"]:
         # args['freq_imgs'] = 300
         args['n_inputs'] = 70_000
 
@@ -461,7 +470,7 @@ for idx, args in enumerate(all_args):
 
     if args['dataset_type'] in ['mnist_gray', 'fashionmnist']:
         assert "gray" in args['morp_operation'].name
-    elif args['dataset_type'] != "axspa_roi":
+    elif args['dataset_type'] in ["mnist", "diskorect", "inverted_mnist"]:
         assert "gray" not in args['morp_operation'].name
 
 
