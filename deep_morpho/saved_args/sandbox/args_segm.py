@@ -32,8 +32,8 @@ loss_dict = {
 
 all_args = {}
 
-all_args['batch_seed'] = [2249939862]
-# all_args['batch_seed'] = [None]
+# all_args['batch_seed'] = [2249939862]
+all_args['batch_seed'] = [None]
 
 all_args['n_try'] = [0]
 # all_args['n_try'] = [0, 1, 2, 3, 4]
@@ -53,7 +53,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_71/sandbox/0"
     # "JMIV/multi/1/"
     # "Bimonn_exp_75/multi/0"
-    "test_classif/0"
+    "Bimonn_exp_76/sandbox/0"
+    # "test_classif/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
     # "test_new_bias"
@@ -139,7 +140,7 @@ all_args['nb_batch_indep'] = [0]
 #     3_000_000,
 #     # 100_000,
 # ]
-all_args['train_test_split'] = [(0.8, 0.2, 0)]
+all_args['train_test_split'] = [(1, 0.2, 0)]
 
 
 # TRAINING ARGS
@@ -171,7 +172,7 @@ all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
-all_args['batch_size'] = [32]
+all_args['batch_size'] = [256]
 all_args['num_workers'] = [
     20,
     # 0,
@@ -188,6 +189,11 @@ all_args['patience_reduce_lr'] = [700]
 #     # 'adapt',
 #     4,
 # ]
+all_args["model_type"] = [
+    "LightningBiMoNNClassifierMaxPoolNotBinary",
+    # "LightningBiMoNNClassifierMaxPool",
+    # "LightningBiMoNN",
+]
 all_args['atomic_element'] = [
     "bisel",
     # "dual_bisel",
@@ -205,7 +211,11 @@ all_args['kernel_size'] = [
 ]
 all_args['channels'] = [
     # 'adapt',
-    [1, 100,]
+    [1, 200,],
+    # [1, 75,],
+    # [1, 50,],
+    # [1, 20,],
+    # [1, 10,],
     # [1, 1, 1]
     # [1, 2, 2, 1]
     # [1] * 12
@@ -333,6 +343,8 @@ for idx, args in enumerate(all_args):
     # elif "black_tophat" in args['morp_operation'].name:
     #     args['random_gen_args']['p_invert'] = 0
 
+    if "classif" not in args["dataset_type"]:
+        args["model_type"] = "LightningBiMoNN"
 
     if args['atomic_element'] == "dual_bisel":
         args['weights_optim_mode'] = BiseWeightsOptimEnum.NORMALIZED

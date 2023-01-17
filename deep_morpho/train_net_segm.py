@@ -308,10 +308,8 @@ def main(args, logger):
             'input_size': inpt.shape[-2:],
             'n_classes': trainloader.dataset.n_classes,
         })
-        lightning_model = LightningBiMoNNClassifierMaxPoolNotBinary
-    else:
-        lightning_model = LightningBiMoNN
 
+    lightning_model = eval(args["model_type"])
     model = lightning_model(
         model_args=model_args, learning_rate=args['learning_rate'], loss=args['loss'],
         optimizer=args['optimizer'], observables=observables,
@@ -390,7 +388,7 @@ def main(args, logger):
         num_sanity_val_steps=1,
     )
 
-    log_console("Binarizable parameters:", model.numel_binary(), logger=console_logger)
+    log_console("Binarizable parameters:", model.model.numel_binary(), logger=console_logger)
     trainer.fit(model, trainloader, valloader,)
 
     for observable in observables:

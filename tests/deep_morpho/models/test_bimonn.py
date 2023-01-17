@@ -1,6 +1,6 @@
 import torch
 
-from deep_morpho.models import BiMoNN, BiMoNNClassifierMaxPool
+from deep_morpho.models import BiMoNN, BiMoNNClassifierMaxPool, BiMoNNClassifierMaxPoolNotBinary
 from deep_morpho.initializer import InitBiseEnum
 
 
@@ -115,7 +115,7 @@ class TestBimonnClassifierMaxPool():
 
         model = BiMoNNClassifierMaxPool(
             kernel_size=(7, 7),
-            channels=[x.shape[1], 5, 3, 3],
+            channels=[x.shape[1], 100],
             atomic_element='bisel',
             input_size=x.shape[-2:],
             n_classes=n_classes,
@@ -124,3 +124,20 @@ class TestBimonnClassifierMaxPool():
         n_binary = model.numel_binary()
         n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
         assert n_binary == n_params
+
+    @staticmethod
+    def test_numel_binary_not_binary():
+        x = torch.ones((3, 1, 51, 51))
+        n_classes = 10
+
+        model = BiMoNNClassifierMaxPoolNotBinary(
+            kernel_size=(7, 7),
+            channels=[x.shape[1], 100],
+            atomic_element='bisel',
+            input_size=x.shape[-2:],
+            n_classes=n_classes,
+        )
+
+        n_binary = model.numel_binary()
+        n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        assert n_binary != n_params
