@@ -1,7 +1,8 @@
+from abc import ABC
 import torch.nn as nn
 
 
-class BinaryNN(nn.Module):
+class BinaryNN(nn.Module, ABC):
 
     def __init__(self):
         super().__init__()
@@ -25,3 +26,14 @@ class BinaryNN(nn.Module):
 
     def forward_save(self, x):
         return {'output': self.forward(x)}
+
+    def numel_binary(self):
+        res = self._specific_numel_binary()
+        for module in self.children():
+            if isinstance(module, BinaryNN):
+                res += module.numel_binary()
+        return res
+
+    def _specific_numel_binary(self):
+        """Specifies the number of binarizable parameters that are not contained in the children."""
+        return 0

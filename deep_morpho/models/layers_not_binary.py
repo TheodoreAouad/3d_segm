@@ -11,6 +11,9 @@ class LuiNotBinary(LUI):
     def forward(self, x):
         return self._forward(x)
 
+    def _specific_numel_binary(self):
+        return 0
+
 
 class BiSELNotBinary(BiSELBase):
     def __init__(

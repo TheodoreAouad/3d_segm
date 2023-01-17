@@ -390,6 +390,7 @@ def main(args, logger):
         num_sanity_val_steps=1,
     )
 
+    log_console("Binarizable parameters:", model.numel_binary(), logger=console_logger)
     trainer.fit(model, trainloader, valloader,)
 
     for observable in observables:

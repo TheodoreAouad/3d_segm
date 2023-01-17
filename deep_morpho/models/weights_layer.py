@@ -19,7 +19,7 @@ class WeightsBise(nn.Module):
     def __init__(self, bise_module: "BiSE", *args, **kwargs):
         super().__init__()
         self._bise_module: BiseModuleContainer = BiseModuleContainer(bise_module)
-        self.param = self.init_param(*args, **kwargs)
+        self.param: torch.Tensor = self.init_param(*args, **kwargs)
 
     def forward(self,) -> torch.Tensor:
         return self.from_param_to_weights(self.param)

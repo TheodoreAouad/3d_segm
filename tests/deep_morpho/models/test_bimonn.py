@@ -107,3 +107,20 @@ class TestBimonnClassifierMaxPool():
 
         otp = model(x)
         assert otp.shape == (x.shape[0], n_classes)
+
+    @staticmethod
+    def test_numel_binary():
+        x = torch.ones((3, 1, 51, 51))
+        n_classes = 10
+
+        model = BiMoNNClassifierMaxPool(
+            kernel_size=(7, 7),
+            channels=[x.shape[1], 5, 3, 3],
+            atomic_element='bisel',
+            input_size=x.shape[-2:],
+            n_classes=n_classes,
+        )
+
+        n_binary = model.numel_binary()
+        n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        assert n_binary == n_params

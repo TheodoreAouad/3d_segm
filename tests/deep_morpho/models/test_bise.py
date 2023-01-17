@@ -197,6 +197,12 @@ class TestBiSE:
         layer.binary(False)
         assert layer.binary_mode == False
 
+    @staticmethod
+    def test_bise_numel_binary():
+        layer = BiSE((7, 7), out_channels=1)
+        n_binary = layer.numel_binary()
+        n_params = sum(p.numel() for p in layer.parameters() if p.requires_grad)
+        assert n_binary == n_params
 
     @staticmethod
     @pytest.mark.parametrize("input_mean", [0.1, 0.3, 0.5, 0.7, 0.9])

@@ -205,7 +205,7 @@ all_args['kernel_size'] = [
 ]
 all_args['channels'] = [
     # 'adapt',
-    [1, 20, 20,]
+    [1, 100,]
     # [1, 1, 1]
     # [1, 2, 2, 1]
     # [1] * 12

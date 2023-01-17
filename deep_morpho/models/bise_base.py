@@ -108,6 +108,7 @@ class BiSEBase(BinaryNN):
             bias=False,
             **{k: kwargs[k] for k in conv_kwargs.intersection(kwargs.keys())}
         )
+        self.conv.weight.requires_grad = False
 
         self.shared_weights = shared_weights
 
@@ -130,6 +131,8 @@ class BiSEBase(BinaryNN):
 
         self.update_binary_selems()
 
+    def _specific_numel_binary(self):
+        return self._normalized_weight.numel() + self.bias.numel() + self.activation_P.numel()
 
     def create_closest_selem_handler(self, **kwargs):
         if self.closest_selem_method == ClosestSelemEnum.MIN_DIST_DIST_TO_BOUNDS:
