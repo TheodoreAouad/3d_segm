@@ -129,7 +129,7 @@ class BiSEBase(BinaryNN):
         self._learned_operation = np.zeros((out_channels))
         self._is_activated = np.zeros((out_channels)).astype(bool)
 
-        self.update_binary_selems()
+        # self.update_binary_selems()
 
     def _specific_numel_binary(self):
         return self._normalized_weight.numel() + self.bias.numel() + self.activation_P.numel()
@@ -196,8 +196,8 @@ class BiSEBase(BinaryNN):
         for chan in range(self.out_channels):
             self.find_selem_and_operation_chan(chan)
 
-    def binary(self, mode: bool = True):
-        if mode:
+    def binary(self, mode: bool = True, update_binaries: bool = True):
+        if mode and update_binaries:
             self.update_binary_selems()
         return super().binary(mode)
 

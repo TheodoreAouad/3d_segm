@@ -53,7 +53,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_71/sandbox/0"
     # "JMIV/multi/1/"
     # "Bimonn_exp_75/multi/0"
-    "Bimonn_exp_76/sandbox/0"
+    # "Bimonn_exp_76/sandbox/2"
+    "test"
     # "test_classif/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
@@ -140,7 +141,7 @@ all_args['nb_batch_indep'] = [0]
 #     3_000_000,
 #     # 100_000,
 # ]
-all_args['train_test_split'] = [(1, 0.2, 0)]
+all_args['train_test_split'] = [(0.9, 0.1, 1)]
 
 
 # TRAINING ARGS
@@ -178,10 +179,18 @@ all_args['num_workers'] = [
     # 0,
 ]
 all_args['freq_imgs'] = [250]
+all_args['freq_hist'] = [100]
 all_args['freq_scalars'] = [20]
-all_args['n_epochs'] = [20]
-all_args['patience_loss'] = [2100]
-all_args['patience_reduce_lr'] = [700]
+all_args['n_epochs'] = [1]
+
+all_args['patience_loss_batch'] = [2100]
+all_args['patience_loss_epoch'] = [6]
+all_args['patience_reduce_lr'] = [1/3]
+all_args['early_stopping_on'] = [
+    # 'batch',
+    'epoch'
+]
+
 
 
 # MODEL ARGS
@@ -192,12 +201,14 @@ all_args['patience_reduce_lr'] = [700]
 all_args["model_type"] = [
     "LightningBiMoNNClassifierMaxPoolNotBinary",
     # "LightningBiMoNNClassifierMaxPool",
+    # "LightningBiMoNNClassifierLastLinearNotBinary",
+    # "LightningBiMoNNClassifierLastLinear",
     # "LightningBiMoNN",
 ]
 all_args['atomic_element'] = [
-    "bisel",
+    # "bisel",
     # "dual_bisel",
-    # "sybisel",
+    "sybisel",
 ]
 all_args['n_atoms'] = [
     'adapt',
@@ -211,51 +222,18 @@ all_args['kernel_size'] = [
 ]
 all_args['channels'] = [
     # 'adapt',
-    [1, 200,],
-    # [1, 75,],
-    # [1, 50,],
-    # [1, 20,],
-    # [1, 10,],
-    # [1, 1, 1]
-    # [1, 2, 2, 1]
-    # [1] * 12
-    # [2, 1],
-    # [2, 2, 1],
-    # [2] * 7 + [1],
-    # [2, 1, 1, 1, 1, 1, 2, 1]
-    # [1] * 3
-    # [1, 1, 1]
-    # [
-    #     2, 2, 2, 2, 2, 2, 1
-    # ],
-    # [
-    #     # 1,  # input
-    #     2, 2, 1,
-    # ]
+    [1, 5, ],
 ]
-# all_args['init_weight_mode'] = [
-#     # "identity",
-#     # "normal_identity",
-#     # "conv_0.5"
-#     # InitBiseEnum.KAIMING_UNIFORM,
-#     # InitBiseEnum.CUSTOM_HEURISTIC,
-#     InitBiseEnum.CUSTOM_CONSTANT
-# ]
 all_args['closest_selem_method'] = [
     # ClosestSelemEnum.MIN_DIST
     # ClosestSelemEnum.MAX_SECOND_DERIVATIVE
     ClosestSelemEnum.MIN_DIST_DIST_TO_CST
 ]
 
-# all_args['closest_selem_distance_fn'] = [
-    # ClosestSelemDistanceEnum.DISTANCE_BETWEEN_BOUNDS
-    # ClosestSelemDistanceEnum.DISTANCE_TO_AND_BETWEEN_BOUNDS
-    # ClosestSelemDistanceEnum.DISTANCE_TO_BOUNDS
-# ]
 all_args['bias_optim_mode'] = [
     # BiseBiasOptimEnum.RAW,
-    BiseBiasOptimEnum.POSITIVE,
-    # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
+    # BiseBiasOptimEnum.POSITIVE,
+    BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 all_args['bias_optim_args'] = [
@@ -275,13 +253,6 @@ all_args['initializer_method'] = [
     InitBimonnEnum.INPUT_MEAN,
 ]
 all_args['initializer_args'] = [
-    # {
-    #     # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT,
-    #     # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC_RANDOM_BIAS,
-    #     "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
-    #     "bise_init_args": {"init_bias_value": 0, "mean_weight": "auto", "ub": 0.01}
-    # }
-
     # force operations at init
     {
         # "bise_init_method": InitBiseEnum.KAIMING_UNIFORM,
@@ -342,6 +313,9 @@ for idx, args in enumerate(all_args):
     #     args['random_gen_args']['p_invert'] = 1
     # elif "black_tophat" in args['morp_operation'].name:
     #     args['random_gen_args']['p_invert'] = 0
+
+    args['patience_loss'] = args[f"patience_loss_{args['early_stopping_on']}"]
+    args['patience_reduce_lr'] = max(int(args["patience_loss"] * args['patience_reduce_lr']) - 1, 1)
 
     if "classif" not in args["dataset_type"]:
         args["model_type"] = "LightningBiMoNN"
@@ -450,7 +424,7 @@ for idx, args in enumerate(all_args):
 
     if args['dataset_type'] in ["mnist", "inverted_mnist", "mnist_gray", "fashionmnist", "classif_mnist"]:
         # args['freq_imgs'] = 300
-        args['n_inputs'] = 70_000
+        args['n_inputs'] = 60_000
 
     if args['dataset_type'] == 'inverted_mnist':
         args['mnist_args']['invert_input_proba'] = 1
@@ -468,6 +442,8 @@ for idx, args in enumerate(all_args):
 
 
     args['loss'] = {"loss_data": args['loss_data']}
+    # import torch
+    # args['loss'] = {"loss_data": lambda *x: torch.ones(1, requires_grad=True)[0]}
 
     if isinstance(args['threshold_mode'], str) or args['threshold_mode']['weight'] != "identity":
         args['loss_regu'] = "None"

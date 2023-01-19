@@ -1,8 +1,10 @@
+from abc import ABC
+
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from pytorch_lightning.callbacks import Callback
 
 
-class BatchReduceLrOnPlateau(Callback):
+class ReduceLrOnPlateauBase(Callback, ABC):
 
     def __init__(
         self,
@@ -48,9 +50,24 @@ class BatchReduceLrOnPlateau(Callback):
     def on_train_start(self, trainer, pl_module):
         self.scheduler = ReduceLROnPlateau(optimizer=pl_module.optimizers(), **self.kwargs)
 
+    def save(self, save_path: str):
+        pass
+
+
+class BatchReduceLrOnPlateau(ReduceLrOnPlateauBase):
     def on_train_batch_end(self, trainer, pl_module, outputs, *args, **kwargs):
         if self.on_train:
             self.scheduler.step(outputs['loss'])
 
-    def save(self, save_path: str):
-        pass
+
+class EpochReduceLrOnPlateau(ReduceLrOnPlateauBase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.last_loss = None
+
+    def on_train_batch_end(self, trainer, pl_module, outputs, *args, **kwargs):
+        self.last_loss = outputs['loss']
+
+    def on_train_epoch_end(self, *args, **kwargs):
+        if self.on_train:
+            self.scheduler.step(self.last_loss)

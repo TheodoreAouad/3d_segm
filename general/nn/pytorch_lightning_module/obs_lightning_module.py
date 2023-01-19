@@ -161,6 +161,7 @@ class NetLightning(ObsLightningModule):
 
     def compute_loss(self, state, ypred, ytrue):
         values = {}
+        assert not ypred.isnan().any(), "NaN in prediction"
         if isinstance(self.loss, dict):
             for key, loss_fn in self.loss.items():
                 values[key] = loss_fn(ypred, ytrue)

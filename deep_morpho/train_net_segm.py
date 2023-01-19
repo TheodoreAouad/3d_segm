@@ -28,7 +28,8 @@ from deep_morpho.datasets.axspa_roi_dataset import AxspaROISimpleDataset
 from deep_morpho.datasets.sticks_noised_dataset import SticksNoisedGeneratorDataset
 from deep_morpho.models import (
     LightningBiMoNN, BiSE, BiseWeightsOptimEnum, LightningBiMoNNClassifierMaxPool,
-    LightningBiMoNNClassifierMaxPoolNotBinary
+    LightningBiMoNNClassifierMaxPoolNotBinary, LightningBiMoNNClassifierLastLinearNotBinary,
+    LightningBiMoNNClassifierLastLinear
 )  # COBiSE, BiSEC, COBiSEC
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
@@ -205,6 +206,12 @@ def main(args, logger):
         plot_grad_obs = obs.PlotGradientBiseEllipse(freq=1)
         plot_weights_fn = obs.PlotWeightsBiseEllipse
 
+    if args['early_stopping_on'] == "epoch":
+        early_stopping_cls = obs.EpochValEarlyStopping
+        reduce_lr_cls = obs.EpochReduceLrOnPlateau
+    else:
+        early_stopping_cls = obs.BatchEarlyStopping
+        reduce_lr_cls = obs.BatchReduceLrOnPlateau
 
     observables_dict = {
         # "SetSeed": obs.SetSeed(args['batch_seed']),
@@ -221,6 +228,9 @@ def main(args, logger):
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),
         # "InputAsPredMetric": obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
         "CountInputs": obs.CountInputs(freq=args['freq_scalars']),
+        "ActivationHistogram": obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': 10000 // args['batch_size']}),
+        "ActivationHistogramBinary": obs.ActivationHistogramBinaryBimonn(freq={'train': args['freq_hist'], 'val': 10000 // args['batch_size']}),
+        "ActivationPHistogramBimonn": obs.ActivationPHistogramBimonn(freq={'train': args['freq_hist'], 'val': None}),
         # "PlotParametersBiSE": obs.PlotParametersBiSE(freq=args['freq_scalars']),
         "PlotParametersBiseEllipse": obs.PlotParametersBiseEllipse(freq=args['freq_scalars']),
         # "PlotWeightsBiSE": plot_weights_fn(freq=args['freq_imgs']),
@@ -239,10 +249,11 @@ def main(args, logger):
         "BinaryModeMetric": binary_mode_fn(metrics, freq={"train": args['freq_imgs'], "val": 10000 // args['batch_size']}, do_plot_figure=True),
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         # "ConvergenceBinary": obs.ConvergenceBinary(freq=args['freq_imgs']),
-        "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+        "BatchEarlyStoppingLoss": early_stopping_cls(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+        # "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss_batch'], mode="min"),
         # "BatchEarlyStoppingBinaryDice": obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
         # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
-        "BatchReduceLrOnPlateau": obs.BatchReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
+        "BatchReduceLrOnPlateau": reduce_lr_cls(patience=args['patience_reduce_lr'], on_train=True),
         "CheckLearningRate": obs.CheckLearningRate(freq=2 * args['freq_scalars']),
     }
     # observables_dict = {}
@@ -324,31 +335,40 @@ def main(args, logger):
 
     logger.experiment.add_graph(model, inpt[0].unsqueeze(0).to(device))
     # logger.experiment.add_graph(model, torch.ones(1, args['channels'][0], inpt.shape[-2], inpt.shape[-1]).to(device))
-    hyperparams = dict(
-        # **{f'{k}_{layer_idx}': -1 for k in [
-        #     f"weights/sum_norm_weights",
-        #     f"params/weight_P",
-        #     f"params/activation_P",
-        #     f"weights/bias",
-        # ] for layer_idx in range(len(model.model.layers))},
-        **{
-            f'{k}/layer_{layer_idx}_chout_{chan_output}_chin_{chan_input}': torch.tensor([np.nan]) for k in [
-                "convergence/binary/bisel",
-            ] for layer_idx in range(len(model.model.layers))
-            for chan_input in range(model.model.layers[layer_idx].in_channels)
-            for chan_output in range(model.model.layers[layer_idx].out_channels)
-        },
-        **{
-            f'{k}/layer_{layer_idx}_chout_{chan_output}': torch.tensor([np.nan]) for k in [
-                "convergence/binary/lui",
-            ] for layer_idx in range(len(model.model.layers))
-            for chan_output in range(model.model.layers[layer_idx].out_channels)
-        },
-        **{"metrics_batch/dice_train": torch.tensor([np.nan])},
-        **{"convergence/metric_dice_train": torch.tensor([np.nan])},
-    )
+    # hyperparams = dict(
+    #     # **{f'{k}_{layer_idx}': -1 for k in [
+    #     #     f"weights/sum_norm_weights",
+    #     #     f"params/weight_P",
+    #     #     f"params/activation_P",
+    #     #     f"weights/bias",
+    #     # ] for layer_idx in range(len(model.model.layers))},
+    #     **{
+    #         f'{k}/layer_{layer_idx}_chout_{chan_output}_chin_{chan_input}': torch.tensor([np.nan]) for k in [
+    #             "convergence/binary/bisel",
+    #         ] for layer_idx in range(len(model.model.bisels))
+    #         for chan_input in range(model.model.bisels[layer_idx].in_channels)
+    #         for chan_output in range(model.model.bisels[layer_idx].out_channels)
+    #     },
+    #     **{
+    #         f'{k}/layer_{layer_idx}_chout_{chan_output}': torch.tensor([np.nan]) for k in [
+    #             "convergence/binary/lui",
+    #         ] for layer_idx in range(len(model.model.bisels))
+    #         for chan_output in range(model.model.bisels[layer_idx].out_channels)
+    #     },
+    #     **{"metrics_batch/dice_train": torch.tensor([np.nan])},
+    #     **{"convergence/metric_dice_train": torch.tensor([np.nan])},
+    # )
 
-    logger.log_hyperparams(args, hyperparams)
+    # logger.log_hyperparams(args, hyperparams)
+
+    # logger.experiment.add_hparams({k: str(v) for k, v in args.items()}, metric_dict={})
+    # logger.experiment.add_hparams({k: str(v) for k, v in args.items()}, metric_dict={})
+    hyperparam_str = ""
+    for k, v in args.items():
+        hyperparam_str += f"**{k}**: {v}  \n"
+    hyperparam_str = hyperparam_str[:-2]
+
+    logger.experiment.add_text("hyperparams", hyperparam_str, global_step=0)
 
     if args['dataset_type'] in ["diskorect", "mnist", "inverted_mnist", "sticks_noised", "mnist_gray"]:
         pathlib.Path(join(logger.log_dir, "target_SE")).mkdir(exist_ok=True, parents=True)
@@ -389,7 +409,8 @@ def main(args, logger):
     )
 
     log_console("Binarizable parameters:", model.model.numel_binary(), logger=console_logger)
-    trainer.fit(model, trainloader, valloader,)
+    trainer.fit(model, trainloader, valloader)
+    # trainer.test(model, testloader)
 
     for observable in observables:
         observable.save(join(trainer.log_dir, 'observables'))

@@ -1,3 +1,4 @@
+from abc import ABC
 from enum import Enum
 from typing import Dict, Any, Tuple
 from os.path import join
@@ -18,13 +19,14 @@ class ReasonCodeEnum(Enum):
 
 
 
-class BatchEarlyStopping(EarlyStopping):
+class EarlyStoppingBase(EarlyStopping, ABC):
 
     def __init__(self, name: str = '', console_logger=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = name
         self.reason_code = None
         self.stopped_batch = None
+        self.stopped_epoch = None
         self.console_logger = console_logger
 
     def on_train_epoch_end(self, trainer, pl_module) -> None:
@@ -34,18 +36,23 @@ class BatchEarlyStopping(EarlyStopping):
         return
 
     def on_train_batch_end(self, trainer: 'pl.Trainer', *args, **kwargs) -> None:
+        return
+
+    def perform_early_stopping(self, trainer):
         if self._should_skip_check(trainer):
             return
         self._run_early_stopping_check(trainer)
 
+
     def on_save_checkpoint(self, *args, **kwargs):
         res = super().on_save_checkpoint(None, None, None)  # lightning necessity to avoid *args and kwargs. May change in future versions.
         res['stopped_batch'] = self.stopped_batch
+        res['stopped_epoch'] = self.stopped_batch
         return res
 
     def on_load_checkpoint(self, callback_state: Dict[str, Any]) -> None:
         super().on_load_checkpoint(callback_state)
-        self.stopped_batch = callback_state['stopped_batch']
+        self.stopped_batch = callback_state['stopped_epoch']
 
     def save(self, save_path: str):
         final_dir = join(save_path, join(self.__class__.__name__, self.name))
@@ -57,6 +64,7 @@ class BatchEarlyStopping(EarlyStopping):
 
         to_save = {
             "stopped_batch": self.stopped_batch,
+            "stopped_epoch": self.stopped_epoch,
             "wait_count": self.wait_count,
             "best_score": best_score,
             "patience": self.patience,
@@ -144,6 +152,17 @@ class BatchEarlyStopping(EarlyStopping):
                 reason_code = ReasonCodeEnum.STOP_IMPROVING
 
         return should_stop, reason_str, reason_code
+
+
+class BatchEarlyStopping(EarlyStoppingBase):
+    def on_train_batch_end(self, trainer: 'pl.Trainer', *args, **kwargs) -> None:
+        return self.perform_early_stopping(trainer)
+
+
+class EpochValEarlyStopping(EarlyStoppingBase):
+    def on_validation_end(self, trainer: 'pl.Trainer', *args, **kwargs) -> None:
+        return self.perform_early_stopping(trainer)
+
 
 
 class BatchActivatedEarlyStopping(Callback):

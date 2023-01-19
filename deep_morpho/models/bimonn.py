@@ -6,7 +6,7 @@ import numpy as np
 import torch.nn as nn
 
 from .bisel import BiSEL, SyBiSEL
-from .layers_not_binary import BiSELNotBinary 
+from .layers_not_binary import BiSELNotBinary
 from .binary_nn import BinaryNN
 from ..initializer import BimonnInitializer, InitBimonnEnum, BimonnInitInputMean, InitBiseEnum
 
@@ -269,11 +269,28 @@ class BiMoNNClassifier(BiMoNN, ABC):
 
         return list(subclasses)
 
+    def forward(self, x):
+        output = super().forward(x)
+        batch_size = output.shape[0]
+        output = output.squeeze()
+        if batch_size == 1:
+            output = output.unsqueeze(0)
+        return output
 
-class BiMoNNClassifierLastLinear(BiMoNNClassifier):
+    def forward_save(self, x):
+        output = super().forward_save(x)
+        batch_size = output["output"].shape[0]
+        output["output"] = output["output"].squeeze()
+        if batch_size == 1:
+            output["output"] = output["output"].unsqueeze(0)
+        return output
+
+
+class BiMoNNClassifierLastLinearBase(BiMoNNClassifier):
 
     def __init__(
         self,
+        classif_layer_fn,
         kernel_size: List[Union[Tuple, int]],
         n_classes: int,
         input_size: Tuple[int],
@@ -292,7 +309,7 @@ class BiMoNNClassifierLastLinear(BiMoNNClassifier):
         self.bisel_kwargs["padding"] = 0
         # self.bisel_kwargs["init_bias_value_bise"] = 0.5
         # self.bisel_kwargs["lui_kwargs"]["force_identity"] = True
-        self.classification_layer = BiSEL(**self.bisel_kwargs)
+        self.classification_layer = classif_layer_fn(**self.bisel_kwargs)
 
         self.in_channels.append(self.out_channels[-1])
         self.out_channels.append(n_classes)
@@ -301,26 +318,54 @@ class BiMoNNClassifierLastLinear(BiMoNNClassifier):
         self.layers.append(self.classification_layer)
         self.bisels_idx.append(len(self.layers) - 1)
 
-    def forward(self, x):
-        output = super().forward(x)
-        batch_size = output.shape[0]
-        output = output.squeeze()
-        if batch_size == 1:
-            output = output.unsqueeze(0)
-        return output
 
-    def forward_save(self, x):
-        output = super().forward_save(x)
-        batch_size = output["output"].shape[0]
-        output["output"] = output["output"].squeeze()
-        if batch_size == 1:
-            output["output"] = output["output"].unsqueeze(0)
-        return output
-
-
-class BiMoNNClassifierMaxPool(BiMoNNClassifier):
+class BiMoNNClassifierLastLinear(BiMoNNClassifierLastLinearBase):
     def __init__(
         self,
+        kernel_size: List[Union[Tuple, int]],
+        n_classes: int,
+        input_size: Tuple[int],
+        final_bisel_kwargs: Dict = None,
+        *args,
+        **kwargs
+    ):
+        super().__init__(
+            classif_layer_fn=BiSEL,
+            kernel_size=kernel_size,
+            n_classes=n_classes,
+            input_size=input_size,
+            final_bisel_kwargs=final_bisel_kwargs,
+            *args,
+            **kwargs
+        )
+
+
+class BiMoNNClassifierLastLinearNotBinary(BiMoNNClassifierLastLinearBase):
+    def __init__(
+        self,
+        kernel_size: List[Union[Tuple, int]],
+        n_classes: int,
+        input_size: Tuple[int],
+        final_bisel_kwargs: Dict = None,
+        *args,
+        **kwargs
+    ):
+        super().__init__(
+            classif_layer_fn=BiSELNotBinary,
+            kernel_size=kernel_size,
+            n_classes=n_classes,
+            input_size=input_size,
+            final_bisel_kwargs=final_bisel_kwargs,
+            *args,
+            **kwargs
+        )
+
+
+
+class BiMoNNClassifierMaxPoolBase(BiMoNNClassifier):
+    def __init__(
+        self,
+        classif_layer_fn,
         kernel_size: List[Union[Tuple, int]],
         n_classes: int,
         input_size: Tuple[int],
@@ -334,9 +379,13 @@ class BiMoNNClassifierMaxPool(BiMoNNClassifier):
 
         self.repr_size = input_size
         self.maxpool_layers = []
-        for _ in range(len(self)):
+        for idx in range(len(self)):
             self.repr_size = (self.repr_size[0] // 2, self.repr_size[1] // 2)
             self.maxpool_layers.append(nn.MaxPool2d((2, 2)))
+            setattr(self, f"maxpool_{idx}", self.maxpool_layers[-1])
+
+        self.layers = sum([[bisel, maxpool] for bisel, maxpool in zip(self.layers, self.maxpool_layers)], start=[])
+        self.bisels_idx = [2*bisel_idx for bisel_idx in self.bisels_idx]
 
         self.bisel_kwargs = self.bisels_kwargs_idx(0) if final_bisel_kwargs is None else final_bisel_kwargs
         self.bisel_kwargs["in_channels"] = self.out_channels[-1]
@@ -344,7 +393,7 @@ class BiMoNNClassifierMaxPool(BiMoNNClassifier):
         self.bisel_kwargs["kernel_size"] = self.repr_size
         self.bisel_kwargs["padding"] = 0
 
-        self.classification_layer = BiSEL(**self.bisel_kwargs)
+        self.classification_layer = classif_layer_fn(**self.bisel_kwargs)
 
         self.in_channels.append(self.out_channels[-1])
         self.out_channels.append(n_classes)
@@ -353,41 +402,42 @@ class BiMoNNClassifierMaxPool(BiMoNNClassifier):
         self.layers.append(self.classification_layer)
         self.bisels_idx.append(len(self.layers) - 1)
 
-    def forward(self, x):
-        output = self.maxpool_layers[0](self.layers[0](x))
-        for layer_bise, layer_maxpool in zip(self.layers[1:-1], self.maxpool_layers[1:]):
-            output = layer_maxpool(layer_bise(output))
-        output = self.layers[-1](output)
+    # def forward(self, x):
+    #     output = self.maxpool_layers[0](self.layers[0](x))
+    #     for layer_bise, layer_maxpool in zip(self.layers[1:-1], self.maxpool_layers[1:]):
+    #         output = layer_bise(output)
+    #         output = layer_maxpool(output)
+    #     output = self.layers[-1](output)
 
-        batch_size = output.shape[0]
-        output = output.squeeze()
-        if batch_size == 1:
-            output = output.unsqueeze(0)
+    #     batch_size = output.shape[0]
+    #     output = output.squeeze()
+    #     if batch_size == 1:
+    #         output = output.unsqueeze(0)
 
-        return output
+    #     return output
 
-    def forward_save(self, x):
-        output = {"input": x}
-        cur = self.layers[0].forward_save(x)
-        output[0] = cur
-        cur['output'] = nn.MaxPool(cur['output'])
+    # def forward_save(self, x):
+    #     output = {"input": x}
+    #     cur = self.layers[0].forward_save(x)
+    #     output[0] = cur
+    #     cur['output'] = nn.MaxPool(cur['output'])
 
-        for layer_idx, layer in enumerate(self.layers[1:], start=1):
-            cur = layer.forward_save(cur['output'])
-            cur['output'] = nn.MaxPool(cur['output'])
-            output[layer_idx] = cur
+    #     for layer_idx, layer in enumerate(self.layers[1:], start=1):
+    #         cur = layer.forward_save(cur['output'])
+    #         cur['output'] = nn.MaxPool(cur['output'])
+    #         output[layer_idx] = cur
 
-        output[len(self) - 1] = self.layers[-1].forward_save(cur['output'])
-        output["output"] = cur["output"]
+    #     output[len(self) - 1] = self.layers[-1].forward_save(cur['output'])
+    #     output["output"] = cur["output"]
 
-        batch_size = output["output"].shape[0]
-        output["output"] = output["output"].squeeze()
-        if batch_size == 1:
-            output["output"] = output["output"].unsqueeze(0)
-        return output
+    #     batch_size = output["output"].shape[0]
+    #     output["output"] = output["output"].squeeze()
+    #     if batch_size == 1:
+    #         output["output"] = output["output"].unsqueeze(0)
+    #     return output
 
 
-class BiMoNNClassifierMaxPoolNotBinary(BiMoNNClassifier):
+class BiMoNNClassifierMaxPool(BiMoNNClassifierMaxPoolBase):
     def __init__(
         self,
         kernel_size: List[Union[Tuple, int]],
@@ -397,60 +447,31 @@ class BiMoNNClassifierMaxPoolNotBinary(BiMoNNClassifier):
         *args,
         **kwargs
     ):
-        super().__init__(*args, kernel_size=kernel_size, **kwargs)
-        if isinstance(input_size, int):
-            input_size = (input_size, input_size)
+        super().__init__(
+            classif_layer_fn=BiSEL,
+            kernel_size=kernel_size,
+            n_classes=n_classes,
+            input_size=input_size,
+            final_bisel_kwargs=final_bisel_kwargs,
+            *args, **kwargs
+        )
 
-        self.repr_size = input_size
-        self.maxpool_layers = []
-        for _ in range(len(self)):
-            self.repr_size = (self.repr_size[0] // 2, self.repr_size[1] // 2)
-            self.maxpool_layers.append(nn.MaxPool2d((2, 2)))
 
-        self.bisel_kwargs = self.bisels_kwargs_idx(0) if final_bisel_kwargs is None else final_bisel_kwargs
-        self.bisel_kwargs["in_channels"] = self.out_channels[-1]
-        self.bisel_kwargs["out_channels"] = n_classes
-        self.bisel_kwargs["kernel_size"] = self.repr_size
-        self.bisel_kwargs["padding"] = 0
-
-        self.classification_layer = BiSELNotBinary(**self.bisel_kwargs)
-
-        self.in_channels.append(self.out_channels[-1])
-        self.out_channels.append(n_classes)
-        self.kernel_size.append(input_size)
-
-        self.layers.append(self.classification_layer)
-        self.bisels_idx.append(len(self.layers) - 1)
-
-    def forward(self, x):
-        output = self.maxpool_layers[0](self.layers[0](x))
-        for layer_bise, layer_maxpool in zip(self.layers[1:-1], self.maxpool_layers[1:]):
-            output = layer_maxpool(layer_bise(output))
-        output = self.layers[-1](output)
-
-        batch_size = output.shape[0]
-        output = output.squeeze()
-        if batch_size == 1:
-            output = output.unsqueeze(0)
-
-        return output
-
-    def forward_save(self, x):
-        output = {"input": x}
-        cur = self.layers[0].forward_save(x)
-        output[0] = cur
-        cur['output'] = nn.MaxPool(cur['output'])
-
-        for layer_idx, layer in enumerate(self.layers[1:], start=1):
-            cur = layer.forward_save(cur['output'])
-            cur['output'] = nn.MaxPool(cur['output'])
-            output[layer_idx] = cur
-
-        output[len(self) - 1] = self.layers[-1].forward_save(cur['output'])
-        output["output"] = cur["output"]
-
-        batch_size = output["output"].shape[0]
-        output["output"] = output["output"].squeeze()
-        if batch_size == 1:
-            output["output"] = output["output"].unsqueeze(0)
-        return output
+class BiMoNNClassifierMaxPoolNotBinary(BiMoNNClassifierMaxPoolBase):
+    def __init__(
+        self,
+        kernel_size: List[Union[Tuple, int]],
+        n_classes: int,
+        input_size: Tuple[int],
+        final_bisel_kwargs: Dict = None,
+        *args,
+        **kwargs
+    ):
+        super().__init__(
+            classif_layer_fn=BiSELNotBinary,
+            kernel_size=kernel_size,
+            n_classes=n_classes,
+            input_size=input_size,
+            final_bisel_kwargs=final_bisel_kwargs,
+            *args, **kwargs
+        )

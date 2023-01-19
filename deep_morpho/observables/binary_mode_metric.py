@@ -96,7 +96,7 @@ class BinaryModeMetric(Observable):
 
 class BinaryModeMetricClassif(Observable):
 
-    def __init__(self, metrics, freq: Dict = {"train": 100, "val": 10}, do_plot_figure: bool = True, figsize_atom=(4, 4), n_imgs=10, ):
+    def __init__(self, metrics, freq: Dict = {"train": 100, "val": 10, }, do_plot_figure: bool = True, figsize_atom=(4, 4), n_imgs=10, ):
         self.metrics = metrics
         self.freq = freq
         self.freq_idx = {"train": 0, "val": 0}
@@ -153,6 +153,30 @@ class BinaryModeMetricClassif(Observable):
             batch_idx=batch_idx,
             preds=preds,
             state='val'
+        )
+
+    def on_test_batch_end_with_preds(
+        self,
+        trainer: "pl.Trainer",
+        pl_module: "pl.LightningModule",
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        preds: "Any",
+    ):
+        # if self.freq_idx["test"] % self.freq["test"] != 0:
+        #     self.freq_idx["test"] += 1
+        #     return
+        # self.freq_idx["test"] += 1
+
+        self._compute_metric_and_plot(
+            trainer=trainer,
+            pl_module=pl_module,
+            outputs=outputs,
+            batch=batch,
+            batch_idx=batch_idx,
+            preds=preds,
+            state='test'
         )
 
     def _compute_metric_and_plot(

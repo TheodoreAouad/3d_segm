@@ -217,7 +217,7 @@ class InitBiseConstantVarianceConstantWeightsRandomBias(InitBiseConstantVariance
         self.ub = ub
 
     def init_bias(self, module):
-        self.init_bias_value += float(uniform_sampling_bound(-self.ub, self.ub))
+        self.init_bias_value += float(uniform_sampling_bound(-self.ub, self.ub)) * self.init_bias_value
         module.set_bias(
             torch.zeros_like(module.bias) - self.init_bias_value
         )
@@ -249,7 +249,7 @@ class InitDualBiseConstantVarianceConstantWeightsRandomBias(InitDualBiseConstant
         self.ub = ub
 
     def init_bias(self, module):
-        self.init_bias_value += float(uniform_sampling_bound(-self.ub, self.ub))
+        self.init_bias_value += float(uniform_sampling_bound(-self.ub, self.ub)) * self.init_bias_value
         module.set_bias(
             torch.zeros_like(module.bias) - self.init_bias_value
         )
@@ -286,7 +286,7 @@ class InitDualBiseConstantVarianceWeightsRandomBias(InitDualBiseConstantVariance
         self.ub = ub
 
     def init_bias(self, module):
-        self.init_bias_value += float(uniform_sampling_bound(-self.ub, self.ub))
+        self.init_bias_value += float(uniform_sampling_bound(-self.ub, self.ub)) * self.init_bias_value
         module.set_bias(
             torch.zeros_like(module.bias) - self.init_bias_value
         )
@@ -298,7 +298,7 @@ class InitBiseConstantVarianceWeightsRandomBias(InitBiseConstantVarianceWeights)
         self.ub = ub
 
     def init_bias(self, module):
-        self.init_bias_value += float(uniform_sampling_bound(-self.ub, self.ub))
+        self.init_bias_value += float(uniform_sampling_bound(-self.ub, self.ub)) * self.init_bias_value
         module.set_bias(
             torch.zeros_like(module.bias) - self.init_bias_value
         )
@@ -380,7 +380,7 @@ class InitSybiseConstantVarianceWeightsRandomBias(InitSybiseConstantVarianceWeig
         self.ub = ub
 
     def init_bias(self, module):
-        new_value = self.input_mean * self.mean * self.nb_params + uniform_sampling_bound(-self.ub, self.ub).astype(np.float32)
+        new_value = self.input_mean * self.mean * self.nb_params * (1 + uniform_sampling_bound(-self.ub, self.ub).astype(np.float32))
         module.set_bias(
             torch.zeros_like(module.bias) - new_value + self.init_bias_value
         )
@@ -392,7 +392,7 @@ class InitSybiseHeuristicWeightsRandomBias(InitSybiseHeuristicWeights):
         self.ub = ub
 
     def init_bias(self, module):
-        new_value = self.input_mean * self.mean * self.nb_params + uniform_sampling_bound(-self.ub, self.ub).astype(np.float32)
+        new_value = self.input_mean * self.mean * self.nb_params * (1 + uniform_sampling_bound(-self.ub, self.ub).astype(np.float32))
         module.set_bias(
             torch.zeros_like(module.bias) - new_value + self.init_bias_value
         )

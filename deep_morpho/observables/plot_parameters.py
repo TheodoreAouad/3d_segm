@@ -1,7 +1,7 @@
 import pathlib
 from os.path import join
 import itertools
-from typing import Any
+from typing import Any, Dict
 
 
 import matplotlib.pyplot as plt
@@ -11,10 +11,10 @@ import pytorch_lightning as pl
 import torch.nn as nn
 
 
-from .observable_layers import ObservableLayersChans
+from .observable_layers import ObservableLayersChans, Observable
 from general.utils import max_min_norm, save_json
 
-from ..models import BiSE, BiSEL
+from ..models import BiSE, BiSEL, BiSELBase
 
 
 class PlotWeightsBiSE(ObservableLayersChans):
@@ -200,3 +200,39 @@ class PlotParametersBiSE(ObservableLayersChans):
         pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
         save_json({k1: {k2: str(v2) for k2, v2 in v1.items()} for k1, v1 in self.last_params.items()}, join(final_dir, "parameters.json"))
         return self.last_params
+
+
+class ActivationPHistogramBimonn(Observable):
+    def __init__(self, *args, freq: Dict = {"train": 100, "val": 30}, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.freq = freq
+        self.freq_idx = {"train": 0, "val": 0,}
+
+
+    def on_train_batch_end(
+        self,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: "STEP_OUTPUT",
+        batch: "Any",
+        batch_idx: int,
+        dataloader_idx: int,
+    ):
+        if self.freq['train'] is not None and self.freq_idx["train"] % self.freq["train"] != 0:
+            self.freq_idx["train"] += 1
+            return
+        self.freq_idx["train"] += 1
+
+        for idx, layer in enumerate(pl_module.model.layers):
+            # Create function generator such that it does not give the same layer each time
+            if isinstance(layer, BiSELBase):
+                trainer.logger.experiment.add_histogram(
+                    f"param_P_hist/layer_{idx}_bise",
+                    layer.activation_P_bise,
+                    trainer.global_step
+                )
+                trainer.logger.experiment.add_histogram(
+                    f"param_P_hist/layer_{idx}_lui",
+                    layer.activation_P_lui,
+                    trainer.global_step
+                )

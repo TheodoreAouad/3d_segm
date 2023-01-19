@@ -112,4 +112,7 @@ class BiasBiseSoftplusProjected(BiasBiseSoftplusReparametrized):
     def from_param_to_bias(self, param: torch.Tensor) -> torch.Tensor:
         with torch.no_grad():
             bmin, bmax = self.get_min_max_intrinsic_bias_values()
-        return -torch.clamp(self.softplus_layer(param), bmin, bmax)
+            param.data = self.softplus_layer.forward_inverse(torch.clamp(self.softplus_layer(param), bmin, bmax))
+        return -self.softplus_layer(param)
+
+        # return -torch.clamp(self.softplus_layer(param), bmin, bmax)

@@ -198,6 +198,6 @@ class MnistClassifDataset(MNIST):
     @staticmethod
     def get_train_val_test_loader(n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
         trainloader = MnistClassifDataset.get_loader(first_idx=0, n_inputs=n_inputs_train, train=True, shuffle=True, *args, **kwargs)
-        valloader = MnistClassifDataset.get_loader(first_idx=0, n_inputs=n_inputs_val, train=False, shuffle=False, *args, **kwargs)
-        testloader = MnistClassifDataset.get_loader(first_idx=n_inputs_val, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
+        valloader = MnistClassifDataset.get_loader(first_idx=n_inputs_train, n_inputs=n_inputs_val, train=True, shuffle=False, *args, **kwargs)
+        testloader = MnistClassifDataset.get_loader(first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
         return trainloader, valloader, testloader
