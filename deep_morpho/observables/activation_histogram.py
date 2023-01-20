@@ -98,13 +98,17 @@ class ActivationHistogramBimonn(ActivationHistogramBimonnBase):
 
 
 class ActivationHistogramBinaryBimonn(ActivationHistogramBimonnBase):
+    def __init__(self, update_binaries=False, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.update_binaries = update_binaries
+
     def forward_hist(self, pl_module, input_):
         model = pl_module.model
         init_mode = model.binary_mode
 
-        model.binary(mode=True, update_binaries=False)
+        model.binary(mode=True, update_binaries=self.update_binaries)
         output = model.forward(input_)
-        model.binary(mode=init_mode, update_binaries=False)
+        model.binary(mode=init_mode, update_binaries=self.update_binaries)
 
         return output
 

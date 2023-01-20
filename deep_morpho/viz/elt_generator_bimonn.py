@@ -23,17 +23,19 @@ class EltGeneratorBiseBinary(EltGenerator):
     """ Generator for BiSE element binary. Choose either learned = True for learned or learned = False
     for closest selem.
     """
-    def __init__(self, bimonn_model, learned: bool = True):
+    def __init__(self, bimonn_model, learned: bool = True, update_binaries: bool = False):
         super().__init__()
+        self.update_binaries = update_binaries
         self.bimonn_model = bimonn_model
         self.learned = learned
 
     def generate(self, layer_idx, chin, chout, xy_coords_mean, height, **kwargs):
         bise_layer = self.bimonn_model.layers[layer_idx].bises[chin]
-        if self.learned:
-            bise_layer.update_learned_selems()
-        else:
-            bise_layer.update_closest_selems()
+        if self.update_binaries:
+            if self.learned:
+                bise_layer.update_learned_selems()
+            else:
+                bise_layer.update_closest_selems()
 
         return ElementBiseSelemChan(model=bise_layer, learned=self.learned, chout=chout, xy_coords_mean=xy_coords_mean, size=height, **kwargs)
 
@@ -41,16 +43,19 @@ class EltGeneratorBiseBinary(EltGenerator):
 
 class EltGeneratorLui(EltGenerator):
 
-    def __init__(self, bimonn_model, learned: bool = True, imshow_kwargs={"color": "k"}):
+    def __init__(self, bimonn_model, learned: bool = True, imshow_kwargs={"color": "k"}, update_binaries: bool = False):
         super().__init__()
         self.bimonn_model = bimonn_model
         self.imshow_kwargs = imshow_kwargs
         self.learned = learned
+        self.update_binaries = update_binaries
 
     def generate(self, layer_idx, chout, xy_coords_mean, height):
         lui_layer = self.bimonn_model.layers[layer_idx].luis[chout]
-        lui_layer.update_binary_sets()
         # lui_layer.update_learned_sets()
+
+        if self.update_binaries:
+            lui_layer.update_binary_sets()
 
         if self.learned:
             constructor = ElementLui

@@ -18,3 +18,4 @@ from .plot_lr import *
 from .gray_scale_metrics import *
 from .ellipse_parameters import *
 from .activation_histogram import *
+from .update_binary import *

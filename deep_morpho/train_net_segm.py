@@ -2,8 +2,10 @@
 # warnings.filterwarnings('error', message=".+leaf Tensor.+")
 print('Import native libraries ...')
 from functools import partial
+from collections import OrderedDict
 from time import time
 import os
+import math
 from os.path import join
 import pathlib
 from importlib import import_module
@@ -12,6 +14,7 @@ import argparse
 print('Import libraries...')
 import torch
 from pytorch_lightning import Trainer
+from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 import numpy as np
 import pandas as pd
@@ -49,6 +52,10 @@ all_args = import_module(path_args_module).all_args
 # from deep_morpho.args_segm import all_args
 
 print('Imports done.')
+
+
+def lcm(a, b):
+    return abs(a*b) // math.gcd(a, b)
 
 
 def get_dataloader(args):
@@ -213,70 +220,80 @@ def main(args, logger):
         early_stopping_cls = obs.BatchEarlyStopping
         reduce_lr_cls = obs.BatchReduceLrOnPlateau
 
-    observables_dict = {
+    observables = [
         # "SetSeed": obs.SetSeed(args['batch_seed']),
-        "RandomObservable": obs.RandomObservable(freq=args['freq_scalars']),
-        "SaveLoss": obs.SaveLoss(freq=1),
-        "CalculateAndLogMetric": CalculateAndLogMetrics(
+        obs.RandomObservable(freq=args['freq_scalars']),
+        obs.SaveLoss(freq=1),
+        obs.CountInputs(freq=args['freq_scalars']),
+
+        CalculateAndLogMetrics(
             metrics=metrics,
             keep_preds_for_epoch=False,
-            freq={'train': args['freq_scalars'], 'val': 10, "test": 10},
+            freq={'train': args['freq_scalars'], 'val': 1, "test": 1},
         ),
-        "PlotPreds": plot_pred_obs_fn(freq={'train': args['freq_imgs'], 'val': 10000 // args['batch_size']}, ),
+        # "InputAsPredMetric": obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
+        obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': 10000 // args['batch_size']}),
+        plot_pred_obs_fn(freq={'train': args['freq_imgs'], 'val': 10000 // args['batch_size']}, ),
+
+        # "PlotParametersBiSE": obs.PlotParametersBiSE(freq=args['freq_scalars']),
+        # "PlotLUIParametersBiSEL": obs.PlotLUIParametersBiSEL(freq=args['freq_scalars']),
+        # "WeightsHistogramBiSE": obs.WeightsHistogramBiSE(freq=args['freq_imgs']),
+        obs.PlotParametersBiseEllipse(freq=args['freq_scalars']),
+        obs.ActivationPHistogramBimonn(freq={'train': args['freq_hist'], 'val': None}),
+        # "PlotWeightsBiSE": plot_weights_fn(freq=args['freq_imgs']),
+        # "ExplosiveWeightGradientWatcher": obs.ExplosiveWeightGradientWatcher(freq=1, threshold=0.5),
+        # "PlotGradientBise": plot_grad_obs,
+        obs.ConvergenceMetrics(metrics, freq=args['freq_scalars']),
+
+        obs.UpdateBinary(freq=lcm(args['freq_hist'], args['freq_imgs'])),
         # "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),
-        # "InputAsPredMetric": obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
-        "CountInputs": obs.CountInputs(freq=args['freq_scalars']),
-        "ActivationHistogram": obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': 10000 // args['batch_size']}),
-        "ActivationHistogramBinary": obs.ActivationHistogramBinaryBimonn(freq={'train': args['freq_hist'], 'val': 10000 // args['batch_size']}),
-        "ActivationPHistogramBimonn": obs.ActivationPHistogramBimonn(freq={'train': args['freq_hist'], 'val': None}),
-        # "PlotParametersBiSE": obs.PlotParametersBiSE(freq=args['freq_scalars']),
-        "PlotParametersBiseEllipse": obs.PlotParametersBiseEllipse(freq=args['freq_scalars']),
-        # "PlotWeightsBiSE": plot_weights_fn(freq=args['freq_imgs']),
-        # "PlotLUIParametersBiSEL": obs.PlotLUIParametersBiSEL(freq=args['freq_scalars']),
-        # "WeightsHistogramBiSE": obs.WeightsHistogramBiSE(freq=args['freq_imgs']),
+        obs.ActivationHistogramBinaryBimonn(freq={'train': args['freq_hist'], 'val': 10000 // args['batch_size']}),
         # "CheckMorpOperation": obs.CheckMorpOperation(
         #     selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50
         # ) if args['dataset_type'] == 'diskorect' else obs.Observable(),
-        # "PlotGradientBise": plot_grad_obs,
-        # "ExplosiveWeightGradientWatcher": obs.ExplosiveWeightGradientWatcher(freq=1, threshold=0.5),
-        "ConvergenceMetrics": obs.ConvergenceMetrics(metrics, freq=args['freq_scalars']),
         # "ShowSelemAlmostBinary": obs.ShowSelemAlmostBinary(freq=args['freq_imgs']),
         # "ShowSelemBinary": obs.ShowSelemBinary(freq=args['freq_imgs']),
         # "ShowClosestSelemBinary": obs.ShowClosestSelemBinary(freq=args['freq_imgs']),
         # "ShowLUISetBinary": obs.ShowLUISetBinary(freq=args['freq_imgs']),
-        "BinaryModeMetric": binary_mode_fn(metrics, freq={"train": args['freq_imgs'], "val": 10000 // args['batch_size']}, do_plot_figure=True),
+        binary_mode_fn(
+            metrics,
+            freq={"train": args['freq_imgs'], "val": 10000 // args['batch_size']},
+            plot_freq={"train": args['freq_imgs'], "val": 10000 // args['batch_size'], "test": args['freq_imgs']},
+        ),
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         # "ConvergenceBinary": obs.ConvergenceBinary(freq=args['freq_imgs']),
-        "BatchEarlyStoppingLoss": early_stopping_cls(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+
+        early_stopping_cls(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
         # "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss_batch'], mode="min"),
         # "BatchEarlyStoppingBinaryDice": obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
         # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
-        "BatchReduceLrOnPlateau": reduce_lr_cls(patience=args['patience_reduce_lr'], on_train=True),
-        "CheckLearningRate": obs.CheckLearningRate(freq=2 * args['freq_scalars']),
-    }
+        reduce_lr_cls(patience=args['patience_reduce_lr'], on_train=True),
+        obs.CheckLearningRate(freq=2 * args['freq_scalars']),
+    ]
+
     # observables_dict = {}
 
     if args['dataset_type'] in ['mnist_gray', 'fashionmnist']:
         metrics_gray_scale = {'mse': lambda y_true, y_pred: ((y_true - y_pred) ** 2).mean()}
-        observables_dict.update({
-            "CalculateAndLogMetricGrayScale": obs.CalculateAndLogMetricGrayScale(
+        observables += [
+            obs.CalculateAndLogMetricGrayScale(
                 metrics=metrics_gray_scale,
                 keep_preds_for_epoch=False,
             freq={'train': args['freq_scalars'], 'val': 10, "test": 10},
             ),
-            "InputAsPredMetricGrayScale": obs.InputAsPredMetricGrayScale(metrics_gray_scale, freq=args['freq_scalars']),
-            "BinaryModeMetricGrayScale": obs.BinaryModeMetricGrayScale(metrics_gray_scale, freq=args['freq_imgs']),
-        })
+            obs.InputAsPredMetricGrayScale(metrics_gray_scale, freq=args['freq_scalars']),
+            obs.BinaryModeMetricGrayScale(metrics_gray_scale, freq=args['freq_imgs']),
+        ]
 
     if args['weights_optim_mode'] in [BiseWeightsOptimEnum.ELLIPSE, BiseWeightsOptimEnum.ELLIPSE_ROOT]:
-        observables_dict.update({
-            "PlotSigmaBiseEllipse": obs.PlotSigmaBiseEllipse(freq=args['freq_imgs'])
-        })
+        observables += [
+            obs.PlotSigmaBiseEllipse(freq=args['freq_imgs'])
+        ]
 
 
-    observables = list(observables_dict.values())
+    # observables = list(observables_dict.values())
 
     xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
 
@@ -396,13 +413,14 @@ def main(args, logger):
         #     logger.experiment.add_figure(f"target_SE/target_SE_{selem_idx}", fig)
         #     logger.experiment.add_image(f"target_SE/target_SE_{selem_idx}", selem[np.newaxis, :].astype(float))
 
+    callbacks = [ModelCheckpoint(monitor="binary_mode/metrics_epoch_mean/loss_val", dirpath=join(logger.log_dir, "best_weights")), ]
 
     trainer = Trainer(
         max_epochs=args['n_epochs'],
         gpus=1 if torch.cuda.is_available() else 0,
         logger=logger,
         # progress_bar_refresh_rate=10,
-        callbacks=observables.copy(),
+        callbacks=observables.copy() + callbacks.copy(),
         log_every_n_steps=10,
         deterministic=True,
         num_sanity_val_steps=1,
@@ -410,7 +428,7 @@ def main(args, logger):
 
     log_console("Binarizable parameters:", model.model.numel_binary(), logger=console_logger)
     trainer.fit(model, trainloader, valloader)
-    # trainer.test(model, testloader)
+    trainer.test(model, testloader)
 
     for observable in observables:
         observable.save(join(trainer.log_dir, 'observables'))

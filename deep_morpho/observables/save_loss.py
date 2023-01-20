@@ -19,7 +19,7 @@ class SaveLoss(Observable):
         self,
         trainer: 'pl.Trainer',
         pl_module: 'pl.LightningModule',
-        outputs: "STEP_OUTPUT",
+        outputs: "SdTEP_OUTPUT",
         batch: "Any",
         batch_idx: int,
         dataloader_idx: int,

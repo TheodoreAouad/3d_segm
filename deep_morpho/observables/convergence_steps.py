@@ -42,6 +42,18 @@ class ConvergenceMetrics(Observable):
         self.freq_idx = {"train": 1, "val": 1, "test": 1}
 
 
+    def _update_metric_with_loss(self, pl_module):
+        for state in ["train", "val", "test"]:
+            self.cur_value[state].update({"loss": 0})
+
+    def on_train_start(self, trainer, pl_module):
+        self._update_metric_with_loss(pl_module)
+
+    def on_test_start(self, trainer, pl_module):
+        for state in ["train", "val", "test"]:
+            if 'loss' not in self.cur_value[state].keys():
+                self._update_metric_with_loss(pl_module)
+
     def on_train_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
         if self.freq_idx["train"] % self.freq["train"] != 0:
             self.freq_idx["train"] += 1

@@ -136,7 +136,7 @@ class NetLightning(ObsLightningModule):
         x, y = batch
         predictions = self.forward(x)
 
-        outputs = self.compute_loss(state="training", ypred=predictions, ytrue=y)
+        outputs = self.compute_loss(state="/training", ypred=predictions, ytrue=y)
 
         # return {'loss': loss}, predictions
         return outputs, predictions
@@ -145,7 +145,7 @@ class NetLightning(ObsLightningModule):
         x, y = batch
         predictions = self.forward(x)
 
-        outputs = self.compute_loss(state="validation", ypred=predictions, ytrue=y)
+        outputs = self.compute_loss(state="/validation", ypred=predictions, ytrue=y)
 
         # return {'val_loss': loss}, predictions
         return outputs, predictions
@@ -154,12 +154,19 @@ class NetLightning(ObsLightningModule):
         x, y = batch
         predictions = self.forward(x)
 
-        outputs = self.compute_loss(state="test", ypred=predictions, ytrue=y)
+        outputs = self.compute_loss(state="/test", ypred=predictions, ytrue=y)
 
         # return {'test_loss': loss}, predictions
         return outputs, predictions
 
-    def compute_loss(self, state, ypred, ytrue):
+    def compute_loss_value(self, ypred, ytrue):
+        """Outputs the 1d loss value for the given example.
+        """
+        return self.compute_loss(ypred, ytrue, do_log=False)["loss"].item()
+
+    def compute_loss(self, ypred, ytrue, state="", do_log=True):
+        """Computes total loss for each component of the loss.
+        """
         values = {}
         assert not ypred.isnan().any(), "NaN in prediction"
         if isinstance(self.loss, dict):
@@ -179,7 +186,8 @@ class NetLightning(ObsLightningModule):
 
         grad_values = {}
         for key, value in values.items():
-            self.log(f"loss/{state}/{key}", value.item())  # put .item() to avoid memory leak
+            if do_log:
+                self.log(f"loss{state}/{key}", value.item())  # put .item() to avoid memory leak
             if key == "loss":
                 continue
 

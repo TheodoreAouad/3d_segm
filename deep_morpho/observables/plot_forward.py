@@ -10,9 +10,10 @@ from deep_morpho.viz.bimonn_viz import BimonnForwardVizualiser, BimonnHistogramV
 
 class PlotBimonnForward(Observable):
 
-    def __init__(self, freq: int = 300, figsize=None, dpi=None, do_plot={"float": True, "binary": True}, *args, **kwargs):
+    def __init__(self, freq: int = 300, figsize=None, dpi=None, do_plot={"float": True, "binary": True}, update_binaries: bool = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.freq = freq
+        self.update_binaries = update_binaries
         self.freq_idx = 0
         self.figsize = figsize
         self.dpi = dpi
@@ -63,11 +64,11 @@ class PlotBimonnForward(Observable):
         for key, do_key in self.do_plot.items():
             if do_key:
                 if key == "binary":
-                    pl_module.model.binary(True)
+                    pl_module.model.binary(True, update_binaries=self.update_binaries)
                 else:
                     pl_module.model.binary(False)
 
-                vizualiser = BimonnForwardVizualiser(pl_module.model, mode=key, inpt=inpt)
+                vizualiser = BimonnForwardVizualiser(pl_module.model, mode=key, inpt=inpt, update_binaries=self.update_binaries)
                 fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
                 trainer.logger.experiment.add_figure(f"{title}/{key}", fig, trainer.global_step)
                 if key in self.last_figs.keys():
@@ -92,10 +93,11 @@ class PlotBimonnForward(Observable):
 
 class PlotBimonnHistogram(Observable):
 
-    def __init__(self, freq: int = 300, figsize=None, dpi=None, do_plot={"float": True, "binary": True}, *args, **kwargs):
+    def __init__(self, freq: int = 300, figsize=None, dpi=None, do_plot={"float": True, "binary": True}, update_binaries: bool = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.freq = freq
         self.freq_idx = 0
+        self.update_binaries =update_binaries
         self.figsize = figsize
         self.dpi = dpi
         self.do_plot = do_plot
@@ -137,11 +139,11 @@ class PlotBimonnHistogram(Observable):
         for key, do_key in self.do_plot.items():
             if do_key:
                 if key == "binary":
-                    pl_module.model.binary(True)
+                    pl_module.model.binary(True, update_binaries=self.update_binaries)
                 else:
                     pl_module.model.binary(False)
 
-                vizualiser = BimonnHistogramVizualiser(pl_module.model, mode=key, inpt=inpt)
+                vizualiser = BimonnHistogramVizualiser(pl_module.model, mode=key, inpt=inpt, update_binaries=self.update_binaries)
                 fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
                 trainer.logger.experiment.add_figure(f"{title}/{key}", fig, trainer.global_step)
 

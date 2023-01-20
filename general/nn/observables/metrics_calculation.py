@@ -14,6 +14,8 @@ class CalculateAndLogMetrics(Observable):
         self.freq = freq
         self.freq_idx = {"train": 1, "val": 1, "test": 1}
         self.metrics = metrics
+        self.metrics_sum = {state: {k: 0 for k in metrics.keys()} for state in ['train', 'val', 'test']}
+        self.n_inputs = {state: 0 for state in ['train', 'val', 'test']}
         self.last_value = {k: 0 for k in metrics.keys()}
         self.keep_preds_for_epoch = keep_preds_for_epoch
 
@@ -30,6 +32,36 @@ class CalculateAndLogMetrics(Observable):
                for state in ['train', 'val']
                }
         )
+
+    def metric_mean(self, state, key):
+        return self.metrics_sum[state][key] / max(1, self.n_inputs[state])
+
+    def _update_metric_with_loss(self, pl_module):
+        self.metrics.update({"loss": lambda x, y: pl_module.compute_loss_value(y, x)})
+        for state in ["train", "val", "test"]:
+            self.metrics_sum[state].update({"loss": 0})
+
+    def on_train_start(self, trainer, pl_module):
+        self._update_metric_with_loss(pl_module)
+
+    def on_test_start(self, trainer, pl_module):
+        if 'loss' not in self.metrics.keys():
+            self._update_metric_with_loss(pl_module)
+
+    def on_train_epoch_start(self, *args, **kwargs):
+        for key in self.metrics_sum["train"]:
+            self.metrics_sum["train"][key] = 0
+        self.n_inputs["train"] = 0
+
+    def on_validation_epoch_start(self, *args, **kwargs):
+        for key in self.metrics_sum["val"]:
+            self.metrics_sum["val"][key] = 0
+        self.n_inputs["val"] = 0
+
+    def on_test_epoch_start(self, *args, **kwargs):
+        for key in self.metrics_sum["test"]:
+            self.metrics_sum["test"][key] = 0
+        self.n_inputs["test"] = 0
 
     def on_train_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
         self.freq_idx['train'] += 1
@@ -51,15 +83,21 @@ class CalculateAndLogMetrics(Observable):
 
     def _calculate_and_log_metrics(self, trainer, pl_module, targets, preds, state='train', batch_or_epoch='batch', suffix=""):
         key = f"{state}{suffix}"
+
+        if batch_or_epoch == 'batch':
+            self.n_inputs[state] += targets.shape[0]
         for metric_name in self.metrics:
             metric = self.metrics[metric_name](targets, preds)
             self.last_value[metric_name] = metric
-            # pl_module.log(f"mean_metrics_{batch_or_epoch}/{metric_name}/{state}", metric)
+
             if batch_or_epoch == 'batch':
-                # step = self.tb_steps[metric_name].get(key, 0)
                 step = trainer.global_step
+                self.metrics_sum[state][metric_name] += metric * targets.shape[0]
+
             else:
                 step = trainer.current_epoch
+
+            pl_module.log(f"metrics_{batch_or_epoch}/{metric_name}{suffix}_{state}", metric)
 
             trainer.logger.experiment.add_scalars(
                 f"comparative/metrics_{batch_or_epoch}/{metric_name}{suffix}", {state: metric}, step
@@ -86,6 +124,12 @@ class CalculateAndLogMetrics(Observable):
             self.all_preds['train'] = torch.tensor([])
             self.all_targets['train'] = torch.tensor([])
 
+        for metric_name in self.metrics.keys():
+            trainer.logger.log_metrics(
+                {f"metrics_epoch_mean/{metric_name}_train": self.metric_mean("train", metric_name)}, step=trainer.current_epoch
+            )
+            pl_module.log(f"metrics_epoch_mean/{metric_name}_train", self.metric_mean("train", metric_name))
+
     def on_validation_epoch_end(
         self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule'
     ):
@@ -94,6 +138,13 @@ class CalculateAndLogMetrics(Observable):
             self.all_preds['val'] = torch.tensor([])
             self.all_targets['val'] = torch.tensor([])
 
+        for metric_name in self.metrics.keys():
+            trainer.logger.log_metrics(
+                {f"metrics_epoch_mean/{metric_name}_val": self.metric_mean("val", metric_name)}, step=trainer.current_epoch
+            )
+            pl_module.log(f"metrics_epoch_mean/{metric_name}_val", self.metric_mean("val", metric_name))
+
+
     def on_test_epoch_end(
         self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule'
     ):
@@ -101,6 +152,13 @@ class CalculateAndLogMetrics(Observable):
             self._calculate_and_log_metrics(trainer, pl_module, self.all_targets['test'], self.all_preds['test'], state='test', batch_or_epoch='epoch')
             self.all_preds['test'] = torch.tensor([])
             self.all_targets['test'] = torch.tensor([])
+
+        for metric_name in self.metrics.keys():
+            trainer.logger.log_metrics(
+                {f"metrics_epoch_mean/{metric_name}_test": self.metric_mean("test", metric_name)}, step=trainer.current_epoch
+            )
+            pl_module.log(f"metrics_epoch_mean/{metric_name}_test", self.metric_mean("test", metric_name))
+
 
     def save(self, save_path: str):
         final_dir = join(save_path, self.__class__.__name__)

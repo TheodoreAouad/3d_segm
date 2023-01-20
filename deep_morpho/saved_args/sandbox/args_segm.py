@@ -206,9 +206,9 @@ all_args["model_type"] = [
     # "LightningBiMoNN",
 ]
 all_args['atomic_element'] = [
-    # "bisel",
+    "bisel",
     # "dual_bisel",
-    "sybisel",
+    # "sybisel",
 ]
 all_args['n_atoms'] = [
     'adapt',
@@ -232,8 +232,8 @@ all_args['closest_selem_method'] = [
 
 all_args['bias_optim_mode'] = [
     # BiseBiasOptimEnum.RAW,
-    # BiseBiasOptimEnum.POSITIVE,
-    BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
+    BiseBiasOptimEnum.POSITIVE,
+    # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 all_args['bias_optim_args'] = [

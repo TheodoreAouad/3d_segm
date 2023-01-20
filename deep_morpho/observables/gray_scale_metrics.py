@@ -28,7 +28,7 @@ class BinaryModeMetricGrayScale(BinaryModeMetric):
         self.freq_idx += 1
 
         with torch.no_grad():
-            pl_module.model.binary()
+            pl_module.model.binary(update_binaries=self.update_binaries)
 
             new_inputs = (batch[0] > 0).float()  # handle both {0, 1} and {-1, 1}
             new_targets = batch[1] > 0

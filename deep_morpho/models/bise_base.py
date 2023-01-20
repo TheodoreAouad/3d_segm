@@ -196,10 +196,10 @@ class BiSEBase(BinaryNN):
         for chan in range(self.out_channels):
             self.find_selem_and_operation_chan(chan)
 
-    def binary(self, mode: bool = True, update_binaries: bool = True):
+    def binary(self, mode: bool = True, update_binaries: bool = True, *args, **kwargs):
         if mode and update_binaries:
             self.update_binary_selems()
-        return super().binary(mode)
+        return super().binary(mode,  *args, **kwargs)
 
     # TODO: move to BiSE class
     @staticmethod

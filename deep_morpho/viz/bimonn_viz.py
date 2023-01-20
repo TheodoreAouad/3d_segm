@@ -19,7 +19,7 @@ from .elt_generator_init import EltGeneratorInitCircle
 
 class BimonnVizualiser(SkeletonMorpViz):
 
-    def __init__(self, model, mode: str = "weights", **kwargs):
+    def __init__(self, model, mode: str = "weights", update_binaries: bool = False, **kwargs):
         self.model = model
         assert mode in ["weights", "learned", "closest"]
 
@@ -32,16 +32,16 @@ class BimonnVizualiser(SkeletonMorpViz):
 
         elif mode == "learned":
             kwargs.update({
-                "elt_generator_bise": EltGeneratorBiseBinary(model, learned=True),
-                "elt_generator_lui": EltGeneratorLui(model),
+                "elt_generator_bise": EltGeneratorBiseBinary(model, learned=True, update_binaries=update_binaries),
+                "elt_generator_lui": EltGeneratorLui(model, update_binaries=update_binaries),
                 "elt_generator_connections": EltGeneratorConnectLuiBise(model=model, binary_mode=True),
             })
 
         elif mode == "closest":
             kwargs.update({
-                "elt_generator_bise": EltGeneratorBiseBinary(model, learned=False),
-                "elt_generator_lui": EltGeneratorLui(model, learned=False),
-                "elt_generator_connections": EltGeneratorConnectLuiBiseClosest(model=model, ),
+                "elt_generator_bise": EltGeneratorBiseBinary(model, learned=False, update_binaries=update_binaries),
+                "elt_generator_lui": EltGeneratorLui(model, learned=False, update_binaries=update_binaries),
+                "elt_generator_connections": EltGeneratorConnectLuiBiseClosest(model=model),
             })
 
         super().__init__(
@@ -56,8 +56,9 @@ class BimonnVizualiser(SkeletonMorpViz):
 
 class BimonnForwardVizualiser(SkeletonMorpViz):
 
-    def __init__(self, model, inpt, mode: str = "float", lui_horizontal_factor: float = 1.7, **kwargs):
+    def __init__(self, model, inpt, mode: str = "float", lui_horizontal_factor: float = 1.7, update_binaries: bool = False, **kwargs):
         self.model = model
+        self.update_binaries = update_binaries
 
         assert mode in ["float", "binary"]
         self.mode = mode
@@ -65,7 +66,7 @@ class BimonnForwardVizualiser(SkeletonMorpViz):
             self.model.binary(False)
             kwargs["elt_generator_connections"] = EltGeneratorConnectLuiBiseForwardSave(model=model)
         else:
-            self.model.binary(True)
+            self.model.binary(True, update_binaries=update_binaries)
             kwargs["elt_generator_connections"] = EltGeneratorConnectLuiBiseClosestForwardSave(model=model)
 
         self.all_outputs = model.forward_save(inpt)
@@ -92,9 +93,11 @@ class BimonnHistogramVizualiser(SkeletonMorpViz):
     def __init__(
         self, model, inpt, dpi=100, mode: str = "float", lui_horizontal_factor: float = 1.7,
         hist_kwargs: Dict = {}, bise_hist_kwargs: Dict = None, lui_hist_kwargs: Dict = None, init_hist_kwargs: Dict = None,
+        update_binaries: bool = False,
         **kwargs):
         self.model = model
         self.dpi = dpi
+        self.update_binaries = update_binaries
 
         assert mode in ["float", "binary"]
         self.mode = mode
@@ -102,7 +105,7 @@ class BimonnHistogramVizualiser(SkeletonMorpViz):
             self.model.binary(False)
             kwargs["elt_generator_connections"] = EltGeneratorConnectLuiBiseForwardSave(model=model)
         else:
-            self.model.binary(True)
+            self.model.binary(True, update_binaries=update_binaries)
             kwargs["elt_generator_connections"] = EltGeneratorConnectLuiBiseClosestForwardSave(model=model)
 
         self.all_outputs = model.forward_save(inpt)

@@ -10,13 +10,14 @@ from deep_morpho.viz.bimonn_viz import BimonnVizualiser
 
 class PlotBimonn(Observable):
 
-    def __init__(self, freq: int = 300, figsize=None, dpi=None, do_plot={"weights": True, "learned": True, "closest": True,}, *args, **kwargs):
+    def __init__(self, freq: int = 300, figsize=None, dpi=None, do_plot={"weights": True, "learned": True, "closest": True,}, update_binaries: bool = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.freq = freq
         self.freq_idx = 0
         self.figsize = figsize
         self.dpi = dpi
         self.do_plot = do_plot
+        self.update_binaries = update_binaries
 
         self.last_figs = {}
 
@@ -51,7 +52,7 @@ class PlotBimonn(Observable):
     def save_figs(self, trainer, pl_module):
         for key, do_key in self.do_plot.items():
             if do_key:
-                vizualiser = BimonnVizualiser(pl_module.model, mode=key)
+                vizualiser = BimonnVizualiser(pl_module.model, mode=key, update_binaries=self.update_binaries)
                 fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
                 trainer.logger.experiment.add_figure(f"model/{key}", fig, trainer.global_step)
                 if key in self.last_figs.keys():
