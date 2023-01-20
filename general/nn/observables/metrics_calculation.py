@@ -16,7 +16,7 @@ class CalculateAndLogMetrics(Observable):
         self.metrics = metrics
         self.metrics_sum = {state: {k: 0 for k in metrics.keys()} for state in ['train', 'val', 'test']}
         self.n_inputs = {state: 0 for state in ['train', 'val', 'test']}
-        self.last_value = {k: 0 for k in metrics.keys()}
+        self.last_value = {state: {} for state in ["train", "val", "test"]}
         self.keep_preds_for_epoch = keep_preds_for_epoch
 
         if self.keep_preds_for_epoch:
@@ -88,7 +88,6 @@ class CalculateAndLogMetrics(Observable):
             self.n_inputs[state] += targets.shape[0]
         for metric_name in self.metrics:
             metric = self.metrics[metric_name](targets, preds)
-            self.last_value[metric_name] = metric
 
             if batch_or_epoch == 'batch':
                 step = trainer.global_step
@@ -125,10 +124,13 @@ class CalculateAndLogMetrics(Observable):
             self.all_targets['train'] = torch.tensor([])
 
         for metric_name in self.metrics.keys():
+            metric = self.metric_mean("train", metric_name)
             trainer.logger.log_metrics(
-                {f"metrics_epoch_mean/{metric_name}_train": self.metric_mean("train", metric_name)}, step=trainer.current_epoch
+                {f"metrics_epoch_mean/{metric_name}_train": metric}, step=trainer.current_epoch
             )
-            pl_module.log(f"metrics_epoch_mean/{metric_name}_train", self.metric_mean("train", metric_name))
+            pl_module.log(f"metrics_epoch_mean/{metric_name}_train", metric)
+            self.last_value["train"][metric_name] = metric
+
 
     def on_validation_epoch_end(
         self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule'
@@ -139,10 +141,13 @@ class CalculateAndLogMetrics(Observable):
             self.all_targets['val'] = torch.tensor([])
 
         for metric_name in self.metrics.keys():
+            metric = self.metric_mean("val", metric_name)
             trainer.logger.log_metrics(
-                {f"metrics_epoch_mean/{metric_name}_val": self.metric_mean("val", metric_name)}, step=trainer.current_epoch
+                {f"metrics_epoch_mean/{metric_name}_val": metric}, step=trainer.current_epoch
             )
-            pl_module.log(f"metrics_epoch_mean/{metric_name}_val", self.metric_mean("val", metric_name))
+            pl_module.log(f"metrics_epoch_mean/{metric_name}_val", metric)
+            self.last_value["val"][metric_name] = metric
+
 
 
     def on_test_epoch_end(
@@ -154,14 +159,22 @@ class CalculateAndLogMetrics(Observable):
             self.all_targets['test'] = torch.tensor([])
 
         for metric_name in self.metrics.keys():
+            metric = self.metric_mean("test", metric_name)
             trainer.logger.log_metrics(
-                {f"metrics_epoch_mean/{metric_name}_test": self.metric_mean("test", metric_name)}, step=trainer.current_epoch
+                {f"metrics_epoch_mean/{metric_name}_test": metric}, step=trainer.current_epoch
             )
-            pl_module.log(f"metrics_epoch_mean/{metric_name}_test", self.metric_mean("test", metric_name))
+            pl_module.log(f"metrics_epoch_mean/{metric_name}_test", metric)
+            self.last_value["test"][metric_name] = metric
 
 
     def save(self, save_path: str):
         final_dir = join(save_path, self.__class__.__name__)
         pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
-        save_json({k: str(v) for k, v in self.last_value.items()}, join(final_dir, "metrics.json"))
+        # save_json({k: str(v) for k, v in self.last_value.items()}, join(final_dir, "metrics.json"))
+        dict_str = {}
+        for k1, v1 in self.last_value.items():
+            dict_str[k1] = {}
+            for k2, v2 in v1.items():
+                dict_str[k1][k2] = str(v2)
+        save_json(dict_str, join(final_dir, "metrics.json"))
         return self.last_value

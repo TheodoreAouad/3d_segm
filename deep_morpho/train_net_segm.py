@@ -220,17 +220,25 @@ def main(args, logger):
         early_stopping_cls = obs.BatchEarlyStopping
         reduce_lr_cls = obs.BatchReduceLrOnPlateau
 
+    metric_float_obs = CalculateAndLogMetrics(
+        metrics=metrics,
+        keep_preds_for_epoch=False,
+        freq={'train': args['freq_scalars'], 'val': 1, "test": 1},
+    )
+
+    metric_binary_obs = binary_mode_fn(
+        metrics,
+        freq={"train": args['freq_scalars'], "val": 1, "test": 1},
+        plot_freq={"train": args['freq_imgs'], "val": 0.1 * 60000 // args['batch_size'], "test": args['freq_imgs']},
+    )
+
     observables = [
         # "SetSeed": obs.SetSeed(args['batch_seed']),
         obs.RandomObservable(freq=args['freq_scalars']),
         obs.SaveLoss(freq=1),
         obs.CountInputs(freq=args['freq_scalars']),
 
-        CalculateAndLogMetrics(
-            metrics=metrics,
-            keep_preds_for_epoch=False,
-            freq={'train': args['freq_scalars'], 'val': 1, "test": 1},
-        ),
+        metric_float_obs,
         # "InputAsPredMetric": obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
         obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': 10000 // args['batch_size']}),
         plot_pred_obs_fn(freq={'train': args['freq_imgs'], 'val': 10000 // args['batch_size']}, ),
@@ -257,11 +265,7 @@ def main(args, logger):
         # "ShowSelemBinary": obs.ShowSelemBinary(freq=args['freq_imgs']),
         # "ShowClosestSelemBinary": obs.ShowClosestSelemBinary(freq=args['freq_imgs']),
         # "ShowLUISetBinary": obs.ShowLUISetBinary(freq=args['freq_imgs']),
-        binary_mode_fn(
-            metrics,
-            freq={"train": args['freq_imgs'], "val": 10000 // args['batch_size']},
-            plot_freq={"train": args['freq_imgs'], "val": 10000 // args['batch_size'], "test": args['freq_imgs']},
-        ),
+        metric_binary_obs,
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         # "ConvergenceBinary": obs.ConvergenceBinary(freq=args['freq_imgs']),
 
@@ -430,6 +434,14 @@ def main(args, logger):
     trainer.fit(model, trainloader, valloader)
     trainer.test(model, testloader)
 
+    metric_dict = {}
+    for state in ["train", "val", "test"]:
+        for metric_name in metric_float_obs.metrics.keys():
+            metric_dict[f"{metric_name}_{state}"] = metric_float_obs.last_value[state][metric_name]
+            metric_dict[f"binary_{metric_name}_{state}"] = metric_binary_obs.last_value[state][metric_name]
+    logger.log_hyperparams(args, metric_dict)
+
+
     for observable in observables:
         observable.save(join(trainer.log_dir, 'observables'))
 
@@ -487,14 +499,14 @@ if __name__ == '__main__':
         log_console(logger.log_dir, logger=console_logger)
         log_console(args['morp_operation'], logger.log_dir, logger=console_logger)
 
-        results.append(main(args, logger))
+        # results.append(main(args, logger))
 
-        # try:
-        #     main(args, logger)
-        # except Exception:
-        #     console_logger.exception(
-        #         f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
-        #     bugged.append(args_idx+1)
+        try:
+            main(args, logger)
+        except Exception:
+            console_logger.exception(
+                f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
+            bugged.append(args_idx+1)
 
         log_console("Done.", logger=console_logger)
 

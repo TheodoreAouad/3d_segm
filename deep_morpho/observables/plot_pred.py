@@ -124,6 +124,7 @@ class PlotPredsClassif(Observable):
                 figsize_atom=self.figsize_atom,
                 n_imgs=self.n_imgs,
                 title=f'val | epoch {trainer.current_epoch}',
+                xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
             )
             trainer.logger.experiment.add_figure("preds/val/input_pred_target", fig, self.idx['val'])
             self.saved_fig['val'] = fig
@@ -151,6 +152,7 @@ class PlotPredsClassif(Observable):
                     figsize_atom=self.figsize_atom,
                     n_imgs=self.n_imgs,
                     title='train',
+                    xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
                 )
                 trainer.logger.experiment.add_figure("preds/train/input_pred_target", fig, trainer.global_step)
                 self.saved_fig['train'] = fig
@@ -158,7 +160,7 @@ class PlotPredsClassif(Observable):
         self.idx['train'] += 1
 
     @staticmethod
-    def plot_pred(imgs, preds, targets, figsize_atom, n_imgs, title='',):
+    def plot_pred(imgs, preds, targets, figsize_atom, n_imgs, title='', xlims=(0, 1)):
         n_imgs = min(n_imgs, len(imgs))
         W, L = figsize_atom
         fig, axs = plt.subplots(n_imgs, 2, figsize=(2 * W, L * n_imgs))
@@ -175,7 +177,7 @@ class PlotPredsClassif(Observable):
             colors[pred_label] = "green"
 
             axs[ax_idx, 1].barh(range(n_classes), pred, tick_label=range(n_classes), color=colors)
-            axs[ax_idx, 1].set_xlim(0, 1)
+            axs[ax_idx, 1].set_xlim(*xlims)
             axs[ax_idx, 1].set_title(f'pred: {pred.argmax()}')
 
             for idx, value in enumerate(pred):

@@ -19,4 +19,9 @@ class UpdateBinary(Observable):
         pl_module.model.binary(mode=init_mode, update_binaries=False)  # Resetting original binary mode
 
     def on_train_epoch_end(self, trainer, pl_module):
+        # print("training end")
         self.apply_update(pl_module)
+
+    # def on_validation_epoch_start(self, trainer, pl_module):
+    #     print("validation start")
+    #     self.apply_update(pl_module)

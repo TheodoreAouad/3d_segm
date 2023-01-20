@@ -10,7 +10,8 @@ from .bise_initializer import (
     InitSybiseHeuristicWeightsRandomBias, InitBiseEllipseWeights, InitBiseEllipseWeightsRoot,
     InitDualBiseConstantVarianceWeights, InitDualBiseConstantVarianceWeightsRandomBias,
     InitBiseConstantVarianceWeightsRandomBias, InitBiseConstantVarianceConstantWeights, InitDualBiseConstantVarianceConstantWeights,
-    InitBiseConstantVarianceConstantWeightsRandomBias, InitDualBiseConstantVarianceConstantWeightsRandomBias
+    InitBiseConstantVarianceConstantWeightsRandomBias, InitDualBiseConstantVarianceConstantWeightsRandomBias,
+    InitSybiseConstantVarianceConstantWeights, InitSybiseConstantVarianceConstantWeightsRandomBias
 )
 
 
@@ -125,7 +126,11 @@ class BimonnInitializer:
             elif bise_init_method == InitBiseEnum.CUSTOM_HEURISTIC_RANDOM_BIAS:
                 return InitSybiseHeuristicWeightsRandomBias
 
+            elif bise_init_method == InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS:
+                return InitSybiseConstantVarianceConstantWeights
 
+            elif bise_init_method == InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS:
+                return InitSybiseConstantVarianceConstantWeightsRandomBias
 
 
 class BimonnInitInputMean(BimonnInitializer):

@@ -6,7 +6,7 @@ import numpy as np
 import torch.nn as nn
 
 from .bisel import BiSEL, SyBiSEL
-from .layers_not_binary import BiSELNotBinary
+from .layers_not_binary import BiSELNotBinary, SyBiSELNotBinary
 from .binary_nn import BinaryNN
 from ..initializer import BimonnInitializer, InitBimonnEnum, BimonnInitInputMean, InitBiseEnum
 
@@ -325,16 +325,18 @@ class BiMoNNClassifierLastLinear(BiMoNNClassifierLastLinearBase):
         kernel_size: List[Union[Tuple, int]],
         n_classes: int,
         input_size: Tuple[int],
+        atomic_element: Union[str, List[str]],
         final_bisel_kwargs: Dict = None,
         *args,
         **kwargs
     ):
         super().__init__(
-            classif_layer_fn=BiSEL,
+            classif_layer_fn=SyBiSEL if atomic_element in ["sybisel", ["sybisel"]] else BiSEL,
             kernel_size=kernel_size,
             n_classes=n_classes,
             input_size=input_size,
             final_bisel_kwargs=final_bisel_kwargs,
+            atomic_element=atomic_element,
             *args,
             **kwargs
         )
@@ -345,17 +347,19 @@ class BiMoNNClassifierLastLinearNotBinary(BiMoNNClassifierLastLinearBase):
         self,
         kernel_size: List[Union[Tuple, int]],
         n_classes: int,
+        atomic_element: Union[str, List[str]],
         input_size: Tuple[int],
         final_bisel_kwargs: Dict = None,
         *args,
         **kwargs
     ):
         super().__init__(
-            classif_layer_fn=BiSELNotBinary,
+            classif_layer_fn=SyBiSELNotBinary if atomic_element in ["sybisel", ["sybisel"]] else BiSELNotBinary,
             kernel_size=kernel_size,
             n_classes=n_classes,
             input_size=input_size,
             final_bisel_kwargs=final_bisel_kwargs,
+            atomic_element=atomic_element,
             *args,
             **kwargs
         )
@@ -443,16 +447,18 @@ class BiMoNNClassifierMaxPool(BiMoNNClassifierMaxPoolBase):
         kernel_size: List[Union[Tuple, int]],
         n_classes: int,
         input_size: Tuple[int],
+        atomic_element: Union[str, List[str]],
         final_bisel_kwargs: Dict = None,
         *args,
         **kwargs
     ):
         super().__init__(
-            classif_layer_fn=BiSEL,
+            classif_layer_fn=SyBiSEL if atomic_element in ["sybisel", ["sybisel"]] else BiSEL,
             kernel_size=kernel_size,
             n_classes=n_classes,
             input_size=input_size,
             final_bisel_kwargs=final_bisel_kwargs,
+            atomic_element=atomic_element,
             *args, **kwargs
         )
 
@@ -463,15 +469,17 @@ class BiMoNNClassifierMaxPoolNotBinary(BiMoNNClassifierMaxPoolBase):
         kernel_size: List[Union[Tuple, int]],
         n_classes: int,
         input_size: Tuple[int],
+        atomic_element: Union[str, List[str]],
         final_bisel_kwargs: Dict = None,
         *args,
         **kwargs
     ):
         super().__init__(
-            classif_layer_fn=BiSELNotBinary,
+            classif_layer_fn=SyBiSELNotBinary if atomic_element in ["sybisel", ["sybisel"]] else BiSELNotBinary,
             kernel_size=kernel_size,
             n_classes=n_classes,
             input_size=input_size,
             final_bisel_kwargs=final_bisel_kwargs,
+            atomic_element=atomic_element,
             *args, **kwargs
         )

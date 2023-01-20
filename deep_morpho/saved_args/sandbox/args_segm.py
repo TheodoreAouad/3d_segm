@@ -53,8 +53,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_71/sandbox/0"
     # "JMIV/multi/1/"
     # "Bimonn_exp_75/multi/0"
-    # "Bimonn_exp_76/sandbox/2"
-    "test"
+    "Bimonn_exp_76/multi/0"
+    # "test"
     # "test_classif/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
@@ -178,10 +178,10 @@ all_args['num_workers'] = [
     20,
     # 0,
 ]
-all_args['freq_imgs'] = [250]
+all_args['freq_imgs'] = [300]
 all_args['freq_hist'] = [100]
 all_args['freq_scalars'] = [20]
-all_args['n_epochs'] = [1]
+all_args['n_epochs'] = [20]
 
 all_args['patience_loss_batch'] = [2100]
 all_args['patience_loss_epoch'] = [6]
@@ -201,7 +201,7 @@ all_args['early_stopping_on'] = [
 all_args["model_type"] = [
     "LightningBiMoNNClassifierMaxPoolNotBinary",
     # "LightningBiMoNNClassifierMaxPool",
-    # "LightningBiMoNNClassifierLastLinearNotBinary",
+    "LightningBiMoNNClassifierLastLinearNotBinary",
     # "LightningBiMoNNClassifierLastLinear",
     # "LightningBiMoNN",
 ]
@@ -223,6 +223,11 @@ all_args['kernel_size'] = [
 all_args['channels'] = [
     # 'adapt',
     [1, 5, ],
+    [1, 25, ],
+    [1, 50, ],
+    [1, 75, ],
+    [1, 100, ],
+    [1, 200, ],
 ]
 all_args['closest_selem_method'] = [
     # ClosestSelemEnum.MIN_DIST
@@ -403,6 +408,18 @@ for idx, args in enumerate(all_args):
         if args['n_atoms'] == "adapt":
             args["n_atoms"] = len(args['channels']) - 1
 
+    if args['atomic_element'] == "sybisel":
+        # args['threshold_mode']["activation"] += "_symetric"
+        args['threshold_mode'] = {'weight': args['threshold_mode']['weight'], 'activation': args['threshold_mode']['activation'] + "_symetric"}
+        args['bias_optim_mode'] = BiseBiasOptimEnum.RAW
+        if args["loss_data_str"] == "BCELoss":
+            args["loss_data_str"] = "BCENormalizedLoss"
+        # if "mnist" in args['dataset_type']:
+        #     args['mnist_args']['do_symetric_output'] = True
+
+        # args['init_bias_value_bise'] = 0
+        # args['init_bias_value_lui'] = 0
+
     kwargs_loss = {}
     if "Normalized" in args['loss_data_str'] and args['atomic_element'] == 'sybisel':
         kwargs_loss.update({"vmin": -1, "vmax": 1})
@@ -430,15 +447,6 @@ for idx, args in enumerate(all_args):
         args['mnist_args']['invert_input_proba'] = 1
         # args['experiment_subname'] = args['experiment_subname'].replace('mnist', 'inverted_mnist')
 
-    if args['atomic_element'] == "sybisel":
-        # args['threshold_mode']["activation"] += "_symetric"
-        args['threshold_mode'] = {'weight': args['threshold_mode']['weight'], 'activation': args['threshold_mode']['activation'] + "_symetric"}
-        args['bias_optim_mode'] = BiseBiasOptimEnum.RAW
-        # if "mnist" in args['dataset_type']:
-        #     args['mnist_args']['do_symetric_output'] = True
-
-        # args['init_bias_value_bise'] = 0
-        # args['init_bias_value_lui'] = 0
 
 
     args['loss'] = {"loss_data": args['loss_data']}

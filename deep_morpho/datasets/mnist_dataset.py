@@ -1,6 +1,7 @@
 from os.path import join
-from typing import Tuple, Any, Optional, Callable
+from typing import Tuple, Any, Optional, Callable, List
 import warnings
+from random import shuffle
 
 from torchvision.datasets import MNIST
 from torch.utils.data.dataloader import DataLoader
@@ -130,6 +131,7 @@ class MnistClassifDataset(MNIST):
         n_inputs: int = "all",
         threshold: float = 30,
         first_idx: int = 0,
+        indexes: List[int] = None,
         train: bool = True,
         invert_input_proba: float = 0,
         preprocessing=None,
@@ -145,13 +147,17 @@ class MnistClassifDataset(MNIST):
         self.n_classes = 10
         self.preprocessing = preprocessing
         self.do_symetric_output = do_symetric_output
-        
+
         warnings.warn("Size not used yet on classif.")
         self.size = size  # WARNING: not used
 
         if n_inputs != "all":
-            self.data = self.data[first_idx:n_inputs+first_idx]
-            self.targets = self.targets[first_idx:n_inputs+first_idx]
+            if indexes is None:
+                n_inputs = min(n_inputs, len(self.data))
+                indexes = list(range(first_idx, first_idx + n_inputs))
+
+            self.data = self.data[indexes]
+            self.targets = self.targets[indexes]
 
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
         input_ = (self.data[index].numpy() >= (self.threshold))[..., None]
@@ -174,6 +180,7 @@ class MnistClassifDataset(MNIST):
 
         if self.do_symetric_output:
             input_ = 2 * input_ - 1
+            target = 2 * target - 1
 
         return input_, target
 
@@ -183,21 +190,27 @@ class MnistClassifDataset(MNIST):
 
     @staticmethod
     def get_loader(
-        batch_size, n_inputs, train, preprocessing, first_idx=0,
-        threshold=.5, invert_input_proba=0, do_symetric_output=False, 
+        batch_size, train, preprocessing, indexes=None, first_idx=0, n_inputs=None,
+        threshold=.5, invert_input_proba=0, do_symetric_output=False,
         size=(28, 28), **kwargs):
         if n_inputs == 0:
             return DataLoader([])
         return DataLoader(
             MnistClassifDataset(
-                n_inputs=n_inputs, first_idx=first_idx,
+                n_inputs=n_inputs, first_idx=first_idx, indexes=indexes,
                 train=train, threshold=threshold, invert_input_proba=invert_input_proba,
                 preprocessing=preprocessing, do_symetric_output=do_symetric_output, size=size,
             ), batch_size=batch_size, **kwargs)
 
     @staticmethod
     def get_train_val_test_loader(n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
-        trainloader = MnistClassifDataset.get_loader(first_idx=0, n_inputs=n_inputs_train, train=True, shuffle=True, *args, **kwargs)
-        valloader = MnistClassifDataset.get_loader(first_idx=n_inputs_train, n_inputs=n_inputs_val, train=True, shuffle=False, *args, **kwargs)
+        all_train_idxs = list(range(min(n_inputs_train + n_inputs_val, 60_000)))
+        shuffle(all_train_idxs)
+
+        train_idxes = all_train_idxs[:n_inputs_train]
+        val_idxes = all_train_idxs[n_inputs_train:n_inputs_train + n_inputs_val]
+
+        trainloader = MnistClassifDataset.get_loader(indexes=train_idxes, train=True, shuffle=True, *args, **kwargs)
+        valloader = MnistClassifDataset.get_loader(indexes=val_idxes, train=True, shuffle=False, *args, **kwargs)
         testloader = MnistClassifDataset.get_loader(first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
         return trainloader, valloader, testloader

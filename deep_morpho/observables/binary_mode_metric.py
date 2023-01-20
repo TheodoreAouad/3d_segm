@@ -100,7 +100,7 @@ class BinaryModeMetricClassif(Observable):
     def __init__(
         self,
         metrics,
-        freq: Dict = {"train": 100, "val": 10, },
+        freq: Dict = {"train": 100, "val": 10, "test": 1},
         plot_freq: Dict = {"train": 100, "val": 10, "test": 100},
         figsize_atom=(4, 4),
         update_binaries: bool = False,
@@ -112,7 +112,7 @@ class BinaryModeMetricClassif(Observable):
         self.n_inputs = {state: 0 for state in ['train', 'val', 'test']}
 
         self.freq = freq
-        self.freq_idx = {"train": 0, "val": 0}
+        self.freq_idx = {"train": 0, "val": 0, "test": 0}
         self.plot_freq = plot_freq
         self.plot_freq_idx = {"train": 0, "val": 0, "test": 0}
         self.test_step = 0
@@ -141,12 +141,14 @@ class BinaryModeMetricClassif(Observable):
     def on_train_epoch_start(self, *args, **kwargs):
         for key in self.metrics_sum["train"]:
             self.metrics_sum["train"][key] = 0
-        self.n_inputs["train"] = 0
-
-    def on_validation_epoch_start(self, *args, **kwargs):
-        for key in self.metrics_sum["val"]:
             self.metrics_sum["val"][key] = 0
+        self.n_inputs["train"] = 0
         self.n_inputs["val"] = 0
+
+    # def on_validation_epoch_start(self, *args, **kwargs):
+    #     for key in self.metrics_sum["val"]:
+    #         self.metrics_sum["val"][key] = 0
+    #     self.n_inputs["val"] = 0
 
     def on_test_epoch_start(self, *args, **kwargs):
         for key in self.metrics_sum["test"]:
@@ -162,11 +164,6 @@ class BinaryModeMetricClassif(Observable):
         batch_idx: int,
         preds: "Any",
     ):
-        if self.freq_idx["train"] % self.freq["train"] != 0:
-            self.freq_idx["train"] += 1
-            return
-        self.freq_idx["train"] += 1
-
         self._compute_metric_and_plot(
             trainer=trainer,
             pl_module=pl_module,
@@ -187,10 +184,10 @@ class BinaryModeMetricClassif(Observable):
         batch_idx: int,
         preds: "Any",
     ):
-        if self.freq_idx["val"] % self.freq["val"] != 0:
-            self.freq_idx["val"] += 1
-            return
-        self.freq_idx["val"] += 1
+        # if self.freq_idx["val"] % self.freq["val"] != 0:
+        #     self.freq_idx["val"] += 1
+        #     return
+        # self.freq_idx["val"] += 1
 
         self._compute_metric_and_plot(
             trainer=trainer,
@@ -247,6 +244,9 @@ class BinaryModeMetricClassif(Observable):
         #     step = self.val_step
         #     self.val_step += 1
 
+        if not ((self.freq_idx[state] % self.freq[state] == 0) or (self.plot_freq_idx[state] % self.plot_freq[state] == 0)):
+            return
+
         with torch.no_grad():
             pl_module.model.binary(update_binaries=self.update_binaries)
 
@@ -256,23 +256,25 @@ class BinaryModeMetricClassif(Observable):
 
             preds = pl_module.model(inputs)
             self.n_inputs[state] += targets.shape[0]
-            for metric_name in self.metrics:
-                metric = self.metrics[metric_name](targets, preds)
-                self.metrics_sum[state][metric_name] += metric * targets.shape[0]
 
-                # pl_module.log(f"mean_metrics_{batch_or_epoch}/{metric_name}/{state}", metric)
-                pl_module.log(f"binary_mode/{metric_name}_{state}", metric)
+            if self.freq_idx[state] % self.freq[state] == 0:
+                for metric_name in self.metrics:
+                    metric = self.metrics[metric_name](targets, preds)
+                    self.metrics_sum[state][metric_name] += metric * targets.shape[0]
 
-                trainer.logger.experiment.add_scalars(
-                    f"comparative/binary_mode/{metric_name}", {state: metric}, step
-                )
+                    # pl_module.log(f"mean_metrics_{batch_or_epoch}/{metric_name}/{state}", metric)
+                    pl_module.log(f"binary_mode/{metric_name}_{state}", metric)
 
-                trainer.logger.log_metrics(
-                    {f"binary_mode/{metric_name}_{state}": metric}, step
-                )
-                trainer.logged_metrics.update(
-                    {f"binary_mode/{metric_name}_{state}": metric}
-                )
+                    trainer.logger.experiment.add_scalars(
+                        f"comparative/binary_mode/{metric_name}", {state: metric}, step
+                    )
+
+                    trainer.logger.log_metrics(
+                        {f"binary_mode/{metric_name}_{state}": metric}, step
+                    )
+                    trainer.logged_metrics.update(
+                        {f"binary_mode/{metric_name}_{state}": metric}
+                    )
 
             # img, pred, target = inputs[0], preds[0], targets[0]
             # if self.do_plot_figure:
@@ -282,10 +284,13 @@ class BinaryModeMetricClassif(Observable):
                     figsize_atom=self.figsize_atom,
                     n_imgs=self.n_imgs,
                     title=state,
+                    xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
                 )
                 # fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [img, pred, target]], title=state)
                 trainer.logger.experiment.add_figure(f"preds/{state}/binary_mode/input_pred_target", fig, step)
+            
             self.plot_freq_idx[state] += 1
+            self.freq_idx[state] += 1
 
             pl_module.model.binary(False)
 

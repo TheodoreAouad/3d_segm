@@ -386,6 +386,41 @@ class InitSybiseConstantVarianceWeightsRandomBias(InitSybiseConstantVarianceWeig
         )
 
 
+class InitSybiseConstantVarianceConstantWeights(InitSybiseConstantVarianceWeights):
+    """We init the LUI with a mean weights instead of a random uniform function. We take the same mean for simplicity.
+    """
+
+    def init_weights(self, module):
+        p = 1
+        nb_params = torch.tensor(module._normalized_weights.shape[1:]).prod()
+
+        if self.mean_weight == "auto":
+            ub = 1 / (p * torch.sqrt(nb_params))
+            lb = np.sqrt(3 / 4) * ub
+            mean = (lb + ub) / 2
+
+        new_weights = torch.ones_like(module.weights) * mean / nb_params
+
+        module.set_param_from_weights(
+            new_weights
+        )
+
+        self.mean = mean
+        self.nb_params = nb_params
+
+
+class InitSybiseConstantVarianceConstantWeightsRandomBias(InitSybiseConstantVarianceConstantWeights):
+    def __init__(self, ub: float = 0.01, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.ub = ub
+
+    def init_bias(self, module):
+        new_value = self.input_mean * self.mean * self.nb_params * (1 + uniform_sampling_bound(-self.ub, self.ub).astype(np.float32))
+        module.set_bias(
+            torch.zeros_like(module.bias) - new_value + self.init_bias_value
+        )
+
+
 class InitSybiseHeuristicWeightsRandomBias(InitSybiseHeuristicWeights):
     def __init__(self, ub: float = 0.01, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
