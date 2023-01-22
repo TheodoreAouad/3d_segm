@@ -128,7 +128,7 @@ class CalculateAndLogMetrics(Observable):
             trainer.logger.log_metrics(
                 {f"metrics_epoch_mean/{metric_name}_train": metric}, step=trainer.current_epoch
             )
-            pl_module.log(f"metrics_epoch_mean/{metric_name}_train", metric)
+            pl_module.log(f"metrics_epoch_mean/per_batch_step/{metric_name}_train", metric)
             self.last_value["train"][metric_name] = metric
 
 
@@ -145,7 +145,7 @@ class CalculateAndLogMetrics(Observable):
             trainer.logger.log_metrics(
                 {f"metrics_epoch_mean/{metric_name}_val": metric}, step=trainer.current_epoch
             )
-            pl_module.log(f"metrics_epoch_mean/{metric_name}_val", metric)
+            pl_module.log(f"metrics_epoch_mean/per_batch_step/{metric_name}_val", metric, )
             self.last_value["val"][metric_name] = metric
 
 
@@ -163,7 +163,7 @@ class CalculateAndLogMetrics(Observable):
             trainer.logger.log_metrics(
                 {f"metrics_epoch_mean/{metric_name}_test": metric}, step=trainer.current_epoch
             )
-            pl_module.log(f"metrics_epoch_mean/{metric_name}_test", metric)
+            pl_module.log(f"metrics_epoch_mean/per_batch_step/{metric_name}_test", metric)
             self.last_value["test"][metric_name] = metric
 
 

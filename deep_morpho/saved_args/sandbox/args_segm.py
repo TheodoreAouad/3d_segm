@@ -53,7 +53,7 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_71/sandbox/0"
     # "JMIV/multi/1/"
     # "Bimonn_exp_75/multi/0"
-    "Bimonn_exp_76/multi/0"
+    "Bimonn_exp_76/multi/depth-2",
     # "test"
     # "test_classif/0"
     # "Bimonn_mega_multi_1/sandbox/0"
@@ -173,7 +173,7 @@ all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
-all_args['batch_size'] = [256]
+all_args['batch_size'] = [64]
 all_args['num_workers'] = [
     20,
     # 0,
@@ -222,12 +222,12 @@ all_args['kernel_size'] = [
 ]
 all_args['channels'] = [
     # 'adapt',
-    [1, 5, ],
-    [1, 25, ],
-    [1, 50, ],
-    [1, 75, ],
-    [1, 100, ],
-    [1, 200, ],
+    [1, 5, 5],
+    [1, 25, 25],
+    [1, 50, 50],
+    [1, 75, 75],
+    [1, 100, 100],
+    [1, 200, 200],
 ]
 all_args['closest_selem_method'] = [
     # ClosestSelemEnum.MIN_DIST

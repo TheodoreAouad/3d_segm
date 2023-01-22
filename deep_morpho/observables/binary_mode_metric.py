@@ -245,6 +245,8 @@ class BinaryModeMetricClassif(Observable):
         #     self.val_step += 1
 
         if not ((self.freq_idx[state] % self.freq[state] == 0) or (self.plot_freq_idx[state] % self.plot_freq[state] == 0)):
+            self.plot_freq_idx[state] += 1
+            self.freq_idx[state] += 1
             return
 
         with torch.no_grad():
@@ -320,7 +322,7 @@ class BinaryModeMetricClassif(Observable):
             trainer.logger.log_metrics(
                 {f"binary_mode/metrics_epoch_mean/{metric_name}_train": metric}, step=trainer.current_epoch
             )
-            pl_module.log(f"binary_mode/metrics_epoch_mean/{metric_name}_train", metric)
+            pl_module.log(f"binary_mode/metrics_epoch_mean/per_batch_step/{metric_name}_train", metric)
             self.last_value["train"][metric_name] = metric
 
     def on_validation_epoch_end(
@@ -331,7 +333,7 @@ class BinaryModeMetricClassif(Observable):
             trainer.logger.log_metrics(
                 {f"binary_mode/metrics_epoch_mean/{metric_name}_val": metric}, step=trainer.current_epoch
             )
-            pl_module.log(f"binary_mode/metrics_epoch_mean/{metric_name}_val", metric)
+            pl_module.log(f"binary_mode/metrics_epoch_mean/per_batch_step/{metric_name}_val", metric)
             self.last_value["val"][metric_name] = metric
 
     def on_test_epoch_end(
@@ -342,5 +344,5 @@ class BinaryModeMetricClassif(Observable):
             trainer.logger.log_metrics(
                 {f"binary_mode/metrics_epoch_mean/{metric_name}_test": metric}, step=trainer.current_epoch
             )
-            pl_module.log(f"binary_mode/metrics_epoch_mean/{metric_name}_test", metric)
+            pl_module.log(f"binary_mode/metrics_epoch_mean/per_batch_step/{metric_name}_test", metric)
             self.last_value["test"][metric_name] = metric

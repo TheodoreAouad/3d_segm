@@ -417,7 +417,8 @@ def main(args, logger):
         #     logger.experiment.add_figure(f"target_SE/target_SE_{selem_idx}", fig)
         #     logger.experiment.add_image(f"target_SE/target_SE_{selem_idx}", selem[np.newaxis, :].astype(float))
 
-    callbacks = [ModelCheckpoint(monitor="binary_mode/metrics_epoch_mean/loss_val", dirpath=join(logger.log_dir, "best_weights")), ]
+    model_checkpoint_obs = ModelCheckpoint(monitor="binary_mode/metrics_epoch_mean/per_batch_step/loss_val", dirpath=join(logger.log_dir, "best_weights"), save_weights_only=True)
+    callbacks = [model_checkpoint_obs, ]
 
     trainer = Trainer(
         max_epochs=args['n_epochs'],
@@ -432,6 +433,7 @@ def main(args, logger):
 
     log_console("Binarizable parameters:", model.model.numel_binary(), logger=console_logger)
     trainer.fit(model, trainloader, valloader)
+    model.load_state_dict(torch.load(model_checkpoint_obs.best_model_path)["state_dict"])
     trainer.test(model, testloader)
 
     metric_dict = {}
@@ -499,14 +501,14 @@ if __name__ == '__main__':
         log_console(logger.log_dir, logger=console_logger)
         log_console(args['morp_operation'], logger.log_dir, logger=console_logger)
 
-        # results.append(main(args, logger))
+        results.append(main(args, logger))
 
-        try:
-            main(args, logger)
-        except Exception:
-            console_logger.exception(
-                f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
-            bugged.append(args_idx+1)
+        # try:
+        #     main(args, logger)
+        # except Exception:
+        #     console_logger.exception(
+        #         f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
+        #     bugged.append(args_idx+1)
 
         log_console("Done.", logger=console_logger)
 

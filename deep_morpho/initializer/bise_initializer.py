@@ -201,7 +201,8 @@ class InitBiseConstantVarianceConstantWeights(InitBiseConstantVarianceWeights):
         p = self.get_init_p(nb_params, module)
 
         mean = self.get_mean(p, nb_params)
-        new_weights = torch.ones_like(module.weights) * mean / nb_params
+        new_weights = torch.ones_like(module.weights) * mean
+        # new_weights = torch.ones_like(module.weights) * mean / nb_params
 
         module.set_param_from_weights(
             new_weights

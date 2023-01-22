@@ -11,3 +11,4 @@ i  = 54
 
 for fn in funcs:
     fn()
+from torchvision.datasets import CIFAR10

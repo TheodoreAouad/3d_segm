@@ -3,8 +3,17 @@ import numpy as np
 from skimage import morphology as morp
 import pytest
 
-from deep_morpho.gray_scale import level_sets_from_gray, gray_from_level_sets
+from deep_morpho.gray_scale import level_sets_from_gray, gray_from_level_sets, undersample
 from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
+
+
+class TestUndersample():
+
+    @staticmethod
+    def test_identity():
+        n = 10
+        output = undersample(0, n - 1, n)
+        assert (output == np.arange(10)).all()
 
 
 class TestLevelSetsFromGray():
