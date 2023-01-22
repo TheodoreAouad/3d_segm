@@ -21,14 +21,19 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 print('Import modules...')
-from deep_morpho.datasets.mnist_dataset import MnistMorphoDataset, MnistGrayScaleDataset, MnistClassifDataset
-from deep_morpho.datasets.fashionmnist_dataset import FashionMnistGrayScaleDataset
+from deep_morpho.datasets import (
+    MnistMorphoDataset, MnistGrayScaleDataset, MnistClassifDataset, FashionMnistGrayScaleDataset,
+    InputOutputGeneratorDataset, AxspaROISimpleDataset, AxspaROISimpleDataset, CIFAR10Dataset, CIFAR100Dataset,
+    MnistClassifChannelDataset
+)
+# from deep_morpho.datasets.mnist_dataset import MnistMorphoDataset, MnistGrayScaleDataset, MnistClassifDataset
+# from deep_morpho.datasets.fashionmnist_dataset import FashionMnistGrayScaleDataset
 from deep_morpho.utils import set_seed
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
-from deep_morpho.datasets.multi_rect_dataset import InputOutputGeneratorDataset, MultiRectDataset
-from deep_morpho.datasets.axspa_roi_dataset import AxspaROISimpleDataset
-from deep_morpho.datasets.sticks_noised_dataset import SticksNoisedGeneratorDataset
+# from deep_morpho.datasets.multi_rect_dataset import InputOutputGeneratorDataset, MultiRectDataset
+# from deep_morpho.datasets.axspa_roi_dataset import AxspaROISimpleDataset
+# from deep_morpho.datasets.sticks_noised_dataset import AxspaROISimpleDataset
 from deep_morpho.models import (
     LightningBiMoNN, BiSE, BiseWeightsOptimEnum, LightningBiMoNNClassifierMaxPool,
     LightningBiMoNNClassifierMaxPoolNotBinary, LightningBiMoNNClassifierLastLinearNotBinary,
@@ -172,6 +177,47 @@ def get_dataloader(args):
             num_workers=args['num_workers'],
             do_symetric_output=args['atomic_element'] == 'sybisel',
             **args['mnist_args']
+        )
+
+    elif args['dataset_type'] == "cifar10":
+        prop_train, prop_val, prop_test = args['train_test_split']
+        trainloader, valloader, testloader = CIFAR10Dataset.get_train_val_test_loader(
+            n_inputs_train=int(prop_train * args['n_inputs']),
+            n_inputs_val=int(prop_val * args['n_inputs']),
+            n_inputs_test=int(prop_test * args['n_inputs']),
+            batch_size=args['batch_size'],
+            preprocessing=args['preprocessing'],
+            num_workers=args['num_workers'],
+            do_symetric_output=args['atomic_element'] == 'sybisel',
+            **args['channel_classif_args']
+        )
+
+
+    elif args['dataset_type'] == "cifar100":
+        prop_train, prop_val, prop_test = args['train_test_split']
+        trainloader, valloader, testloader = CIFAR100Dataset.get_train_val_test_loader(
+            n_inputs_train=int(prop_train * args['n_inputs']),
+            n_inputs_val=int(prop_val * args['n_inputs']),
+            n_inputs_test=int(prop_test * args['n_inputs']),
+            batch_size=args['batch_size'],
+            preprocessing=args['preprocessing'],
+            num_workers=args['num_workers'],
+            do_symetric_output=args['atomic_element'] == 'sybisel',
+            **args['channel_classif_args']
+        )
+
+
+    elif args['dataset_type'] == "classif_mnist_channel":
+        prop_train, prop_val, prop_test = args['train_test_split']
+        trainloader, valloader, testloader = MnistClassifChannelDataset.get_train_val_test_loader(
+            n_inputs_train=int(prop_train * args['n_inputs']),
+            n_inputs_val=int(prop_val * args['n_inputs']),
+            n_inputs_test=int(prop_test * args['n_inputs']),
+            batch_size=args['batch_size'],
+            preprocessing=args['preprocessing'],
+            num_workers=args['num_workers'],
+            do_symetric_output=args['atomic_element'] == 'sybisel',
+            **args['channel_classif_args']
         )
 
     return trainloader, valloader, testloader

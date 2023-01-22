@@ -6,6 +6,7 @@ import os
 
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
 from deep_morpho.datasets.sticks_noised_dataset import SticksNoisedGeneratorDataset
+from deep_morpho.datasets.gray_to_channels_dataset import LevelsetValuesEqualIndex
 from deep_morpho.loss import (
     MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization,
     MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss, BCENormalizedLoss, DiceLoss, NormalizedDiceLoss
@@ -53,8 +54,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_71/sandbox/0"
     # "JMIV/multi/1/"
     # "Bimonn_exp_75/multi/0"
-    "Bimonn_exp_76/multi/depth-2",
-    # "test"
+    # "Bimonn_exp_76/multi/depth-2",
+    "test"
     # "test_classif/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
@@ -78,7 +79,10 @@ all_args['dataset_type'] = [
     # "inverted_mnist",
     # 'diskorect',
     # "sticks_noised",
-    "classif_mnist"
+    # "classif_mnist",
+    # "classif_mnist_channel",
+    "cifar10",
+    # "cifar100",
 ]
 all_args['preprocessing'] = [  # for axspa roi
     None,
@@ -114,6 +118,12 @@ all_args['fashionmnist_gray_args'] = [
     {"n_gray_scale_values": 20, "size": (50, 50), }
 ]
 
+all_args['channel_classif_args'] = [
+    {
+        "levelset_handler_mode": LevelsetValuesEqualIndex,
+        "levelset_handler_args": {"n_values": 10},
+    }
+]
 
 all_args['sticks_noised_angles'] = [
     # [0, 90],
