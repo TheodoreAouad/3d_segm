@@ -1,9 +1,14 @@
 from abc import ABC, abstractmethod
+from typing import Tuple, Dict, Callable, List
+from random import choice, shuffle
 
 import torch
 import numpy as np
+from torch.utils.data.dataloader import DataLoader
 
 from deep_morpho.gray_scale import level_sets_from_gray, gray_from_level_sets, undersample
+from deep_morpho.tensor_with_attributes import TensorGray
+from .select_indexes_dataset import SelectIndexesDataset
 
 
 class LevelsetValuesHandler(ABC):
@@ -33,20 +38,39 @@ class LevelsetValuesEqualIndex(LevelsetValuesHandler):
         levelsets = torch.zeros(img.shape[0], n_values)
         for chan in range(img.shape[0]):
             values, count = img.unique(return_counts=True)
+            values, count = values[1:-1], count[1:-1]
             values = torch.tensor(sorted(sum([[v for _ in range(c)] for v, c in zip(values, count)], start=[])))  # repeat values that occur multiple times
             levelsets[chan] = values[undersample(0, len(values) - 1, n_values)]
         return levelsets
 
 
+class GrayToChannelDatasetBase(SelectIndexesDataset):
+    def __init__(
+        self,
+        img: torch.Tensor,
+        levelset_handler_mode: LevelsetValuesHandler = LevelsetValuesEqualIndex,
+        levelset_handler_args: Dict = {"n_values": 10},
+        do_symetric_output: bool = False,
+        *args, **kwargs
+    ):
+        self.levelset_handler_mode = levelset_handler_mode
+        self.levelset_handler_args = levelset_handler_args
+
+        self.levelset_handler_args["img"] = img
+        self.levelset_handler = levelset_handler_mode(**levelset_handler_args)
+        self.do_symetric_output = do_symetric_output
+
+        assert hasattr(self, "data"), "Must have data attribute."
+        super().__init__(*args, **kwargs)
 
 
-class GrayToChannelDataset:
-    def __init__(self, values_handler: LevelsetValuesHandler):
-        self.values_handler = values_handler
+    @property
+    def in_channels(self):
+        return np.prod(self.levelset_values.shape)
 
     @property
     def levelset_values(self):
-        return self.values_handler.levelset_values
+        return self.levelset_handler.levelset_values
 
     def from_gray_to_channels(self, img: torch.Tensor) -> torch.Tensor:
         return self._from_gray_to_channels(img, self.levelset_values)
@@ -95,3 +119,62 @@ class GrayToChannelDataset:
             )
 
         return gray_img
+
+    def __getitem__(self, index: int) -> Tuple[TensorGray, torch.Tensor]:
+        input_, target = self.data[index], self.targets[index]
+        return self._transform_sample(input_, target)
+
+
+    def _transform_sample(self, input_: torch.Tensor, target: torch.Tensor) -> Tuple[TensorGray, torch.Tensor]:
+        input_ = torch.tensor(input_).float()
+        original_img = input_ + 0
+
+        input_ = input_.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)
+
+        if self.preprocessing is not None:
+            input_ = self.preprocessing(input_)
+
+        input_ = TensorGray(self.from_gray_to_channels(input_))
+
+        if self.do_symetric_output:
+            input_ = 2 * input_ - 1
+
+        input_.original = original_img
+
+        return input_, target
+
+    @classmethod
+    def get_loader(
+        cls,
+        batch_size,
+        train,
+        levelset_handler_mode: LevelsetValuesHandler = LevelsetValuesEqualIndex,
+        levelset_handler_args: Dict = {"n_values": 10},
+        preprocessing: Callable = None,
+        indexes: List[int] = None,
+        first_idx: int = 0,
+        n_inputs: int = "all",
+        do_symetric_output=False,
+        **kwargs
+    ):
+        if n_inputs == 0:
+            return DataLoader([])
+        return DataLoader(
+            cls(
+                n_inputs=n_inputs, first_idx=first_idx, indexes=indexes,
+                train=train, preprocessing=preprocessing, do_symetric_output=do_symetric_output,
+                levelset_handler_mode=levelset_handler_mode, levelset_handler_args=levelset_handler_args,
+            ), batch_size=batch_size, **kwargs)
+
+    @classmethod
+    def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
+        all_train_idxs = list(range(min(n_inputs_train + n_inputs_val, 60_000)))
+        shuffle(all_train_idxs)
+
+        train_idxes = all_train_idxs[:n_inputs_train]
+        val_idxes = all_train_idxs[n_inputs_train:n_inputs_train + n_inputs_val]
+
+        trainloader = cls.get_loader(indexes=train_idxes, train=True, shuffle=True, *args, **kwargs)
+        valloader = cls.get_loader(indexes=val_idxes, train=True, shuffle=False, *args, **kwargs)
+        testloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
+        return trainloader, valloader, testloader

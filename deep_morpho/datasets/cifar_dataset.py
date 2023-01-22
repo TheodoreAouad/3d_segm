@@ -1,12 +1,11 @@
-from typing import Tuple
+from typing import Tuple, Dict, Callable
 
 import torch
 from torchvision.datasets import CIFAR10, CIFAR100
-from torchvision.transforms import ToTensor
 from random import choice
 
-from deep_morpho.tensor_with_attributes import TensorGray
-from .gray_to_channels_dataset import GrayToChannelDataset, LevelsetValuesEqualIndex
+from .gray_to_channels_dataset import GrayToChannelDatasetBase, LevelsetValuesEqualIndex, LevelsetValuesHandler
+from .select_indexes_dataset import SelectIndexesDataset
 
 
 with open('deep_morpho/datasets/root_cifar10_dir.txt', 'r') as f:
@@ -16,30 +15,37 @@ with open('deep_morpho/datasets/root_cifar100_dir.txt', 'r') as f:
     ROOT_CIFAR100_DIR = f.read()
 
 
-class CIFAR10Dataset(CIFAR10, GrayToChannelDataset):
-    def __init__(self, root=ROOT_CIFAR10_DIR, levelset_handler_mode=LevelsetValuesEqualIndex, levelset_handler_args={"n_values": 10}, transform=ToTensor(), *args, **kwargs):
-        CIFAR10.__init__(self, root=root, transform=transform, *args, **kwargs)
-        self.levelset_handler_mode = levelset_handler_mode
-        self.levelset_handler_args = levelset_handler_args
+class CIFAR10Dataset(GrayToChannelDatasetBase, CIFAR10):
+    def __init__(
+        self,
+        root: str = ROOT_CIFAR10_DIR,
+        preprocessing: Callable = None,
+        train: bool = True,
+        *args, **kwargs
+    ):
+        CIFAR10.__init__(self, root=root, transform=lambda x: torch.tensor(x), train=train, )
+        self.preprocessing = preprocessing
 
-        self.levelset_handler_args["img"] = CIFAR10.__getitem__(self, choice(range(len(self))))[0]
-        self.levelset_handler = levelset_handler_mode(**levelset_handler_args)
-
-        GrayToChannelDataset.__init__(self, self.levelset_handler)
-
-    def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor]:
-        img, target = super().__getitem__(index)
-        original_img = img + 0
-
-        img = TensorGray(self.from_gray_to_channels(img))
-        img.original = original_img
-
-
-        return img, target
+        GrayToChannelDatasetBase.__init__(
+            self,
+            img=torch.tensor(choice(self.data).transpose(2, 0, 1)),
+            *args, **kwargs
+        )
 
 
+class CIFAR100Dataset(GrayToChannelDatasetBase, CIFAR100):
+    def __init__(
+        self,
+        root: str = ROOT_CIFAR100_DIR,
+        preprocessing: Callable = None,
+        train: bool = True,
+        *args, **kwargs
+    ):
+        CIFAR100.__init__(self, root=root, transform=lambda x: torch.tensor(x), train=train, )
+        self.preprocessing = preprocessing
 
-
-class CIFAR100Dataset(CIFAR100):
-    def __init__(self, root=ROOT_CIFAR100_DIR, *args, **kwargs):
-        super().__init__(root=root, *args, **kwargs)
+        GrayToChannelDatasetBase.__init__(
+            self,
+            img=torch.tensor(choice(self.data).transpose(2, 0, 1)),
+            *args, **kwargs
+        )

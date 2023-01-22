@@ -1,15 +1,19 @@
 from os.path import join
-from typing import Tuple, Any, Optional, Callable, List
+from typing import Tuple, Any, Optional, Callable, List, Dict
 import warnings
-from random import shuffle
+from random import shuffle, choice
 
 from torchvision.datasets import MNIST
+from torchvision.transforms import ToTensor
 from torch.utils.data.dataloader import DataLoader
 import torch
 
 from deep_morpho.morp_operations import ParallelMorpOperations
+from deep_morpho.tensor_with_attributes import TensorGray
 from deep_morpho.datasets.collate_fn_gray import collate_fn_gray_scale
 from .mnist_base_dataset import MnistBaseDataset, MnistGrayScaleBaseDataset
+from .select_indexes_dataset import SelectIndexesDataset
+from .gray_to_channels_dataset import GrayToChannelDatasetBase, LevelsetValuesEqualIndex, LevelsetValuesHandler
 
 with open('deep_morpho/datasets/root_mnist_dir.txt', 'r') as f:
     ROOT_MNIST_DIR = f.read()
@@ -128,9 +132,9 @@ class MnistClassifDataset(MNIST):
     def __init__(
         self,
         root: str = ROOT_MNIST_DIR,
-        n_inputs: int = "all",
         threshold: float = 30,
         first_idx: int = 0,
+        n_inputs: int = "all",
         indexes: List[int] = None,
         train: bool = True,
         invert_input_proba: float = 0,
@@ -214,3 +218,29 @@ class MnistClassifDataset(MNIST):
         valloader = MnistClassifDataset.get_loader(indexes=val_idxes, train=True, shuffle=False, *args, **kwargs)
         testloader = MnistClassifDataset.get_loader(first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
         return trainloader, valloader, testloader
+
+
+class MnistClassifChannelDataset(GrayToChannelDatasetBase, MNIST):
+    def __init__(
+        self,
+        root: str = ROOT_MNIST_DIR,
+        preprocessing: Callable = None,
+        train: bool = True,
+        *args, **kwargs
+    ):
+        MNIST.__init__(self, root=root, transform=lambda x: torch.tensor(x), train=train, )
+        self.preprocessing = preprocessing
+
+        GrayToChannelDatasetBase.__init__(
+            self,
+            img=torch.tensor(choice(self.data).unsqueeze(0)),
+            *args, **kwargs
+        )
+
+    @property
+    def processed_folder(self) -> str:
+        return join(self.root, 'processed')
+
+    def __getitem__(self, index: int) -> Tuple[TensorGray, torch.Tensor]:
+        input_, target = self.data[index], self.targets[index]
+        return self._transform_sample(input_[..., None], target)
