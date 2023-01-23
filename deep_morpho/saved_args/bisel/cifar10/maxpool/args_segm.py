@@ -280,8 +280,8 @@ all_args['threshold_mode'] = [
 ]
 
 
-if all_args['dataset_type'] in [[k] for k in ['axspa_roi', "sticks_noised", "classif_mnist"]]:
-    all_args['morp_operation'] = [None]
+all_args['morp_operation'] = [None]
+
 
 all_args = dict_cross(all_args)
 #

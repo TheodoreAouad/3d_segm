@@ -560,7 +560,7 @@ if __name__ == '__main__':
         log_console(f'Args number {args_idx + 1} / {len(all_args)}', logger=console_logger)
         log_console('Time since beginning: {} '.format(format_time(time() - start_all)), logger=console_logger)
         log_console(logger.log_dir, logger=console_logger)
-        log_console(args['morp_operation'], logger.log_dir, logger=console_logger)
+        # log_console(args['morp_operation'], logger.log_dir, logger=console_logger)
 
         results.append(main(args, logger))
 
