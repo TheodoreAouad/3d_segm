@@ -14,7 +14,9 @@ from deep_morpho.loss import (
 from general.utils import dict_cross
 from deep_morpho.models.bise_base import ClosestSelemEnum, ClosestSelemDistanceEnum, BiseBiasOptimEnum, BiseWeightsOptimEnum
 from deep_morpho.initializer import InitBimonnEnum, InitBiseEnum
+from deep_morpho.env import CLASSIF_DATASETS
 from .args_morp_ops import morp_operations
+
 
 loss_dict = {
     "MaskedMSELoss": MaskedMSELoss,
@@ -54,8 +56,9 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_71/sandbox/0"
     # "JMIV/multi/1/"
     # "Bimonn_exp_75/multi/0"
-    # "Bimonn_exp_76/multi/depth-2",
-    "test"
+    "Bimonn_exp_76/multi/depth-1",
+    # "Bimonn_exp_76/sandbox/0",
+    # "test"
     # "test_classif/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
@@ -80,8 +83,8 @@ all_args['dataset_type'] = [
     # 'diskorect',
     # "sticks_noised",
     # "classif_mnist",
-    # "classif_mnist_channel",
-    "cifar10",
+    "classif_mnist_channel",
+    # "cifar10",
     # "cifar100",
 ]
 all_args['preprocessing'] = [  # for axspa roi
@@ -120,7 +123,7 @@ all_args['fashionmnist_gray_args'] = [
 
 all_args['channel_classif_args'] = [
     {
-        "levelset_handler_mode": LevelsetValuesEqualIndex,
+        "levelset_handler_mode": "LevelsetValuesEqualIndex",
         "levelset_handler_args": {"n_values": 10},
     }
 ]
@@ -151,7 +154,8 @@ all_args['nb_batch_indep'] = [0]
 #     3_000_000,
 #     # 100_000,
 # ]
-all_args['train_test_split'] = [(0.9, 0.1, 1)]
+all_args['train_test_split'] = [(0.1, 0.1, 0.1)]
+# all_args['train_test_split'] = [(0.9, 0.1, 1)]
 
 
 # TRAINING ARGS
@@ -188,9 +192,9 @@ all_args['num_workers'] = [
     20,
     # 0,
 ]
-all_args['freq_imgs'] = [300]
-all_args['freq_hist'] = [100]
-all_args['freq_scalars'] = [20]
+all_args['freq_imgs'] = [500]
+all_args['freq_hist'] = [500]
+all_args['freq_scalars'] = [50]
 all_args['n_epochs'] = [20]
 
 all_args['patience_loss_batch'] = [2100]
@@ -211,7 +215,7 @@ all_args['early_stopping_on'] = [
 all_args["model_type"] = [
     "LightningBiMoNNClassifierMaxPoolNotBinary",
     # "LightningBiMoNNClassifierMaxPool",
-    "LightningBiMoNNClassifierLastLinearNotBinary",
+    # "LightningBiMoNNClassifierLastLinearNotBinary",
     # "LightningBiMoNNClassifierLastLinear",
     # "LightningBiMoNN",
 ]
@@ -232,12 +236,12 @@ all_args['kernel_size'] = [
 ]
 all_args['channels'] = [
     # 'adapt',
-    [1, 5, 5],
-    [1, 25, 25],
-    [1, 50, 50],
-    [1, 75, 75],
-    [1, 100, 100],
-    [1, 200, 200],
+    [1, 100,],
+    [1, 75, ],
+    # [1, 50, 50],
+    # [1, 75, 75],
+    # [1, 100, 100],
+    # [1, 200, 200],
 ]
 all_args['closest_selem_method'] = [
     # ClosestSelemEnum.MIN_DIST
@@ -332,9 +336,6 @@ for idx, args in enumerate(all_args):
     args['patience_loss'] = args[f"patience_loss_{args['early_stopping_on']}"]
     args['patience_reduce_lr'] = max(int(args["patience_loss"] * args['patience_reduce_lr']) - 1, 1)
 
-    if "classif" not in args["dataset_type"]:
-        args["model_type"] = "LightningBiMoNN"
-
     if args['atomic_element'] == "dual_bisel":
         args['weights_optim_mode'] = BiseWeightsOptimEnum.NORMALIZED
 
@@ -414,9 +415,11 @@ for idx, args in enumerate(all_args):
     else:
         args['experiment_subname'] = f"{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset_type']}"
 
-    if args['dataset_type'] == "classif_mnist":
+    if args['dataset_type'] in CLASSIF_DATASETS:
         if args['n_atoms'] == "adapt":
             args["n_atoms"] = len(args['channels']) - 1
+    else:
+        args["model_type"] = ["LightningBiMoNN"]
 
     if args['atomic_element'] == "sybisel":
         # args['threshold_mode']["activation"] += "_symetric"
@@ -449,9 +452,17 @@ for idx, args in enumerate(all_args):
         # args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
         args['random_gen_args']['size'] = args['random_gen_args']['size'] + (args["morp_operation"].in_channels[0],)
 
-    if args['dataset_type'] in ["mnist", "inverted_mnist", "mnist_gray", "fashionmnist", "classif_mnist"]:
+    if args['dataset_type'] in ["mnist", "inverted_mnist", "mnist_gray", "fashionmnist", "classif_mnist", "classif_mnist_channel"]:
         # args['freq_imgs'] = 300
         args['n_inputs'] = 60_000
+
+    if args['dataset_type'] in ["cifar10", "cifar100"]:
+        args["n_inputs"] = 50_000
+        args["channels"][0] = args["channel_classif_args"]["levelset_handler_args"]["n_values"] * 3
+
+    if args['dataset_type'] in ["cifar10", "cifar100"]:
+        args["channels"][0] = args["channel_classif_args"]["levelset_handler_args"]["n_values"] * 1
+
 
     if args['dataset_type'] == 'inverted_mnist':
         args['mnist_args']['invert_input_proba'] = 1

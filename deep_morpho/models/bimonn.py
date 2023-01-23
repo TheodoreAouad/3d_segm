@@ -64,10 +64,10 @@ class BiMoNN(BinaryNN):
             }
 
     def create_initializer(self, **kwargs):
-        if self.initializer_method == InitBimonnEnum.IDENTICAL:
+        if self.initializer_method.value == InitBimonnEnum.IDENTICAL.value:
             return BimonnInitializer(**kwargs)
 
-        elif self.initializer_method == InitBimonnEnum.INPUT_MEAN:
+        elif self.initializer_method.value == InitBimonnEnum.INPUT_MEAN.value:
             return BimonnInitInputMean(**kwargs)
 
         raise NotImplementedError("Initializer not recognized.")

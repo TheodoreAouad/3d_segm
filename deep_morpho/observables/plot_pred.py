@@ -6,8 +6,10 @@ import random
 from pytorch_lightning.utilities.types import STEP_OUTPUT
 import pytorch_lightning as pl
 import torch
+import numpy as np
 import matplotlib.pyplot as plt
 
+from deep_morpho.datasets import GrayToChannelDatasetBase
 from general.nn.observables import Observable
 
 
@@ -113,23 +115,27 @@ class PlotPredsClassif(Observable):
         batch_idx: int,
         preds: Any
     ) -> None:
-        if self.idx['val'] % self.freq['val'] == 0:
-            idx = 0
-            # img, target = batch[0][idx], batch[1][idx]
-            # pred = preds[idx]
-            # fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [img, pred, target]], title=f'val | epoch {trainer.current_epoch}')
-            # fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [batch[0], preds, batch[1]]], title=f'val | epoch {trainer.current_epoch}')
-            fig = self.plot_pred(
-                *[k.cpu().detach().numpy() for k in [batch[0], preds, batch[1]]],
-                figsize_atom=self.figsize_atom,
-                n_imgs=self.n_imgs,
-                title=f'val | epoch {trainer.current_epoch}',
-                xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
-            )
-            trainer.logger.experiment.add_figure("preds/val/input_pred_target", fig, self.idx['val'])
-            self.saved_fig['val'] = fig
+        # self.plot_pred_state(trainer, pl_module, batch, preds, "val", f'val | epoch {trainer.current_epoch}', self.idx["val"])
+        self.plot_pred_state(
+            trainer=trainer, pl_module=pl_module, batch=batch, preds=preds, state="val",
+            title=f'val | epoch {trainer.current_epoch}', step=self.idx["val"],)
+        # if self.idx['val'] % self.freq['val'] == 0:
+        #     idx = 0
+        #     # img, target = batch[0][idx], batch[1][idx]
+        #     # pred = preds[idx]
+        #     # fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [img, pred, target]], title=f'val | epoch {trainer.current_epoch}')
+        #     # fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [batch[0], preds, batch[1]]], title=f'val | epoch {trainer.current_epoch}')
+        #     fig = self.plot_pred(
+        #         *[k.cpu().detach().numpy() for k in [batch[0], preds, batch[1]]],
+        #         figsize_atom=self.figsize_atom,
+        #         n_imgs=self.n_imgs,
+        #         title=f'val | epoch {trainer.current_epoch}',
+        #         xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
+        #     )
+        #     trainer.logger.experiment.add_figure("preds/val/input_pred_target", fig, self.idx['val'])
+        #     self.saved_fig['val'] = fig
 
-        self.idx['val'] += 1
+        # self.idx['val'] += 1
 
 
     def on_train_batch_end_with_preds(
@@ -141,44 +147,67 @@ class PlotPredsClassif(Observable):
             batch_idx: int,
             preds: 'Any',
     ) -> None:
-        if self.idx['train'] % self.freq["train"] == 0:
+        self.plot_pred_state(trainer=trainer, pl_module=pl_module, batch=batch, preds=preds, state="train", title="train",
+            step=trainer.global_step,)
+        # if self.idx['train'] % self.freq["train"] == 0:
+        #     with torch.no_grad():
+        #         # idx = random.choice(range(len(batch[0])))
+        #         # idx = 0
+        #         # img, target = batch[0][idx], batch[1][idx]
+        #         # pred = preds[idx]
+        #         fig = self.plot_pred(
+        #             *[k.cpu().detach().numpy() for k in [batch[0], preds, batch[1]]],
+        #             figsize_atom=self.figsize_atom,
+        #             n_imgs=self.n_imgs,
+        #             title='train',
+        #             xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
+        #         )
+        #         trainer.logger.experiment.add_figure("preds/train/input_pred_target", fig, trainer.global_step)
+        #         self.saved_fig['train'] = fig
+
+        # self.idx['train'] += 1
+
+    def plot_pred_state(self, trainer, pl_module, batch, preds, state, title, step):
+        if self.idx[state] % self.freq[state] == 0:
             with torch.no_grad():
-                # idx = random.choice(range(len(batch[0])))
-                # idx = 0
-                # img, target = batch[0][idx], batch[1][idx]
-                # pred = preds[idx]
+                imgs = [k.cpu().detach().numpy()[0] for k in batch[0]]
                 fig = self.plot_pred(
-                    *[k.cpu().detach().numpy() for k in [batch[0], preds, batch[1]]],
+                    imgs,
+                    *[k.cpu().detach().numpy() for k in [preds, batch[1]]],
                     figsize_atom=self.figsize_atom,
                     n_imgs=self.n_imgs,
-                    title='train',
+                    title=title,
                     xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
                 )
-                trainer.logger.experiment.add_figure("preds/train/input_pred_target", fig, trainer.global_step)
-                self.saved_fig['train'] = fig
+                trainer.logger.experiment.add_figure(f"preds/{state}/input_pred_target", fig, step)
+                self.saved_fig[state] = fig
 
-        self.idx['train'] += 1
+        self.idx[state] += 1
+
 
     @staticmethod
-    def plot_pred(imgs, preds, targets, figsize_atom, n_imgs, title='', xlims=(0, 1)):
+    def plot_pred(imgs, preds, targets, figsize_atom, n_imgs, title='', xlims=(0, 1), tick_label=None):
         n_imgs = min(n_imgs, len(imgs))
         W, L = figsize_atom
         fig, axs = plt.subplots(n_imgs, 2, figsize=(2 * W, L * n_imgs))
         n_classes = len(preds[0])
 
+        if tick_label is None:
+            tick_label = list(range(n_classes))
+
         for ax_idx in range(n_imgs):
             img, pred, target = imgs[ax_idx], preds[ax_idx], targets[ax_idx]
-            axs[ax_idx, 0].imshow(img[0])
-            axs[ax_idx, 0].set_title(target.argmax())
+            axs[ax_idx, 0].imshow(img)
+            axs[ax_idx, 0].set_title(tick_label[target.argmax()])
 
             pred_label = pred.argmax()
 
             colors = ["red" for _ in range(n_classes)]
             colors[pred_label] = "green"
 
-            axs[ax_idx, 1].barh(range(n_classes), pred, tick_label=range(n_classes), color=colors)
+            axs[ax_idx, 1].barh(range(n_classes), pred, tick_label=tick_label, color=colors)
             axs[ax_idx, 1].set_xlim(*xlims)
-            axs[ax_idx, 1].set_title(f'pred: {pred.argmax()}')
+            axs[ax_idx, 1].set_title(f'pred: {tick_label[pred.argmax()]}')
 
             for idx, value in enumerate(pred):
                 axs[ax_idx, 1].text(value.item(), idx, f'{value.item():.2f}')
@@ -196,3 +225,33 @@ class PlotPredsClassif(Observable):
                 plt.close(self.saved_fig[state])
 
         return self.saved_fig
+
+
+class PlotPredsClassifChannel(PlotPredsClassif):
+    def __init__(self, dataset: GrayToChannelDatasetBase, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.dataset = dataset
+
+    def plot_pred_state(self, trainer, pl_module, batch, preds, state, title, step):
+        if self.idx[state] % self.freq[state] == 0:
+            with torch.no_grad():
+                imgs = np.stack([self.dataset.from_channels_to_gray_numpy(img) for img in batch[0]], axis=0)
+                fig = self.plot_pred(
+                    imgs,
+                    *[k.cpu().detach().numpy() for k in [preds, batch[1]]],
+                    figsize_atom=self.figsize_atom,
+                    n_imgs=self.n_imgs,
+                    title=title,
+                    xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
+                    tick_label=self.dataset.classes
+                )
+                trainer.logger.experiment.add_figure(f"preds/{state}/input_pred_target", fig, step)
+                self.saved_fig[state] = fig
+
+        self.idx[state] += 1
+
+    def save(self, save_path: str):
+        super().save(save_path)
+        final_dir = join(save_path, self.__class__.__name__)
+        pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
+        torch.save(self.dataset.levelset_values, join(final_dir, "levelset_values.pt"))

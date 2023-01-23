@@ -29,7 +29,9 @@ class LightningBiMoNN(NetLightning):
             **kwargs
         )
 
-        self.save_hyperparameters()
+        self.save_hyperparameters(ignore="observables")
+        self.hparams["model_type"] = self.__class__.__name__
+
 
 
 class LightningBiMoNNClassifierMaxPool(NetLightning):
@@ -54,7 +56,9 @@ class LightningBiMoNNClassifierMaxPool(NetLightning):
             **kwargs
         )
 
-        self.save_hyperparameters()
+        self.save_hyperparameters(ignore="observables")
+        self.hparams["model_type"] = self.__class__.__name__
+
 
 
 class LightningBiMoNNClassifierMaxPoolNotBinary(NetLightning):
@@ -79,7 +83,9 @@ class LightningBiMoNNClassifierMaxPoolNotBinary(NetLightning):
             **kwargs
         )
 
-        self.save_hyperparameters()
+        self.save_hyperparameters(ignore="observables")
+        self.hparams["model_type"] = self.__class__.__name__
+
 
 
 class LightningBiMoNNClassifierLastLinearNotBinary(NetLightning):
@@ -104,7 +110,9 @@ class LightningBiMoNNClassifierLastLinearNotBinary(NetLightning):
             **kwargs
         )
 
-        self.save_hyperparameters()
+        self.save_hyperparameters(ignore="observables")
+        self.hparams["model_type"] = self.__class__.__name__
+
 
 
 class LightningBiMoNNClassifierLastLinear(NetLightning):
@@ -129,4 +137,6 @@ class LightningBiMoNNClassifierLastLinear(NetLightning):
             **kwargs
         )
 
-        self.save_hyperparameters()
+        self.save_hyperparameters(ignore="observables")
+        self.hparams["model_type"] = self.__class__.__name__
+

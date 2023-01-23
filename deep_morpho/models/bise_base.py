@@ -135,51 +135,51 @@ class BiSEBase(BinaryNN):
         return self._normalized_weight.numel() + self.bias.numel() + self.activation_P.numel()
 
     def create_closest_selem_handler(self, **kwargs):
-        if self.closest_selem_method == ClosestSelemEnum.MIN_DIST_DIST_TO_BOUNDS:
+        if self.closest_selem_method.value == ClosestSelemEnum.MIN_DIST_DIST_TO_BOUNDS.value:
             return BiseClosestMinDistBounds(bise_module=self, **kwargs)
 
-        elif self.closest_selem_method == ClosestSelemEnum.MIN_DIST:
+        elif self.closest_selem_method.value == ClosestSelemEnum.MIN_DIST.value:
             kwargs['distance_agg_fn'] = distance_agg_min
             kwargs['distance_fn'] = kwargs.get('distance_fn', distance_fn_to_bounds)
             return BiseClosestSelemWithDistanceAgg(bise_module=self, **kwargs)
 
-        elif self.closest_selem_method == ClosestSelemEnum.MAX_SECOND_DERIVATIVE:
+        elif self.closest_selem_method.value == ClosestSelemEnum.MAX_SECOND_DERIVATIVE.value:
             kwargs['distance_agg_fn'] = distance_agg_max_second_derivative
             return BiseClosestSelemWithDistanceAgg(bise_module=self, **kwargs)
 
-        elif self.closest_selem_method == ClosestSelemEnum.MIN_DIST_DIST_TO_CST:
+        elif self.closest_selem_method.value == ClosestSelemEnum.MIN_DIST_DIST_TO_CST.value:
             return BiseClosestMinDistOnCst(bise_module=self, **kwargs)
 
 
     def create_bias_handler(self, **kwargs):
-        if self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE:
+        if self.bias_optim_mode.value == BiseBiasOptimEnum.POSITIVE.value:
             kwargs['offset'] = kwargs.get('offset', 0.5)
             return BiasSoftplus(bise_module=self, **kwargs)
 
-        elif self.bias_optim_mode == BiseBiasOptimEnum.RAW:
+        elif self.bias_optim_mode.value == BiseBiasOptimEnum.RAW.value:
             return BiasRaw(bise_module=self, **kwargs)
 
-        elif self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED:
+        elif self.bias_optim_mode.value == BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED.value:
             kwargs['offset'] = kwargs.get('offset', 0)
             return BiasBiseSoftplusProjected(bise_module=self, **kwargs)
 
-        elif self.bias_optim_mode == BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED:
+        elif self.bias_optim_mode.value == BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED.value:
             kwargs['offset'] = kwargs.get('offset', 0)
             return BiasBiseSoftplusReparametrized(bise_module=self, **kwargs)
 
         raise NotImplementedError(f'self.bias_optim_mode must be in {BiseBiasOptimEnum._member_names_}')
 
     def create_weights_handler(self, **kwargs):
-        if self.weights_optim_mode == BiseWeightsOptimEnum.THRESHOLDED:
+        if self.weights_optim_mode.value == BiseWeightsOptimEnum.THRESHOLDED.value:
             return WeightsThresholdedBise(bise_module=self, threshold_mode=self.weight_threshold_mode, **kwargs)
 
-        elif self.weights_optim_mode == BiseWeightsOptimEnum.NORMALIZED:
+        elif self.weights_optim_mode.value == BiseWeightsOptimEnum.NORMALIZED.value:
             return WeightsNormalizedBiSE(bise_module=self, threshold_mode=self.weight_threshold_mode, **kwargs)
 
-        elif self.weights_optim_mode == BiseWeightsOptimEnum.ELLIPSE:
+        elif self.weights_optim_mode.value == BiseWeightsOptimEnum.ELLIPSE.value:
             return WeightsEllipse(bise_module=self, **kwargs)
 
-        elif self.weights_optim_mode == BiseWeightsOptimEnum.ELLIPSE_ROOT:
+        elif self.weights_optim_mode.value == BiseWeightsOptimEnum.ELLIPSE_ROOT.value:
             return WeightsEllipseRoot(bise_module=self, **kwargs)
 
         raise NotImplementedError(f'self.bias_optim_mode must be in {BiseWeightsOptimEnum._member_names_}')

@@ -61,75 +61,75 @@ class BimonnInitializer:
     @staticmethod
     def get_init_class(bise_init_method, atomic_element: str):
         if atomic_element == "bisel":
-            if bise_init_method == InitBiseEnum.IDENTITY:
+            if bise_init_method.value == InitBiseEnum.IDENTITY.value:
                 return InitIdentity
 
-            if bise_init_method == InitBiseEnum.NORMAL:
+            if bise_init_method.value == InitBiseEnum.NORMAL.value:
                 return InitNormalIdentity
 
-            elif bise_init_method == InitBiseEnum.KAIMING_UNIFORM:
+            elif bise_init_method.value == InitBiseEnum.KAIMING_UNIFORM.value:
                 return InitKaimingUniform
 
-            elif bise_init_method == InitBiseEnum.CUSTOM_HEURISTIC:
+            elif bise_init_method.value == InitBiseEnum.CUSTOM_HEURISTIC.value:
                 return InitBiseHeuristicWeights
 
-            elif bise_init_method == InitBiseEnum.CUSTOM_CONSTANT:
+            elif bise_init_method.value == InitBiseEnum.CUSTOM_CONSTANT.value:
                 return InitBiseConstantVarianceWeights
 
-            elif bise_init_method == InitBiseEnum.ELLIPSE:
+            elif bise_init_method.value == InitBiseEnum.ELLIPSE.value:
                 return InitBiseEllipseWeights
 
-            elif bise_init_method == InitBiseEnum.ELLIPSE_ROOT:
+            elif bise_init_method.value == InitBiseEnum.ELLIPSE_ROOT.value:
                 return InitBiseEllipseWeightsRoot
 
-            elif bise_init_method == InitBiseEnum.CUSTOM_CONSTANT_DUAL:
+            elif bise_init_method.value == InitBiseEnum.CUSTOM_CONSTANT_DUAL.value:
                 return InitDualBiseConstantVarianceWeights
 
-            elif bise_init_method == InitBiseEnum.CUSTOM_CONSTANT_DUAL_RANDOM_BIAS:
+            elif bise_init_method.value == InitBiseEnum.CUSTOM_CONSTANT_DUAL_RANDOM_BIAS.value:
                 return InitDualBiseConstantVarianceWeightsRandomBias
 
-            elif bise_init_method == InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS:
+            elif bise_init_method.value == InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS.value:
                 return InitBiseConstantVarianceWeightsRandomBias
 
-            elif bise_init_method == InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS:
+            elif bise_init_method.value == InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS.value:
                 return InitBiseConstantVarianceConstantWeights
 
-            elif bise_init_method == InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_DUAL:
+            elif bise_init_method.value == InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_DUAL.value:
                 return InitDualBiseConstantVarianceConstantWeights
 
-            elif bise_init_method == InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS:
+            elif bise_init_method.value == InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS.value:
                 return InitBiseConstantVarianceConstantWeightsRandomBias
             
-            elif bise_init_method == InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_DUAL_RANDOM_BIAS:
+            elif bise_init_method.value == InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_DUAL_RANDOM_BIAS.value:
                 return InitDualBiseConstantVarianceConstantWeightsRandomBias
 
 
         elif atomic_element == "sybisel":
-            if bise_init_method == InitBiseEnum.IDENTITY:
+            if bise_init_method.value == InitBiseEnum.IDENTITY.value:
                 return InitIdentitySybise
 
-            if bise_init_method == InitBiseEnum.NORMAL:
+            if bise_init_method.value == InitBiseEnum.NORMAL.value:
                 return InitNormalIdentitySybise
 
-            elif bise_init_method == InitBiseEnum.KAIMING_UNIFORM:
+            elif bise_init_method.value == InitBiseEnum.KAIMING_UNIFORM.value:
                 return InitKaimingUniformSybise
 
-            elif bise_init_method == InitBiseEnum.CUSTOM_HEURISTIC:
+            elif bise_init_method.value == InitBiseEnum.CUSTOM_HEURISTIC.value:
                 return InitSybiseHeuristicWeights
 
-            elif bise_init_method == InitBiseEnum.CUSTOM_CONSTANT:
+            elif bise_init_method.value == InitBiseEnum.CUSTOM_CONSTANT.value:
                 return InitSybiseConstantVarianceWeights
 
-            elif bise_init_method == InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS:
+            elif bise_init_method.value == InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS.value:
                 return InitSybiseConstantVarianceWeightsRandomBias
 
-            elif bise_init_method == InitBiseEnum.CUSTOM_HEURISTIC_RANDOM_BIAS:
+            elif bise_init_method.value == InitBiseEnum.CUSTOM_HEURISTIC_RANDOM_BIAS.value:
                 return InitSybiseHeuristicWeightsRandomBias
 
-            elif bise_init_method == InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS:
+            elif bise_init_method.value == InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS.value:
                 return InitSybiseConstantVarianceConstantWeights
 
-            elif bise_init_method == InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS:
+            elif bise_init_method.value == InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS.value:
                 return InitSybiseConstantVarianceConstantWeightsRandomBias
 
 

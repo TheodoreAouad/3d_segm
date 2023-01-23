@@ -5,9 +5,11 @@ from typing import Dict
 
 import torch
 import matplotlib.pyplot as plt
+import numpy as np
 
 from general.nn.observables.observable import Observable
-from .plot_pred import PlotPredsClassif
+from deep_morpho.datasets import GrayToChannelDatasetBase
+from .plot_pred import PlotPredsClassif, PlotPredsClassifChannel
 from general.utils import save_json
 
 
@@ -281,20 +283,35 @@ class BinaryModeMetricClassif(Observable):
             # img, pred, target = inputs[0], preds[0], targets[0]
             # if self.do_plot_figure:
             if self.plot_freq[state] is not None and self.plot_freq_idx[state] % self.plot_freq[state] == 0:
-                fig = self.plot_pred(
-                    *[k.cpu().detach().numpy() for k in [inputs, preds, targets]],
-                    figsize_atom=self.figsize_atom,
-                    n_imgs=self.n_imgs,
-                    title=state,
-                    xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
-                )
+                # fig = self.plot_pred(
+                #     *[k.cpu().detach().numpy() for k in [inputs, preds, targets]],
+                #     figsize_atom=self.figsize_atom,
+                #     n_imgs=self.n_imgs,
+                #     title=state,
+                #     xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
+                # )
+                fig = self.plot_step(state=state, inputs=inputs, preds=preds, targets=targets, pl_module=pl_module,)
                 # fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [img, pred, target]], title=state)
                 trainer.logger.experiment.add_figure(f"preds/{state}/binary_mode/input_pred_target", fig, step)
-            
+
             self.plot_freq_idx[state] += 1
             self.freq_idx[state] += 1
 
             pl_module.model.binary(False)
+
+    def plot_step(self, state, inputs, preds, targets, pl_module):
+        imgs = [k.cpu().detach().numpy()[0] for k in inputs]
+        fig = self.plot_pred(
+            imgs,
+            *[k.cpu().detach().numpy() for k in [preds, targets]],
+            figsize_atom=self.figsize_atom,
+            n_imgs=self.n_imgs,
+            title=state,
+            xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
+        )
+        # fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [img, pred, target]], title=state)
+        # trainer.logger.experiment.add_figure(f"preds/{state}/binary_mode/input_pred_target", fig, step)
+        return fig
 
 
     @staticmethod
@@ -346,3 +363,28 @@ class BinaryModeMetricClassif(Observable):
             )
             pl_module.log(f"binary_mode/metrics_epoch_mean/per_batch_step/{metric_name}_test", metric)
             self.last_value["test"][metric_name] = metric
+
+
+class BinaryModeMetricClassifChannel(BinaryModeMetricClassif):
+    def __init__(self, dataset: GrayToChannelDatasetBase, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.dataset = dataset
+
+    @staticmethod
+    def plot_pred(*args, **kwargs):
+        return PlotPredsClassifChannel.plot_pred(*args, **kwargs)
+
+    def plot_step(self, state, inputs, preds, targets, pl_module):
+        imgs = np.stack([self.dataset.from_channels_to_gray_numpy(img) for img in inputs], axis=0)
+        fig = self.plot_pred(
+            imgs,
+            *[k.cpu().detach().numpy() for k in [preds, targets]],
+            figsize_atom=self.figsize_atom,
+            n_imgs=self.n_imgs,
+            title=state,
+            xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
+            tick_label=self.dataset.classes,
+        )
+        # fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [img, pred, target]], title=state)
+        # trainer.logger.experiment.add_figure(f"preds/{state}/binary_mode/input_pred_target", fig, step)
+        return fig

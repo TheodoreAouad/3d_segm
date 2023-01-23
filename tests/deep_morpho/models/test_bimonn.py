@@ -1,7 +1,7 @@
 import torch
 
 from deep_morpho.models import BiMoNN, BiMoNNClassifierMaxPool, BiMoNNClassifierMaxPoolNotBinary
-from deep_morpho.datasets.mnist_dataset import MnistClassifDataset
+from deep_morpho.datasets import MnistClassifDataset, CIFAR10Dataset
 from deep_morpho.initializer import InitBiseEnum
 from deep_morpho.initializer import InitBimonnEnum, InitBiseEnum
 from deep_morpho.models.bise_base import ClosestSelemEnum, ClosestSelemDistanceEnum, BiseBiasOptimEnum, BiseWeightsOptimEnum
@@ -209,3 +209,19 @@ class TestBimonnClassifierMaxPool():
         n_lui_params = sum(p.numel() for name, p in model.classification_layer.named_parameters() if "lui" in name and p.requires_grad)
 
         assert n_binary + n_lui_params == n_params
+
+    @staticmethod
+    def test_forward_classif_channel():
+        x = next(iter(CIFAR10Dataset.get_loader(batch_size=1, train=True, levelset_handler_args={"n_values": 10})))[0]
+        n_classes = 10
+
+        model = BiMoNNClassifierMaxPoolNotBinary(
+            kernel_size=(5, 5),
+            channels=[10*3, 5, ],
+            atomic_element='bisel',
+            input_size=x.shape[-2:],
+            n_classes=n_classes,
+        )
+
+        otp = model(x)
+        assert otp.shape == (x.shape[0], n_classes)

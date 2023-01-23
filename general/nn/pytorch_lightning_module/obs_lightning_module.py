@@ -1,10 +1,13 @@
+import inspect
+from typing import Any, List, Optional, Callable, Dict, Union, Tuple, IO
 from functools import reduce
 
+import torch
 from pytorch_lightning import LightningModule
-from typing import Any, List, Optional, Callable, Dict, Union, Tuple
 from ..observables.observable import Observable
 from pytorch_lightning.utilities.types import EPOCH_OUTPUT
-
+from pytorch_lightning.utilities.cloud_io import load as pl_load
+from pytorch_lightning.core.saving import load_hparams_from_tags_csv, load_hparams_from_yaml
 
 
 class ObsLightningModule(LightningModule):
@@ -199,3 +202,121 @@ class NetLightning(ObsLightningModule):
         values['grads'] = grad_values
 
         return values
+
+
+    @classmethod
+    def select_(cls, name: str) -> Optional["NetLightning"]:
+        """
+        Recursive class method iterating over all subclasses to return the
+        desired model class.
+        """
+        if cls.__name__.lower() == name:
+            return cls
+
+        for subclass in cls.__subclasses__():
+            selected = subclass.select_(name)
+            if selected is not None:
+                return selected
+
+        return None
+
+    @classmethod
+    def select(cls, name: str) -> "NetLightning":
+        """
+        Class method iterating over all subclasses to instantiate the desired
+        model.
+        """
+
+        selected = cls.select_(name)
+        if selected is None:
+            raise ValueError("The selected model was not found.")
+
+        return selected
+
+    @classmethod
+    def listing(cls) -> List[str]:
+        """List all the available models."""
+        subclasses = set()
+        if not inspect.isabstract(cls):
+            subclasses = {cls.__name__.lower()}
+
+        for subclass in cls.__subclasses__():
+            subclasses = subclasses.union(subclass.listing())
+
+        return list(subclasses)
+
+    @classmethod
+    def load_from_checkpoint(cls, path: str, *args, **kwargs):
+        """If model info in the checkpoint, load the right model."""
+        checkpoint = torch.load(path)
+
+        if "hyper_parameters" not in checkpoint.keys():
+            return super().load_from_checkpoint(path, *args, **kwargs)
+
+        if "model_type" not in checkpoint["hyper_parameters"].keys():
+            return super().load_from_checkpoint(path, *args, **kwargs)
+
+        model_type = checkpoint["hyper_parameters"]["model_type"].lower()
+        if model_type not in NetLightning.listing():
+            return NetLightning.select(model_type).load_from_checkpoint_ignore_keys(
+                path, ignore_keys=[("hyper_parameters", "model_type")]
+                *args, **kwargs
+            )
+
+        return NetLightning.select(model_type).load_from_checkpoint_ignore_keys(
+            path, ignore_keys=[("hyper_parameters", "model_type")],
+            *args, **kwargs
+        )
+
+    @classmethod
+    def load_from_checkpoint_ignore_keys(
+        cls,
+        checkpoint_path: Union[str, IO],
+        map_location: Optional[Union[Dict[str, str], str, torch.device, int, Callable]] = None,
+        hparams_file: Optional[str] = None,
+        strict: bool = True,
+        ignore_keys: List[Union[Tuple[str], str]] = [],
+        **kwargs,
+    ):
+        """The same as load_from_checkpoint of lightning, except that deletes some unwanted arguments of checkpoints.
+        If a list of tuple is given, the last argument of the dict tree is deleted.
+        Ex:
+        >>> ignore_keys = [("hyper_parameters", "model_type")]
+        then the key "model_type" is deleted from the dict checkpoint["hyper_parameters"]"""
+        if map_location is not None:
+            checkpoint = pl_load(checkpoint_path, map_location=map_location)
+        else:
+            checkpoint = pl_load(checkpoint_path, map_location=lambda storage, loc: storage)
+
+        # Delete key to ignore.
+        for to_ignore in ignore_keys:
+            if isinstance(to_ignore, tuple):
+                v1 = checkpoint[to_ignore[0]]
+                for key in to_ignore[1:-1]:
+                    v1 = v1[key]
+                del v1[to_ignore[-1]]
+            else:
+                del checkpoint[to_ignore]
+
+        if hparams_file is not None:
+            extension = hparams_file.split('.')[-1]
+            if extension.lower() == 'csv':
+                hparams = load_hparams_from_tags_csv(hparams_file)
+            elif extension.lower() in ('yml', 'yaml'):
+                hparams = load_hparams_from_yaml(hparams_file)
+            else:
+                raise ValueError('.csv, .yml or .yaml is required for `hparams_file`')
+
+            hparams['on_gpu'] = False
+
+            # overwrite hparams by the given file
+            checkpoint[cls.CHECKPOINT_HYPER_PARAMS_KEY] = hparams
+
+        # for past checkpoint need to add the new key
+        if cls.CHECKPOINT_HYPER_PARAMS_KEY not in checkpoint:
+            checkpoint[cls.CHECKPOINT_HYPER_PARAMS_KEY] = {}
+        # override the hparams with values that were passed in
+        checkpoint[cls.CHECKPOINT_HYPER_PARAMS_KEY].update(kwargs)
+
+        model = cls._load_model_state(checkpoint, strict=strict, **kwargs)
+        return model

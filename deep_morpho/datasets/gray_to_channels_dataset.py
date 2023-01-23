@@ -18,11 +18,16 @@ class LevelsetValuesHandler(ABC):
         Args:
             img (torch.Tensor): shape (n_channels, *img_shape)
         """
-        self.levelset_values = self.init_levelset_values(img, *args, **kwargs)
+        self.levelset_values = self.init_levelset_values(img=img, *args, **kwargs)
 
     @abstractmethod
     def init_levelset_values(self, img: torch.Tensor, *args, **kwargs):
         return
+
+
+class LevelsetValuesManual(LevelsetValuesHandler):
+    def init_levelset_values(self, values: torch.Tensor, *args, **kwargs):
+        return values
 
 
 class LevelsetValuesDefault(LevelsetValuesHandler):
@@ -90,9 +95,10 @@ class GrayToChannelDatasetBase(SelectIndexesDataset):
             torch.Tensor: shape (channels * n_values, width, length), binary image with channels as level sets
         """
         all_binary_imgs = []
+        values_device = levelset_values.to(img.device)
 
         for chan in range(img.shape[0]):
-            bin_img, _ = level_sets_from_gray(img[chan], levelset_values[chan])
+            bin_img, _ = level_sets_from_gray(img[chan], values_device[chan])
             all_binary_imgs.append(bin_img)
 
         return torch.cat(all_binary_imgs, axis=0)
@@ -111,11 +117,12 @@ class GrayToChannelDatasetBase(SelectIndexesDataset):
         """
 
         n_channels, n_values = levelset_values.shape
+        values_device = levelset_values.to(img_channels.device)
         gray_img = torch.zeros((n_channels,) + img_channels.shape[1:])
 
         for chan in range(n_channels):
             gray_img[chan] = gray_from_level_sets(
-                img_channels[chan * n_values:(chan + 1) * n_values], levelset_values[chan]
+                img_channels[chan * n_values:(chan + 1) * n_values], values_device[chan]
             )
 
         return gray_img
@@ -129,6 +136,10 @@ class GrayToChannelDatasetBase(SelectIndexesDataset):
         input_ = torch.tensor(input_).float()
         original_img = input_ + 0
 
+        target_int = target
+        target = torch.zeros(10)
+        target[target_int] = 1
+
         input_ = input_.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)
 
         if self.preprocessing is not None:
@@ -138,6 +149,7 @@ class GrayToChannelDatasetBase(SelectIndexesDataset):
 
         if self.do_symetric_output:
             input_ = 2 * input_ - 1
+            target = 2 * target - 1
 
         input_.original = original_img
 
@@ -175,6 +187,13 @@ class GrayToChannelDatasetBase(SelectIndexesDataset):
         val_idxes = all_train_idxs[n_inputs_train:n_inputs_train + n_inputs_val]
 
         trainloader = cls.get_loader(indexes=train_idxes, train=True, shuffle=True, *args, **kwargs)
+        kwargs.update({
+            "levelset_handler_mode": LevelsetValuesManual,
+            "levelset_handler_args": {"values": trainloader.dataset.levelset_values},
+        })
         valloader = cls.get_loader(indexes=val_idxes, train=True, shuffle=False, *args, **kwargs)
         testloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
         return trainloader, valloader, testloader
+
+    def from_channels_to_gray_numpy(self, img_channels: torch.Tensor) -> np.ndarray:
+        return self.from_channels_to_gray(img_channels).numpy().transpose(1, 2, 0).astype(int)

@@ -4,6 +4,7 @@ print('Import native libraries ...')
 from functools import partial
 from collections import OrderedDict
 from time import time
+from copy import deepcopy
 import os
 import math
 from os.path import join
@@ -24,8 +25,9 @@ print('Import modules...')
 from deep_morpho.datasets import (
     MnistMorphoDataset, MnistGrayScaleDataset, MnistClassifDataset, FashionMnistGrayScaleDataset,
     InputOutputGeneratorDataset, AxspaROISimpleDataset, AxspaROISimpleDataset, CIFAR10Dataset, CIFAR100Dataset,
-    MnistClassifChannelDataset
+    MnistClassifChannelDataset, SticksNoisedGeneratorDataset
 )
+from deep_morpho.datasets.gray_to_channels_dataset import LevelsetValuesEqualIndex
 # from deep_morpho.datasets.mnist_dataset import MnistMorphoDataset, MnistGrayScaleDataset, MnistClassifDataset
 # from deep_morpho.datasets.fashionmnist_dataset import FashionMnistGrayScaleDataset
 from deep_morpho.utils import set_seed
@@ -44,16 +46,19 @@ from general.nn.observables import CalculateAndLogMetrics
 from general.utils import format_time, log_console, create_logger, save_yaml, save_pickle, close_handlers
 from general.nn.utils import train_val_test_split
 from deep_morpho.metrics import masked_dice, accuracy
+from deep_morpho.env import CLASSIF_DATASETS, CLASSIF_DATASETS_CHANNEL
 from general.code_saver import CodeSaver
 
 
+# Import args. Being able to use the CLI to decide the args path.
 parser = argparse.ArgumentParser()
 parser.add_argument("--args", default="deep_morpho/saved_args/sandbox/args_segm.py")
 path_args_module = parser.parse_args().args
 path_args_module = path_args_module.replace(".py", "").replace("/", ".")
 
 print(path_args_module)
-all_args = import_module(path_args_module).all_args
+args_module = import_module(path_args_module)
+all_args = args_module.all_args
 # from deep_morpho.args_segm import all_args
 
 print('Imports done.')
@@ -64,6 +69,11 @@ def lcm(a, b):
 
 
 def get_dataloader(args):
+
+    # args["channel_classif_args"]["levelset_handler_mode"] = eval(args["channel_classif_args"]["levelset_handler_mode"])
+    channel_classif_args = deepcopy(args["channel_classif_args"])
+    channel_classif_args["levelset_handler_mode"] = eval(channel_classif_args["levelset_handler_mode"])
+
 
     if args['dataset_type'] == 'diskorect':
         # if (args['dataset_path'] is not None) and (args['dataset_path'] != 'generate'):
@@ -189,7 +199,7 @@ def get_dataloader(args):
             preprocessing=args['preprocessing'],
             num_workers=args['num_workers'],
             do_symetric_output=args['atomic_element'] == 'sybisel',
-            **args['channel_classif_args']
+            **channel_classif_args
         )
 
 
@@ -203,7 +213,7 @@ def get_dataloader(args):
             preprocessing=args['preprocessing'],
             num_workers=args['num_workers'],
             do_symetric_output=args['atomic_element'] == 'sybisel',
-            **args['channel_classif_args']
+            **channel_classif_args
         )
 
 
@@ -217,7 +227,7 @@ def get_dataloader(args):
             preprocessing=args['preprocessing'],
             num_workers=args['num_workers'],
             do_symetric_output=args['atomic_element'] == 'sybisel',
-            **args['channel_classif_args']
+            **channel_classif_args
         )
 
     return trainloader, valloader, testloader
@@ -229,7 +239,7 @@ def main(args, logger):
         f.write(f"{args['seed']}")
 
     trainloader, valloader, testloader = get_dataloader(args)
-    if "classif" in args['dataset_type']:
+    if args['dataset_type'] in CLASSIF_DATASETS:
         metrics = {"accuracy": accuracy}
     else:
         metrics = {
@@ -245,9 +255,13 @@ def main(args, logger):
     if args['dataset_type'] in ['mnist_gray', 'fashionmnist']:
         plot_pred_obs_fn = obs.PlotPredsGrayscale
         binary_mode_fn = obs.BinaryModeMetric
-    elif "classif" in args['dataset_type']:
-        plot_pred_obs_fn = obs.PlotPredsClassif
-        binary_mode_fn = obs.BinaryModeMetricClassif
+    elif args['dataset_type'] in CLASSIF_DATASETS:
+        if args["dataset_type"] in CLASSIF_DATASETS_CHANNEL:
+            plot_pred_obs_fn = partial(obs.PlotPredsClassifChannel, dataset=trainloader.dataset)
+            binary_mode_fn = partial(obs.BinaryModeMetricClassifChannel, dataset=trainloader.dataset)
+        else:
+            plot_pred_obs_fn = obs.PlotPredsClassif
+            binary_mode_fn = obs.BinaryModeMetricClassif
     else:
         plot_pred_obs_fn = partial(obs.PlotPreds, fig_kwargs={"vmax": 1, "vmin": -1 if args['atomic_element'] == 'sybisel' else 0})
         binary_mode_fn = obs.BinaryModeMetric
@@ -273,7 +287,7 @@ def main(args, logger):
     )
 
     metric_binary_obs = binary_mode_fn(
-        metrics,
+        metrics=metrics,
         freq={"train": args['freq_scalars'], "val": 1, "test": 1},
         plot_freq={"train": args['freq_imgs'], "val": 0.1 * 60000 // args['batch_size'], "test": args['freq_imgs']},
     )
@@ -381,7 +395,7 @@ def main(args, logger):
         # "constant_weight_P": args['constant_weight_P'],
     }
 
-    if "classif" in args['dataset_type']:
+    if args['dataset_type'] in CLASSIF_DATASETS:
         model_args.update({
             'input_size': inpt.shape[-2:],
             'n_classes': trainloader.dataset.n_classes,
@@ -463,8 +477,9 @@ def main(args, logger):
         #     logger.experiment.add_figure(f"target_SE/target_SE_{selem_idx}", fig)
         #     logger.experiment.add_image(f"target_SE/target_SE_{selem_idx}", selem[np.newaxis, :].astype(float))
 
-    model_checkpoint_obs = ModelCheckpoint(monitor="binary_mode/metrics_epoch_mean/per_batch_step/loss_val", dirpath=join(logger.log_dir, "best_weights"), save_weights_only=True)
-    callbacks = [model_checkpoint_obs, ]
+    callbacks = []
+    # model_checkpoint_obs = ModelCheckpoint(monitor="binary_mode/metrics_epoch_mean/per_batch_step/loss_val", dirpath=join(logger.log_dir, "best_weights"), save_weights_only=False)
+    # callbacks += [model_checkpoint_obs, ]
 
     trainer = Trainer(
         max_epochs=args['n_epochs'],
@@ -479,7 +494,7 @@ def main(args, logger):
 
     log_console("Binarizable parameters:", model.model.numel_binary(), logger=console_logger)
     trainer.fit(model, trainloader, valloader)
-    model.load_state_dict(torch.load(model_checkpoint_obs.best_model_path)["state_dict"])
+    # model.load_state_dict(torch.load(model_checkpoint_obs.best_model_path)["state_dict"])
     trainer.test(model, testloader)
 
     metric_dict = {}
@@ -556,6 +571,7 @@ if __name__ == '__main__':
         #         f'Args nb {args_idx + 1} / {len(all_args)} failed : ')
         #     bugged.append(args_idx+1)
 
+        log_console(logger.log_dir, logger=console_logger)
         log_console("Done.", logger=console_logger)
 
     code_saver.delete_temporary_file()
