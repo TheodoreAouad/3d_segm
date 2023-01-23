@@ -388,7 +388,14 @@ class BiMoNNClassifierMaxPoolBase(BiMoNNClassifier):
             self.maxpool_layers.append(nn.MaxPool2d((2, 2)))
             setattr(self, f"maxpool_{idx}", self.maxpool_layers[-1])
 
-        self.layers = sum([[bisel, maxpool] for bisel, maxpool in zip(self.layers, self.maxpool_layers)], start=[])
+
+        # Compatibility python 3.7
+        layers2 = []
+        for bisel, maxpool in zip(self.layers, self.maxpool_layers):
+            layers2 += [bisel, maxpool]
+        self.layers = layers2
+        # self.layers = sum([[bisel, maxpool] for bisel, maxpool in zip(self.layers, self.maxpool_layers)], start=[])
+
         self.bisels_idx = [2*bisel_idx for bisel_idx in self.bisels_idx]
 
         self.bisel_kwargs = self.bisels_kwargs_idx(0) if final_bisel_kwargs is None else final_bisel_kwargs

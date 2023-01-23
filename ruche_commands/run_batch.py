@@ -59,7 +59,7 @@ for atomic in [
 
 # all_paths.append('ruche_commands/bisel/inverted_mnist_black_tophat.sh')
 # all_paths.append('ruche_commands/bisel/fashionmnist_white_tophat.sh')
-all_paths.append('ruche_commands/bisel/mnist_white_tophat.sh')
+# all_paths.append('ruche_commands/bisel/mnist_white_tophat.sh')
 # all_paths.append('ruche_commands/dual_bisel/fashionmnist_white_tophat.sh')
 
 

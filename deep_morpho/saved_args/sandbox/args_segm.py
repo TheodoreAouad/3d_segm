@@ -57,8 +57,8 @@ all_args['experiment_name'] = [
     # "JMIV/multi/1/"
     # "Bimonn_exp_75/multi/0"
     # "Bimonn_exp_76/multi/depth-1",
-    "Bimonn_exp_76/sandbox/0",
-    # "test"
+    # "Bimonn_exp_76/sandbox/0",
+    "test"
     # "test_classif/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
