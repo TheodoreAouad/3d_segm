@@ -133,8 +133,8 @@ all_args['nb_batch_indep'] = [0]
 #     3_000_000,
 #     # 100_000,
 # ]
-all_args['train_test_split'] = [(0.1, 0.1, 0.1)]
-# all_args['train_test_split'] = [(0.9, 0.1, 1)]
+# all_args['train_test_split'] = [(0.1, 0.1, 0.1)]
+all_args['train_test_split'] = [(0.9, 0.1, 1)]
 
 
 # TRAINING ARGS
