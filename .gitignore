@@ -10,4 +10,6 @@ segmentations/
 **geogebra**
 **root_mnist_dir.txt
 **root_fashionmnist_dir.txt
+**root_cifar10_dir.txt
+**root_cifar100_dir.txt
 ruche_logs
