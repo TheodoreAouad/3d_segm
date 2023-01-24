@@ -44,7 +44,15 @@ class LevelsetValuesEqualIndex(LevelsetValuesHandler):
         for chan in range(img.shape[0]):
             values, count = img.unique(return_counts=True)
             values, count = values[1:-1], count[1:-1]
-            values = torch.tensor(sorted(sum([[v for _ in range(c)] for v, c in zip(values, count)], start=[])))  # repeat values that occur multiple times
+
+            # Python 3.7 compatibility
+            values2 = []
+            for v, c in zip(values, count):
+                values2 += [v for _ in range(c)]
+            values = torch.tensor(sorted(values2))
+
+            # values = torch.tensor(sorted(sum([[v for _ in range(c)] for v, c in zip(values, count)], start=[])))  # repeat values that occur multiple times
+
             levelsets[chan] = values[undersample(0, len(values) - 1, n_values)]
         return levelsets
 
