@@ -9,7 +9,7 @@ class UpdateBinary(Observable):
         self.freq = freq
 
     def on_train_batch_end(self, trainer, pl_module, *args, **kwargs):
-        if self.freq_idx % self.freq == 0:
+        if self.freq is not None and self.freq_idx % self.freq == 0:
             self.apply_update(pl_module)
         self.freq_idx += 1
 
@@ -19,9 +19,4 @@ class UpdateBinary(Observable):
         pl_module.model.binary(mode=init_mode, update_binaries=False)  # Resetting original binary mode
 
     def on_train_epoch_end(self, trainer, pl_module):
-        # print("training end")
         self.apply_update(pl_module)
-
-    # def on_validation_epoch_start(self, trainer, pl_module):
-    #     print("validation start")
-    #     self.apply_update(pl_module)

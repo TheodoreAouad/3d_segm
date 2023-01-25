@@ -4,8 +4,10 @@ from typing import Tuple
 import numpy as np
 import torch.nn as nn
 import torch
+import math
+import torch.nn.init as init
 
-from deep_morpho.threshold_fn import tanh_threshold_inverse, sigmoid_threshold_inverse, arctan_threshold_inverse
+from deep_morpho.threshold_fn import tanh_threshold_inverse, sigmoid_threshold_inverse, arctan_threshold_inverse, relu_threshold_inverse
 from general.utils import uniform_sampling_bound
 
 
@@ -47,7 +49,7 @@ class InitWeightsThenBias(BiseInitializer):
 
 
 class InitBiasFixed(InitWeightsThenBias):
-    def __init__(self, init_bias_value: float, *args, **kwargs) -> None:
+    def __init__(self, init_bias_value: float = None, *args, **kwargs) -> None:
         self.init_bias_value = init_bias_value
 
     def init_bias(self, module):
@@ -83,7 +85,17 @@ class InitIdentity(InitBiasFixed):
 
 class InitKaimingUniform(InitBiasFixed):
     def init_weights(self, module: nn.Module):
-        module.set_param_from_weights(module.conv.weight + 1)
+        module.set_param_from_weights(module.conv.weight)
+
+    def init_bias(self, module: nn.Module):
+        fan_in, _ = init._calculate_fan_in_and_fan_out(module._normalized_weight)
+        if fan_in != 0:
+            bound = 1 / math.sqrt(fan_in)
+            self.init_bias_value = torch.rand_like(module.bias) * 2 * bound - bound
+        else:
+            self.init_bias_value = torch.zeros_like(module.bias)
+        module.set_bias(self.init_bias_value)
+
 
 
 class InitSybiseBias(InitWeightsThenBias):
@@ -139,6 +151,7 @@ class InitBiseConstantVarianceWeights(InitBiasFixed):
         "tanh": tanh_threshold_inverse,
         "sigmoid": sigmoid_threshold_inverse,
         "arctan": arctan_threshold_inverse,
+        "relu": relu_threshold_inverse,
     }
 
     def __init__(

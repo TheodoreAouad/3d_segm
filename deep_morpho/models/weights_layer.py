@@ -82,7 +82,7 @@ class WeightsThresholdedBise(WeightsBise):
         return self.threshold_layer.forward(param)
 
     def from_weights_to_param(self, weights: torch.Tensor) -> torch.Tensor:
-        assert (weights >= 0).all(), weights
+        # assert (weights >= 0).all(), weights
         return self.threshold_layer.forward_inverse(weights)
 
 

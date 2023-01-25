@@ -246,7 +246,7 @@ class NetLightning(ObsLightningModule):
         return list(subclasses)
 
     @classmethod
-    def load_from_checkpoint(cls, path: str, *args, **kwargs):
+    def load_from_checkpoint(cls, path: str, model_kwargs: Dict = {}, *args, **kwargs):
         """If model info in the checkpoint, load the right model."""
         checkpoint = torch.load(path)
 
@@ -264,7 +264,7 @@ class NetLightning(ObsLightningModule):
             )
 
         return NetLightning.select(model_type).load_from_checkpoint_ignore_keys(
-            path, ignore_keys=[("hyper_parameters", "model_type")],
+            path, ignore_keys=[("hyper_parameters", "model_type")], model_kwargs=model_kwargs,
             *args, **kwargs
         )
 
@@ -276,6 +276,7 @@ class NetLightning(ObsLightningModule):
         hparams_file: Optional[str] = None,
         strict: bool = True,
         ignore_keys: List[Union[Tuple[str], str]] = [],
+        model_kwargs: Dict = {},
         **kwargs,
     ):
         """The same as load_from_checkpoint of lightning, except that deletes some unwanted arguments of checkpoints.
@@ -317,6 +318,7 @@ class NetLightning(ObsLightningModule):
             checkpoint[cls.CHECKPOINT_HYPER_PARAMS_KEY] = {}
         # override the hparams with values that were passed in
         checkpoint[cls.CHECKPOINT_HYPER_PARAMS_KEY].update(kwargs)
+        checkpoint["hyper_parameters"]["model_args"].update(model_kwargs)
 
         model = cls._load_model_state(checkpoint, strict=strict, **kwargs)
         return model

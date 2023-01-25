@@ -66,6 +66,11 @@ class SigmoidLayer(ThresholdLayer):
         super().__init__(threshold_fn=sigmoid_threshold, threshold_inverse_fn=sigmoid_threshold_inverse, threshold_name='sigmoid', *args, **kwargs)
 
 
+class ReLULayer(ThresholdLayer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(threshold_fn=relu_threshold, threshold_inverse_fn=relu_threshold_inverse, threshold_name='relu', *args, **kwargs)
+
+
 class ArctanLayer(ThresholdLayer):
     def __init__(self, *args, **kwargs):
         super().__init__(threshold_fn=arctan_threshold, threshold_inverse_fn=arctan_threshold_inverse, threshold_name='arctan', *args, **kwargs)
@@ -141,4 +146,5 @@ dispatcher = {
     "clamp": ClampLayer,
     "identity": IdentityLayer,
     "softplus": SoftplusThresholdLayer,
+    "relu": ReLULayer,
 }

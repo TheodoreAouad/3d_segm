@@ -31,6 +31,7 @@ loss_dict = {
     "BCENormalizedLoss": BCENormalizedLoss,
     'NormalizedDiceLoss': NormalizedDiceLoss,
     "BCELoss": nn.BCELoss,
+    "CrossEntropyLoss": nn.CrossEntropyLoss,
 }
 
 all_args = {}
@@ -57,8 +58,8 @@ all_args['experiment_name'] = [
     # "JMIV/multi/1/"
     # "Bimonn_exp_75/multi/0"
     # "Bimonn_exp_76/multi/depth-1",
-    # "Bimonn_exp_76/sandbox/0",
-    "test"
+    "Bimonn_exp_76/sandbox/0",
+    # "test"
     # "test_classif/0"
     # "Bimonn_mega_multi_1/sandbox/0"
     # "Bimonn_mega_multi_1/"
@@ -154,8 +155,8 @@ all_args['nb_batch_indep'] = [0]
 #     3_000_000,
 #     # 100_000,
 # ]
-all_args['train_test_split'] = [(0.1, 0.1, 0.1)]
-# all_args['train_test_split'] = [(0.9, 0.1, 1)]
+# all_args['train_test_split'] = [(0.1, 0.1, 0.1)]
+all_args['train_test_split'] = [(0.9, 0.1, 1)]
 
 
 # TRAINING ARGS
@@ -173,6 +174,7 @@ all_args['loss_data_str'] = [
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
     "BCELoss",
+    # "CrossEntropyLoss",
     # "MSELoss",
     # "DiceLoss",
     # "MaskedDiceLoss",
@@ -194,8 +196,9 @@ all_args['num_workers'] = [
 ]
 all_args['freq_imgs'] = [500]
 all_args['freq_hist'] = [500]
+all_args["freq_update_binary_batch"] = [None]
 all_args['freq_scalars'] = [50]
-all_args['n_epochs'] = [20]
+all_args['n_epochs'] = [5]
 
 all_args['patience_loss_batch'] = [2100]
 all_args['patience_loss_epoch'] = [6]
@@ -213,15 +216,15 @@ all_args['early_stopping_on'] = [
 #     4,
 # ]
 all_args["model_type"] = [
-    "LightningBiMoNNClassifierMaxPoolNotBinary",
+    # "LightningBiMoNNClassifierMaxPoolNotBinary",
     # "LightningBiMoNNClassifierMaxPool",
-    # "LightningBiMoNNClassifierLastLinearNotBinary",
+    "LightningBiMoNNClassifierLastLinearNotBinary",
     # "LightningBiMoNNClassifierLastLinear",
     # "LightningBiMoNN",
 ]
 all_args['atomic_element'] = [
-    # "bisel",
-    "dual_bisel",
+    "bisel",
+    # "dual_bisel",
     # "sybisel",
 ]
 all_args['n_atoms'] = [
@@ -237,7 +240,7 @@ all_args['kernel_size'] = [
 all_args['channels'] = [
     # 'adapt',
     # [1, 100,],
-    [1, 5, ],
+    [1, 100, ],
     # [1, 50, 50],
     # [1, 75, 75],
     # [1, 100, 100],
@@ -262,6 +265,15 @@ all_args['weights_optim_mode'] = [
     BiseWeightsOptimEnum.THRESHOLDED,
     # BiseWeightsOptimEnum.ELLIPSE_ROOT,
     # BiseWeightsOptimEnum.NORMALIZED
+]
+
+all_args['threshold_mode'] = [
+    {
+        # "weight": 'identity',
+        "weight": 'softplus',
+        "activation": 'tanh',
+        # "activation": 'sigmoid',
+    },
 ]
 all_args['weights_optim_args'] = [
     # {"constant_P": True}
@@ -297,14 +309,6 @@ all_args['constant_activation_P'] = [False]
 all_args['force_lui_identity'] = [False]
 all_args['constant_P_lui'] = [False]
 
-all_args['threshold_mode'] = [
-    {
-        # "weight": 'identity',
-        "weight": 'softplus',
-        "activation": 'tanh',
-        # "activation": 'sigmoid',
-    },
-]
 
 
 if all_args['dataset_type'] in [[k] for k in ['axspa_roi', "sticks_noised", "classif_mnist"]]:

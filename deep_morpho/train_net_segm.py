@@ -313,7 +313,7 @@ def main(args, logger):
         # "PlotGradientBise": plot_grad_obs,
         obs.ConvergenceMetrics(metrics, freq=args['freq_scalars']),
 
-        obs.UpdateBinary(freq=lcm(args['freq_hist'], args['freq_imgs'])),
+        obs.UpdateBinary(freq=args["freq_update_binary_batch"]),
         # "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),
@@ -478,8 +478,13 @@ def main(args, logger):
         #     logger.experiment.add_image(f"target_SE/target_SE_{selem_idx}", selem[np.newaxis, :].astype(float))
 
     callbacks = []
-    # model_checkpoint_obs = ModelCheckpoint(monitor="binary_mode/metrics_epoch_mean/per_batch_step/loss_val", dirpath=join(logger.log_dir, "best_weights"), save_weights_only=False)
-    # callbacks += [model_checkpoint_obs, ]
+    model_checkpoint_obs = ModelCheckpoint(
+        monitor="binary_mode/metrics_epoch_mean/per_batch_step/loss_val",
+        dirpath=join(logger.log_dir, "best_weights"),
+        save_weights_only=False,
+        save_last=True
+    )
+    callbacks += [model_checkpoint_obs, ]
 
     trainer = Trainer(
         max_epochs=args['n_epochs'],
@@ -494,7 +499,7 @@ def main(args, logger):
 
     log_console("Binarizable parameters:", model.model.numel_binary(), logger=console_logger)
     trainer.fit(model, trainloader, valloader)
-    # model.load_state_dict(torch.load(model_checkpoint_obs.best_model_path)["state_dict"])
+    model.load_state_dict(torch.load(model_checkpoint_obs.best_model_path)["state_dict"])
     trainer.test(model, testloader)
 
     metric_dict = {}

@@ -10,6 +10,10 @@ def tanh_threshold(x):
     return 1/2 * torch.tanh(x) + 1/2
 
 
+def relu_threshold(x):
+    return torch.relu(x)
+
+
 def sigmoid_threshold(x):
     return torch.sigmoid(x)
 
@@ -24,6 +28,10 @@ def clamp_threshold(x, s1=0, s2=1):
 
 def arctan_threshold_inverse(y):
     return torch.tan((y - 1/2) * pi)
+
+
+def relu_threshold_inverse(y):
+    return y
 
 
 def tanh_threshold_inverse(y):

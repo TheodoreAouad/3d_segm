@@ -132,7 +132,7 @@ def distance_fn_between_bounds(self, normalized_weights: "torch.Tensor", bias: "
 class BiseClosestMinDistBounds(BiseClosestSelemWithDistanceAgg):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(distance_fn=distance_fn_between_bounds, distance_agg_fn=distance_agg_min, *args, **kwargs)
+        super().__init__(distance_fn=distance_fn_to_bounds, distance_agg_fn=distance_agg_min, *args, **kwargs)
 
 
 class BiseClosestMinDistOnCst(BiseClosestSelemWithDistanceAgg):

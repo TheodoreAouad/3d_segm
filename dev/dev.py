@@ -1,83 +1,29 @@
-import io
-import pathlib
+import os
+from os.path import join
+from tqdm import tqdm
 
-import fsspec
-import torch
-import torch.nn as nn
-import torch.optim as optim
-
-import deep_morpho.initializer as inits
-import deep_morpho.models.bise_base as bise_base
-
-import deep_morpho.models.lightning_bimonn as lbimonn
+from tensorboard.backend.event_processing import event_accumulator
 
 
-device = 'cpu'
-if torch.cuda.is_available():
-    device = 'cuda'
-print(device)
-
-n_classes = 10
-
-
-def print_params(layer):
-    print("binary params:", layer.numel_binary())
-    print("learnable params:", sum([param.numel() for param in layer.parameters() if param.requires_grad]))
+def extract_max_value_from_tb(path_tb_file: str, scalar: str) -> float:
+    ea = event_accumulator.EventAccumulator(
+        path_tb_file,
+        size_guidance={event_accumulator.SCALARS: 0},
+    )
+    _absorb_print = ea.Reload()
+    if len(ea.Tags()['scalars']) == 0:
+        return None
+    return max(ea.Scalars(scalar), key=lambda x: x.value).value
 
 
-model_args = {
-    "kernel_size": (3, 3),
-    "channels": [10, 100],
-    "atomic_element": 'bisel',
-    "input_size": (28, 28),
-    "n_classes": n_classes,
-    "threshold_mode": {
-        "weight": 'softplus',
-        "activation": 'tanh',
-    },
-    "initializer_method": inits.InitBimonnEnum.INPUT_MEAN,
-    "initializer_args": {
-        "bise_init_method": inits.InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
-        "lui_init_method": inits.InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS,
-        "bise_init_args": {"ub": 1e-2, "max_output_value": 0.95, "p_for_init": "auto"},
-        "input_mean": .5,
-    },
-    "closest_selem_method": bise_base.ClosestSelemEnum.MIN_DIST_DIST_TO_CST,
-    "bias_optim_mode": bise_base.BiseBiasOptimEnum.POSITIVE,
-    "bias_optim_args": {"offset": 0},
-    "weights_optim_mode": bise_base.BiseWeightsOptimEnum.THRESHOLDED,
-    "weights_optim_args": {"constant_P": True, "factor": 1},
-}
+exp_path = "deep_morpho/results/results_tensorboards/Bimonn_exp_76/multi/0/bisel/softplus/classif_mnist/"
 
+tb_paths = sorted(os.listdir(exp_path))
 
-model = lbimonn.LightningBiMoNNClassifierMaxPoolNotBinary(
-    learning_rate=1e-1,
-    loss=nn.BCELoss(),
-    optimizer=optim.Adam,
-    model_args=model_args,
-)
-print_params(model.model)
+all_maxs = {}
 
+for tb_path in tqdm(tb_paths):
+    all_maxs[tb_path] = extract_max_value_from_tb(join(exp_path, tb_path), scalar="binary_mode/metrics_epoch_mean/accuracy_val")
 
-def atomic_save(checkpoint, filepath: str):
-    """Saves a checkpoint atomically, avoiding the creation of incomplete checkpoints.
-
-    Args:
-        checkpoint: The object to save.
-            Built to be used with the ``dump_checkpoint`` method, but can deal with anything which ``torch.save``
-            accepts.
-        filepath: The path to which the checkpoint will be saved.
-            This points to the file that the checkpoint will be stored in.
-    """
-
-    bytesbuffer = io.BytesIO()
-    # Can't use the new zipfile serialization for 1.6.0 because there's a bug in
-    # torch.hub.load_state_dict_from_url() that prevents it from loading the new files.
-    # More details can be found here: https://github.com/pytorch/pytorch/issues/42239
-    torch.save(checkpoint, bytesbuffer)
-    with fsspec.open(filepath, "wb") as f:
-        f.write(bytesbuffer.getvalue())
-
-
-atomic_save(model.hparams, "todelete/model.ckpt")
-pathlib.Path("todelete").mkdir(exist_ok=True, parents=True)
+print({k: f"{v:.2f}" for k, v in all_maxs.items()})
+print(max(all_maxs.items(), key=lambda x: x[1]))

@@ -33,7 +33,7 @@ class BiSE(BiSEBase):
         do_mask_output: bool = False,
         # closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST,
         # closest_selem_args: Dict = {distance_agg_min},
-        bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED,
+        bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.POSITIVE,
         padding=None,
         padding_mode: str = "replicate",
         *args,

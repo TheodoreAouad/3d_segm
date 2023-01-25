@@ -2,6 +2,7 @@ from typing import Union, Tuple, Dict
 from enum import Enum
 
 import torch
+import numpy as np
 
 from .bise_base import BiseBiasOptimEnum
 # from .bise_old import BiSE, InitBiseEnum, SyBiSE, BiseBiasOptimEnum
@@ -188,6 +189,62 @@ class BiSELBase(BinaryNN):
     @property
     def bias_luis(self) -> torch.Tensor:
         return self.bias_lui
+
+    @property
+    def is_activated_bise(self) -> np.ndarray:
+        """ Returns the activation status of the bise layers, of shape (out_channels, in_channels).
+        """
+        return np.stack([layer.is_activated for layer in self.bises], axis=-1)
+
+    @property
+    def closest_selem_dist_bise(self) -> np.ndarray:
+        """ Returns the activation status of the bise layers, of shape (out_channels, in_channels).
+        """
+        return np.stack([layer.closest_selem_dist for layer in self.bises], axis=-1)
+
+    @property
+    def learned_selem_bise(self) -> np.ndarray:
+        return np.stack([layer.learned_selem[:, None, ...] for layer in self.bises], axis=1)
+
+    @property
+    def closest_selem_bise(self) -> np.ndarray:
+        return np.stack([layer.closest_selem[:, None, ...] for layer in self.bises], axis=1)
+
+    @property
+    def closest_operation_bise(self) -> np.ndarray:
+        return np.stack([layer.closest_operation for layer in self.bises], axis=-1)
+
+    @property
+    def learned_operation_bise(self) -> np.ndarray:
+        return np.stack([layer.learned_operation for layer in self.bises], axis=-1)
+
+    @property
+    def is_activated_lui(self) -> np.ndarray:
+        """ Returns the activation status of the bise layers, of shape (out_channels, in_channels).
+        """
+        return np.stack([layer.is_activated for layer in self.luis], axis=-1)
+
+    @property
+    def closest_selem_dist_lui(self) -> np.ndarray:
+        """ Returns the activation status of the bise layers, of shape (out_channels, in_channels).
+        """
+        return np.stack([layer.closest_selem_dist for layer in self.luis], axis=-1)
+
+    @property
+    def learned_selem_lui(self) -> np.ndarray:
+        return np.stack([layer.learned_selem[:, None, ...] for layer in self.luis], axis=1)
+
+    @property
+    def closest_selem_lui(self) -> np.ndarray:
+        return np.stack([layer.closest_selem[:, None, ...] for layer in self.luis], axis=1)
+
+    @property
+    def closest_operation_lui(self) -> np.ndarray:
+        return np.stack([layer.closest_operation for layer in self.luis], axis=-1)
+
+    @property
+    def learned_operation_lui(self) -> np.ndarray:
+        return np.stack([layer.learned_operation for layer in self.luis], axis=-1)
 
     @property
     def normalized_weight(self) -> torch.Tensor:

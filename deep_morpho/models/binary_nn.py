@@ -34,6 +34,9 @@ class BinaryNN(nn.Module, ABC):
                 res += module.numel_binary()
         return res
 
+    def numel_float(self):
+        return sum([param.numel() for param in self.parameters() if param.requires_grad])
+
     def _specific_numel_binary(self):
         """Specifies the number of binarizable parameters that are not contained in the children."""
         return 0
