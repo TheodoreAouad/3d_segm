@@ -177,7 +177,7 @@ class PlotPredsClassif(Observable):
                     figsize_atom=self.figsize_atom,
                     n_imgs=self.n_imgs,
                     title=title,
-                    xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
+                    xlims=(-1, 1) if hasattr(pl_module.model, "atomic_element") and pl_module.model.atomic_element==["sybisel"] else (0, 1),
                 )
                 trainer.logger.experiment.add_figure(f"preds/{state}/input_pred_target", fig, step)
                 self.saved_fig[state] = fig
@@ -242,7 +242,7 @@ class PlotPredsClassifChannel(PlotPredsClassif):
                     figsize_atom=self.figsize_atom,
                     n_imgs=self.n_imgs,
                     title=title,
-                    xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
+                    xlims=(-1, 1) if hasattr(pl_module.model, "atomic_element") and pl_module.model.atomic_element==["sybisel"] else (0, 1),
                     tick_label=self.dataset.classes
                 )
                 trainer.logger.experiment.add_figure(f"preds/{state}/input_pred_target", fig, step)

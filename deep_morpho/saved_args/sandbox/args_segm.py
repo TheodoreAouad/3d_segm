@@ -58,7 +58,7 @@ all_args['experiment_name'] = [
     # "JMIV/multi/1/"
     # "Bimonn_exp_75/multi/0"
     # "Bimonn_exp_76/multi/depth-1",
-    "Bimonn_exp_76/sandbox/0",
+    "Bimonn_exp_76/sandbox/bisel-dense/0",
     # "test"
     # "test_classif/0"
     # "Bimonn_mega_multi_1/sandbox/0"
@@ -83,8 +83,8 @@ all_args['dataset_type'] = [
     # "inverted_mnist",
     # 'diskorect',
     # "sticks_noised",
-    "classif_mnist",
-    # "classif_mnist_channel",
+    # "classif_mnist",
+    "classif_mnist_channel",
     # "cifar10",
     # "cifar100",
 ]
@@ -162,7 +162,7 @@ all_args['train_test_split'] = [(0.9, 0.1, 1)]
 # TRAINING ARGS
 all_args['learning_rate'] = [
     # 1e-2,
-    1e-1,
+    1e-2,
 ]
 
 # if max_plus, then the loss is MSELoss
@@ -197,11 +197,12 @@ all_args['num_workers'] = [
 all_args['freq_imgs'] = [500]
 all_args['freq_hist'] = [500]
 all_args["freq_update_binary_batch"] = [None]
+all_args["freq_update_binary_epoch"] = [3]
 all_args['freq_scalars'] = [50]
-all_args['n_epochs'] = [5]
+all_args['n_epochs'] = [20]
 
 all_args['patience_loss_batch'] = [2100]
-all_args['patience_loss_epoch'] = [6]
+all_args['patience_loss_epoch'] = [9]
 all_args['patience_reduce_lr'] = [1/3]
 all_args['early_stopping_on'] = [
     # 'batch',
@@ -218,9 +219,12 @@ all_args['early_stopping_on'] = [
 all_args["model_type"] = [
     # "LightningBiMoNNClassifierMaxPoolNotBinary",
     # "LightningBiMoNNClassifierMaxPool",
-    "LightningBiMoNNClassifierLastLinearNotBinary",
+    # "LightningBiMoNNClassifierLastLinearNotBinary",
     # "LightningBiMoNNClassifierLastLinear",
     # "LightningBiMoNN",
+    # "LightningBimonnDense",
+    # "LightningBimonnDenseNotBinary",
+    "LightningBimonnBiselDenseNotBinary",
 ]
 all_args['atomic_element'] = [
     "bisel",
@@ -240,7 +244,14 @@ all_args['kernel_size'] = [
 all_args['channels'] = [
     # 'adapt',
     # [1, 100,],
-    [1, 100, ],
+    # [1, 100, ],
+    # [50, 100, ],
+    # [200, 200, 200]
+    [50, 50]
+    # [20, 20, 20],
+    # [40, 40, 40],
+    # [80, 20, 20],
+    # [80, 20,],
     # [1, 50, 50],
     # [1, 75, 75],
     # [1, 100, 100],

@@ -23,9 +23,9 @@ for model in [
 ]:
     for dataset in [
         # 'diskorect',
-        'mnist',
+        # 'mnist',
         # 'inverted_mnist',
-        # 'mnist_gray',
+        'mnist_gray',
         # 'fashionmnist',
     ]:
         path_global = f"deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/0/{model}/softplus/{dataset}/"
@@ -33,6 +33,8 @@ for model in [
         for operation in os.listdir(path_global):
             if not os.path.isdir(join(path_global, operation)):
                 continue
+            # if "top" in operation:
+            #     continue
             for selem in os.listdir(join(path_global, operation)):
                 all_paths += sorted(list_dir_joined(join(path_global, operation, selem)), key=lambda x: int(
                     re.findall(r'version_(\d+)$', x)[0]

@@ -30,7 +30,7 @@ class BiMoNN(BinaryNN):
 
         self.initializer_method = initializer_method
         self.initializer_args = initializer_args if initializer_args is not None else self._default_init_args()
-        self.initalizer = self.create_initializer(**self.initializer_args)
+        self.initalizer: BimonnInitializer = self.create_initializer(**self.initializer_args)
 
         kwargs['channels'] = channels
 
@@ -223,6 +223,10 @@ class BiMoNN(BinaryNN):
         elif self.atomic_element[idx] == 'sybisel':
             layer = SyBiSEL(initializer=self.bisel_initializers[idx], **self.bisels_kwargs_idx(idx))
             self.bisels_idx.append(idx)
+
+        # elif self.atomic_element[idx] == "denselui":
+        #     layer = SyBiSEL(initializer=self.bisel_initializers[idx], **self.bisels_kwargs_idx(idx))
+        #     DenseLUI
 
         return layer
 

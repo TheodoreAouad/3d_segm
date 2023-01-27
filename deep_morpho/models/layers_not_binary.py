@@ -1,6 +1,7 @@
 from typing import Union, Tuple, Dict
 
 from .lui import LUI, SyLUI
+from .dense_lui import DenseLUI
 from .bise import BiSE, SyBiSE
 from ..initializer.bisel_initializer import BiselInitializer, BiselInitIdentical
 from ..initializer.bise_initializer import InitBiseHeuristicWeights
@@ -24,6 +25,15 @@ class SyLuiNotBinary(SyLUI):
     def numel_binary(self):
         return 0
 
+
+
+class DenseLuiNotBinary(DenseLUI):
+    def forward(self, x):
+        return self._forward(x)
+
+    # def _specific_numel_binary(self):
+    def numel_binary(self):
+        return 0
 
 
 class BiSELNotBinary(BiSELBase):

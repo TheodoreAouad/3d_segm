@@ -39,14 +39,15 @@ from deep_morpho.utils import set_seed
 from deep_morpho.models import (
     LightningBiMoNN, BiSE, BiseWeightsOptimEnum, LightningBiMoNNClassifierMaxPool,
     LightningBiMoNNClassifierMaxPoolNotBinary, LightningBiMoNNClassifierLastLinearNotBinary,
-    LightningBiMoNNClassifierLastLinear
+    LightningBiMoNNClassifierLastLinear, LightningBimonnDense, LightningBimonnDenseNotBinary,
+    LightningBimonnBiselDenseNotBinary
 )  # COBiSE, BiSEC, COBiSEC
 import deep_morpho.observables as obs
 from general.nn.observables import CalculateAndLogMetrics
 from general.utils import format_time, log_console, create_logger, save_yaml, save_pickle, close_handlers
 from general.nn.utils import train_val_test_split
 from deep_morpho.metrics import masked_dice, accuracy
-from deep_morpho.env import CLASSIF_DATASETS, CLASSIF_DATASETS_CHANNEL
+from deep_morpho.env import CLASSIF_DATASETS, CLASSIF_DATASETS_CHANNEL, SPECIFIC_BIMONNS, SPECIFIC_BIMONNS_DENSE, SPECIFIC_BIMONNS_BISEL
 from general.code_saver import CodeSaver
 
 
@@ -313,7 +314,7 @@ def main(args, logger):
         # "PlotGradientBise": plot_grad_obs,
         obs.ConvergenceMetrics(metrics, freq=args['freq_scalars']),
 
-        obs.UpdateBinary(freq=args["freq_update_binary_batch"]),
+        obs.UpdateBinary(freq_batch=args["freq_update_binary_batch"], freq_epoch=args["freq_update_binary_epoch"]),
         # "PlotBimonn": obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),
@@ -363,24 +364,18 @@ def main(args, logger):
 
     # init_bias_value = next(iter(trainloader))[0].mean()
     inpt = next(iter(trainloader))[0]
-    if isinstance(args["initializer_args"], dict):
-        args["initializer_args"]["input_mean"] = inpt.mean().item()
-    elif isinstance(args["initializer_args"], list):
-        args["initializer_args"][0]["input_mean"] = inpt.mean().item()
+
 
     # args["initializer_args"]["input_mean"] = 1/2  # DEBUG
 
     model_args={
-        "kernel_size": [args['kernel_size'] for _ in range(args['n_atoms'])],
         "channels": args['channels'],
-        "atomic_element": args["atomic_element"].replace('dual_', ''),
         "threshold_mode": args['threshold_mode'],
         "activation_P": args['activation_P'],
         "constant_activation_P": args['constant_activation_P'],
         "constant_P_lui": args['constant_P_lui'],
         # "init_weight_mode": args["init_weight_mode"],
         # "alpha_init": args["alpha_init"],
-        "lui_kwargs": {"force_identity": args['force_lui_identity']},
         # "init_bias_value_bise": args['init_bias_value_bise'],
         # "init_bias_value_lui": args['init_bias_value_lui'],
         # "input_mean": input_mean,
@@ -395,11 +390,52 @@ def main(args, logger):
         # "constant_weight_P": args['constant_weight_P'],
     }
 
-    if args['dataset_type'] in CLASSIF_DATASETS:
+    if args['model_type'] in SPECIFIC_BIMONNS_BISEL:
         model_args.update({
-            'input_size': inpt.shape[-2:],
-            'n_classes': trainloader.dataset.n_classes,
+            "initializer_bise_method": args["initializer_args"]["bise_init_method"],
+            "initializer_bise_args": dict(**args["initializer_args"]["bise_init_args"], input_mean=.5),
+            "initializer_lui_method": args["initializer_args"]["lui_init_method"],
+            "kernel_size": args["kernel_size"],
+            "input_mean": inpt.mean().item(),
         })
+
+        if args['dataset_type'] in CLASSIF_DATASETS:
+            model_args.update({
+                'input_size': inpt.shape[1:],
+                'n_classes': trainloader.dataset.n_classes,
+            })
+
+
+    elif args['model_type'] in SPECIFIC_BIMONNS_DENSE:
+        model_args.update({
+            "initializer_method": args["initializer_args"]["bise_init_method"],
+            "initializer_args": dict(**args["initializer_args"]["bise_init_args"], input_mean=.5),
+            "input_mean": inpt.mean().item(),
+        })
+
+        if args['dataset_type'] in CLASSIF_DATASETS:
+            model_args.update({
+                'input_size': np.prod(inpt.shape[1:]),
+                'n_classes': trainloader.dataset.n_classes,
+            })
+
+    else:
+        if isinstance(args["initializer_args"], dict):
+            args["initializer_args"]["input_mean"] = inpt.mean().item()
+        elif isinstance(args["initializer_args"], list):
+            args["initializer_args"][0]["input_mean"] = inpt.mean().item()
+
+        model_args.update({
+            "kernel_size": [args['kernel_size'] for _ in range(args['n_atoms'])],
+            "atomic_element": args["atomic_element"].replace('dual_', ''),
+            "lui_kwargs": {"force_identity": args['force_lui_identity']},
+        })
+
+        if args['dataset_type'] in CLASSIF_DATASETS:
+            model_args.update({
+                'input_size': inpt.shape[-2:],
+                'n_classes': trainloader.dataset.n_classes,
+            })
 
     lightning_model = eval(args["model_type"])
     model = lightning_model(
@@ -497,7 +533,8 @@ def main(args, logger):
         num_sanity_val_steps=1,
     )
 
-    log_console("Binarizable parameters:", model.model.numel_binary(), logger=console_logger)
+    log_console(f"Binarizable parameters: {model.model.numel_binary()} / {model.model.numel_float()} = {model.model.numel_binary()/model.model.numel_float():.2f}", logger=console_logger)
+    # log_console("Binarizable parameters:", model.model.numel_binary(), logger=console_logger)
     trainer.fit(model, trainloader, valloader)
     model.load_state_dict(torch.load(model_checkpoint_obs.best_model_path)["state_dict"])
     trainer.test(model, testloader)

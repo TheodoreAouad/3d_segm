@@ -307,7 +307,7 @@ class BinaryModeMetricClassif(Observable):
             figsize_atom=self.figsize_atom,
             n_imgs=self.n_imgs,
             title=state,
-            xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
+            xlims=(-1, 1) if hasattr(pl_module.model, "atomic_element") and pl_module.model.atomic_element==["sybisel"] else (0, 1),
         )
         # fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [img, pred, target]], title=state)
         # trainer.logger.experiment.add_figure(f"preds/{state}/binary_mode/input_pred_target", fig, step)
@@ -382,7 +382,7 @@ class BinaryModeMetricClassifChannel(BinaryModeMetricClassif):
             figsize_atom=self.figsize_atom,
             n_imgs=self.n_imgs,
             title=state,
-            xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
+            xlims=(-1, 1) if hasattr(pl_module.model, "atomic_element") and pl_module.model.atomic_element==["sybisel"] else (0, 1),
             tick_label=self.dataset.classes,
         )
         # fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [img, pred, target]], title=state)
