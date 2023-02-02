@@ -1,6 +1,6 @@
 from black import generate_comments
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
-from deep_morpho.datasets.multi_rect_dataset import InputOutputGeneratorDataset
+from deep_morpho.datasets.diskorect_dataset import InputOutputGeneratorDataset
 from deep_morpho.morp_operations import ParallelMorpOperations
 from deep_morpho.utils import set_seed
 

@@ -33,7 +33,7 @@ from deep_morpho.datasets.gray_to_channels_dataset import LevelsetValuesEqualInd
 from deep_morpho.utils import set_seed
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
-# from deep_morpho.datasets.multi_rect_dataset import InputOutputGeneratorDataset, MultiRectDataset
+# from deep_morpho.datasets.diskorect_dataset import InputOutputGeneratorDataset, MultiRectDataset
 # from deep_morpho.datasets.axspa_roi_dataset import AxspaROISimpleDataset
 # from deep_morpho.datasets.sticks_noised_dataset import AxspaROISimpleDataset
 from deep_morpho.models import (

@@ -14,7 +14,7 @@ from deep_morpho.utils import set_seed
 
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
-from deep_morpho.datasets.multi_rect_dataset import InputOutputGeneratorDataset, MultiRectDataset
+from deep_morpho.datasets.diskorect_dataset import InputOutputGeneratorDataset, MultiRectDataset
 from deep_morpho.datasets.axspa_roi_dataset import AxspaROIDataset, AxspaROISimpleDataset
 import deep_morpho.observables as obs
 import deep_morpho.biblio_comparison.observables as biblio_obs

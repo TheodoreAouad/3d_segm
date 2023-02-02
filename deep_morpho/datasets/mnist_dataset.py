@@ -14,6 +14,7 @@ from deep_morpho.datasets.collate_fn_gray import collate_fn_gray_scale
 from .mnist_base_dataset import MnistBaseDataset, MnistGrayScaleBaseDataset
 from .select_indexes_dataset import SelectIndexesDataset
 from .gray_to_channels_dataset import GrayToChannelDatasetBase, LevelsetValuesEqualIndex, LevelsetValuesHandler
+from .datamodule_base import DataModule
 
 with open('deep_morpho/datasets/root_mnist_dir.txt', 'r') as f:
     ROOT_MNIST_DIR = f.read()
@@ -127,7 +128,7 @@ class MnistGrayScaleDataset(MnistGrayScaleBaseDataset, MNIST):
         return join(self.root, 'processed')
 
 
-class MnistClassifDataset(MNIST):
+class MnistClassifDataset(DataModule, MNIST):
 
     def __init__(
         self,

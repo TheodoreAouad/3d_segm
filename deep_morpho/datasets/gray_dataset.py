@@ -4,9 +4,10 @@ import numpy as np
 import torch
 
 from deep_morpho.gray_scale import level_sets_from_gray, gray_from_level_sets
+from .datamodule_base import DataModule
 
 
-class GrayScaleDataset:
+class GrayScaleDataset(DataModule):
 
     def __init__(
         self,

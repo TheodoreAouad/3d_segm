@@ -2,8 +2,10 @@ from typing import Union, Optional, List
 
 import numpy as np
 
+from .datamodule_base import DataModule
 
-class SelectIndexesDataset:
+
+class SelectIndexesDataset(DataModule):
 
     def __init__(
         self,

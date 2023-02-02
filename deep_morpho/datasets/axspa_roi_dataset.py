@@ -7,8 +7,10 @@ from deep_morpho.morp_operations import ParallelMorpOperations
 from general.utils import one_hot_array
 from general.nn.dataloaders import dataloader_resolution
 
+from .datamodule_base import DataModule
 
-class AxspaROIDataset(Dataset):
+
+class AxspaROIDataset(DataModule, Dataset):
 
     def __init__(self, data, preprocessing=transforms.ToTensor(), unique_resolution=True):
         self.data = data

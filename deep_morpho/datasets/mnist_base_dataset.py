@@ -11,6 +11,7 @@ from deep_morpho.morp_operations import ParallelMorpOperations
 from deep_morpho.tensor_with_attributes import TensorGray
 from .gray_dataset import GrayScaleDataset
 # from general.utils import set_borders_to
+from .datamodule_base import DataModule
 
 
 def resize_image(img: np.ndarray, size: Tuple) -> np.ndarray:
@@ -18,7 +19,7 @@ def resize_image(img: np.ndarray, size: Tuple) -> np.ndarray:
     return np.array(Image.fromarray(img_int8).resize((size[1], size[0]), Image.Resampling.BICUBIC))
 
 
-class MnistBaseDataset:
+class MnistBaseDataset(DataModule):
 
     def __init__(
         self,

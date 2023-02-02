@@ -9,17 +9,18 @@ from pytorch_lightning import Trainer
 class ExperimentBase(ABC):
     def __init__(
         self,
-        n_epochs,
-        gpus,
-        logger,
-        observables,
-        progress_bar_refresh_rate,
-        log_every_n_steps,
-        deterministic,
-        num_sanity_val_steps,
-        model,
-        trainloader,
-        valloader,
+        n_epochs=None,
+        gpus=None,
+        logger=None,
+        observables=None,
+        progress_bar_refresh_rate=None,
+        log_every_n_steps=None,
+        deterministic=None,
+        num_sanity_val_steps=None,
+        model=None,
+        trainloader=None,
+        valloader=None,
+        testloader=None,
         *args,
         **kwargs
     ):
@@ -35,6 +36,7 @@ class ExperimentBase(ABC):
         self.model = model
         self.trainloader = trainloader
         self.valloader = valloader
+        self.testloader = testloader
 
         self.trainer = None
 
@@ -83,7 +85,7 @@ class ExperimentBase(ABC):
     def setup(self):
         pass
 
-    def launch(self):
+    def train(self):
         self.trainer = Trainer(
             max_epochs=self.n_epochs,
             gpus=self.gpus,
@@ -96,6 +98,9 @@ class ExperimentBase(ABC):
         )
 
         self.trainer.fit(self.model, self.trainloader, self.valloader)
+
+    def test(self):
+        self.trainer.test(self.model, self.testloader)
 
     def save(self):
         for observable in self.observables:
