@@ -1,3 +1,4 @@
+import inspect
 from typing import Dict, Callable, List
 
 from .bimonn import (
@@ -42,6 +43,17 @@ class GenericLightningModel(NetLightning):
 
         self.save_hyperparameters(ignore="observables")
         self.hparams["model_type"] = self.__class__.__name__
+
+
+    @classmethod
+    def default_args(cls) -> Dict[str, dict]:
+        """Return the default arguments of the model, in the format of argparse.ArgumentParser"""
+        default_args = {
+            name: {"default": p.default}
+            for name, p in inspect.signature(cls.__init__).parameters.items() if name not in ["self", "model_args"]
+        }
+        default_args["model_args"] = {"default": cls.model_class.default_args()}
+        return default_args
 
 
 class LightningBiMoNN(GenericLightningModel):

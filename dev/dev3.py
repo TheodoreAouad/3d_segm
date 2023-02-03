@@ -1,1 +1,0 @@
-def sum_to_vectors

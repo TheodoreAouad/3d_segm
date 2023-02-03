@@ -8,9 +8,10 @@ import torch.nn as nn
 
 from .softplus import Softplus
 from .bise_module_container import BiseModuleContainer
+from general.nn.experiments.experiment_methods import ExperimentMethods
 
 
-class BiasBise(nn.Module):
+class BiasBise(nn.Module, ExperimentMethods):
     """Base class to deal with bias in BiSE like neurons. We suppose that the bias = f(param).
     """
 

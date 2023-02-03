@@ -4,13 +4,15 @@ from functools import reduce
 
 import torch
 from pytorch_lightning import LightningModule
-from ..observables.observable import Observable
 from pytorch_lightning.utilities.types import EPOCH_OUTPUT
 from pytorch_lightning.utilities.cloud_io import load as pl_load
 from pytorch_lightning.core.saving import load_hparams_from_tags_csv, load_hparams_from_yaml
 
+from ..observables.observable import Observable
+from ..experiments.experiment_methods import ExperimentMethods
 
-class ObsLightningModule(LightningModule):
+
+class ObsLightningModule(LightningModule, ExperimentMethods):
 
     def __init__(self, observables=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -204,46 +206,46 @@ class NetLightning(ObsLightningModule):
         return values
 
 
-    @classmethod
-    def select_(cls, name: str) -> Optional["NetLightning"]:
-        """
-        Recursive class method iterating over all subclasses to return the
-        desired model class.
-        """
-        if cls.__name__.lower() == name:
-            return cls
+    # @classmethod
+    # def select_(cls, name: str) -> Optional["NetLightning"]:
+    #     """
+    #     Recursive class method iterating over all subclasses to return the
+    #     desired model class.
+    #     """
+    #     if cls.__name__.lower() == name:
+    #         return cls
 
-        for subclass in cls.__subclasses__():
-            selected = subclass.select_(name)
-            if selected is not None:
-                return selected
+    #     for subclass in cls.__subclasses__():
+    #         selected = subclass.select_(name)
+    #         if selected is not None:
+    #             return selected
 
-        return None
+    #     return None
 
-    @classmethod
-    def select(cls, name: str) -> "NetLightning":
-        """
-        Class method iterating over all subclasses to instantiate the desired
-        model.
-        """
+    # @classmethod
+    # def select(cls, name: str) -> "NetLightning":
+    #     """
+    #     Class method iterating over all subclasses to instantiate the desired
+    #     model.
+    #     """
 
-        selected = cls.select_(name)
-        if selected is None:
-            raise ValueError("The selected model was not found.")
+    #     selected = cls.select_(name)
+    #     if selected is None:
+    #         raise ValueError("The selected model was not found.")
 
-        return selected
+    #     return selected
 
-    @classmethod
-    def listing(cls) -> List[str]:
-        """List all the available models."""
-        subclasses = set()
-        if not inspect.isabstract(cls):
-            subclasses = {cls.__name__.lower()}
+    # @classmethod
+    # def listing(cls) -> List[str]:
+    #     """List all the available models."""
+    #     subclasses = set()
+    #     if not inspect.isabstract(cls):
+    #         subclasses = {cls.__name__.lower()}
 
-        for subclass in cls.__subclasses__():
-            subclasses = subclasses.union(subclass.listing())
+    #     for subclass in cls.__subclasses__():
+    #         subclasses = subclasses.union(subclass.listing())
 
-        return list(subclasses)
+    #     return list(subclasses)
 
     @classmethod
     def load_from_checkpoint(cls, path: str, model_kwargs: Dict = {}, *args, **kwargs):

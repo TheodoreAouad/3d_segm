@@ -10,9 +10,10 @@ import numpy as np
 
 from .bise_module_container import BiseModuleContainer
 from .threshold_layer import dispatcher
+from general.nn.experiments.experiment_methods import ExperimentMethods
 
 
-class WeightsBise(nn.Module):
+class WeightsBise(nn.Module, ExperimentMethods):
     """Base class to deal with weights in BiSE like neurons. We suppose that the weights = f(param).
     """
 

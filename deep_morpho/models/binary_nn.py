@@ -1,8 +1,10 @@
 from abc import ABC
 import torch.nn as nn
 
+from general.nn.experiments.experiment_methods import ExperimentMethods
 
-class BinaryNN(nn.Module, ABC):
+
+class BinaryNN(nn.Module, ExperimentMethods, ABC):
 
     def __init__(self):
         super().__init__()

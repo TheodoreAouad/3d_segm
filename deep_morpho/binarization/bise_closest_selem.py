@@ -9,6 +9,10 @@ if TYPE_CHECKING:
     import torch
 
 
+from general.nn.experiments.experiment_methods import ExperimentMethods
+
+
+
 class ClosestSelemEnum(Enum):
     MIN_DIST = 1
     MAX_SECOND_DERIVATIVE = 2
@@ -22,7 +26,7 @@ class ClosestSelemDistanceEnum(Enum):
     DISTANCE_TO_AND_BETWEEN_BOUNDS = 3
 
 
-class BiseClosestSelemHandler:
+class BiseClosestSelemHandler(ExperimentMethods):
 
     def __init__(self, bise_module: "BiSE"):
         self.bise_module = bise_module
