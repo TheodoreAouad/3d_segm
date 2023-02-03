@@ -230,6 +230,14 @@ class BiMoNN(BinaryNN):
 
         return layer
 
+    # TODO: add bise and bisel args
+    @classmethod
+    def default_args(cls) -> Dict[str, dict]:
+        """Return the default arguments of the model, in the format of argparse.ArgumentParser"""
+        default_args = super().default_args()
+        return default_args
+        # default_args.update(BiSEL.default_args())
+
 
 class BiMoNNClassifier(BiMoNN, ABC):
     @classmethod

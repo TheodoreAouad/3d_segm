@@ -57,12 +57,12 @@ class ExperimentMethods(ABC):
 
         return list(subclasses)
 
-
+    # TODO: if *args or **kwargs present, go see the parent class arguments
     @classmethod
     def default_args(cls) -> Dict[str, dict]:
         """Return the default arguments of the model, in the format of argparse.ArgumentParser"""
         return {
             name: {"default": p.default}
-            for name, p in inspect.signature(cls.__init__).parameters.items() 
+            for name, p in inspect.signature(cls.__init__).parameters.items()
             if name != "self" and p.__str__() not in ["*args", "**kwargs"]
         }

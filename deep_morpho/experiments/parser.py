@@ -6,6 +6,8 @@ from argparse import ArgumentParser
 from deep_morpho.datasets import DataModule
 from deep_morpho.models import BiMoNN
 
+from general.utils import dict_cross
+
 
 class Parser(dict):
 
@@ -24,10 +26,16 @@ class Parser(dict):
     def _parse_args(self, parser, *args, **kwargs):
         args, _ = parser.parse_known_args(*args, **kwargs)
 
-        self.update({k: v for k, v in args.__dict__.items() if k in self.given_args})  # CLI arguments
-        self.update({k: v for k, v in args.__dict__.items() if k not in self.given_args.union(self.keys())})  # Default arguments
+        self.add_cli_args(args)
+        self.add_default_args(args)
 
         return self
+
+    def add_cli_args(self, args):
+        self.update({k: v for k, v in args.__dict__.items() if k in self.given_args})
+
+    def add_default_args(self, args):
+        self.update({k: v for k, v in args.__dict__.items() if k not in self.given_args.union(self.keys())})
 
     def parse_args(self, *args, **kwargs):
         self._parse_args(self.root_parser, *args, **kwargs)
@@ -39,7 +47,7 @@ class Parser(dict):
         model = BiMoNN.select(model_name)
 
         parser = ArgumentParser()
-        seen_args = set()
+        seen_args = set()  # Handle cases where the same args is used for dataset and model
 
         for arg_name, arg_dict in datamodule.default_args().items():
             parser.add_argument(f"--{arg_name}", **arg_dict)
@@ -51,4 +59,19 @@ class Parser(dict):
                 warnings.warn(f"Argument {arg_name} is both in the datamodule and the model. The datamodule's argument will be used.")
 
         self._parse_args(parser, *args, **kwargs)
+        return self
+
+
+class MultiParser(Parser):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.multi_args = None
+
+    def add_default_args(self, args):
+        self.update({k: [v] for k, v in args.__dict__.items() if k not in self.given_args.union(self.keys())})
+
+    def cross_args(self):
+        self.multi_args = dict_cross(self)
+
+    def post_process(self):
         return self
