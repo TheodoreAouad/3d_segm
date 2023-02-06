@@ -5,81 +5,27 @@ from os.path import join
 
 from pytorch_lightning import Trainer
 
+from deep_morpho.datasets import DataModule
+from deep_morpho.models.bimonn import BiMoNN
+from deep_morpho.utils import Parser
+
 
 class ExperimentBase(ABC):
     def __init__(
         self,
-        n_epochs=None,
-        gpus=None,
-        logger=None,
-        observables=None,
-        progress_bar_refresh_rate=None,
-        log_every_n_steps=None,
-        deterministic=None,
-        num_sanity_val_steps=None,
-        model=None,
-        trainloader=None,
-        valloader=None,
-        testloader=None,
-        *args,
-        **kwargs
+        args: Parser,
+        datamodule_class=DataModule,
+        model_class=BiMoNN,
     ):
-        self.n_epochs = n_epochs
-        self.gpus = gpus
-        self.logger = logger
-        self.observables = observables
-        self.progress_bar_refresh_rate = progress_bar_refresh_rate
-        self.log_every_n_steps = log_every_n_steps
-        self.deterministic = deterministic
-        self.num_sanity_val_steps = num_sanity_val_steps
+        self.args = args
+        self.datamodule_class = datamodule_class
+        self.model_class = model_class
 
-        self.model = model
-        self.trainloader = trainloader
-        self.valloader = valloader
-        self.testloader = testloader
-
-        self.trainer = None
-
-    @classmethod
-    def select_(cls, name: str) -> Optional["ExperimentBase"]:
-        """
-        Recursive class method iterating over all subclasses to return the
-        desired model class.
-        """
-        if cls.__name__.lower() == name:
-            return cls
-
-        for subclass in cls.__subclasses__():
-            selected = subclass.select_(name)
-            if selected is not None:
-                return selected
-
-        return None
-
-    @classmethod
-    def select(cls, name: str, **kwargs: Any) -> "ExperimentBase":
-        """
-        Class method iterating over all subclasses to instantiate the desired
-        model.
-        """
-
-        selected = cls.select_(name)
-        if selected is None:
-            raise ValueError("The selected model was not found.")
-
-        return selected(**kwargs)
-
-    @classmethod
-    def listing(cls) -> List[str]:
-        """List all the available models."""
-        subclasses = set()
-        if not inspect.isabstract(cls):
-            subclasses = {cls.__name__.lower()}
-
-        for subclass in cls.__subclasses__():
-            subclasses = subclasses.union(subclass.listing())
-
-        return list(subclasses)
+    def select_model(self, model_name: str) -> BiMoNN:
+        return self.model_class.select(model_name)
+    
+    def select_datamodule(self, datamodule_name: str) -> DataModule:
+        return self.datamodule_class.select(datamodule_name)
 
     @abstractmethod
     def setup(self):

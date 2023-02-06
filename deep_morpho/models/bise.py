@@ -19,23 +19,13 @@ class BiSE(BiSEBase):
         threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh"},
         activation_P: float = 1,
         constant_activation_P: bool = False,
-        # constant_weight_P: bool = True,
-        shared_weights: torch.tensor = None,
-        # weights_optim_mode: BiseWeightsOptimEnum = BiseWeightsOptimEnum.THRESHOLDED,
-        # weights_optim_args: Dict = {},
-        # init_bias_value: float = 1,
-        # input_mean: float = 0.5,
-        # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
+        weights_optim_mode: BiseWeightsOptimEnum = BiseWeightsOptimEnum.THRESHOLDED,
+        weights_optim_args: Dict = {},
         initializer: BiseInitializer = InitBiseHeuristicWeights(input_mean=0.5, init_bias_value=1),
-        # initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
-        # initializer_args: Dict = {"init_bias_value": 1},
         out_channels: int = 1,
-        do_mask_output: bool = False,
-        # closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST,
-        # closest_selem_args: Dict = {distance_agg_min},
+        closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST_DIST_TO_CST,
+        closest_selem_args: Dict = {},
         bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.POSITIVE,
-        padding=None,
-        padding_mode: str = "replicate",
         *args,
         **kwargs
     ):
@@ -44,22 +34,14 @@ class BiSE(BiSEBase):
             threshold_mode=threshold_mode,
             activation_P=activation_P,
             constant_activation_P=constant_activation_P,
-            # constant_weight_P=constant_weight_P,
-            shared_weights=shared_weights,
             initializer=initializer,
-            # weights_optim_mode=weights_optim_mode,
-            # weights_optim_args=weights_optim_args,
-            # init_bias_value=init_bias_value,
-            # # input_mean=input_mean,
-            # # init_weight_mode=init_weight_mode,
+            weights_optim_mode=weights_optim_mode,
+            weights_optim_args=weights_optim_args,
             out_channels=out_channels,
             in_channels=1,
-            do_mask_output=do_mask_output,
-            # closest_selem_method=closest_selem_method,
-            # closest_selem_args=closest_selem_args,
+            closest_selem_method=closest_selem_method,
+            closest_selem_args=closest_selem_args,
             bias_optim_mode=bias_optim_mode,
-            padding=padding,
-            padding_mode=padding_mode,
             *args,
             **kwargs
         )
@@ -76,10 +58,6 @@ class BiSE(BiSEBase):
             return None
         return self._learned_selem[:, 0, ...]
 
-    # @property
-    # def _normalized_weight(self):
-    #     norm_weights = super()._normalized_weight
-    #     return norm_weights / norm_weights.sum()
 
 
 class SyBiSE(SyBiSEBase):

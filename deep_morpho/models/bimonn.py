@@ -5,7 +5,7 @@ import inspect
 import numpy as np
 import torch.nn as nn
 
-from .bisel import BiSEL, SyBiSEL
+from .bisel import BiSEL, SyBiSEL, BiSELBase
 from .layers_not_binary import BiSELNotBinary, SyBiSELNotBinary
 from .binary_nn import BinaryNN
 from ..initializer import BimonnInitializer, InitBimonnEnum, BimonnInitInputMean, InitBiseEnum
@@ -17,9 +17,13 @@ class BiMoNN(BinaryNN):
         self,
         kernel_size: List[Union[Tuple, int]],
         channels: List[int],
-        atomic_element: Union[str, List[str]] = 'sybisel',
+        atomic_element: Union[str, List[str]] = 'bisel',
         initializer_method: InitBimonnEnum = InitBimonnEnum.INPUT_MEAN,
-        initializer_args: Dict = None,
+        initializer_args: Dict = {
+            "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
+            "lui_init_method": InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS,
+            "bise_init_args": {"ub": 1e-2, "max_output_value": 0.95, "p_for_init": "auto"},
+        },
         **kwargs,
     ):
         super().__init__()
@@ -195,25 +199,13 @@ class BiMoNN(BinaryNN):
 
     @property
     def bises_args(self):
-        # return [
-        #     'kernel_size', 'weight_P', 'threshold_mode', 'activation_P',
-        #     'out_channels', "constant_activation_P",
-        #     "constant_weight_P",
-        #     "closest_selem_method", "closest_selem_distance_fn",
-        #     "bias_optim_mode", "bias_optim_args", "weights_optim_mode", "weights_optim_args",
-        # ]
         return BiSEL._bises_args()
 
     @property
     def bisels_args(self):
         return set(self.bises_args).union(
-            [
-                'in_channels', 'constant_P_lui', "lui_kwargs",
-                # "init_bias_value_bise", "init_bias_value_lui"
-                # "bise_initializer_method", "bise_initializer_args",
-                # "lui_initializer_method", "lui_initializer_args",
-            ]
-        ).difference(["init_bias_value"])
+            ['in_channels', 'constant_P_lui', "lui_kwargs",]
+        )
 
     def _make_layer(self, idx):
         if self.atomic_element[idx] == 'bisel':
@@ -224,62 +216,23 @@ class BiMoNN(BinaryNN):
             layer = SyBiSEL(initializer=self.bisel_initializers[idx], **self.bisels_kwargs_idx(idx))
             self.bisels_idx.append(idx)
 
-        # elif self.atomic_element[idx] == "denselui":
-        #     layer = SyBiSEL(initializer=self.bisel_initializers[idx], **self.bisels_kwargs_idx(idx))
-        #     DenseLUI
-
         return layer
 
-    # TODO: add bise and bisel args
     @classmethod
     def default_args(cls) -> Dict[str, dict]:
         """Return the default arguments of the model, in the format of argparse.ArgumentParser"""
-        default_args = super().default_args()
-        return default_args
-        # default_args.update(BiSEL.default_args())
+        res = super().default_args()
+        res.update({
+            k: v for k, v in BiSELBase.default_args().items()
+            if k not in res
+            and k not in [
+                "initializer", "in_channels", "out_channels", "bise_module", "lui_module",
+            ]
+        })
+        return res
 
 
 class BiMoNNClassifier(BiMoNN, ABC):
-    @classmethod
-    def select_(cls, name: str) -> Optional["BiMoNNClassifier"]:
-        """
-        Recursive class method iterating over all subclasses to return the
-        desired model class.
-        """
-        if cls.__name__.lower() == name:
-            return cls
-
-        for subclass in cls.__subclasses__():
-            selected = subclass.select_(name)
-            if selected is not None:
-                return selected
-
-        return None
-
-    @classmethod
-    def select(cls, name: str, **kwargs: Any) -> "BiMoNNClassifier":
-        """
-        Class method iterating over all subclasses to instantiate the desired
-        model.
-        """
-
-        selected = cls.select_(name)
-        if selected is None:
-            raise ValueError("The selected model was not found.")
-
-        return selected(**kwargs)
-
-    @classmethod
-    def listing(cls) -> List[str]:
-        """List all the available models."""
-        subclasses = set()
-        if not inspect.isabstract(cls):
-            subclasses = {cls.__name__.lower()}
-
-        for subclass in cls.__subclasses__():
-            subclasses = subclasses.union(subclass.listing())
-
-        return list(subclasses)
 
     def forward(self, x):
         output = super().forward(x)
@@ -319,8 +272,6 @@ class BiMoNNClassifierLastLinearBase(BiMoNNClassifier):
         self.bisel_kwargs["out_channels"] = n_classes
         self.bisel_kwargs["kernel_size"] = input_size
         self.bisel_kwargs["padding"] = 0
-        # self.bisel_kwargs["init_bias_value_bise"] = 0.5
-        # self.bisel_kwargs["lui_kwargs"]["force_identity"] = True
         self.classification_layer = classif_layer_fn(**self.bisel_kwargs)
 
         self.in_channels.append(self.out_channels[-1])
@@ -424,40 +375,6 @@ class BiMoNNClassifierMaxPoolBase(BiMoNNClassifier):
 
         self.layers.append(self.classification_layer)
         self.bisels_idx.append(len(self.layers) - 1)
-
-    # def forward(self, x):
-    #     output = self.maxpool_layers[0](self.layers[0](x))
-    #     for layer_bise, layer_maxpool in zip(self.layers[1:-1], self.maxpool_layers[1:]):
-    #         output = layer_bise(output)
-    #         output = layer_maxpool(output)
-    #     output = self.layers[-1](output)
-
-    #     batch_size = output.shape[0]
-    #     output = output.squeeze()
-    #     if batch_size == 1:
-    #         output = output.unsqueeze(0)
-
-    #     return output
-
-    # def forward_save(self, x):
-    #     output = {"input": x}
-    #     cur = self.layers[0].forward_save(x)
-    #     output[0] = cur
-    #     cur['output'] = nn.MaxPool(cur['output'])
-
-    #     for layer_idx, layer in enumerate(self.layers[1:], start=1):
-    #         cur = layer.forward_save(cur['output'])
-    #         cur['output'] = nn.MaxPool(cur['output'])
-    #         output[layer_idx] = cur
-
-    #     output[len(self) - 1] = self.layers[-1].forward_save(cur['output'])
-    #     output["output"] = cur["output"]
-
-    #     batch_size = output["output"].shape[0]
-    #     output["output"] = output["output"].squeeze()
-    #     if batch_size == 1:
-    #         output["output"] = output["output"].unsqueeze(0)
-    #     return output
 
 
 class BiMoNNClassifierMaxPool(BiMoNNClassifierMaxPoolBase):

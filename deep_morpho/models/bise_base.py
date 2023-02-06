@@ -59,19 +59,12 @@ class BiSEBase(BinaryNN):
         constant_activation_P: bool = False,
         weights_optim_mode: BiseWeightsOptimEnum = BiseWeightsOptimEnum.THRESHOLDED,
         weights_optim_args: Dict = {},
-        shared_weights: torch.tensor = None,  # deprecated
-        # initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
-        # initializer_args: Dict = {"init_bias_value": 1},
         initializer: BiseInitializer = InitBiseHeuristicWeights(init_bias_value=1, input_mean=0.5),
-        # init_bias_value: float = 1,
-        # input_mean: float = 0.5,
-        # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
         in_channels: int = 1,
         out_channels: int = 1,
         do_mask_output: bool = False,
         closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST_DIST_TO_CST,
         closest_selem_args: Dict = {},
-        # closest_selem_distance_fn: ClosestSelemDistanceEnum = ClosestSelemDistanceEnum.DISTANCE_TO_AND_BETWEEN_BOUNDS,
         bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED,
         bias_optim_args: Dict = {},
         padding=None,
@@ -109,8 +102,6 @@ class BiSEBase(BinaryNN):
             **{k: kwargs[k] for k in conv_kwargs.intersection(kwargs.keys())}
         )
         self.conv.weight.requires_grad = False
-
-        self.shared_weights = shared_weights
 
         self.activation_threshold_layer = dispatcher[self.activation_threshold_mode](P_=activation_P, constant_P=constant_activation_P, n_channels=out_channels, axis_channels=1)
 

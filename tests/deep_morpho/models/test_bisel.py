@@ -38,3 +38,8 @@ class TestBiSEL:
         inpt = torch.rand(5, 1, 50, 50)
         outpt = layer(inpt)
         assert outpt.shape == (5, 3, 50, 50)
+
+    @staticmethod
+    def test_default_args():
+        BiSEL.default_args()
+        pass

@@ -29,18 +29,7 @@ class BiSELBase(BinaryNN):
         kernel_size: Union[int, Tuple],
         threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh"},
         constant_P_lui: bool = False,
-        # initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
-        # initializer_args: Dict = {"init_bias_value": 1, "input_mean": 0.5},
         initializer: BiselInitializer = BiselInitIdentical(InitBiseHeuristicWeights(init_bias_value=1, input_mean=0.5)),
-        # bise_initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
-        # bise_initializer_args: Dict = {"init_bias_value": 1},
-        # lui_initializer_method: InitBiseEnum = None,
-        # lui_initializer_args: Dict = None,
-        # init_bias_value_bise: float = 0.5,
-        # init_bias_value_lui: float = 0.5,
-        # input_mean: float = 0.5,
-        # lui_input_mean: float = 0.5,
-        # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
         lui_kwargs: Dict = {},
         **bise_kwargs
     ):
@@ -278,15 +267,25 @@ class BiSELBase(BinaryNN):
     def _bises_args():
         return [
             'kernel_size', 'weight_P', 'threshold_mode', 'activation_P',
-            'out_channels', "constant_activation_P",
-            "constant_weight_P",
-            "closest_selem_method", "closest_selem_distance_fn",
+            'out_channels', "constant_activation_P", "constant_weight_P", "closest_selem_method",
             "bias_optim_mode", "bias_optim_args", "weights_optim_mode", "weights_optim_args",
         ]
 
     @property
     def lui_args(self):
         return set(self.bises_args).difference(["padding"]).union(["in_channels"])
+
+    @classmethod
+    def default_args(cls) -> Dict[str, dict]:
+        res = super().default_args()
+        # res.update({
+        #     f"bise.{arg}": v for arg, v in BiSE.default_args().items() if arg in cls._bises_args() and arg not in res
+        # })
+        res.update({k: v for k, v in BiSE.default_args().items() if k not in res})
+
+        return res
+
+
 
 
 class BiSEL(BiSELBase):
@@ -295,15 +294,9 @@ class BiSEL(BiSELBase):
         in_channels: int,
         out_channels: int,
         kernel_size: Union[int, Tuple],
-        threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh_symetric"},
+        threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh"},
         constant_P_lui: bool = False,
-        # init_bias_value_bise: float = 0.5,
-        # init_bias_value_lui: float = 0.5,
-        # input_mean: float = 0.5,
-        # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
         initializer: BiselInitializer = BiselInitIdentical(InitBiseHeuristicWeights(init_bias_value=1, input_mean=0.5)),
-        # initializer_method: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
-        # initializer_args: Dict = {"init_bias_value": 1, "input_mean": 0.5},
         lui_kwargs: Dict = {},
         **bise_kwargs
     ):
