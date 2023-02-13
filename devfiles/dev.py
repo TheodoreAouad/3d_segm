@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 import deep_morpho.experiments.parser as parser
 
 
-prs = parser.Parser()
+# prs = parser.Parser()
 # prs["root"] = "banana"
 # prs["preprocessing"] = "azea"
 
@@ -17,18 +17,20 @@ prs = parser.Parser()
 # # print(banana)
 
 prs = ArgumentParser()
-# prs.add_argument("-m", "--model", help="Model")
+prs.add_argument("-m", "--model", nargs="+", help="Model")
 
 
 def str_to_list(s):
     return s.replace(" ", "").replace("[", "").replace("]", "").split(",")
 
 
-prs.add_argument("-d", "--dataset", type=str_to_list, help="Dataset")
+# prs.add_argument("-d", "--dataset", type=str_to_list, help="Dataset")
+prs.add_argument("-d", "--dataset", help="Dataset")
 
 # args = prs.parse_args(["--data", "banane"])
-args = prs.parse_args()
+args = prs.parse_args(["--model", "BiMoNN", "--dataset", "cifar10dataset"])
 
+print(args)
 print(args)
 
 

@@ -43,3 +43,8 @@ class CodeSaver:
                 ignored_names.extend(fnmatch.filter(names, pattern))
             return set(ignored_names)
         return _ignore_patterns
+
+    def save_directly_in_final_file(self, dst):
+        # Save code
+        copytree(self.src_path, dst, ignore=self.ignore_patterns)
+        self.last_save_path = dst

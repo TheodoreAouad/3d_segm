@@ -360,8 +360,6 @@ def main(args, logger):
 
     # observables = list(observables_dict.values())
 
-    xs = torch.tensor(np.linspace(-6, 6, 100)).detach()
-
     # init_bias_value = next(iter(trainloader))[0].mean()
     inpt = next(iter(trainloader))[0]
 
@@ -443,43 +441,10 @@ def main(args, logger):
         optimizer=args['optimizer'], observables=observables,
     )
 
-    if isinstance(model.model.layers[0], (BiSE)):
-        ys = model.model.layers[0].activation_threshold_fn(xs).detach()
-        fig, ax = plt.subplots(); ax.plot(xs, ys); ax.set_title(args['threshold_mode'])
-        logger.experiment.add_figure("threshold_fn", fig)
-
     model.to(device)
 
     logger.experiment.add_graph(model, inpt[0].unsqueeze(0).to(device))
-    # logger.experiment.add_graph(model, torch.ones(1, args['channels'][0], inpt.shape[-2], inpt.shape[-1]).to(device))
-    # hyperparams = dict(
-    #     # **{f'{k}_{layer_idx}': -1 for k in [
-    #     #     f"weights/sum_norm_weights",
-    #     #     f"params/weight_P",
-    #     #     f"params/activation_P",
-    #     #     f"weights/bias",
-    #     # ] for layer_idx in range(len(model.model.layers))},
-    #     **{
-    #         f'{k}/layer_{layer_idx}_chout_{chan_output}_chin_{chan_input}': torch.tensor([np.nan]) for k in [
-    #             "convergence/binary/bisel",
-    #         ] for layer_idx in range(len(model.model.bisels))
-    #         for chan_input in range(model.model.bisels[layer_idx].in_channels)
-    #         for chan_output in range(model.model.bisels[layer_idx].out_channels)
-    #     },
-    #     **{
-    #         f'{k}/layer_{layer_idx}_chout_{chan_output}': torch.tensor([np.nan]) for k in [
-    #             "convergence/binary/lui",
-    #         ] for layer_idx in range(len(model.model.bisels))
-    #         for chan_output in range(model.model.bisels[layer_idx].out_channels)
-    #     },
-    #     **{"metrics_batch/dice_train": torch.tensor([np.nan])},
-    #     **{"convergence/metric_dice_train": torch.tensor([np.nan])},
-    # )
 
-    # logger.log_hyperparams(args, hyperparams)
-
-    # logger.experiment.add_hparams({k: str(v) for k, v in args.items()}, metric_dict={})
-    # logger.experiment.add_hparams({k: str(v) for k, v in args.items()}, metric_dict={})
     hyperparam_str = ""
     for k, v in args.items():
         hyperparam_str += f"**{k}**: {v}  \n"

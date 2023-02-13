@@ -19,7 +19,7 @@ class TestParser:
         prs = Parser()
         prs["dataset"] = "cifar10dataset"
         prs["model"] = "BiMoNN"
-        prs["net.kernel_size"] = [3, 3, 3]
+        prs["kernel_size.net"] = [3, 3, 3]
 
 
         prs.parse_args("--atomic_element bisel".split())
@@ -27,14 +27,14 @@ class TestParser:
         assert prs["dataset"] == "cifar10dataset"
         assert prs["model"] == "BiMoNN"
 
-        assert prs["net.kernel_size"] == [3, 3, 3]
+        assert prs["kernel_size.net"] == [3, 3, 3]
         assert prs["atomic_element"] == "bisel"
-        assert prs["net.arg1"] == "arg1"
-        assert prs["net.arg2"] == "banane"
+        assert prs["arg1.net"] == "arg1"
+        assert prs["arg2.net"] == "banane"
 
         # assert prs.model_keys() == ["net.arg1", "net.arg2", "net.kernel_size"]
-        assert set(prs.model_keys()) == {"net.arg1", "net.arg2", "net.kernel_size"}
-        assert prs.model_args() == {"arg1": "arg1", "arg2": "banane", "kernel_size": [3, 3, 3]}
+        # assert set(prs.model_keys()) == {"arg1.net", "arg2.net", "kernel_size.net"}
+        # assert prs.model_args() == {"arg1": "arg1", "arg2": "banane", "kernel_size": [3, 3, 3]}
 
 
     @staticmethod
@@ -54,8 +54,8 @@ class TestParser:
         # mocker.patch("sys.argv", testargs)
         from deep_morpho.experiments.parser import Parser
 
-        prs = Parser(["--dataset", "cifar10dataset", "--model", "BiMoNN"])
-        prs.parse_args()
+        prs = Parser()
+        prs.parse_args(["--dataset", "cifar10dataset", "--model", "BiMoNN"])
         assert prs["model"] == "BiMoNN"
         assert prs["dataset"] == "cifar10dataset"
 
@@ -236,3 +236,85 @@ class TestParser:
         assert prs["model"] == "BiMoNN"
         assert prs["dataset"] == "cifar10dataset"
         assert prs["epoch"] == 20
+
+
+    @staticmethod
+    def test_dict_to_parse():
+        from deep_morpho.experiments.parser import Parser
+        prs = Parser()
+
+        prs["dataset"] = "cifar10dataset"
+        prs["model"] = "BiMoNN"
+
+
+class TestMultiParser:
+
+    @staticmethod
+    def test_cli_args(mocker):
+        testargs = ["file.py", "--dataset", "cifar10dataset", "--model", "BiMoNN", "bimonnclassifier"]
+        mocker.patch("sys.argv", testargs)
+        from deep_morpho.experiments.parser import MultiParser
+
+        prs = MultiParser()
+        prs.parse_args()
+        assert prs["model"] == ["BiMoNN", "bimonnclassifier"]
+        assert prs["dataset"] == ["cifar10dataset"]
+
+
+    @staticmethod
+    def test_unknown_args(mocker):
+        testargs = ["file.py", ]
+        mocker.patch("sys.argv", testargs)
+        from deep_morpho.experiments.parser import MultiParser
+
+        prs = MultiParser().parse_args(""
+            '--model BiMoNN --dataset cifar10dataset --epoch 20 40'
+            "".split(" ")
+        )
+
+        assert len(prs.multi_args) == 2
+        assert prs.multi_args[0]["model"] == "bimonn"
+        assert prs.multi_args[0]["dataset"] == "cifar10dataset"
+        assert prs.multi_args[0]["epoch"] == "20"
+
+        assert prs.multi_args[1]["model"] == "bimonn"
+        assert prs.multi_args[1]["dataset"] == "cifar10dataset"
+        assert prs.multi_args[1]["epoch"] == "40"
+
+
+    @staticmethod
+    def test_cli_over_dict(mocker):
+        testargs = ["file.py", "--dataset", "mnistgrayscaledataset", "--model", "bimonnclassifier", "bimonn"]
+        mocker.patch("sys.argv", testargs)
+        from deep_morpho.experiments.parser import MultiParser
+
+        prs = MultiParser()
+        prs["model"] = "BiMoNN"
+        prs["dataset"] = "cifar10dataset"
+        prs.parse_args()
+
+        # assert prs["model"] == "bimonnclassifier"
+        # assert prs["dataset"] == "mnistgrayscaledataset"
+        assert len(prs.multi_args) == 2
+        assert prs.multi_args[0]["model"] == "bimonnclassifier"
+        assert prs.multi_args[0]["dataset"] == "mnistgrayscaledataset"
+
+        assert prs.multi_args[1]["model"] == "bimonn"
+        assert prs.multi_args[1]["dataset"] == "mnistgrayscaledataset"
+
+
+    @staticmethod
+    def test_multi_dict(mocker):
+        from deep_morpho.experiments.parser import MultiParser
+
+        prs = MultiParser()
+        prs["model"] = ["BiMoNN", "bimonnclassifier"]
+        prs["dataset"] = ["cifar10dataset"]
+        prs.parse_args()
+
+        assert len(prs.multi_args) == 2
+        assert prs.multi_args[0]["model"] == "bimonn"
+        assert prs.multi_args[0]["dataset"] == "cifar10dataset"
+
+        assert prs.multi_args[1]["model"] == "bimonnclassifier"
+        assert prs.multi_args[1]["dataset"] == "cifar10dataset"

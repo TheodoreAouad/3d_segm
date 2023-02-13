@@ -54,23 +54,23 @@ class MnistMorphoDataset(MnistBaseDataset, MNIST):
         return join(self.root, 'processed')
 
 
-    @staticmethod
-    def get_loader(batch_size, n_inputs, morp_operation, train, first_idx=0, threshold=.5, size=(50, 50), invert_input_proba=0, do_symetric_output=False, preprocessing=None, **kwargs):
+    @classmethod
+    def get_loader(cls, batch_size, n_inputs, morp_operation, train, first_idx=0, threshold=.5, size=(50, 50), invert_input_proba=0, do_symetric_output=False, preprocessing=None, **kwargs):
         if n_inputs == 0:
             return DataLoader([])
         return DataLoader(
-            MnistMorphoDataset(
+            cls(
                 morp_operation=morp_operation, n_inputs=n_inputs, first_idx=first_idx,
                 train=train, threshold=threshold, preprocessing=preprocessing,
                 size=size, invert_input_proba=invert_input_proba,
                 do_symetric_output=do_symetric_output,
             ), batch_size=batch_size, **kwargs)
 
-    @staticmethod
-    def get_train_val_test_loader(n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
-        trainloader = MnistMorphoDataset.get_loader(first_idx=0, n_inputs=n_inputs_train, train=True, shuffle=True, *args, **kwargs)
-        valloader = MnistMorphoDataset.get_loader(first_idx=0, n_inputs=n_inputs_val, train=False, shuffle=False, *args, **kwargs)
-        testloader = MnistMorphoDataset.get_loader(first_idx=n_inputs_val, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
+    @classmethod
+    def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
+        trainloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_train, train=True, shuffle=True, *args, **kwargs)
+        valloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_val, train=False, shuffle=False, *args, **kwargs)
+        testloader = cls.get_loader(first_idx=n_inputs_val, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
         return trainloader, valloader, testloader
 
 

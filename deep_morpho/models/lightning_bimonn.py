@@ -29,6 +29,7 @@ class GenericLightningModel(NetLightning):
         optimizer: Callable,
         optimizer_args: Dict = {},
         observables: List[Observable] = [],
+        reduce_loss_fn: Callable = lambda x: reduce(lambda a, b: a + b, x),
         **kwargs
     ):
         super().__init__(
@@ -38,6 +39,7 @@ class GenericLightningModel(NetLightning):
             optimizer=optimizer,
             optimizer_args=optimizer_args,
             observables=observables,
+            reduce_loss_fn=reduce_loss_fn,
             **kwargs
         )
 

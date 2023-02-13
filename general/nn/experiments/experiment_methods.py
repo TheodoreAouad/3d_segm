@@ -88,24 +88,28 @@ class ExperimentMethods(ABC):
                 param_dict = {"default": p.default}
 
                 if isinstance(p.default, (bool, int, float, str)):
-                    param_dict["type"] = type(p.default)
+                    param_dict["type"] = cls.convert_or_str_fn(type(p.default))
 
                 if p.annotation is not None:
                     if p.annotation in [bool, int, float, str]:
-                        param_dict["type"] = p.annotation
+                        param_dict["type"] = cls.convert_or_str_fn(p.annotation)
 
                     elif isinstance(p.annotation, EnumMeta):
                         param_dict["type"] = cls.enum_to_str_fn(p.annotation)
-
-                    # elif p.annotation == List:
-
-                # elif p.annotation != inspect._empty:
-                #     param_dict["type"] = p.annotation
 
                 res[name] = param_dict
 
         return res
 
+    @staticmethod
+    def convert_or_str_fn(type_: type) -> Any:
+        def convert_or_str(string: str) -> Any:
+            """Convert a string to a type, or return the string."""
+            try:
+                return type_(string)
+            except ValueError:
+                return string
+        return convert_or_str
 
     @staticmethod
     def enum_to_str_fn(enum: EnumMeta) -> str:
