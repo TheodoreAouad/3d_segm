@@ -19,7 +19,7 @@ from .datamodule_base import DataModule
 #     )
 
 
-class InputOutputGeneratorDataset(DataModule, Dataset):
+class DiskorectDataset(DataModule, Dataset):
     def __init__(
             self,
             random_gen_fn,
@@ -73,15 +73,27 @@ class InputOutputGeneratorDataset(DataModule, Dataset):
     def __len__(self):
         return self.len_dataset
 
-    @staticmethod
-    def get_loader(batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, max_generation_nb=0, do_symetric_output: bool = False, seed=None, device='cpu', **kwargs):
+    @classmethod
+    def get_loader(
+        cls, batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, max_generation_nb=0,
+        do_symetric_output: bool = False, seed=None, device='cpu', num_workers=0,
+        **kwargs
+    ):
         return DataLoader(
-            InputOutputGeneratorDataset(
+            cls(
                 random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device,
                 len_dataset=n_inputs, seed=seed, max_generation_nb=max_generation_nb, do_symetric_output=do_symetric_output,
             ),
-            batch_size=batch_size, **kwargs
+            batch_size=batch_size, num_workers=num_workers,
         )
+
+    @classmethod
+    def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
+        train_loader = cls.get_loader(n_inputs=n_inputs_train, *args, **kwargs)
+        val_loader = cls.get_loader(n_inputs=n_inputs_val, *args, **kwargs)
+        test_loader = cls.get_loader(n_inputs=n_inputs_test, *args, **kwargs)
+
+        return train_loader, val_loader, test_loader
 
 
 class MultiRectDataset(Dataset):

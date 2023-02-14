@@ -1,4 +1,5 @@
 import inspect
+from functools import reduce
 from typing import Dict, Callable, List
 
 from .bimonn import (
@@ -56,6 +57,13 @@ class GenericLightningModel(NetLightning):
         }
         default_args["model_args"] = {"default": cls.model_class.default_args()}
         return default_args
+
+    @classmethod
+    def select(cls, name: str, **kwargs):
+        name = name.lower()
+        if not name.startswith("lightning"):
+            name = "lightning" + name
+        return super().select(name, **kwargs)
 
 
 class LightningBiMoNN(GenericLightningModel):

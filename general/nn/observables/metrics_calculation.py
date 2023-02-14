@@ -13,7 +13,7 @@ class CalculateAndLogMetrics(Observable):
     def __init__(self, metrics, keep_preds_for_epoch=True, freq={"train": 1, "val": 1, "test": 1}):
         self.freq = freq
         self.freq_idx = {"train": 1, "val": 1, "test": 1}
-        self.metrics = metrics
+        self.metrics = {k: v for k, v in metrics.items()}
         self.metrics_sum = {state: {k: 0 for k in metrics.keys()} for state in ['train', 'val', 'test']}
         self.n_inputs = {state: 0 for state in ['train', 'val', 'test']}
         self.last_value = {state: {} for state in ["train", "val", "test"]}

@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 print('Import modules...')
 from deep_morpho.datasets import (
     MnistMorphoDataset, MnistGrayScaleDataset, MnistClassifDataset, FashionMnistGrayScaleDataset,
-    InputOutputGeneratorDataset, AxspaROISimpleDataset, AxspaROISimpleDataset, CIFAR10Dataset, CIFAR100Dataset,
+    DiskorectDataset, AxspaROISimpleDataset, AxspaROISimpleDataset, CIFAR10Dataset, CIFAR100Dataset,
     MnistClassifChannelDataset, SticksNoisedGeneratorDataset
 )
 from deep_morpho.datasets.gray_to_channels_dataset import LevelsetValuesEqualIndex
@@ -33,7 +33,7 @@ from deep_morpho.datasets.gray_to_channels_dataset import LevelsetValuesEqualInd
 from deep_morpho.utils import set_seed
 # from deep_morpho.datasets.generate_forms2 import get_random_diskorect
 # from deep_morpho.datasets.generate_forms3 import get_random_rotated_diskorect
-# from deep_morpho.datasets.diskorect_dataset import InputOutputGeneratorDataset, MultiRectDataset
+# from deep_morpho.datasets.diskorect_dataset import DiskorectDataset, MultiRectDataset
 # from deep_morpho.datasets.axspa_roi_dataset import AxspaROISimpleDataset
 # from deep_morpho.datasets.sticks_noised_dataset import AxspaROISimpleDataset
 from deep_morpho.models import (
@@ -84,7 +84,7 @@ def get_dataloader(args):
         #         num_workers=args['num_workers']
         #     )
         # else:
-        trainloader = InputOutputGeneratorDataset.get_loader(
+        trainloader = DiskorectDataset.get_loader(
             batch_size=args['batch_size'],
             n_inputs=args['n_inputs'],
             max_generation_nb=args['nb_batch_indep'],

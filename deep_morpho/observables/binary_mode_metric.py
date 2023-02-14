@@ -16,12 +16,13 @@ from general.utils import save_json
 
 class BinaryModeMetric(Observable):
 
-    def __init__(self, metrics, freq=100, do_plot_figure: bool = True):
+    def __init__(self, metrics, freq=100, plot_freq={}, do_plot_figure: bool = True, update_binaries: bool = False):
         self.metrics = metrics
         self.freq = freq
         self.freq_idx = 0
         self.last_value = {}
         self.do_plot_figure = do_plot_figure
+        self.update_binaries = update_binaries
 
 
     def on_train_batch_end_with_preds(

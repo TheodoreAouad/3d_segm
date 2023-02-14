@@ -6,7 +6,7 @@ from skimage.morphology import dilation, erosion, opening, closing, disk
 
 from deep_morpho.initializer.bise_initializer import InitBiseConstantVarianceWeights, InitBiseHeuristicWeights, InitDualBiseConstantVarianceWeights
 from deep_morpho.models import BiSE, InitBiseEnum, BiseBiasOptimEnum
-from deep_morpho.datasets import InputOutputGeneratorDataset, get_random_diskorect_channels
+from deep_morpho.datasets import DiskorectDataset, get_random_diskorect_channels
 from deep_morpho.models.bise_base import BiseWeightsOptimEnum
 from deep_morpho.initializer import InitBiseEllipseWeightsRoot
 from general.structuring_elements import disk
@@ -247,7 +247,7 @@ class TestBiseProperties:
 
         loss = nn.BCELoss()
 
-        dataset = InputOutputGeneratorDataset(
+        dataset = DiskorectDataset(
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)},
             morp_operation=ParallelMorpOperations.dilation(('disk', 2)),
@@ -284,7 +284,7 @@ class TestBiseProperties:
 
         model.set_bias(torch.tensor([-1]))
 
-        dataset = InputOutputGeneratorDataset(
+        dataset = DiskorectDataset(
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)},
             morp_operation=ParallelMorpOperations.dilation(('disk', 2)),
@@ -318,7 +318,7 @@ class TestBiseProperties:
                 weights_optim_mode=BiseWeightsOptimEnum.NORMALIZED,
             )
 
-            # dataset = InputOutputGeneratorDataset(
+            # dataset = DiskorectDataset(
             #     random_gen_fn=get_random_diskorect_channels,
             #     random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)},
             #     morp_operation=ParallelMorpOperations.dilation(('disk', 2)),

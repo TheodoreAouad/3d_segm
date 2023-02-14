@@ -1,10 +1,7 @@
-import sys
+# import sys
 
 from mock import patch
 import pytest
-
-from deep_morpho.binarization.bise_closest_selem import ClosestSelemEnum
-from deep_morpho.models.bise import BiseWeightsOptimEnum
 
 
 class TestParser:
@@ -160,7 +157,7 @@ class TestParser:
         def mock_model_init(self, arg1="arg1", arg2="banane", kernel_size=[1, 2]):
             pass
 
-        def mock_dataset_init(self, n_inputs="all"):
+        def mock_dataset_init(self, n_inputs="alliori"):
             pass
 
         mocker.patch("deep_morpho.models.BiMoNN.__init__", mock_model_init)
@@ -185,6 +182,7 @@ class TestParser:
         testargs = ["file.py", "--dataset", "mnistgrayscaledataset", "--model", "bimonnclassifier"]
         mocker.patch("sys.argv", testargs)
         from deep_morpho.experiments.parser import Parser
+        import sys
 
         prs = Parser()
         prs["model"] = "BiMoNN"
@@ -214,6 +212,9 @@ class TestParser:
     @staticmethod
     def test_model_args1():
         from deep_morpho.experiments.parser import Parser
+        from deep_morpho.binarization.bise_closest_selem import ClosestSelemEnum
+        from deep_morpho.models.bise import BiseWeightsOptimEnum
+
         prs = Parser().parse_args(""
             '--model BiMoNN --dataset cifar10dataset --atomic_element bisel --constant_P_lui True --closest_selem_method MIN_DIST_DIST_TO_CST  --weights_optim_mode NORMALIZED'
             "".split(" ")
@@ -235,7 +236,7 @@ class TestParser:
 
         assert prs["model"] == "BiMoNN"
         assert prs["dataset"] == "cifar10dataset"
-        assert prs["epoch"] == 20
+        assert prs["epoch"] == '20'
 
 
     @staticmethod
@@ -245,6 +246,59 @@ class TestParser:
 
         prs["dataset"] = "cifar10dataset"
         prs["model"] = "BiMoNN"
+
+    @staticmethod
+    def test_key_assignment(mocker):
+        def mock_model_init(self, arg1="arg1",):
+            pass
+
+        def mock_dataset_init(self, bbl="all"):
+            pass
+
+
+        mocker.patch("deep_morpho.models.BiMoNN.__init__", mock_model_init)
+        mocker.patch("deep_morpho.datasets.cifar_dataset.CIFAR10Dataset.__init__", mock_dataset_init)
+
+        from deep_morpho.experiments.parser import Parser
+        prs = Parser()
+
+        prs["dataset"] = "cifar10dataset"
+        prs["model"] = "BiMoNN"
+
+        prs.parse_args()
+
+        prs["arg1"] = "value"
+        prs["bbl"] = "second"
+
+        assert prs["dataset"] == "cifar10dataset"
+        assert prs["model"] == "BiMoNN"
+        assert prs["arg1.net"] == "value"
+        assert prs["bbl.datamodule"] == "second"
+
+
+    @staticmethod
+    def test_given_args(mocker):
+        testargs = ["file.py", "--dataset", "mnistgrayscaledataset", "--model", "bimonnclassifier", "--arg1", "1000"]
+        mocker.patch("sys.argv", testargs)
+
+
+        def mock_model_init(self, arg1="arg1",):
+            pass
+
+        def mock_dataset_init(self, bbl="all"):
+            pass
+
+
+        mocker.patch("deep_morpho.models.BiMoNN.__init__", mock_model_init)
+        mocker.patch("deep_morpho.datasets.cifar_dataset.CIFAR10Dataset.__init__", mock_dataset_init)
+
+        from deep_morpho.experiments.parser import Parser
+
+        prs = Parser()
+        prs.parse_args()
+
+        assert prs.given_args == set(["dataset", "model", "arg1.net"])
+
 
 
 class TestMultiParser:
@@ -304,6 +358,25 @@ class TestMultiParser:
 
 
     @staticmethod
+    def test_cli_over_dict2(mocker):
+        testargs = ["file.py", "--dataset", "mnistgrayscaledataset", "--kernel_size", "adapt"]
+        mocker.patch("sys.argv", testargs)
+        from deep_morpho.experiments.parser import MultiParser
+
+        prs = MultiParser()
+        prs["model"] = ["BiMoNN"]
+        prs["dataset"] = ["cifar10dataset"]
+        prs.parse_args()
+
+        # assert prs["model"] == "bimonnclassifier"
+        # assert prs["dataset"] == "mnistgrayscaledataset"
+        assert len(prs.multi_args) == 1
+        assert prs.multi_args[0]["model"] == "bimonn"
+        assert prs.multi_args[0]["dataset"] == "mnistgrayscaledataset"
+        assert prs.multi_args[0]["kernel_size"] == "adapt"
+
+
+    @staticmethod
     def test_multi_dict(mocker):
         from deep_morpho.experiments.parser import MultiParser
 
@@ -318,3 +391,32 @@ class TestMultiParser:
 
         assert prs.multi_args[1]["model"] == "bimonnclassifier"
         assert prs.multi_args[1]["dataset"] == "cifar10dataset"
+
+
+    @staticmethod
+    def test_given_args(mocker):
+        testargs = ["file.py", "--dataset", "cifar10dataset", "cifar100dataset", "--model", "bimonnclassifier", "--bbl", "100", "--aau", "200"]
+        mocker.patch("sys.argv", testargs)
+
+
+        def mock_model_init(self, arg1="arg1",):
+            pass
+
+        def mock_dataset_init1(self, bbl="all"):
+            pass
+            
+        def mock_dataset_init2(self, aau="all"):
+            pass
+
+
+        mocker.patch("deep_morpho.models.BiMoNN.__init__", mock_model_init)
+        mocker.patch("deep_morpho.datasets.cifar_dataset.CIFAR10Dataset.__init__", mock_dataset_init1)
+        mocker.patch("deep_morpho.datasets.cifar_dataset.CIFAR100Dataset.__init__", mock_dataset_init2)
+
+        from deep_morpho.experiments.parser import MultiParser
+
+        prs = MultiParser()
+        prs.parse_args()
+
+        assert prs.multi_args[0].given_args == set(["dataset", "model", "bbl.datamodule", "aau"])
+        assert prs.multi_args[1].given_args == set(["dataset", "model", "aau.datamodule", "bbl"])

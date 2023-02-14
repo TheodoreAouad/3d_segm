@@ -1,6 +1,6 @@
 from black import generate_comments
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
-from deep_morpho.datasets.diskorect_dataset import InputOutputGeneratorDataset
+from deep_morpho.datasets.diskorect_dataset import DiskorectDataset
 from deep_morpho.morp_operations import ParallelMorpOperations
 from deep_morpho.utils import set_seed
 
@@ -12,7 +12,7 @@ class TestInputOutputGeneratorDataset:
         seed = set_seed()
         morp_operation = ParallelMorpOperations.erosion(('disk', 3))
 
-        dataset1 = InputOutputGeneratorDataset(
+        dataset1 = DiskorectDataset(
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
             morp_operation=morp_operation,
@@ -26,7 +26,7 @@ class TestInputOutputGeneratorDataset:
 
         set_seed(seed)
         morp_operation = ParallelMorpOperations.erosion(('disk', 3))
-        dataset2 = InputOutputGeneratorDataset(
+        dataset2 = DiskorectDataset(
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
             morp_operation=morp_operation,
@@ -40,7 +40,7 @@ class TestInputOutputGeneratorDataset:
 
         set_seed(seed)
         morp_operation = ParallelMorpOperations.erosion(('disk', 3))
-        dataset3 = InputOutputGeneratorDataset(
+        dataset3 = DiskorectDataset(
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
             morp_operation=morp_operation,
@@ -63,7 +63,7 @@ class TestInputOutputGeneratorDataset:
         morp_operation = ParallelMorpOperations.erosion(('disk', 3))
         seed = set_seed()
 
-        dataset1 = InputOutputGeneratorDataset(
+        dataset1 = DiskorectDataset(
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
             morp_operation=morp_operation,
@@ -76,7 +76,7 @@ class TestInputOutputGeneratorDataset:
             batchs1.append((img, target))
 
         set_seed(seed)
-        dataset2 = InputOutputGeneratorDataset(
+        dataset2 = DiskorectDataset(
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
             morp_operation=morp_operation,
@@ -89,7 +89,7 @@ class TestInputOutputGeneratorDataset:
             batchs2.append((img, target))
 
         set_seed(seed)
-        dataset3 = InputOutputGeneratorDataset(
+        dataset3 = DiskorectDataset(
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
             morp_operation=morp_operation,
@@ -114,7 +114,7 @@ class TestInputOutputGeneratorDataset:
         morp_operation = ParallelMorpOperations.erosion(('disk', 3))
         seed = set_seed()
 
-        dataloader1 = InputOutputGeneratorDataset.get_loader(
+        dataloader1 = DiskorectDataset.get_loader(
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
             morp_operation=morp_operation,
@@ -128,7 +128,7 @@ class TestInputOutputGeneratorDataset:
             batchs1.append((img, target))
 
         set_seed(seed)
-        dataloader2 = InputOutputGeneratorDataset.get_loader(
+        dataloader2 = DiskorectDataset.get_loader(
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
             morp_operation=morp_operation,
@@ -143,7 +143,7 @@ class TestInputOutputGeneratorDataset:
 
 
         set_seed(seed)
-        dataloader3 = InputOutputGeneratorDataset.get_loader(
+        dataloader3 = DiskorectDataset.get_loader(
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
             morp_operation=morp_operation,
@@ -166,7 +166,7 @@ class TestInputOutputGeneratorDataset:
     @staticmethod
     def test_generate_one_batch():
         morp_operation = ParallelMorpOperations.erosion(('disk', 3))
-        dataloader = InputOutputGeneratorDataset.get_loader(
+        dataloader = DiskorectDataset.get_loader(
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
             morp_operation=morp_operation,
@@ -186,7 +186,7 @@ class TestInputOutputGeneratorDataset:
     @staticmethod
     def test_generate_multi_batch():
         morp_operation = ParallelMorpOperations.erosion(('disk', 3))
-        dataloader = InputOutputGeneratorDataset.get_loader(
+        dataloader = DiskorectDataset.get_loader(
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
             morp_operation=morp_operation,
