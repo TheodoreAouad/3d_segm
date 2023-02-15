@@ -18,9 +18,10 @@ class UpdateBinary(Observable):
         self.freq_batch_idx += 1
 
     def apply_update(self, pl_module):
-        init_mode = pl_module.model.binary_mode
-        pl_module.model.binary(mode=True, update_binaries=True)  # Updating all binaries
-        pl_module.model.binary(mode=init_mode, update_binaries=False)  # Resetting original binary mode
+        if hasattr(pl_module.model, 'binary_mode'):
+            init_mode = pl_module.model.binary_mode
+            pl_module.model.binary(mode=True, update_binaries=True)  # Updating all binaries
+            pl_module.model.binary(mode=init_mode, update_binaries=False)  # Resetting original binary mode
 
     def on_train_epoch_end(self, trainer, pl_module):
         # self.apply_update(pl_module)

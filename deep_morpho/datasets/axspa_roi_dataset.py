@@ -1,10 +1,12 @@
 import torch
+import pandas as pd
 import numpy as np
 from torch.utils.data.dataset import Dataset
 import torchvision.transforms as transforms
 from deep_morpho.morp_operations import ParallelMorpOperations
 
 from general.utils import one_hot_array
+from general.nn.utils import train_val_test_split
 from general.nn.dataloaders import dataloader_resolution
 
 from .datamodule_base import DataModule
@@ -61,7 +63,7 @@ class AxspaROIDataset(DataModule, Dataset):
         return trainloader, valloader, testloader
 
 
-class AxspaROISimpleDataset(Dataset):
+class AxspaROISimpleDataset(DataModule, Dataset):
 
     def __init__(self, data, morp_operations: ParallelMorpOperations = None, preprocessing=None, do_symetric_output: bool = False):
         self.data = data
@@ -99,21 +101,38 @@ class AxspaROISimpleDataset(Dataset):
         return len(self.data)
 
 
-    @staticmethod
-    def get_loader(data, batch_size, morp_operations=None, preprocessing=None, do_symetric_output=False, **kwargs):
+    @classmethod
+    def get_loader(cls, data, batch_size, morp_operations=None, preprocessing=None, do_symetric_output=False, num_workers=0, 
+            shuffle=False, **kwargs):
         return dataloader_resolution(
             df=data,
-            dataset=AxspaROISimpleDataset,
+            dataset=cls,
             dataset_args={"morp_operations": morp_operations, "preprocessing": preprocessing, "do_symetric_output": do_symetric_output},
             batch_size=batch_size,
-            **kwargs
+            num_workers=num_workers,
+            shuffle=shuffle,
+            # **kwargs
         )
 
-    @staticmethod
-    def get_train_val_test_loader(data_train, data_val, data_test, *args, **kwargs):
-        trainloader = AxspaROISimpleDataset.get_loader(data_train, *args, **kwargs)
-        valloader = AxspaROISimpleDataset.get_loader(data_val, *args, **kwargs)
-        testloader = AxspaROISimpleDataset.get_loader(data_test, *args, **kwargs)
+    @classmethod
+    def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
+        data = pd.read_csv(kwargs['dataset_path'])
+        max_res = data['resolution'].value_counts(sort=True, ascending=False).index[0]
+        data = data[data['resolution'] == max_res]
+
+        data_train, data_val, data_test = train_val_test_split(
+            data,
+            train_size=n_inputs_train,
+            val_size=n_inputs_val,
+            test_size=n_inputs_test,
+        )
+
+        if "data" in kwargs:
+            kwargs.pop("data")
+
+        trainloader = cls.get_loader(data=data_train, shuffle=True, *args, **kwargs)
+        valloader = cls.get_loader(data=data_val, shuffle=False, *args, **kwargs)
+        testloader = cls.get_loader(data=data_test, shuffle=False, *args, **kwargs)
         return trainloader, valloader, testloader
 
     def get_default_morp_operation(self, **kwargs):

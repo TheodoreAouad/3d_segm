@@ -55,7 +55,10 @@ class MnistMorphoDataset(MnistBaseDataset, MNIST):
 
 
     @classmethod
-    def get_loader(cls, batch_size, n_inputs, morp_operation, train, first_idx=0, threshold=.5, size=(50, 50), invert_input_proba=0, do_symetric_output=False, preprocessing=None, **kwargs):
+    def get_loader(
+        cls, batch_size, n_inputs, morp_operation, train, first_idx=0, threshold=.5, size=(50, 50),
+        invert_input_proba=0, do_symetric_output=False, preprocessing=None, num_workers=0,
+    **kwargs):
         if n_inputs == 0:
             return DataLoader([])
         return DataLoader(
@@ -64,10 +67,14 @@ class MnistMorphoDataset(MnistBaseDataset, MNIST):
                 train=train, threshold=threshold, preprocessing=preprocessing,
                 size=size, invert_input_proba=invert_input_proba,
                 do_symetric_output=do_symetric_output,
-            ), batch_size=batch_size, **kwargs)
+            ), batch_size=batch_size, num_workers=num_workers)
 
     @classmethod
     def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
+        for key in ['n_inputs', 'first_idx', 'train', 'shuffle']:
+            if key in kwargs:
+                del kwargs[key]
+
         trainloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_train, train=True, shuffle=True, *args, **kwargs)
         valloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_val, train=False, shuffle=False, *args, **kwargs)
         testloader = cls.get_loader(first_idx=n_inputs_val, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
@@ -101,25 +108,30 @@ class MnistGrayScaleDataset(MnistGrayScaleBaseDataset, MNIST):
             do_symetric_output=do_symetric_output,
         )
 
-    @staticmethod
+    @classmethod
     def get_loader(
-        batch_size, n_inputs, morp_operation, train, first_idx=0, size=(50, 50),
+        cls, batch_size, n_inputs, morp_operation, train, first_idx=0, size=(50, 50),
         do_symetric_output=False, preprocessing=None, n_gray_scale_values="all",
+        num_workers=0,
     **kwargs):
         if n_inputs == 0:
             return DataLoader([])
         return DataLoader(
-            MnistGrayScaleDataset(
+            cls(
                 morp_operation=morp_operation, n_inputs=n_inputs, first_idx=first_idx,
                 train=train, preprocessing=preprocessing, size=size,
                 do_symetric_output=do_symetric_output, n_gray_scale_values=n_gray_scale_values,
-            ), batch_size=batch_size, collate_fn=collate_fn_gray_scale, **kwargs)
+            ), batch_size=batch_size, collate_fn=collate_fn_gray_scale, num_workers=num_workers)
 
-    @staticmethod
-    def get_train_val_test_loader(n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
-        trainloader = MnistGrayScaleDataset.get_loader(first_idx=0, n_inputs=n_inputs_train, train=True, shuffle=True, *args, **kwargs)
-        valloader = MnistGrayScaleDataset.get_loader(first_idx=0, n_inputs=n_inputs_val, train=False, shuffle=False, *args, **kwargs)
-        testloader = MnistGrayScaleDataset.get_loader(first_idx=n_inputs_val, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
+    @classmethod
+    def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
+        for key in ['n_inputs', 'first_idx', 'train', 'shuffle']:
+            if key in kwargs:
+                del kwargs[key]
+
+        trainloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_train, train=True, shuffle=True, *args, **kwargs)
+        valloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_val, train=False, shuffle=False, *args, **kwargs)
+        testloader = cls.get_loader(first_idx=n_inputs_val, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
         return trainloader, valloader, testloader
 
 
@@ -128,7 +140,7 @@ class MnistGrayScaleDataset(MnistGrayScaleBaseDataset, MNIST):
         return join(self.root, 'processed')
 
 
-class MnistClassifDataset(DataModule, MNIST):
+class MnistClassifDataset(MNIST, DataModule):
 
     def __init__(
         self,
@@ -197,7 +209,7 @@ class MnistClassifDataset(DataModule, MNIST):
     def get_loader(
         batch_size, train, preprocessing, indexes=None, first_idx=0, n_inputs=None,
         threshold=.5, invert_input_proba=0, do_symetric_output=False,
-        size=(28, 28), **kwargs):
+        size=(28, 28), shuffle=False, num_workers=0, **kwargs):
         if n_inputs == 0:
             return DataLoader([])
         return DataLoader(
@@ -205,7 +217,7 @@ class MnistClassifDataset(DataModule, MNIST):
                 n_inputs=n_inputs, first_idx=first_idx, indexes=indexes,
                 train=train, threshold=threshold, invert_input_proba=invert_input_proba,
                 preprocessing=preprocessing, do_symetric_output=do_symetric_output, size=size,
-            ), batch_size=batch_size, **kwargs)
+            ), batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
 
     @staticmethod
     def get_train_val_test_loader(n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
@@ -214,6 +226,10 @@ class MnistClassifDataset(DataModule, MNIST):
 
         train_idxes = all_train_idxs[:n_inputs_train]
         val_idxes = all_train_idxs[n_inputs_train:n_inputs_train + n_inputs_val]
+
+        for key in ["first_idx", "n_inputs", "indexes", "train"]:
+            if key in kwargs:
+                del kwargs[key]
 
         trainloader = MnistClassifDataset.get_loader(indexes=train_idxes, train=True, shuffle=True, *args, **kwargs)
         valloader = MnistClassifDataset.get_loader(indexes=val_idxes, train=True, shuffle=False, *args, **kwargs)

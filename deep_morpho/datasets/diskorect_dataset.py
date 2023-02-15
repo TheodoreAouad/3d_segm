@@ -14,7 +14,7 @@ from .datamodule_base import DataModule
 
 # def get_loader(batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, device='cpu', **kwargs):
 #     return DataLoader(
-#         MultiRectDatasetGenerator(random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device, len_dataset=n_inputs, ),
+#         MultiRectDatasetGenerator(random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device, n_inputs=n_inputs, ),
 #         batch_size=batch_size,  **kwargs
 #     )
 
@@ -26,7 +26,7 @@ class DiskorectDataset(DataModule, Dataset):
             random_gen_args,
             morp_operation: ParallelMorpOperations,
             device: str = "cpu",
-            len_dataset: int = 1000,
+            n_inputs: int = 1000,
             seed: int = None,
             max_generation_nb: int = 0,
             do_symetric_output: bool = False,
@@ -34,7 +34,7 @@ class DiskorectDataset(DataModule, Dataset):
         self.random_gen_fn = random_gen_fn
         self.random_gen_args = random_gen_args
         self.device = device
-        self.len_dataset = len_dataset
+        self.n_inputs = n_inputs
         self.morp_fn = morp_operation
         self.max_generation_nb = max_generation_nb
         self.do_symetric_output = do_symetric_output
@@ -71,7 +71,7 @@ class DiskorectDataset(DataModule, Dataset):
         return input_, target
 
     def __len__(self):
-        return self.len_dataset
+        return self.n_inputs
 
     @classmethod
     def get_loader(
@@ -82,13 +82,16 @@ class DiskorectDataset(DataModule, Dataset):
         return DataLoader(
             cls(
                 random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device,
-                len_dataset=n_inputs, seed=seed, max_generation_nb=max_generation_nb, do_symetric_output=do_symetric_output,
+                n_inputs=n_inputs, seed=seed, max_generation_nb=max_generation_nb, do_symetric_output=do_symetric_output,
             ),
             batch_size=batch_size, num_workers=num_workers,
         )
 
     @classmethod
     def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
+        if "n_inputs" in kwargs:
+            del kwargs["n_inputs"]
+
         train_loader = cls.get_loader(n_inputs=n_inputs_train, *args, **kwargs)
         val_loader = cls.get_loader(n_inputs=n_inputs_val, *args, **kwargs)
         test_loader = cls.get_loader(n_inputs=n_inputs_test, *args, **kwargs)

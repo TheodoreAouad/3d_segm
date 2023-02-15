@@ -81,8 +81,11 @@ class ExperimentMethods(ABC):
                         "Multiple inheritance is not supported."
                         "Only the first parent class arguments will be transmitted."
                     "")
-                parent_class = cls.__bases__[0]
-                res.update({k: v for k, v in parent_class.default_args().items() if k not in res})
+                for parent_class in cls.__bases__:
+                    if isinstance(parent_class, ExperimentMethods):
+                        res.update({k: v for k, v in parent_class.default_args().items() if k not in res})
+                # parent_class = cls.__bases__[0]
+                # res.update({k: v for k, v in parent_class.default_args().items() if k not in res})
 
             elif name != "self":
                 param_dict = {"default": p.default}

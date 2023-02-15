@@ -102,22 +102,32 @@ def get_dataloader(args):
         testloader = None
 
     elif args['dataset_type'] == 'axspa_roi':
-        data = pd.read_csv(args['dataset_path'])
-        prop_train, prop_val, prop_test = args['train_test_split']
-        max_res = data['resolution'].value_counts(sort=True, ascending=False).index[0]
-        data = data[data['resolution'] == max_res]
+        # data = pd.read_csv(args['dataset_path'])
+        # prop_train, prop_val, prop_test = args['train_test_split']
+        # max_res = data['resolution'].value_counts(sort=True, ascending=False).index[0]
+        # data = data[data['resolution'] == max_res]
+        # trainloader, valloader, testloader = AxspaROISimpleDataset.get_train_val_test_loader(
+        #     *train_val_test_split(
+        #         data,
+        #         train_size=int(prop_train * len(data)),
+        #         val_size=int(prop_val * len(data)),
+        #         test_size=int(prop_test * len(data))
+        #     ),
+        #     batch_size=args['batch_size'],
+        #     preprocessing=args['preprocessing'],
+        #     shuffle=True,
+        #     do_symetric_output=args['atomic_element'] == 'sybisel',
+        # )
         trainloader, valloader, testloader = AxspaROISimpleDataset.get_train_val_test_loader(
-            *train_val_test_split(
-                data,
-                train_size=int(prop_train * len(data)),
-                val_size=int(prop_val * len(data)),
-                test_size=int(prop_test * len(data))
-            ),
+            n_inputs_train=args['n_inputs_train'],
+            n_inputs_val=args['n_inputs_val'],
+            n_inputs_test=args['n_inputs_test'],
             batch_size=args['batch_size'],
             preprocessing=args['preprocessing'],
-            shuffle=True,
+            # shuffle=True,
             do_symetric_output=args['atomic_element'] == 'sybisel',
         )
+
 
     elif args['dataset_type'] in ["mnist", "inverted_mnist"]:
         prop_train, prop_val, prop_test = args['train_test_split']

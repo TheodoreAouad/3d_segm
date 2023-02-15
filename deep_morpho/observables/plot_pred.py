@@ -115,28 +115,9 @@ class PlotPredsClassif(Observable):
         batch_idx: int,
         preds: Any
     ) -> None:
-        # self.plot_pred_state(trainer, pl_module, batch, preds, "val", f'val | epoch {trainer.current_epoch}', self.idx["val"])
         self.plot_pred_state(
             trainer=trainer, pl_module=pl_module, batch=batch, preds=preds, state="val",
             title=f'val | epoch {trainer.current_epoch}', step=self.idx["val"],)
-        # if self.idx['val'] % self.freq['val'] == 0:
-        #     idx = 0
-        #     # img, target = batch[0][idx], batch[1][idx]
-        #     # pred = preds[idx]
-        #     # fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [img, pred, target]], title=f'val | epoch {trainer.current_epoch}')
-        #     # fig = self.plot_pred(*[k.cpu().detach().numpy() for k in [batch[0], preds, batch[1]]], title=f'val | epoch {trainer.current_epoch}')
-        #     fig = self.plot_pred(
-        #         *[k.cpu().detach().numpy() for k in [batch[0], preds, batch[1]]],
-        #         figsize_atom=self.figsize_atom,
-        #         n_imgs=self.n_imgs,
-        #         title=f'val | epoch {trainer.current_epoch}',
-        #         xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
-        #     )
-        #     trainer.logger.experiment.add_figure("preds/val/input_pred_target", fig, self.idx['val'])
-        #     self.saved_fig['val'] = fig
-
-        # self.idx['val'] += 1
-
 
     def on_train_batch_end_with_preds(
             self,
@@ -149,23 +130,6 @@ class PlotPredsClassif(Observable):
     ) -> None:
         self.plot_pred_state(trainer=trainer, pl_module=pl_module, batch=batch, preds=preds, state="train", title="train",
             step=trainer.global_step,)
-        # if self.idx['train'] % self.freq["train"] == 0:
-        #     with torch.no_grad():
-        #         # idx = random.choice(range(len(batch[0])))
-        #         # idx = 0
-        #         # img, target = batch[0][idx], batch[1][idx]
-        #         # pred = preds[idx]
-        #         fig = self.plot_pred(
-        #             *[k.cpu().detach().numpy() for k in [batch[0], preds, batch[1]]],
-        #             figsize_atom=self.figsize_atom,
-        #             n_imgs=self.n_imgs,
-        #             title='train',
-        #             xlims=(-1, 1) if pl_module.model.atomic_element==["sybisel"] else (0, 1),
-        #         )
-        #         trainer.logger.experiment.add_figure("preds/train/input_pred_target", fig, trainer.global_step)
-        #         self.saved_fig['train'] = fig
-
-        # self.idx['train'] += 1
 
     def plot_pred_state(self, trainer, pl_module, batch, preds, state, title, step):
         if self.idx[state] % self.freq[state] == 0:

@@ -8,11 +8,12 @@ import torch
 from .plot_pred import PlotPreds
 from .baseline_metric import InputAsPredMetric
 from ..datasets.mnist_dataset import MnistGrayScaleDataset
-from .binary_mode_metric import BinaryModeMetric
+from .binary_mode_metric import BinaryModeMetricBase
 from general.nn.observables import CalculateAndLogMetrics
 
 
-class BinaryModeMetricGrayScale(BinaryModeMetric):
+# TODO: rewrite
+class BinaryModeMetricGrayScale(BinaryModeMetricBase):
     def on_train_batch_end_with_preds(
         self,
         trainer: "pl.Trainer",

@@ -53,13 +53,15 @@ all_args['experiment_name'] = [
 # DATA ARGS
 all_args['morp_operation.datamodule'] = morp_operations
 all_args['dataset'] = [
-    'diskorectdataset',
+    # 'diskorectdataset',
     # 'mnistmorphodataset',
     # 'mnistgrayscaledataset',
     # 'fashionmnistgrayscaledataset',
     # 'axsparoidataset',
+    # 'axsparoisimpledataset',
+    # AxspaROISimpleDataset
 
-    # 'mnistclassifdataset',
+    'mnistclassifdataset',
     # 'mnistclassifchanneldataset',
 
     # 'cifar10dataset',
@@ -70,7 +72,8 @@ all_args['preprocessing.datamodule'] = [  # for axspa roi
 ]
 all_args['dataset_path.datamodule'] = [
     # 'data/deep_morpho/dataset_0',
-    'generate',
+    "data/deep_morpho/axspa_roi/axspa_roi.csv"
+    # 'generate',
 ]
 all_args['in_ram.datamodule'] = [
     # False,
@@ -128,12 +131,15 @@ all_args['sticks_noised_args.datamodule'] = [
 ]
 all_args['n_steps.datamodule'] = [10000]
 all_args['nb_batch_indep.datamodule'] = [0]
+all_args["n_inputs_train"] = [50_000]
+all_args["n_inputs_val"] = [10_000]
+all_args["n_inputs_test"] = [10_000]
 # all_args['n_inputs'] = [
 #     3_000_000,
 #     # 100_000,
 # ]
 # all_args['train_test_split'] = [(0.1, 0.1, 0.1)]
-all_args['train_test_split.datamodule'] = [(0.9, 0.1, 1)]
+# all_args['train_test_split.datamodule'] = [(0.9, 0.1, 0.1)]
 
 
 # TRAINING ARGS
@@ -197,8 +203,8 @@ all_args["model"] = [
     # "BiMoNNClassifierMaxPoolNotBinary",
     # "BiMoNNClassifierMaxPool",
     # "BiMoNNClassifierLastLinearNotBinary",
-    # "BiMoNNClassifierLastLinear",
-    "BiMoNN",
+    "BiMoNNClassifierLastLinear",
+    # "BiMoNN",
     # "BimonnDense",
     # "BimonnDenseNotBinary",
     # "BimonnBiselDenseNotBinary",
@@ -209,17 +215,20 @@ all_args['atomic_element.net'] = [
     # "sybisel",
 ]
 all_args['n_atoms.net'] = [
-    'adapt',
+    # 'adapt',
+    1
     # 11
 ]
 
 all_args['kernel_size.net'] = [
     # 3
-    5
+    7
     # "adapt",
 ]
 all_args['channels.net'] = [
-    'adapt',
+    # 'adapt',
+    # [1, 1]
+    [50, 50]
     # [1, 100,],
     # [1, 100, ],
     # [50, 100, ],
@@ -377,7 +386,9 @@ for idx, args in enumerate(all_args.multi_args):
     #     args['init_bias_value_bise'] = "auto"
     #     args['init_bias_value_lui'] = "auto"
 
-    if args['dataset'] in ["diskorectdataset", 'mnist', 'inverted_mnist', 'sticks_noised', 'mnist_gray', 'fashionmnist']:
+    if args['dataset'] in [
+        # "diskorectdataset", 
+        'mnist', 'inverted_mnist', 'sticks_noised', 'mnist_gray', 'fashionmnist']:
         # args['kernel_size'] = 'adapt'
 
 
@@ -437,14 +448,16 @@ for idx, args in enumerate(all_args.multi_args):
 
     args['loss_data'] = loss_dict[args['loss_data_str']](**kwargs_loss)
 
-    if args['dataset'] in ['diskorectdataset', 'sticks_noised']:
+    if args['dataset'] in [
+        # 'diskorectdataset', 
+        'sticks_noised']:
         args['n_epochs'] = 1
         args['n_inputs'] = args['n_steps'] * args['batch_size']
 
-    if args['dataset'] == "diskorectdataset":
-        args["random_gen_args"] = args["random_gen_args"].copy()
-        # args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
-        args['random_gen_args']['size'] = args['random_gen_args']['size'] + (args["morp_operation"].in_channels[0],)
+    # if args['dataset'] == "diskorectdataset":
+    #     args["random_gen_args"] = args["random_gen_args"].copy()
+    #     # args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
+    #     args['random_gen_args']['size'] = args['random_gen_args']['size'] + (args["morp_operation"].in_channels[0],)
 
     if args['dataset'] in ["mnist", "inverted_mnist", "mnist_gray", "fashionmnist", "classif_mnist", "classif_mnist_channel"]:
         # args['freq_imgs'] = 300

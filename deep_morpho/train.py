@@ -1,7 +1,7 @@
 import argparse
 from importlib import import_module
 
-
+from deep_morpho import observables as obs
 from deep_morpho.experiments import (
     MultiExperiment, Task, load_model_bimonn_classical, ExperimentMorphoBinary
 )
@@ -20,8 +20,8 @@ print(all_args.multi_args[0]["kernel_size"])
 all_experiments = MultiExperiment(
     multi_args=all_args.multi_args,
     dest_dir="deep_morpho/results/results_tensorboards",
-    experiment_class=ExperimentMorphoBinary,
     stop_on_error=True,
+    enforce_experiment_class=True,
 )
 
 all_experiments.setup()

@@ -12,11 +12,25 @@ from .load_observables_fn import load_observables_morpho_binary, load_observable
 class ExperimentMorphoBase(ExperimentBase):
     """Experiment class for learning morphological operators."""
 
-    @property
-    def necessary_args(self) -> List[str]:
-        res = super().necessary_args
-        res.extend([f"morp_operation{self.args.dataset_args_suffix}"])
-        return res
+    # @property
+    # def necessary_args(self) -> List[str]:
+    #     res = super().necessary_args
+    #     res.extend([f"morp_operation{self.args.dataset_args_suffix}"])
+    #     return res
+
+    def enforce_args(self):
+        if self.args["kernel_size"] == "adapt":
+            self.args["kernel_size"] = int(max(self.args['morp_operation'].max_selem_shape))
+
+        if self.args['channels'] == 'adapt':
+            self.args['channels'] = self.args['morp_operation'].in_channels + [self.args['morp_operation'].out_channels[-1]]
+
+        if self.args["n_atoms"] == 'adapt':
+            self.args['n_atoms'] = len(self.args['morp_operation'])
+
+    def _check_args(self) -> None:
+        super()._check_args()
+        assert f"morp_operation{self.args.dataset_args_suffix}" in self.args, f"Argument {f'morp_operation{self.args.dataset_args_suffix}'} is not given"
 
     def log_tensorboard(self):
         super().log_tensorboard()
@@ -53,9 +67,24 @@ class ExperimentMorphoBase(ExperimentBase):
 
 class ExperimentMorphoBinary(ExperimentMorphoBase):
     def __init__(self, *args, **kwargs):
-        super().__init__(load_observables_fn=load_observables_morpho_binary, *args, **kwargs)
+        kwargs["load_observables_fn"] = load_observables_morpho_binary
+        super().__init__(*args, **kwargs)
 
 
 class ExperimentMorphoGrayScale(ExperimentMorphoBase):
     def __init__(self, *args, **kwargs):
-        super().__init__(load_observables_fn=load_observables_morpho_grayscale, *args, **kwargs)
+        kwargs["load_observables_fn"] = load_observables_morpho_grayscale
+        super().__init__(*args, **kwargs)
+
+
+class ExperimentDiskorect(ExperimentMorphoBinary):
+    def enforce_args(self):
+        super().enforce_args()
+
+        self.args["n_inputs_train"] = self.args['n_steps'] * self.args['batch_size']
+        self.args["n_inputs_val"] = self.args["batch_size"]
+        self.args["n_inputs_test"] = self.args["batch_size"]
+
+        self.args["random_gen_args"] = self.args["random_gen_args"].copy()
+        # args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
+        self.args['random_gen_args']['size'] = self.args['random_gen_args']['size'] + (self.args["morp_operation"].in_channels[0],)
