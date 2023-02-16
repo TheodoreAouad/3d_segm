@@ -47,3 +47,29 @@ def load_model_bimonn_classical(experiment: "ExperimentBase") -> GenericLightnin
     )
     model.to(experiment.device)
     return model
+
+
+def load_model_classification(experiment: "ExperimentBase") -> GenericLightningModel:
+    args = experiment.args
+    inpt = experiment.input_sample
+
+    model_args = args.model_args()
+
+    model_args.update({
+        "input_size": inpt.shape[1:],
+        "n_classes": experiment.trainloader.dataset.n_classes,
+    })
+
+    model = GenericLightningModel.select(args["model"])(
+        model_args=model_args,
+        learning_rate=args["learning_rate"],
+        loss=args["loss"],
+        optimizer=args["optimizer"],
+        optimizer_args=args["optimizer_args"],
+        observables=experiment.observables,
+        # reduce_loss_fn=args["reduce_loss_fn"],
+        # initializer=args["initializer"],
+        # initializer_args=args["initializer_args"],
+    )
+    model.to(experiment.device)
+    return model

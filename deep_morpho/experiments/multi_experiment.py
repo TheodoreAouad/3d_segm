@@ -11,6 +11,7 @@ from general.code_saver import CodeSaver
 from .experiment_base import ExperimentBase
 from .experiment_morpho import ExperimentMorphoBinary, ExperimentMorphoGrayScale, ExperimentDiskorect
 from .context import Task
+from .args_enforcers import ArgsMnist, ArgsCifar, ArgsClassification
 from general.nn.experiments.experiment_methods import ExperimentMethods
 
 
@@ -23,6 +24,19 @@ class MultiExperiment(ExperimentMethods):
     MORPHO_GRAYSCALE_DATASETS = [
         "mnistgrayscaledataset",
         "fashionmnistgrayscaledataset",
+    ]
+
+    MNIST_DATASETS = [
+        "fashionmnistgrayscaledataset",
+        "mnistmorphodataset",
+        "mnistgrayscaledataset",
+        "mnistclassifdataset",
+        "mnistclassifchanneldataset",
+    ]
+
+    CIFAR_DATASETS = [
+        "cifar10dataset",
+        "cifar100",
     ]
 
     def __init__(
@@ -81,7 +95,21 @@ class MultiExperiment(ExperimentMethods):
             exp_class = self.experiment_class
         else:
             exp_class = self.infer_experiment_class(args)
-        return exp_class(args, **kwargs)
+        experiment = exp_class(args, **kwargs)
+        experiment.args_enforcers += self.infer_args_enforcers(experiment)
+        return experiment
+
+
+    def infer_args_enforcers(self, experiment) -> List[Dict]:
+        args = experiment.args
+        args_enforcers = []
+        if args["dataset"] in self.MNIST_DATASETS:
+            args_enforcers.append(ArgsMnist)
+
+        elif args["dataset"] in self.CIFAR_DATASETS:
+            args_enforcers.append(ArgsCifar)
+
+        return args_enforcers
 
     def generate_experiments(self, **kwargs):
         for args_idx, args in enumerate(self.multi_args):

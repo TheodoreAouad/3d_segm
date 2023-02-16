@@ -5,6 +5,7 @@ from os.path import join
 
 import matplotlib.pyplot as plt
 
+from .args_enforcers import ArgsMorpho, ArgsDiskorect
 from .experiment_base import ExperimentBase
 from .load_observables_fn import load_observables_morpho_binary, load_observables_morpho_grayscale
 
@@ -18,15 +19,9 @@ class ExperimentMorphoBase(ExperimentBase):
     #     res.extend([f"morp_operation{self.args.dataset_args_suffix}"])
     #     return res
 
-    def enforce_args(self):
-        if self.args["kernel_size"] == "adapt":
-            self.args["kernel_size"] = int(max(self.args['morp_operation'].max_selem_shape))
-
-        if self.args['channels'] == 'adapt':
-            self.args['channels'] = self.args['morp_operation'].in_channels + [self.args['morp_operation'].out_channels[-1]]
-
-        if self.args["n_atoms"] == 'adapt':
-            self.args['n_atoms'] = len(self.args['morp_operation'])
+    def __init__(self, *args, **kwargs):
+        kwargs["args_enforcers"] = kwargs.get("args_enforcers", []) + [ArgsMorpho()]
+        super().__init__(*args, **kwargs)
 
     def _check_args(self) -> None:
         super()._check_args()
@@ -78,13 +73,6 @@ class ExperimentMorphoGrayScale(ExperimentMorphoBase):
 
 
 class ExperimentDiskorect(ExperimentMorphoBinary):
-    def enforce_args(self):
-        super().enforce_args()
-
-        self.args["n_inputs_train"] = self.args['n_steps'] * self.args['batch_size']
-        self.args["n_inputs_val"] = self.args["batch_size"]
-        self.args["n_inputs_test"] = self.args["batch_size"]
-
-        self.args["random_gen_args"] = self.args["random_gen_args"].copy()
-        # args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
-        self.args['random_gen_args']['size'] = self.args['random_gen_args']['size'] + (self.args["morp_operation"].in_channels[0],)
+    def __init__(self, *args, **kwargs):
+        kwargs["args_enforcers"] = kwargs.get("args_enforcers", []) + [ArgsDiskorect()]
+        super().__init__(*args, **kwargs)
