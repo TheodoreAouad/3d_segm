@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Tuple, Dict, Callable, List
-from random import choice, shuffle
+from random import shuffle
 
 import torch
 import numpy as np
@@ -175,6 +175,8 @@ class GrayToChannelDatasetBase(SelectIndexesDataset):
         first_idx: int = 0,
         n_inputs: int = "all",
         do_symetric_output=False,
+        num_workers: int = 0,
+        shuffle: bool = False,
         **kwargs
     ):
         if n_inputs == 0:
@@ -184,12 +186,16 @@ class GrayToChannelDatasetBase(SelectIndexesDataset):
                 n_inputs=n_inputs, first_idx=first_idx, indexes=indexes,
                 train=train, preprocessing=preprocessing, do_symetric_output=do_symetric_output,
                 levelset_handler_mode=levelset_handler_mode, levelset_handler_args=levelset_handler_args,
-            ), batch_size=batch_size, **kwargs)
+            ), batch_size=batch_size, num_workers=num_workers, shuffle=shuffle, )
 
     @classmethod
     def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
         all_train_idxs = list(range(min(n_inputs_train + n_inputs_val, 60_000)))
         shuffle(all_train_idxs)
+
+        for key in ["indexes", "train", "shuffle"]:
+            if key in kwargs:
+                del kwargs[key]
 
         train_idxes = all_train_idxs[:n_inputs_train]
         val_idxes = all_train_idxs[n_inputs_train:n_inputs_train + n_inputs_val]

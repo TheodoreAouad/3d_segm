@@ -61,11 +61,14 @@ all_args['dataset'] = [
     # 'axsparoisimpledataset',
     # AxspaROISimpleDataset
 
-    'mnistclassifdataset',
+    # 'mnistclassifdataset',
     # 'mnistclassifchanneldataset',
 
     # 'cifar10dataset',
     # 'cifar100dataset',
+
+    'cifar10classical',
+    # 'cifar100classical',
 ]
 all_args['preprocessing.datamodule'] = [  # for axspa roi
     None,
@@ -102,7 +105,7 @@ all_args['fashionmnist_gray_args.datamodule'] = [
     {"n_gray_scale_values": 20, "size": (50, 50), }
 ]
 
-all_args['channel_classif_args.datamodule'] = [
+all_args['channel_classif_args'] = [
     {
         "levelset_handler_mode": "LevelsetValuesEqualIndex",
         "levelset_handler_args": {"n_values": 10},
@@ -156,8 +159,8 @@ all_args['loss_data_str'] = [
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
-    "BCELoss",
-    # "CrossEntropyLoss",
+    # "BCELoss",
+    "CrossEntropyLoss",
     # "MSELoss",
     # "DiceLoss",
     # "MaskedDiceLoss",
@@ -173,7 +176,7 @@ all_args['optimizer'] = [
     # optim.SGD
 ]
 all_args['optimizer_args'] = [{}]
-all_args['batch_size'] = [64]
+all_args['batch_size'] = [32]
 all_args['num_workers'] = [
     20,
     # 0,
@@ -203,11 +206,12 @@ all_args["model"] = [
     # "BiMoNNClassifierMaxPoolNotBinary",
     # "BiMoNNClassifierMaxPool",
     # "BiMoNNClassifierLastLinearNotBinary",
-    "BiMoNNClassifierLastLinear",
+    # "BiMoNNClassifierLastLinear",
     # "BiMoNN",
     # "BimonnDense",
     # "BimonnDenseNotBinary",
     # "BimonnBiselDenseNotBinary",
+    "ConvNetLastLinear",
 ]
 all_args['atomic_element.net'] = [
     "bisel",
@@ -215,20 +219,21 @@ all_args['atomic_element.net'] = [
     # "sybisel",
 ]
 all_args['n_atoms.net'] = [
-    # 'adapt',
-    1
+    'adapt',
+    # 1
     # 11
 ]
 
 all_args['kernel_size.net'] = [
     # 3
-    7
+    5
+    # 7
     # "adapt",
 ]
 all_args['channels.net'] = [
     # 'adapt',
     # [1, 1]
-    [50, 50]
+    [25, 25]
     # [1, 100,],
     # [1, 100, ],
     # [50, 100, ],
@@ -386,45 +391,45 @@ for idx, args in enumerate(all_args.multi_args):
     #     args['init_bias_value_bise'] = "auto"
     #     args['init_bias_value_lui'] = "auto"
 
-    if args['dataset'] in [
-        # "diskorectdataset", 
-        'mnist', 'inverted_mnist', 'sticks_noised', 'mnist_gray', 'fashionmnist']:
-        # args['kernel_size'] = 'adapt'
+    # if args['dataset'] in [
+    #     # "diskorectdataset", 
+    #     'mnist', 'inverted_mnist', 'sticks_noised', 'mnist_gray', 'fashionmnist']:
+    #     # args['kernel_size'] = 'adapt'
 
 
-        if args["kernel_size"] == "adapt":
-            # args["kernel_size"] = args["morp_operation"].selems[0][0][0].shape[0]
-            args["kernel_size"] = int(max(args['morp_operation'].max_selem_shape))
+    #     if args["kernel_size"] == "adapt":
+    #         # args["kernel_size"] = args["morp_operation"].selems[0][0][0].shape[0]
+    #         args["kernel_size"] = int(max(args['morp_operation'].max_selem_shape))
 
-        # kwargs_loss = {}
-        # if "Normalized" in args['loss_data_str'] and args['atomic_element'] == 'sybisel':
-        #     kwargs_loss.update({"vmin": -1, "vmax": 1})
-        #     # args['loss_data'] = loss_dict[args['loss_data_str']](
-        #     #     border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]),
-        #     #     vmin=-1, vmax=1,
-        #     # )
-        # if "Masked" in args['loss_data_str']:
-        #     kwargs_loss.update({"border": np.array([args['kernel_size'] // 2, args['kernel_size'] // 2])})
-        #     # args['loss_data'] = loss_dict[args['loss_data_str']]()
-        #     # args['loss_data'] = loss_dict[args['loss_data_str']](border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]))
-        # args['loss_data'] = loss_dict[args['loss_data_str']](**kwargs_loss)
+    #     # kwargs_loss = {}
+    #     # if "Normalized" in args['loss_data_str'] and args['atomic_element'] == 'sybisel':
+    #     #     kwargs_loss.update({"vmin": -1, "vmax": 1})
+    #     #     # args['loss_data'] = loss_dict[args['loss_data_str']](
+    #     #     #     border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]),
+    #     #     #     vmin=-1, vmax=1,
+    #     #     # )
+    #     # if "Masked" in args['loss_data_str']:
+    #     #     kwargs_loss.update({"border": np.array([args['kernel_size'] // 2, args['kernel_size'] // 2])})
+    #     #     # args['loss_data'] = loss_dict[args['loss_data_str']]()
+    #     #     # args['loss_data'] = loss_dict[args['loss_data_str']](border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]))
+    #     # args['loss_data'] = loss_dict[args['loss_data_str']](**kwargs_loss)
 
-        # args['experiment_subname'] = f"{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset']}/{args['morp_operation'].name}"
+    #     # args['experiment_subname'] = f"{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset']}/{args['morp_operation'].name}"
 
-        if args['channels'] == 'adapt':
-            args['channels'] = args['morp_operation'].in_channels + [args['morp_operation'].out_channels[-1]]
+    #     if args['channels'] == 'adapt':
+    #         args['channels'] = args['morp_operation'].in_channels + [args['morp_operation'].out_channels[-1]]
 
-        if args["n_atoms"] == 'adapt':
-            args['n_atoms'] = len(args['morp_operation'])
+    #     if args["n_atoms"] == 'adapt':
+    #         args['n_atoms'] = len(args['morp_operation'])
 
-    else:
-        args['experiment_subname'] = f"{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset']}"
+    # else:
+    #     args['experiment_subname'] = f"{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset']}"
 
-    if args['dataset'] in CLASSIF_DATASETS:
-        if args['n_atoms'] == "adapt":
-            args["n_atoms"] = len(args['channels']) - 1
-    else:
-        args["model_type"] = ["LightningBiMoNN"]
+    # if args['dataset'] in CLASSIF_DATASETS:
+    #     if args['n_atoms'] == "adapt":
+    #         args["n_atoms"] = len(args['channels']) - 1
+    # else:
+    #     args["model_type"] = ["LightningBiMoNN"]
 
     if args['atomic_element'] == "sybisel":
         # args['threshold_mode']["activation"] += "_symetric"

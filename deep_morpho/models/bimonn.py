@@ -31,12 +31,15 @@ class BiMoNN(BinaryNN):
         self.length = max(len(channels) - 1, self.length)
         self.kernel_size = self._init_kernel_size(kernel_size)
         self.atomic_element = self._init_atomic_element(atomic_element)
+        self.channels = self._init_attr("channels", channels)
+
+        self._check_args()
 
         self.initializer_method = initializer_method
         self.initializer_args = initializer_args if initializer_args is not None else self._default_init_args()
         self.initalizer: BimonnInitializer = self.create_initializer(**self.initializer_args)
 
-        kwargs['channels'] = channels
+        # kwargs['channels'] = channels
 
         for attr, value in kwargs.items():
             setattr(self, attr, self._init_attr(attr, value))
@@ -51,6 +54,16 @@ class BiMoNN(BinaryNN):
             layer = self._make_layer(idx)
             self.layers.append(layer)
             setattr(self, f'layer{idx+1}', layer)
+
+    def _check_args(self):
+        assert isinstance(self.kernel_size, list), "kernel_size must be a list of int"
+        assert isinstance(self.kernel_size[0], (tuple, int)), f"kernel_size[0] is {type(self.kernel_size[0])} but must be int, or tuple of ints"
+
+        assert isinstance(self.atomic_element, list), "atomic_element must be a list of str"
+        assert isinstance(self.atomic_element[0], str), f"atomic_element[0] is {type(self.atomic_element[0])} but must be str"
+
+        assert isinstance(self.channels, list), "channels must be a list of int"
+        assert isinstance(self.channels[0], int), f"channels[0] is {type(self.channels[0])} but must be int"
 
     def _default_init_args(self):
         if self.atomic_element[0] == "bisel":
@@ -152,10 +165,18 @@ class BiMoNN(BinaryNN):
 
 
     def _init_channels(self, channels: List[int]):
-        self.out_channels = channels[1:]
-        self.in_channels = channels[:-1]
+        # self.out_channels = channels[1:]
+        # self.in_channels = channels[:-1]
         self.channels = channels
         return self.channels
+
+    @property
+    def out_channels(self):
+        return self.channels[1:]
+
+    @property
+    def in_channels(self):
+        return self.channels[:-1]
 
     def _init_input_mean(self, input_mean: Union[float, List[float]]):
         if isinstance(input_mean, list):
@@ -264,19 +285,27 @@ class BiMoNNClassifierLastLinearBase(BiMoNNClassifier):
         **kwargs
     ):
         super().__init__(*args, kernel_size=kernel_size, **kwargs)
-        if isinstance(input_size, int):
-            input_size = (input_size, input_size)
+        # if isinstance(input_size, int):
+        #     input_size = (input_size, input_size)
+
+        self.channels = [input_size[0]] + self.channels + [n_classes]
+        self.repr_size = input_size[1:]
+
+        # if len(input_size) > 2:
+        #     input_size = input_size[-2:]
+
+        assert isinstance(n_classes, int), f"n_classes is {n_classes} but must be an integer"
 
         self.bisel_kwargs = self.bisels_kwargs_idx(0) if final_bisel_kwargs is None else final_bisel_kwargs
         self.bisel_kwargs["in_channels"] = self.out_channels[-1]
         self.bisel_kwargs["out_channels"] = n_classes
-        self.bisel_kwargs["kernel_size"] = input_size
+        self.bisel_kwargs["kernel_size"] = self.repr_size
         self.bisel_kwargs["padding"] = 0
         self.classification_layer = classif_layer_fn(**self.bisel_kwargs)
 
-        self.in_channels.append(self.out_channels[-1])
-        self.out_channels.append(n_classes)
-        self.kernel_size.append(input_size)
+        # self.in_channels.append(self.out_channels[-1])
+        # self.out_channels.append(n_classes)
+        self.kernel_size.append(self.repr_size)
 
         self.layers.append(self.classification_layer)
         self.bisels_idx.append(len(self.layers) - 1)
@@ -341,10 +370,12 @@ class BiMoNNClassifierMaxPoolBase(BiMoNNClassifier):
         **kwargs
     ):
         super().__init__(*args, kernel_size=kernel_size, **kwargs)
-        if isinstance(input_size, int):
-            input_size = (input_size, input_size)
 
-        self.repr_size = input_size
+        self.channels = [input_size[0]] + self.channels + [n_classes]
+
+        assert len(input_size) == 3, "input_size shape must be (n_chan, width, length)"
+
+        self.repr_size = input_size[1:]
         self.maxpool_layers = []
         for idx in range(len(self)):
             self.repr_size = (self.repr_size[0] // 2, self.repr_size[1] // 2)
@@ -362,16 +393,16 @@ class BiMoNNClassifierMaxPoolBase(BiMoNNClassifier):
         self.bisels_idx = [2*bisel_idx for bisel_idx in self.bisels_idx]
 
         self.bisel_kwargs = self.bisels_kwargs_idx(0) if final_bisel_kwargs is None else final_bisel_kwargs
-        self.bisel_kwargs["in_channels"] = self.out_channels[-1]
+        self.bisel_kwargs["in_channels"] = self.channels[-1]
         self.bisel_kwargs["out_channels"] = n_classes
         self.bisel_kwargs["kernel_size"] = self.repr_size
         self.bisel_kwargs["padding"] = 0
 
         self.classification_layer = classif_layer_fn(**self.bisel_kwargs)
 
-        self.in_channels.append(self.out_channels[-1])
-        self.out_channels.append(n_classes)
-        self.kernel_size.append(input_size)
+        # self.in_channels.append(self.out_channels[-1])
+        # self.out_channels.append(n_classes)
+        self.kernel_size.append(self.repr_size)
 
         self.layers.append(self.classification_layer)
         self.bisels_idx.append(len(self.layers) - 1)

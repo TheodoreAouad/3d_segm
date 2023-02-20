@@ -1,50 +1,25 @@
-# from devfiles.dev3 import banana
+import pathlib
 
-from argparse import ArgumentParser, Action
-import deep_morpho.experiments.parser as parser
-
-
-# is_set = set() #global set reference
-# class IsStored(Action):
-#     def __call__(self, parser, namespace, values, option_string=None):
-#         is_set.add(self.dest) # save to global reference
-#         setattr(namespace, self.dest + '_set', True) # or you may inject directly to namespace
-#         setattr(namespace, self.dest, values) # implementation of store_action
-        # You cannot inject directly to self.dest until you have a custom class
-
-
-# prs = parser.MultiParser()
-prs = parser.Parser()
-# prs["root"] = "banana"
-# prs["preprocessing"] = "azea"
-
-prs["dataset"] = "cifar10dataset"
-prs["model"] = "BiMoNN"
-
-# prs.parse_args()
-# prs.parse_args(["-m", "BiMoNN", "-d", "cifar10dataset"])
-
-# # print(banana)
-
-# prs = ArgumentParser()
-# # prs.add_argument("-m", "--model", nargs="+", help="Model")
-# prs.add_argument("--kernel_size", nargs="+", action=IsStored)
-
-# args = prs.parse_args(["--data", "banane"])
-# args = prs.parse_args(["--n_inputs", "100"])
-# prs["model"] = ["BiMoNN"]
-# prs["dataset"] = ["cifar10dataset"]
-
-args = prs.parse_args(["--kernel_size", "3"])
-
-print(prs)
-print(args)
-# print(prs.multi_args[0]["kernel_size.net"])
+from deep_morpho.saved_args.sandbox.args import all_args
+from deep_morpho.experiments.multi_experiment import MultiExperiment
+from deep_morpho.models.classical_conv import ConvNetLastLinear
 
 
 
-# parser = ParserParent()
-# print(parser.child1.parse_args())
+all_args.multi_args[0]["channels"] = [50, 50]
+all_args.multi_args[0]["model"] = "BimonnBiselDenseNotBinary"
 
 
-pass
+exp = MultiExperiment(multi_args=all_args.multi_args, dest_dir="todelete")
+exp.setup_experiment(all_args.multi_args[0], dest_dir="todelete")
+experiment = exp.setup_experiment(all_args.multi_args[0], dest_dir="todelete")
+
+# pathlib.Path('todelete/cifar10/bimonnclassifierlastlinear/version_0/').mkdir(exist_ok=True, parents=True)
+
+experiment.setup()
+
+print("exp channels", experiment.model.model.channels)
+
+model1 = ConvNetLastLinear(kernel_size=5, channels=[50, 50], n_classes=10, input_size=(30, 32, 32), do_maxpool=True)
+print("float param", sum([param.numel() for param in model1.parameters() if param.requires_grad]))
+print("diff", sum([param.numel() for param in model1.parameters() if param.requires_grad]) + 32 * 50 + 30*50 + 50 + 10)

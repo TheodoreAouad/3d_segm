@@ -106,6 +106,7 @@ class BimonnBiselDenseBase(BinaryNN):
     ):
         super().__init__()
 
+        self.input_dense = np.array(input_size)
         self.input_size = np.array(input_size)
         self.n_classes = n_classes
         self.channels = [input_size[0]] + channels + [n_classes]
@@ -138,7 +139,7 @@ class BimonnBiselDenseBase(BinaryNN):
 
         self.maxpool1 = nn.MaxPool2d(2)
         self.layers.append(self.maxpool1)
-        self.input_size[1:] = np.array(self.input_size[1:]) // 2
+        self.input_dense[1:] = np.array(self.input_dense[1:]) // 2
 
         for idx, (chin, chout) in enumerate(zip(self.channels[1:-3], self.channels[2:-2]), start=2):
             setattr(self, f"bisel{idx}", BiSEL(
@@ -155,13 +156,13 @@ class BimonnBiselDenseBase(BinaryNN):
 
             setattr(self, f"maxpool{idx}", nn.MaxPool2d(2))
             self.layers.append(getattr(self, f"maxpool{idx}"))
-            self.input_size[1:] = np.array(self.input_size[1:]) // 2
+            self.input_dense[1:] = self.input_dense[1:] // 2
 
         self.flatten = nn.Flatten()
         self.layers.append(self.flatten)
 
         self.dense1 = DenseLUI(
-            in_channels=self.channels[-3] * np.prod(self.input_size[1:]),
+            in_channels=self.channels[-3] * np.prod(self.input_dense[1:]),
             out_channels=self.channels[-2],
             initializer=self.initializer_bise_fn(**initializer_bise_args),
             **kwargs

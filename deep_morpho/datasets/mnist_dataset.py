@@ -29,6 +29,7 @@ class MnistMorphoDataset(MnistBaseDataset, MNIST):
         threshold: float = 30,
         size=(50, 50),
         first_idx: int = 0,
+        indexes=None,
         preprocessing=None,
         root: str = ROOT_MNIST_DIR,
         train: bool = True,
@@ -43,6 +44,7 @@ class MnistMorphoDataset(MnistBaseDataset, MNIST):
             n_inputs=n_inputs,
             threshold=threshold,
             size=size,
+            indexes=indexes,
             first_idx=first_idx,
             preprocessing=preprocessing,
             invert_input_proba=invert_input_proba,
@@ -56,14 +58,14 @@ class MnistMorphoDataset(MnistBaseDataset, MNIST):
 
     @classmethod
     def get_loader(
-        cls, batch_size, n_inputs, morp_operation, train, first_idx=0, threshold=.5, size=(50, 50),
+        cls, batch_size, morp_operation, train, indexes=None, first_idx=0, n_inputs=None, threshold=.5, size=(50, 50),
         invert_input_proba=0, do_symetric_output=False, preprocessing=None, num_workers=0,
     **kwargs):
         if n_inputs == 0:
             return DataLoader([])
         return DataLoader(
             cls(
-                morp_operation=morp_operation, n_inputs=n_inputs, first_idx=first_idx,
+                morp_operation=morp_operation, n_inputs=n_inputs, first_idx=first_idx, indexes=indexes,
                 train=train, threshold=threshold, preprocessing=preprocessing,
                 size=size, invert_input_proba=invert_input_proba,
                 do_symetric_output=do_symetric_output,
@@ -75,9 +77,23 @@ class MnistMorphoDataset(MnistBaseDataset, MNIST):
             if key in kwargs:
                 del kwargs[key]
 
-        trainloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_train, train=True, shuffle=True, *args, **kwargs)
-        valloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_val, train=False, shuffle=False, *args, **kwargs)
-        testloader = cls.get_loader(first_idx=n_inputs_val, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
+        # trainloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_train, train=True, shuffle=True, *args, **kwargs)
+        # valloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_val, train=False, shuffle=False, *args, **kwargs)
+        # testloader = cls.get_loader(first_idx=n_inputs_val, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
+        # return trainloader, valloader, testloader
+        all_train_idxs = list(range(min(n_inputs_train + n_inputs_val, 60_000)))
+        shuffle(all_train_idxs)
+
+        train_idxes = all_train_idxs[:n_inputs_train]
+        val_idxes = all_train_idxs[n_inputs_train:n_inputs_train + n_inputs_val]
+
+        for key in ["first_idx", "n_inputs", "indexes", "train"]:
+            if key in kwargs:
+                del kwargs[key]
+
+        trainloader = cls.get_loader(indexes=train_idxes, train=True, shuffle=True, *args, **kwargs)
+        valloader = cls.get_loader(indexes=val_idxes, train=True, shuffle=False, *args, **kwargs)
+        testloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
         return trainloader, valloader, testloader
 
 
@@ -129,9 +145,24 @@ class MnistGrayScaleDataset(MnistGrayScaleBaseDataset, MNIST):
             if key in kwargs:
                 del kwargs[key]
 
-        trainloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_train, train=True, shuffle=True, *args, **kwargs)
-        valloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_val, train=False, shuffle=False, *args, **kwargs)
-        testloader = cls.get_loader(first_idx=n_inputs_val, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
+        # trainloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_train, train=True, shuffle=True, *args, **kwargs)
+        # valloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_val, train=False, shuffle=False, *args, **kwargs)
+        # testloader = cls.get_loader(first_idx=n_inputs_val, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
+        # return trainloader, valloader, testloader
+
+        all_train_idxs = list(range(min(n_inputs_train + n_inputs_val, 60_000)))
+        shuffle(all_train_idxs)
+
+        train_idxes = all_train_idxs[:n_inputs_train]
+        val_idxes = all_train_idxs[n_inputs_train:n_inputs_train + n_inputs_val]
+
+        for key in ["first_idx", "n_inputs", "indexes", "train"]:
+            if key in kwargs:
+                del kwargs[key]
+
+        trainloader = cls.get_loader(indexes=train_idxes, train=True, shuffle=True, *args, **kwargs)
+        valloader = cls.get_loader(indexes=val_idxes, train=True, shuffle=False, *args, **kwargs)
+        testloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
         return trainloader, valloader, testloader
 
 

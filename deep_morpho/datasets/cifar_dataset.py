@@ -1,10 +1,11 @@
-from typing import Tuple, Dict, Callable
+from typing import Callable
 
 import torch
 from torchvision.datasets import CIFAR10, CIFAR100
 from random import choice
+import torchvision.transforms as transforms
 
-from .gray_to_channels_dataset import GrayToChannelDatasetBase, LevelsetValuesEqualIndex, LevelsetValuesHandler
+from .gray_to_channels_dataset import GrayToChannelDatasetBase
 from .select_indexes_dataset import SelectIndexesDataset
 
 
@@ -13,6 +14,41 @@ with open('deep_morpho/datasets/root_cifar10_dir.txt', 'r') as f:
 
 with open('deep_morpho/datasets/root_cifar100_dir.txt', 'r') as f:
     ROOT_CIFAR100_DIR = f.read()
+
+
+
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+])
+
+
+class CIFAR10Classical(SelectIndexesDataset, CIFAR10):
+    def __init__(
+        self,
+        root: str = ROOT_CIFAR10_DIR,
+        preprocessing: Callable = None,
+        train: bool = True,
+        *args, **kwargs
+    ):
+        CIFAR10.__init__(self, root=root, transform=transform, train=train,)
+        self.preprocessing = preprocessing
+
+        SelectIndexesDataset.__init__(self, *args, **kwargs)
+
+
+class CIFAR100Classical(SelectIndexesDataset, CIFAR100):
+    def __init__(
+        self,
+        root: str = ROOT_CIFAR100_DIR,
+        preprocessing: Callable = None,
+        train: bool = True,
+        *args, **kwargs
+    ):
+        CIFAR100.__init__(self, root=root, transform=transform, train=train,)
+        self.preprocessing = preprocessing
+
+        SelectIndexesDataset.__init__(self, *args, **kwargs)
 
 
 class CIFAR10Dataset(GrayToChannelDatasetBase, CIFAR10):

@@ -27,6 +27,7 @@ class MnistBaseDataset(DataModule):
         threshold: float = 30,
         size=(50, 50),
         preprocessing=None,
+        indexes=None,
         first_idx: int = 0,
         n_inputs: int = "all",
         invert_input_proba: bool = 0,
@@ -40,8 +41,16 @@ class MnistBaseDataset(DataModule):
         self.invert_input_proba = invert_input_proba
         self.do_symetric_output = do_symetric_output
 
+        # if n_inputs != "all":
+        #     self.data = self.data[first_idx:n_inputs+first_idx]
+    
         if n_inputs != "all":
-            self.data = self.data[first_idx:n_inputs+first_idx]
+            if indexes is None:
+                n_inputs = min(n_inputs, len(self.data))
+                indexes = list(range(first_idx, first_idx + n_inputs))
+
+            self.data = self.data[indexes]
+            self.targets = self.targets[indexes]
 
 
     def __getitem__(self, index: int) -> Tuple[Any, Any]:

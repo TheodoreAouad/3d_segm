@@ -63,12 +63,11 @@ class ExperimentBase(ExperimentMethods):
         self.metric_binary_obs = None
         self.model_checkpoint_obs = None
 
-        self.enforce_args()
         self._check_args()
 
     def enforce_args(self):
         for enforcer in self.args_enforcers:
-            enforcer.enforce(self.args)
+            enforcer.enforce(self)
 
     @property
     def log_dir(self) -> str:
@@ -142,16 +141,29 @@ class ExperimentBase(ExperimentMethods):
             self.tb_logger.experiment.add_text("hyperparams", hyperparam_str, global_step=0)
 
 
+    def log_binarizable_params(self):
+        nb_binary = self.model.model.numel_binary() if hasattr(self.model.model, "numel_binary") else 0
+        nb_float = (
+            self.model.model.numel_float() if hasattr(self.model.model, "numel_float")
+            else sum([p.numel() for p in self.model.model.parameters() if p.requires_grad])
+        )
+        self.log_console(
+            f"Binarizable parameters: {nb_binary} / {nb_float} = {nb_binary/nb_float:.4f}"
+        )
+
+
     def setup(self):
         if torch.cuda.is_available():
             self.device = torch.device("cuda")
         else:
             self.device = torch.device("cpu")
 
+        self.args["gpus.trainer"] = 1 if self.device == torch.device("cuda") else 0
+
         self.args["seed"] = set_seed(self.args['batch_seed'])
         self.log_console(f"Seed: {self.args['seed']}")
 
-        save_yaml(self.args, join(self.log_dir, "args.yaml"))
+        self.enforce_args()
 
         with Task("Loading Data", self.console_logger):
             self.load_datamodule()
@@ -164,12 +176,7 @@ class ExperimentBase(ExperimentMethods):
         with Task("Loading Model", self.console_logger):
             self.load_model()
 
-        self.log_tensorboard()
-
-        self.log_console(
-            f"Binarizable parameters: {self.model.model.numel_binary()} / {self.model.model.numel_float()}"
-            f" = {self.model.model.numel_binary()/self.model.model.numel_float():.2f}"
-        )
+        self.log_binarizable_params()
 
         if "callbacks.trainer" in self.args:
             del self.args["callbacks.trainer"]
@@ -185,6 +192,11 @@ class ExperimentBase(ExperimentMethods):
 
     def run(self):
         self.setup()
+
+        save_yaml(self.args, join(self.log_dir, "args.yaml"))
+
+        self.log_tensorboard()
+
 
         with Task("Training", self.console_logger):
             self.train()

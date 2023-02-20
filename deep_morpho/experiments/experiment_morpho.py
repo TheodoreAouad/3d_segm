@@ -7,20 +7,16 @@ import matplotlib.pyplot as plt
 
 from .args_enforcers import ArgsMorpho, ArgsDiskorect
 from .experiment_base import ExperimentBase
-from .load_observables_fn import load_observables_morpho_binary, load_observables_morpho_grayscale
+from .load_observables_fn import load_observables_bimonn_morpho_binary, load_observables_bimonn_morpho_grayscale
+# from .load_model_fn import load_model_bimonn_classical
 
 
 class ExperimentMorphoBase(ExperimentBase):
     """Experiment class for learning morphological operators."""
 
-    # @property
-    # def necessary_args(self) -> List[str]:
-    #     res = super().necessary_args
-    #     res.extend([f"morp_operation{self.args.dataset_args_suffix}"])
-    #     return res
-
     def __init__(self, *args, **kwargs):
         kwargs["args_enforcers"] = kwargs.get("args_enforcers", []) + [ArgsMorpho()]
+        # kwargs["load_model_fn"] = load_model_bimonn_classical
         super().__init__(*args, **kwargs)
 
     def _check_args(self) -> None:
@@ -62,13 +58,13 @@ class ExperimentMorphoBase(ExperimentBase):
 
 class ExperimentMorphoBinary(ExperimentMorphoBase):
     def __init__(self, *args, **kwargs):
-        kwargs["load_observables_fn"] = load_observables_morpho_binary
+        kwargs["load_observables_fn"] = load_observables_bimonn_morpho_binary
         super().__init__(*args, **kwargs)
 
 
 class ExperimentMorphoGrayScale(ExperimentMorphoBase):
     def __init__(self, *args, **kwargs):
-        kwargs["load_observables_fn"] = load_observables_morpho_grayscale
+        kwargs["load_observables_fn"] = load_observables_bimonn_morpho_grayscale
         super().__init__(*args, **kwargs)
 
 

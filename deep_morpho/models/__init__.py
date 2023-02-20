@@ -13,3 +13,6 @@ from .dense_lui import *
 from .softplus import *
 from .bisel import *
 from .specific_bimonn import *
+from .classical_conv import *
+from .lightning_classical_conv import *
+from .generic_lightning_model import *

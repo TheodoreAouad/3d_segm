@@ -10,15 +10,18 @@ from general.utils import format_time, log_console, create_logger, close_handler
 from general.code_saver import CodeSaver
 from .experiment_base import ExperimentBase
 from .experiment_morpho import ExperimentMorphoBinary, ExperimentMorphoGrayScale, ExperimentDiskorect
+from .experiment_classification import ExperimentClassification, ExperimentClassificationChannel
 from .context import Task
-from .args_enforcers import ArgsMnist, ArgsCifar, ArgsClassification
+from .args_enforcers import ArgsMnist, ArgsCifar, ArgsMnistClassif, ArgsMnistClassifChannel
 from general.nn.experiments.experiment_methods import ExperimentMethods
+from deep_morpho.models import LightningBiMoNN
 
 
 
 class MultiExperiment(ExperimentMethods):
     MORPHO_BINARY_DATASETS = [
         "mnistmorphodataset",
+        "diskorectdataset",
     ]
 
     MORPHO_GRAYSCALE_DATASETS = [
@@ -36,8 +39,21 @@ class MultiExperiment(ExperimentMethods):
 
     CIFAR_DATASETS = [
         "cifar10dataset",
-        "cifar100",
+        "cifar100dataset",
+        "cifar10classical",
+        "cifar100classical",
     ]
+
+    CLASSIFICATION_DATASETS = [
+        "mnistclassifdataset",
+        "mnistclassifchanneldataset",
+    ]
+
+    CLASSIFICATION_CHANNEL_DATASETS = [
+        "cifar10dataset",
+        "cifar100dataset",
+    ]
+
 
     def __init__(
         self,
@@ -66,14 +82,22 @@ class MultiExperiment(ExperimentMethods):
         ).save_directly_in_final_file(join(self.log_dir, 'code'))
 
     def infer_experiment_class(self, args) -> Type[ExperimentBase]:
-        if args["dataset"] == "diskorectdataset":
-            return ExperimentDiskorect
+        if LightningBiMoNN.is_child(args["model"]):
 
-        if args["dataset"] in self.MORPHO_BINARY_DATASETS:
-            return ExperimentMorphoBinary
+            if args["dataset"] == "diskorectdataset":
+                return ExperimentDiskorect
 
-        if args["dataset"] in self.MORPHO_GRAYSCALE_DATASETS:
-            return ExperimentMorphoGrayScale
+            if args["dataset"] in self.MORPHO_BINARY_DATASETS:
+                return ExperimentMorphoBinary
+
+            if args["dataset"] in self.MORPHO_GRAYSCALE_DATASETS:
+                return ExperimentMorphoGrayScale
+
+            if args["dataset"] in self.CLASSIFICATION_DATASETS:
+                return ExperimentClassification
+
+            if args["dataset"] in self.CLASSIFICATION_CHANNEL_DATASETS:
+                return ExperimentClassificationChannel
 
         return self.experiment_class
 
@@ -103,11 +127,18 @@ class MultiExperiment(ExperimentMethods):
     def infer_args_enforcers(self, experiment) -> List[Dict]:
         args = experiment.args
         args_enforcers = []
-        if args["dataset"] in self.MNIST_DATASETS:
-            args_enforcers.append(ArgsMnist)
 
-        elif args["dataset"] in self.CIFAR_DATASETS:
-            args_enforcers.append(ArgsCifar)
+        if args["dataset"] in self.MNIST_DATASETS:
+            args_enforcers.append(ArgsMnist())
+
+        if args["dataset"] in self.CIFAR_DATASETS:
+            args_enforcers.append(ArgsCifar())
+
+        if args["dataset"] == "mnistclassifdataset":
+            args_enforcers.append(ArgsMnistClassif())
+
+        if args["dataset"] == "mnistclassifchanneldataset":
+            args_enforcers.append(ArgsMnistClassifChannel())
 
         return args_enforcers
 

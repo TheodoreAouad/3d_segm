@@ -1,6 +1,7 @@
 from .experiment_base import ExperimentBase
-from .load_observables_fn import load_observables_classification_bimonn
-from .load_model_fn import load_model_bimonn_classical
+from .load_observables_fn import load_observables_classification_bimonn, load_observables_classification_channel_bimonn
+from .load_model_fn import load_model_bimonn_classical_classification
+from .args_enforcers import ArgsClassification, ArgsClassifChannel
 
 
 class ExperimentClassification(ExperimentBase):
@@ -8,15 +9,16 @@ class ExperimentClassification(ExperimentBase):
 
 
     def __init__(self, *args, **kwargs):
-        kwargs["load_model_fn"] = load_model_bimonn_classical
+        # kwargs["load_model_fn"] = load_model_bimonn_classical_classification
         kwargs["load_observables_fn"] = load_observables_classification_bimonn
+        kwargs["args_enforcers"] = kwargs.get("args_enforcers", []) + [ArgsClassification()]
         super().__init__(*args, **kwargs)
 
 
-    def enforce_args(self):
-        if self.args["n_atoms"] == 'adapt':
-            self.args['n_atoms'] = len(self.args['channels']) - 1
+class ExperimentClassificationChannel(ExperimentBase):
+    def __init__(self, *args, **kwargs):
+        # kwargs["load_model_fn"] = load_model_bimonn_classical_classification
+        kwargs["load_observables_fn"] = load_observables_classification_channel_bimonn
+        kwargs["args_enforcers"] = kwargs.get("args_enforcers", []) + [ArgsClassification(), ArgsClassifChannel()]
+        super().__init__(*args, **kwargs)
 
-    def _check_args(self) -> None:
-        super()._check_args()
-        assert f"morp_operation{self.args.dataset_args_suffix}" in self.args, f"Argument {f'morp_operation{self.args.dataset_args_suffix}'} is not given"

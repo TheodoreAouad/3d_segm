@@ -4,7 +4,7 @@ from sys import argv
 from argparse import ArgumentParser, Namespace, Action
 
 from deep_morpho.datasets import DataModule
-from deep_morpho.models import BiMoNN
+from deep_morpho.models import BinaryNN
 from deep_morpho.trainers.trainer import Trainer
 
 from general.utils import dict_cross
@@ -226,7 +226,7 @@ class MultiParser(Parser):
                 datamodule_name = datamodule_name.lower()
 
                 datamodule = DataModule.select(datamodule_name)
-                model = BiMoNN.select(model_name)
+                model = BinaryNN.select(model_name)
 
                 parser = ArgumentParser()
 

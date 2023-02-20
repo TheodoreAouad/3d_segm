@@ -1,311 +1,101 @@
-import inspect
-from functools import reduce
-from typing import Dict, Callable, List
-
+from abc import ABC
 from .bimonn import (
     BiMoNN, BiMoNNClassifierMaxPool, BiMoNNClassifierMaxPoolNotBinary, BiMoNNClassifierLastLinearNotBinary,
     BiMoNNClassifierLastLinear
 )
 from .specific_bimonn import BimonnDense, BimonnDenseNotBinary, BimonnBiselDenseNotBinary
-from general.nn.pytorch_lightning_module.obs_lightning_module import NetLightning
-from general.nn.observables import Observable
-
-
-# def lightning_init(cls):
-#     def __init__(self, model_args, **kwargs):
-#         super(type(self), self).__init__(model=cls(**model_args), **kwargs)
-#         self.save_hyperparameters(ignore="observables")
-#         self.hparams["model_type"] = self.__class__.__name__
-#     return __init__
-
-# TODO: Factorize all this code
-
-class GenericLightningModel(NetLightning):
-
-    def __init__(
-        self,
-        model_args: Dict,
-        learning_rate: float,
-        loss: Callable,
-        optimizer: Callable,
-        optimizer_args: Dict = {},
-        observables: List[Observable] = [],
-        reduce_loss_fn: Callable = lambda x: reduce(lambda a, b: a + b, x),
-        **kwargs
-    ):
-        super().__init__(
-            model=self.model_class(**model_args),
-            learning_rate=learning_rate,
-            loss=loss,
-            optimizer=optimizer,
-            optimizer_args=optimizer_args,
-            observables=observables,
-            reduce_loss_fn=reduce_loss_fn,
-            **kwargs
-        )
-
-        self.save_hyperparameters(ignore="observables")
-        self.hparams["model_type"] = self.__class__.__name__
-
-
-    @classmethod
-    def default_args(cls) -> Dict[str, dict]:
-        """Return the default arguments of the model, in the format of argparse.ArgumentParser"""
-        default_args = {
-            name: {"default": p.default}
-            for name, p in inspect.signature(cls.__init__).parameters.items() if name not in ["self", "model_args"]
-        }
-        default_args["model_args"] = {"default": cls.model_class.default_args()}
-        return default_args
-
-    @classmethod
-    def select(cls, name: str, **kwargs):
-        name = name.lower()
-        if not name.startswith("lightning"):
-            name = "lightning" + name
-        return super().select(name, **kwargs)
+from .generic_lightning_model import GenericLightningModel
 
 
 class LightningBiMoNN(GenericLightningModel):
     model_class = BiMoNN
 
+    @classmethod
+    def get_model_from_experiment(cls, experiment: "ExperimentBase") -> GenericLightningModel:
+        args = experiment.args
+        inpt = experiment.input_sample
 
-class LightningBiMoNNClassifierMaxPool(GenericLightningModel):
+        if isinstance(args["initializer_args"], dict):
+            args["initializer_args"]["input_mean"] = inpt.mean().item()
+        elif isinstance(args["initializer_args"], list):
+            args["initializer_args"][0]["input_mean"] = inpt.mean().item()
+
+        model_args = args.model_args()
+
+        model_args.update({
+            "kernel_size": [args['kernel_size'] for _ in range(args['n_atoms'])],
+            "atomic_element": args["atomic_element"].replace('dual_', ''),
+            "lui_kwargs": {"force_identity": args['force_lui_identity']},
+        })
+
+        model = cls(
+            model_args=model_args,
+            learning_rate=args["learning_rate"],
+            loss=args["loss"],
+            optimizer=args["optimizer"],
+            optimizer_args=args["optimizer_args"],
+            observables=experiment.observables,
+        )
+        model.to(experiment.device)
+        return model
+
+
+class LightningBiMoNNClassifier(LightningBiMoNN, ABC):
+
+    @classmethod
+    def get_model_from_experiment(cls, experiment: "ExperimentBase") -> GenericLightningModel:
+        args = experiment.args
+        inpt = experiment.input_sample
+
+        if isinstance(args["initializer_args"], dict):
+            args["initializer_args"]["input_mean"] = inpt.mean().item()
+        elif isinstance(args["initializer_args"], list):
+            args["initializer_args"][0]["input_mean"] = inpt.mean().item()
+
+        model_args = args.model_args()
+
+        model_args.update({
+            "input_size": inpt.shape[1:],
+            "n_classes": experiment.trainloader.dataset.n_classes,
+            "input_mean": inpt.mean().item(),
+        })
+
+        model = cls(
+            model_args=model_args,
+            learning_rate=args["learning_rate"],
+            loss=args["loss"],
+            optimizer=args["optimizer"],
+            optimizer_args=args["optimizer_args"],
+            observables=experiment.observables,
+        )
+        model.to(experiment.device)
+        return model
+
+
+
+class LightningBiMoNNClassifierMaxPool(LightningBiMoNNClassifier):
     model_class = BiMoNNClassifierMaxPool
 
 
-class LightningBiMoNNClassifierMaxPoolNotBinary(GenericLightningModel):
+class LightningBiMoNNClassifierMaxPoolNotBinary(LightningBiMoNNClassifier):
     model_class = BiMoNNClassifierMaxPoolNotBinary
 
 
-class LightningBiMoNNClassifierLastLinearNotBinary(GenericLightningModel):
+class LightningBiMoNNClassifierLastLinearNotBinary(LightningBiMoNNClassifier):
     model_class = BiMoNNClassifierLastLinearNotBinary
 
 
-class LightningBiMoNNClassifierLastLinear(GenericLightningModel):
+class LightningBiMoNNClassifierLastLinear(LightningBiMoNNClassifier):
     model_class = BiMoNNClassifierLastLinear
 
 
-class LightningBimonnDense(GenericLightningModel):
+class LightningBimonnDense(LightningBiMoNNClassifier):
     model_class = BimonnDense
 
 
-class LightningBimonnDenseNotBinary(GenericLightningModel):
+class LightningBimonnDenseNotBinary(LightningBiMoNNClassifier):
     model_class = BimonnDenseNotBinary
 
 
 class LightningBimonnBiselDenseNotBinary(GenericLightningModel):
     model_class = BimonnBiselDenseNotBinary
-
-
-
-# class LightningBiMoNN(NetLightning):
-
-#     def __init__(
-#         self,
-#         model_args: Dict,
-#         learning_rate: float,
-#         loss: Callable,
-#         optimizer: Callable,
-#         optimizer_args: Dict = {},
-#         observables: List["Observable"] = [],
-#         **kwargs
-#     ):
-#         super().__init__(
-#             model=BiMoNN(**model_args),
-#             learning_rate=learning_rate,
-#             loss=loss,
-#             optimizer=optimizer,
-#             optimizer_args=optimizer_args,
-#             observables=observables,
-#             **kwargs
-#         )
-
-#         self.save_hyperparameters(ignore="observables")
-#         self.hparams["model_type"] = self.__class__.__name__
-
-
-
-# class LightningBiMoNNClassifierMaxPool(NetLightning):
-
-#     def __init__(
-#         self,
-#         model_args: Dict,
-#         learning_rate: float,
-#         loss: Callable,
-#         optimizer: Callable,
-#         optimizer_args: Dict = {},
-#         observables: List["Observable"] = [],
-#         **kwargs
-#     ):
-#         super().__init__(
-#             model=BiMoNNClassifierMaxPool(**model_args),
-#             learning_rate=learning_rate,
-#             loss=loss,
-#             optimizer=optimizer,
-#             optimizer_args=optimizer_args,
-#             observables=observables,
-#             **kwargs
-#         )
-
-#         self.save_hyperparameters(ignore="observables")
-#         self.hparams["model_type"] = self.__class__.__name__
-
-
-
-# class LightningBiMoNNClassifierMaxPoolNotBinary(NetLightning):
-
-#     def __init__(
-#         self,
-#         model_args: Dict,
-#         learning_rate: float,
-#         loss: Callable,
-#         optimizer: Callable,
-#         optimizer_args: Dict = {},
-#         observables: List["Observable"] = [],
-#         **kwargs
-#     ):
-#         super().__init__(
-#             model=BiMoNNClassifierMaxPoolNotBinary(**model_args),
-#             learning_rate=learning_rate,
-#             loss=loss,
-#             optimizer=optimizer,
-#             optimizer_args=optimizer_args,
-#             observables=observables,
-#             **kwargs
-#         )
-
-#         self.save_hyperparameters(ignore="observables")
-#         self.hparams["model_type"] = self.__class__.__name__
-
-
-
-# class LightningBiMoNNClassifierLastLinearNotBinary(NetLightning):
-
-#     def __init__(
-#         self,
-#         model_args: Dict,
-#         learning_rate: float,
-#         loss: Callable,
-#         optimizer: Callable,
-#         optimizer_args: Dict = {},
-#         observables: List["Observable"] = [],
-#         **kwargs
-#     ):
-#         super().__init__(
-#             model=BiMoNNClassifierLastLinearNotBinary(**model_args),
-#             learning_rate=learning_rate,
-#             loss=loss,
-#             optimizer=optimizer,
-#             optimizer_args=optimizer_args,
-#             observables=observables,
-#             **kwargs
-#         )
-
-#         self.save_hyperparameters(ignore="observables")
-#         self.hparams["model_type"] = self.__class__.__name__
-
-
-
-# class LightningBiMoNNClassifierLastLinear(NetLightning):
-
-#     def __init__(
-#         self,
-#         model_args: Dict,
-#         learning_rate: float,
-#         loss: Callable,
-#         optimizer: Callable,
-#         optimizer_args: Dict = {},
-#         observables: List["Observable"] = [],
-#         **kwargs
-#     ):
-#         super().__init__(
-#             model=BiMoNNClassifierLastLinear(**model_args),
-#             learning_rate=learning_rate,
-#             loss=loss,
-#             optimizer=optimizer,
-#             optimizer_args=optimizer_args,
-#             observables=observables,
-#             **kwargs
-#         )
-
-#         self.save_hyperparameters(ignore="observables")
-#         self.hparams["model_type"] = self.__class__.__name__
-
-
-# class LightningBimonnDense(NetLightning):
-
-#     def __init__(
-#         self,
-#         model_args: Dict,
-#         learning_rate: float,
-#         loss: Callable,
-#         optimizer: Callable,
-#         optimizer_args: Dict = {},
-#         observables: List["Observable"] = [],
-#         **kwargs
-#     ):
-#         super().__init__(
-#             model=BimonnDense(**model_args),
-#             learning_rate=learning_rate,
-#             loss=loss,
-#             optimizer=optimizer,
-#             optimizer_args=optimizer_args,
-#             observables=observables,
-#             **kwargs
-#         )
-
-#         self.save_hyperparameters(ignore="observables")
-#         self.hparams["model_type"] = self.__class__.__name__
-
-
-# class LightningBimonnDenseNotBinary(NetLightning):
-
-#     def __init__(
-#         self,
-#         model_args: Dict,
-#         learning_rate: float,
-#         loss: Callable,
-#         optimizer: Callable,
-#         optimizer_args: Dict = {},
-#         observables: List["Observable"] = [],
-#         **kwargs
-#     ):
-#         super().__init__(
-#             model=BimonnDenseNotBinary(**model_args),
-#             learning_rate=learning_rate,
-#             loss=loss,
-#             optimizer=optimizer,
-#             optimizer_args=optimizer_args,
-#             observables=observables,
-#             **kwargs
-#         )
-
-#         self.save_hyperparameters(ignore="observables")
-#         self.hparams["model_type"] = self.__class__.__name__
-
-
-# class LightningBimonnBiselDenseNotBinary(NetLightning):
-
-#     def __init__(
-#         self,
-#         model_args: Dict,
-#         learning_rate: float,
-#         loss: Callable,
-#         optimizer: Callable,
-#         optimizer_args: Dict = {},
-#         observables: List["Observable"] = [],
-#         **kwargs
-#     ):
-#         super().__init__(
-#             model=BimonnBiselDenseNotBinary(**model_args),
-#             learning_rate=learning_rate,
-#             loss=loss,
-#             optimizer=optimizer,
-#             optimizer_args=optimizer_args,
-#             observables=observables,
-#             **kwargs
-#         )
-
-#         self.save_hyperparameters(ignore="observables")
-#         self.hparams["model_type"] = self.__class__.__name__

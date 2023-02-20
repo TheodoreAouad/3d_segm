@@ -94,10 +94,13 @@ class ExperimentMethods(ABC):
                     param_dict["type"] = cls.convert_or_str_fn(type(p.default))
 
                 if p.annotation is not None:
-                    if p.annotation in [bool, int, float, str]:
-                        param_dict["type"] = cls.convert_or_str_fn(p.annotation)
+                    for type_ in [bool, int, float, str]:
+                        if (p.annotation == type_) or (p.annotation == Optional[type_]):
+                            param_dict["type"] = cls.convert_or_str_fn(type_)
+                    # if p.annotation in [bool, int, float, str]:
+                    #     param_dict["type"] = cls.convert_or_str_fn(p.annotation)
 
-                    elif isinstance(p.annotation, EnumMeta):
+                    if isinstance(p.annotation, EnumMeta) or (p.annotation == Optional[EnumMeta]):
                         param_dict["type"] = cls.enum_to_str_fn(p.annotation)
 
                 res[name] = param_dict
