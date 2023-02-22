@@ -106,7 +106,7 @@ class ConvergenceMetrics(Observable):
             self.convergence_step[state][metric_name] = step
             return
 
-        diff_rate = (self.cur_value[state][metric_name] - metric_value) / self.cur_value[state][metric_name]
+        diff_rate = (self.cur_value[state][metric_name] - metric_value) / (self.cur_value[state][metric_name] + 1e-8)
         if diff_rate > self.eps:
             self.cur_value[state][metric_name] = metric_value
             self.convergence_step[state][metric_name] = step

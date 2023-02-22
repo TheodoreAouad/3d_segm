@@ -48,7 +48,7 @@ class SelectIndexesDataset(DataModule):
         return DataLoader(
             cls(
                 n_inputs=n_inputs, first_idx=first_idx, indexes=indexes,
-                train=train, preprocessing=preprocessing,
+                train=train, preprocessing=preprocessing, **kwargs
             ), batch_size=batch_size, num_workers=num_workers, shuffle=shuffle, )
 
     @classmethod

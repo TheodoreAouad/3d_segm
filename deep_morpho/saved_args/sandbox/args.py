@@ -13,10 +13,12 @@ from deep_morpho.loss import (
 )
 from general.utils import dict_cross
 from deep_morpho.models.bise_base import ClosestSelemEnum, ClosestSelemDistanceEnum, BiseBiasOptimEnum, BiseWeightsOptimEnum
+from deep_morpho.models.activations import NormalizedTanh
 from deep_morpho.initializer import InitBimonnEnum, InitBiseEnum
 from deep_morpho.env import CLASSIF_DATASETS
 from deep_morpho.experiments.parser import MultiParser
 from .args_morp_ops import morp_operations
+from deep_morpho.datasets.cifar_dataset import transform_default
 
 
 loss_dict = {
@@ -46,12 +48,13 @@ all_args['n_try'] = [0]
 
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
-    "tests",
+    # "tests",
+    "Bimonn_exp_77/sandbox/"
 ]
 
 
 # DATA ARGS
-all_args['morp_operation.datamodule'] = morp_operations
+all_args['morp_operation'] = morp_operations
 all_args['dataset'] = [
     # 'diskorectdataset',
     # 'mnistmorphodataset',
@@ -70,22 +73,25 @@ all_args['dataset'] = [
     'cifar10classical',
     # 'cifar100classical',
 ]
-all_args['preprocessing.datamodule'] = [  # for axspa roi
+all_args['preprocessing'] = [  # for axspa roi
     None,
 ]
-all_args['dataset_path.datamodule'] = [
+all_args['transforms'] = [
+    transform_default,
+]
+all_args['dataset_path'] = [
     # 'data/deep_morpho/dataset_0',
     "data/deep_morpho/axspa_roi/axspa_roi.csv"
     # 'generate',
 ]
-all_args['in_ram.datamodule'] = [
+all_args['in_ram'] = [
     # False,
     True,
 ]
-all_args['random_gen_fn.datamodule'] = [
+all_args['random_gen_fn'] = [
     get_random_diskorect_channels
 ]
-all_args['random_gen_args.datamodule'] = [
+all_args['random_gen_args'] = [
     # {'size': (50, 50), 'n_shapes': 2, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
     {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': .5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
     # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
@@ -93,15 +99,15 @@ all_args['random_gen_args.datamodule'] = [
     # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
     # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 1, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
 ]
-all_args['mnist_args.datamodule'] = [
+all_args['mnist_args'] = [
     {"threshold": 30, "size": (50, 50), "invert_input_proba": 0,},
     # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
-all_args['mnist_gray_args.datamodule'] = [
+all_args['mnist_gray_args'] = [
     {"n_gray_scale_values": 20, "size": (50, 50),}
 ]
 
-all_args['fashionmnist_gray_args.datamodule'] = [
+all_args['fashionmnist_gray_args'] = [
     {"n_gray_scale_values": 20, "size": (50, 50), }
 ]
 
@@ -112,7 +118,7 @@ all_args['channel_classif_args'] = [
     }
 ]
 
-all_args['sticks_noised_angles.datamodule'] = [
+all_args['sticks_noised_angles'] = [
     # [0, 90],
     # [30, 60],
     # [0, 90],
@@ -121,7 +127,7 @@ all_args['sticks_noised_angles.datamodule'] = [
     # np.linspace(0, 160, 5),
     # [30, 120],
 ]
-all_args['sticks_noised_args.datamodule'] = [
+all_args['sticks_noised_args'] = [
     {
         "size": (70, 70),
         "n_shapes": 30,
@@ -132,8 +138,8 @@ all_args['sticks_noised_args.datamodule'] = [
         "noise_proba": 0.1,
     }
 ]
-all_args['n_steps.datamodule'] = [10000]
-all_args['nb_batch_indep.datamodule'] = [0]
+all_args['n_steps'] = [10000]
+all_args['nb_batch_indep'] = [0]
 all_args["n_inputs_train"] = [50_000]
 all_args["n_inputs_val"] = [10_000]
 all_args["n_inputs_test"] = [10_000]
@@ -142,13 +148,13 @@ all_args["n_inputs_test"] = [10_000]
 #     # 100_000,
 # ]
 # all_args['train_test_split'] = [(0.1, 0.1, 0.1)]
-# all_args['train_test_split.datamodule'] = [(0.9, 0.1, 0.1)]
+# all_args['train_test_split'] = [(0.9, 0.1, 0.1)]
 
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
     # 1e-2,
-    1e-2,
+    1e-4,
 ]
 
 # if max_plus, then the loss is MSELoss
@@ -186,10 +192,10 @@ all_args['freq_hist'] = [500]
 all_args["freq_update_binary_batch"] = [None]
 all_args["freq_update_binary_epoch"] = [3]
 all_args['freq_scalars'] = [50]
-all_args['max_epochs.trainer'] = [20]
+all_args['max_epochs.trainer'] = [200]
 
 all_args['patience_loss_batch'] = [2100]
-all_args['patience_loss_epoch'] = [9]
+all_args['patience_loss_epoch'] = [15]
 all_args['patience_reduce_lr'] = [1/3]
 all_args['early_stopping_on'] = [
     # 'batch',
@@ -213,27 +219,37 @@ all_args["model"] = [
     # "BimonnBiselDenseNotBinary",
     "ConvNetLastLinear",
 ]
-all_args['atomic_element.net'] = [
+all_args["activation_constructor"] = [
+    # nn.ReLU,
+    # nn.Sigmoid,
+    NormalizedTanh,
+]
+all_args["do_maxpool"] = [
+    True,
+    # False,
+]
+
+all_args['atomic_element'] = [
     "bisel",
     # "dual_bisel",
     # "sybisel",
 ]
-all_args['n_atoms.net'] = [
+all_args['n_atoms'] = [
     'adapt',
     # 1
     # 11
 ]
 
-all_args['kernel_size.net'] = [
+all_args['kernel_size'] = [
     # 3
     5
     # 7
     # "adapt",
 ]
-all_args['channels.net'] = [
+all_args['channels'] = [
     # 'adapt',
     # [1, 1]
-    [25, 25]
+    [100, 100, 100, 100, 100, 100]
     # [1, 100,],
     # [1, 100, ],
     # [50, 100, ],
@@ -248,28 +264,28 @@ all_args['channels.net'] = [
     # [1, 100, 100],
     # [1, 200, 200],
 ]
-all_args['closest_selem_method.net'] = [
+all_args['closest_selem_method'] = [
     # ClosestSelemEnum.MIN_DIST
     # ClosestSelemEnum.MAX_SECOND_DERIVATIVE
     ClosestSelemEnum.MIN_DIST_DIST_TO_CST
 ]
 
-all_args['bias_optim_mode.net'] = [
+all_args['bias_optim_mode'] = [
     # BiseBiasOptimEnum.RAW,
     BiseBiasOptimEnum.POSITIVE,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
-all_args['bias_optim_args.net'] = [
+all_args['bias_optim_args'] = [
     {"offset": 0}
 ]
-all_args['weights_optim_mode.net'] = [
+all_args['weights_optim_mode'] = [
     BiseWeightsOptimEnum.THRESHOLDED,
     # BiseWeightsOptimEnum.ELLIPSE_ROOT,
     # BiseWeightsOptimEnum.NORMALIZED
 ]
 
-all_args['threshold_mode.net'] = [
+all_args['threshold_mode'] = [
     {
         # "weight": 'identity',
         "weight": 'softplus',
@@ -277,15 +293,15 @@ all_args['threshold_mode.net'] = [
         # "activation": 'sigmoid',
     },
 ]
-all_args['weights_optim_args.net'] = [
+all_args['weights_optim_args'] = [
     # {"constant_P": True}
     {"constant_P": True, "factor": 1}
 ]
 
-all_args['initializer_method.net'] = [
+all_args['initializer_method'] = [
     InitBimonnEnum.INPUT_MEAN,
 ]
-all_args['initializer_args.net'] = [
+all_args['initializer_args'] = [
     # force operations at init
     {
         # "bise_init_method": InitBiseEnum.KAIMING_UNIFORM,
@@ -306,10 +322,10 @@ all_args['initializer_args.net'] = [
 
 ]
 
-all_args['activation_P.net'] = [0]
-all_args['constant_activation_P.net'] = [False]
-all_args['force_lui_identity.net'] = [False]
-all_args['constant_P_lui.net'] = [False]
+all_args['activation_P'] = [0]
+all_args['constant_activation_P'] = [False]
+all_args['force_lui_identity'] = [False]
+all_args['constant_P_lui'] = [False]
 
 
 
@@ -468,16 +484,16 @@ for idx, args in enumerate(all_args.multi_args):
         # args['freq_imgs'] = 300
         args['n_inputs'] = 60_000
 
-    if args['dataset'] in ["cifar10", "cifar100"]:
-        args["n_inputs"] = 50_000
-        args["channels"][0] = args["channel_classif_args"]["levelset_handler_args"]["n_values"] * 3
+    # if args['dataset'] in ["cifar10", "cifar100"]:
+    #     args["n_inputs"] = 50_000
+    #     args["channels"][0] = args["channel_classif_args"]["levelset_handler_args"]["n_values"] * 3
 
-    if args['dataset'] in ["cifar10", "cifar100"]:
-        args["channels"][0] = args["channel_classif_args"]["levelset_handler_args"]["n_values"] * 1
+    # if args['dataset'] in ["cifar10", "cifar100"]:
+    #     args["channels"][0] = args["channel_classif_args"]["levelset_handler_args"]["n_values"] * 1
 
 
-    if args['dataset'] == 'inverted_mnist':
-        args['mnist_args']['invert_input_proba'] = 1
+    # if args['dataset'] == 'inverted_mnist':
+    #     args['mnist_args']['invert_input_proba'] = 1
         # args['experiment_subname'] = args['experiment_subname'].replace('mnist', 'inverted_mnist')
 
 
@@ -503,21 +519,21 @@ for idx, args in enumerate(all_args.multi_args):
         assert "gray" not in args['morp_operation'].name
 
 
-    already_seen_path = f"deep_morpho/results/results_tensorboards/{args['experiment_name']}/{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset']}/seen_args.txt"
-    if not os.path.exists(already_seen_path):
-        continue
-    with open(already_seen_path, "r") as f:
-        already_seen = f.read()
-    if str((
-        args['morp_operation'].name.split('/')[0],
-        args['morp_operation'].selem_names[0][-1][0],
-        # str(args["init_weight_mode"]).split(".")[-1],
-        # str(args["bias_optim_mode"]).split(".")[-1],
-        args["loss_data_str"],
-        str(args["learning_rate"]),
-        args["optimizer"].__name__, args["bias_optim_mode"].__str__().split(".")[-1]
-    )) in already_seen:
-        to_remove.append(idx)
+    # already_seen_path = f"deep_morpho/results/results_tensorboards/{args['experiment_name']}/{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset']}/seen_args.txt"
+    # if not os.path.exists(already_seen_path):
+    #     continue
+    # with open(already_seen_path, "r") as f:
+    #     already_seen = f.read()
+    # if str((
+    #     args['morp_operation'].name.split('/')[0],
+    #     args['morp_operation'].selem_names[0][-1][0],
+    #     # str(args["init_weight_mode"]).split(".")[-1],
+    #     # str(args["bias_optim_mode"]).split(".")[-1],
+    #     args["loss_data_str"],
+    #     str(args["learning_rate"]),
+    #     args["optimizer"].__name__, args["bias_optim_mode"].__str__().split(".")[-1]
+    # )) in already_seen:
+    #     to_remove.append(idx)
 
 # print(f'Deleting {len(to_remove)} already seen args...')
 # for idx in to_remove[::-1]:

@@ -1,6 +1,7 @@
 import warnings
 from typing import Dict, List, Any
 from sys import argv
+import copy
 from argparse import ArgumentParser, Namespace, Action
 
 from deep_morpho.datasets import DataModule
@@ -84,25 +85,47 @@ class Parser(dict):
         datamodule_name = self["dataset"].lower()
 
         datamodule = DataModule.select(datamodule_name)
-        model = BiMoNN.select(model_name)
+        model = BinaryNN.select(model_name)
 
         parser = ArgumentParser()
 
         # We use suffix instead of prefix because the abbrev of argparse matches the beginning of the str.
         for arg_name, arg_dict in datamodule.default_args().items():
-            self.parser_add_argument(parser=parser, name=f"{arg_name}{self.dataset_args_suffix}", **arg_dict)
+            # self.parser_add_argument(parser=parser, name=f"{arg_name}{self.dataset_args_suffix}", **arg_dict)
+            self.parser_add_datamodule_argument(parser=parser, name=arg_name, **arg_dict)
 
         for arg_name, arg_dict in model.default_args().items():
-            self.parser_add_argument(parser=parser, name=f"{arg_name}{self.model_args_suffix}", **arg_dict)
+            # self.parser_add_argument(parser=parser, name=f"{arg_name}{self.model_args_suffix}", **arg_dict)
+            self.parser_add_model_argument(parser=parser, name=arg_name, **arg_dict)
 
         for arg_name, arg_dict in self.trainer_class.default_args().items():
-            self.parser_add_argument(parser=parser, name=f"{arg_name}{self.trainer_args_suffix}", **arg_dict)
+            # self.parser_add_argument(parser=parser, name=f"{arg_name}{self.trainer_args_suffix}", **arg_dict)
+            self.parser_add_trainer_argument(parser=parser, name=arg_name, **arg_dict)
 
         self._parse_args_to_dict(dict_=self, parser=parser, args=args, namespace=namespace)  # parse remaining args
         return self
 
     def parser_add_argument(self, parser, name: str, **kwargs):
         parser.add_argument(f"--{name}", action=self.arg_is_stored_class, **kwargs)
+
+    def parser_add_datamodule_argument(self, parser, name: str, **kwargs):
+        self.parser_add_argument(parser, f"{name}{self.dataset_args_suffix}", **kwargs)
+        if name in self:
+            self.replace_key(name, f"{name}{self.dataset_args_suffix}")
+
+    def parser_add_model_argument(self, parser, name: str, **kwargs):
+        self.parser_add_argument(parser, f"{name}{self.model_args_suffix}", **kwargs)
+        if name in self:
+            self.replace_key(name, f"{name}{self.model_args_suffix}")
+
+    def parser_add_trainer_argument(self, parser, name: str, **kwargs):
+        self.parser_add_argument(parser, f"{name}{self.trainer_args_suffix}", **kwargs)
+        if name in self:
+            self.replace_key(name, f"{name}{self.trainer_args_suffix}")
+
+    def replace_key(self, key: str, new_key: str):
+        self[new_key] = self[key]
+        del self[key]
 
     @property
     def dataset_args_suffix(self) -> str:
@@ -207,7 +230,7 @@ class MultiParser(Parser):
             else:
                 args = argv[1:]
 
-        self.given_args = set([arg[2:] for arg in args if arg.startswith("--")])
+        # self.given_args = set([arg[2:] for arg in args if arg.startswith("--")])
 
         self._parse_args_to_dict(self, self.root_parser, args, namespace, add_unknown=False, add_default=False)  # parse dataset and model
 
@@ -219,7 +242,7 @@ class MultiParser(Parser):
         for model_name in self["model"]:
             for datamodule_name in self["dataset"]:
 
-                new_dict = self.copy()
+                # new_dict = self.copy()
                 self.given_args = set()
 
                 model_name = model_name.lower()
@@ -232,14 +255,18 @@ class MultiParser(Parser):
 
                 # We use suffix instead of prefix because the abbrev of argparse matches the beginning of the str.
                 for arg_name, arg_dict in datamodule.default_args().items():
-                    self.parser_add_argument(parser, f"{arg_name}{self.dataset_args_suffix}", **arg_dict)
+                    # self.parser_add_argument(parser, f"{arg_name}{self.dataset_args_suffix}", **arg_dict)
+                    self.parser_add_datamodule_argument(parser, arg_name, **arg_dict)
 
                 for arg_name, arg_dict in model.default_args().items():
-                    self.parser_add_argument(parser, f"{arg_name}{self.model_args_suffix}", **arg_dict)
+                    # self.parser_add_argument(parser, f"{arg_name}{self.model_args_suffix}", **arg_dict)
+                    self.parser_add_model_argument(parser, arg_name, **arg_dict)
 
                 for arg_name, arg_dict in self.trainer_class.default_args().items():
-                    self.parser_add_argument(parser, f"{arg_name}{self.trainer_args_suffix}", **arg_dict)
+                    # self.parser_add_argument(parser, f"{arg_name}{self.trainer_args_suffix}", **arg_dict)
+                    self.parser_add_trainer_argument(parser, arg_name, **arg_dict)
 
+                new_dict = copy.deepcopy(self)
                 self._parse_args_to_dict(new_dict, parser, args, namespace)  # parse remaining args
 
                 new_dict["model"] = [model_name]

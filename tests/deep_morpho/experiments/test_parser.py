@@ -314,6 +314,37 @@ class TestMultiParser:
         assert prs["model"] == ["BiMoNN", "bimonnclassifier"]
         assert prs["dataset"] == ["cifar10dataset"]
 
+    @staticmethod
+    def test_suffix_replace_arg(mocker):
+        def mock_model_init(self, arg1="arg1",):
+            pass
+
+        def mock_dataset_init(self, bbl="all"):
+            pass
+
+        mocker.patch("deep_morpho.models.BiMoNN.__init__", mock_model_init)
+        mocker.patch("deep_morpho.datasets.cifar_dataset.CIFAR10Dataset.__init__", mock_dataset_init)
+
+        from deep_morpho.experiments.parser import MultiParser
+
+        prs = MultiParser()
+        prs["model"] = ["BiMoNN"]
+        prs["dataset"] = ["cifar10dataset"]
+        prs["arg1"] = ["value"]
+        # prs["arg1.datamodule"] = "value"
+        prs["bbl"] = ["value"]
+
+        prs.parse_args([], add_argv=False)
+
+        assert "arg1.net" in prs
+        assert "bbl.datamodule" in prs
+        assert prs["arg1"] == ["value"]
+        assert prs["bbl"] == ["value"]
+
+        assert "arg1.net" in prs.multi_args[0]
+        assert "bbl.datamodule" in prs.multi_args[0]
+        assert prs.multi_args[0]["arg1"] == "value"
+        assert prs.multi_args[0]["bbl"] == "value"
 
     @staticmethod
     def test_unknown_args(mocker):
@@ -404,7 +435,7 @@ class TestMultiParser:
 
         def mock_dataset_init1(self, bbl="all"):
             pass
-            
+
         def mock_dataset_init2(self, aau="all"):
             pass
 

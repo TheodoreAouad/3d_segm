@@ -17,7 +17,7 @@ with open('deep_morpho/datasets/root_cifar100_dir.txt', 'r') as f:
 
 
 
-transform = transforms.Compose([
+transform_default = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 ])
@@ -29,6 +29,7 @@ class CIFAR10Classical(SelectIndexesDataset, CIFAR10):
         root: str = ROOT_CIFAR10_DIR,
         preprocessing: Callable = None,
         train: bool = True,
+        transform: Callable = transform_default,
         *args, **kwargs
     ):
         CIFAR10.__init__(self, root=root, transform=transform, train=train,)
@@ -43,6 +44,7 @@ class CIFAR100Classical(SelectIndexesDataset, CIFAR100):
         root: str = ROOT_CIFAR100_DIR,
         preprocessing: Callable = None,
         train: bool = True,
+        transform: Callable = transform_default,
         *args, **kwargs
     ):
         CIFAR100.__init__(self, root=root, transform=transform, train=train,)
