@@ -299,6 +299,27 @@ class TestParser:
 
         assert prs.given_args == set(["dataset", "model", "arg1.net"])
 
+    @staticmethod
+    def test_trainset_args(mocker):
+        def mock_dataset_init(self, bbl="all"):
+            pass
+
+        mocker.patch("deep_morpho.datasets.cifar_dataset.CIFAR10Dataset.__init__", mock_dataset_init)
+
+        from deep_morpho.experiments.parser import Parser
+
+        prs = Parser()
+        prs["bbl.trainset"] = "train"
+        prs["bbl.valset"] = "val"
+        prs["bbl"] = "test"
+        prs["model"] = "BiMoNN"
+        prs["dataset"] = "cifar10dataset"
+        prs.parse_args([])
+
+        assert prs.trainset_args()["bbl"] == "train"
+        assert prs.valset_args()["bbl"] == "val"
+        assert prs.testset_args()["bbl"] == "test"
+
 
 
 class TestMultiParser:
@@ -451,3 +472,24 @@ class TestMultiParser:
 
         assert prs.multi_args[0].given_args == set(["dataset", "model", "bbl.datamodule", "aau"])
         assert prs.multi_args[1].given_args == set(["dataset", "model", "aau.datamodule", "bbl"])
+
+    @staticmethod
+    def test_trainset_args(mocker):
+        def mock_dataset_init(self, bbl="all"):
+            pass
+
+        mocker.patch("deep_morpho.datasets.cifar_dataset.CIFAR10Dataset.__init__", mock_dataset_init)
+
+        from deep_morpho.experiments.parser import MultiParser
+
+        prs = MultiParser()
+        prs["bbl.trainset"] = ["train"]
+        prs["bbl.valset"] = ["val"]
+        prs["bbl"] = ["test"]
+        prs["model"] = ["BiMoNN"]
+        prs["dataset"] = ["cifar10dataset"]
+        prs.parse_args([])
+
+        assert prs.multi_args[0].trainset_args()["bbl"] == "train"
+        assert prs.multi_args[0].valset_args()["bbl"] == "val"
+        assert prs.multi_args[0].testset_args()["bbl"] == "test"

@@ -31,7 +31,7 @@ class BiseClosestSelemHandler(ExperimentMethods):
     def __init__(self, bise_module: "BiSE"):
         self.bise_module = bise_module
 
-    def __call__(self, chout: int, v1: float, v2: float) -> Tuple[float, np.ndarray, str]:
+    def __call__(self, chin: int, chout: int, v1: float, v2: float) -> Tuple[float, np.ndarray, str]:
         pass
 
 
@@ -48,12 +48,10 @@ class BiseClosestSelemWithDistanceAgg(BiseClosestSelemHandler):
         self.distance_fn = partial(distance_fn, self=self)
         self.distance_agg_fn = partial(distance_agg_fn, self=self)
 
-    def compute_selem_dist_for_operation_chan(
-        self, weights, bias, operation: str, chout: int = 0, v1: float = 0, v2: float = 1
+    def compute_selem_dist_for_operation(
+        self, weights, bias, operation: str, v1: float = 0, v2: float = 1
     ):
-        weights = weights[chout]
         weight_values = weights.unique().detach().cpu().numpy()
-        bias = bias[chout]
 
         dists = np.zeros_like(weight_values)
         selems = []
@@ -66,12 +64,12 @@ class BiseClosestSelemWithDistanceAgg(BiseClosestSelemHandler):
 
 
     def find_closest_selem_and_operation_chan(
-        self, weights, bias, chout=0, v1=0, v2=1
+        self, weights, bias, chin=0, chout=0, v1=0, v2=1
     ):
         final_dist = np.infty
         for operation in ['dilation', 'erosion']:
-            selems, dists = self.compute_selem_dist_for_operation_chan(
-                weights=weights, bias=bias, chout=chout, operation=operation, v1=v1, v2=v2
+            selems, dists = self.compute_selem_dist_for_operation(
+                weights=weights[chout, chin], bias=bias[chout, chin], operation=operation, v1=v1, v2=v2
             )
             new_selem, new_dist = self.distance_agg_fn(selems=selems, dists=dists)
             if new_dist < final_dist:
@@ -81,9 +79,9 @@ class BiseClosestSelemWithDistanceAgg(BiseClosestSelemHandler):
 
         return final_dist, final_selem, final_operation
 
-    def __call__(self, chout: int, v1: float, v2: float) -> Tuple[float, np.ndarray, str]:
+    def __call__(self, chin: int, chout: int, v1: float, v2: float) -> Tuple[float, np.ndarray, str]:
         return self.find_closest_selem_and_operation_chan(
-            weights=self.bise_module._normalized_weights, bias=self.bise_module.bias, chout=chout, v1=v1, v2=v2
+            weights=self.bise_module._normalized_weights, bias=self.bise_module.bias, chin=chin, chout=chout, v1=v1, v2=v2
         )
 
 
@@ -151,32 +149,29 @@ class BiseClosestMinDistOnCst(BiseClosestSelemWithDistanceAgg):
         return (W ** 2).sum() - 1 / S.sum() * (W[S].sum()) ** 2
 
     def find_closest_selem_and_operation_chan(
-        self, weights, bias, chout=0, v1=0, v2=1
+        self, weights, bias, chin=0, chout=0, v1=0, v2=1
     ):
+        weights = weights[chout, chin]
+        bias = bias[chout, chin]
+
         final_dist_selem = np.infty
         final_dist_bias = np.infty
 
-        selems, dists = self.compute_selem_dist_for_operation_chan(
-            weights=weights, bias=bias, chout=chout, operation=None, v1=v1, v2=v2
+        selems, dists = self.compute_selem_dist_for_operation(
+            weights=weights, bias=bias, operation=None, v1=v1, v2=v2
         )
         new_selem, new_dist = self.distance_agg_fn(selems=selems, dists=dists)
         if new_dist < final_dist_selem:
             final_dist_selem = new_dist
             final_selem = new_selem
 
-        wsum = weights[chout].sum()
-        if -bias[chout] <= wsum / 2:
+        wsum = weights.sum()
+        if -bias <= wsum / 2:
             final_operation = "dilation"
         else:
             final_operation = "erosion"
 
-        final_dist_bias = (-bias[chout] - wsum).abs().cpu().detach().numpy()
-
-        # for operation in ['dilation', 'erosion']:
-        #     dist_bias = self.distance_fn_bias(normalized_weights=weights[chout], bias=bias, operation=operation, S=final_selem, v1=v1, v2=v2)
-        #     if dist_bias < final_dist_bias:
-        #         final_operation = operation
-
+        final_dist_bias = (-bias - wsum).abs().cpu().detach().numpy()
         final_dist = final_dist_selem + final_dist_bias
 
         return final_dist, final_selem, final_operation

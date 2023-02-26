@@ -188,26 +188,57 @@ class GrayToChannelDatasetBase(SelectIndexesDataset):
                 levelset_handler_mode=levelset_handler_mode, levelset_handler_args=levelset_handler_args,
             ), batch_size=batch_size, num_workers=num_workers, shuffle=shuffle, )
 
+    # @classmethod
+    # def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
+    #     all_train_idxs = list(range(min(n_inputs_train + n_inputs_val, 60_000)))
+    #     shuffle(all_train_idxs)
+
+    #     for key in ["indexes", "train", "shuffle"]:
+    #         if key in kwargs:
+    #             del kwargs[key]
+
+    #     train_idxes = all_train_idxs[:n_inputs_train]
+    #     val_idxes = all_train_idxs[n_inputs_train:n_inputs_train + n_inputs_val]
+
+    #     trainloader = cls.get_loader(indexes=train_idxes, train=True, shuffle=True, *args, **kwargs)
+    #     kwargs.update({
+    #         "levelset_handler_mode": LevelsetValuesManual,
+    #         "levelset_handler_args": {"values": trainloader.dataset.levelset_values},
+    #     })
+    #     valloader = cls.get_loader(indexes=val_idxes, train=True, shuffle=False, *args, **kwargs)
+    #     testloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
+    #     return trainloader, valloader, testloader
+
     @classmethod
-    def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
+    def get_train_val_test_loader_from_experiment(cls, experiment: "ExperimentBase") -> Tuple[DataLoader, DataLoader, DataLoader]:
+        args: Parser = experiment.args
+
+        n_inputs_train = args[f"n_inputs{args.trainset_args_suffix}"]
+        n_inputs_val = args[f"n_inputs{args.valset_args_suffix}"]
+        n_inputs_test = args[f"n_inputs{args.testset_args_suffix}"]
+
+        train_kwargs, val_kwargs, test_kwargs = cls.get_train_val_test_kwargs_pop_keys(
+            experiment, keys=["n_inputs", "indexes", "train", "shuffle", "first_idx"]
+        )
+
+
         all_train_idxs = list(range(min(n_inputs_train + n_inputs_val, 60_000)))
         shuffle(all_train_idxs)
-
-        for key in ["indexes", "train", "shuffle"]:
-            if key in kwargs:
-                del kwargs[key]
 
         train_idxes = all_train_idxs[:n_inputs_train]
         val_idxes = all_train_idxs[n_inputs_train:n_inputs_train + n_inputs_val]
 
-        trainloader = cls.get_loader(indexes=train_idxes, train=True, shuffle=True, *args, **kwargs)
-        kwargs.update({
-            "levelset_handler_mode": LevelsetValuesManual,
-            "levelset_handler_args": {"values": trainloader.dataset.levelset_values},
-        })
-        valloader = cls.get_loader(indexes=val_idxes, train=True, shuffle=False, *args, **kwargs)
-        testloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
+        trainloader = cls.get_loader(indexes=train_idxes, train=True, shuffle=True, **train_kwargs)
+        for kwargs in [val_kwargs, test_kwargs]:
+            kwargs.update({
+                "levelset_handler_mode": LevelsetValuesManual,
+                "levelset_handler_args": {"values": trainloader.dataset.levelset_values},
+            })
+        valloader = cls.get_loader(indexes=val_idxes, train=True, shuffle=False, **val_kwargs)
+        testloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False, **test_kwargs)
+
         return trainloader, valloader, testloader
+
 
     def from_channels_to_gray_numpy(self, img_channels: torch.Tensor) -> np.ndarray:
         return self.from_channels_to_gray(img_channels).numpy().transpose(1, 2, 0).astype(int)

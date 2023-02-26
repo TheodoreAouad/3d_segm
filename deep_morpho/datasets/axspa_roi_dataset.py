@@ -102,7 +102,7 @@ class AxspaROISimpleDataset(DataModule, Dataset):
 
 
     @classmethod
-    def get_loader(cls, data, batch_size, morp_operations=None, preprocessing=None, do_symetric_output=False, num_workers=0, 
+    def get_loader(cls, data, batch_size, morp_operations=None, preprocessing=None, do_symetric_output=False, num_workers=0,
             shuffle=False, **kwargs):
         return dataloader_resolution(
             df=data,
@@ -114,9 +114,38 @@ class AxspaROISimpleDataset(DataModule, Dataset):
             # **kwargs
         )
 
+    # @classmethod
+    # def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
+    #     data = pd.read_csv(kwargs['dataset_path'])
+    #     max_res = data['resolution'].value_counts(sort=True, ascending=False).index[0]
+    #     data = data[data['resolution'] == max_res]
+
+    #     data_train, data_val, data_test = train_val_test_split(
+    #         data,
+    #         train_size=n_inputs_train,
+    #         val_size=n_inputs_val,
+    #         test_size=n_inputs_test,
+    #     )
+
+    #     if "data" in kwargs:
+    #         kwargs.pop("data")
+
+    #     trainloader = cls.get_loader(data=data_train, shuffle=True, *args, **kwargs)
+    #     valloader = cls.get_loader(data=data_val, shuffle=False, *args, **kwargs)
+    #     testloader = cls.get_loader(data=data_test, shuffle=False, *args, **kwargs)
+    #     return trainloader, valloader, testloader
+
     @classmethod
-    def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
-        data = pd.read_csv(kwargs['dataset_path'])
+    def get_train_val_test_loader_from_experiment(cls, experiment: "ExperimentBase"):
+        args = experiment.args
+
+        n_inputs_train = args[f"n_inputs{args.trainset_args_suffix}"]
+        n_inputs_val = args[f"n_inputs{args.valset_args_suffix}"]
+        n_inputs_test = args[f"n_inputs{args.testset_args_suffix}"]
+
+        train_kwargs, val_kwargs, test_kwargs = cls.get_train_val_test_kwargs_pop_keys(experiment, keys=["data"])
+
+        data = pd.read_csv(args['dataset_path'])
         max_res = data['resolution'].value_counts(sort=True, ascending=False).index[0]
         data = data[data['resolution'] == max_res]
 
@@ -127,12 +156,10 @@ class AxspaROISimpleDataset(DataModule, Dataset):
             test_size=n_inputs_test,
         )
 
-        if "data" in kwargs:
-            kwargs.pop("data")
+        trainloader = cls.get_loader(data=data_train, shuffle=True, **train_kwargs)
+        valloader = cls.get_loader(data=data_val, shuffle=False, **val_kwargs)
+        testloader = cls.get_loader(data=data_test, shuffle=False, **test_kwargs)
 
-        trainloader = cls.get_loader(data=data_train, shuffle=True, *args, **kwargs)
-        valloader = cls.get_loader(data=data_val, shuffle=False, *args, **kwargs)
-        testloader = cls.get_loader(data=data_test, shuffle=False, *args, **kwargs)
         return trainloader, valloader, testloader
 
     def get_default_morp_operation(self, **kwargs):

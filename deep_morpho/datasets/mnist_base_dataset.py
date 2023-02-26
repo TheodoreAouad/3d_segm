@@ -10,6 +10,7 @@ from deep_morpho.morp_operations import ParallelMorpOperations
 # from deep_morpho.gray_scale import level_sets_from_gray, gray_from_level_sets
 from deep_morpho.tensor_with_attributes import TensorGray
 from .gray_dataset import GrayScaleDataset
+from .select_indexes_dataset import SelectIndexesDataset
 # from general.utils import set_borders_to
 from .datamodule_base import DataModule
 
@@ -19,7 +20,7 @@ def resize_image(img: np.ndarray, size: Tuple) -> np.ndarray:
     return np.array(Image.fromarray(img_int8).resize((size[1], size[0]), Image.Resampling.BICUBIC))
 
 
-class MnistBaseDataset(DataModule):
+class MnistBaseDataset(SelectIndexesDataset):
 
     def __init__(
         self,
@@ -27,30 +28,20 @@ class MnistBaseDataset(DataModule):
         threshold: float = 30,
         size=(50, 50),
         preprocessing=None,
-        indexes=None,
-        first_idx: int = 0,
-        n_inputs: int = "all",
+        # indexes=None,
+        # first_idx: int = 0,
+        # n_inputs: int = "all",
         invert_input_proba: bool = 0,
         do_symetric_output: bool = False,
         **kwargs,
     ) -> None:
+        super().__init__(**kwargs)
         self.morp_operation = morp_operation
         self.threshold = threshold
         self.preprocessing = preprocessing
         self.size = size
         self.invert_input_proba = invert_input_proba
         self.do_symetric_output = do_symetric_output
-
-        # if n_inputs != "all":
-        #     self.data = self.data[first_idx:n_inputs+first_idx]
-    
-        if n_inputs != "all":
-            if indexes is None:
-                n_inputs = min(n_inputs, len(self.data))
-                indexes = list(range(first_idx, first_idx + n_inputs))
-
-            self.data = self.data[indexes]
-            self.targets = self.targets[indexes]
 
 
     def __getitem__(self, index: int) -> Tuple[Any, Any]:

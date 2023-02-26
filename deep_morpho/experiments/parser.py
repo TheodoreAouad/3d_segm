@@ -132,6 +132,18 @@ class Parser(dict):
         return ".datamodule"
 
     @property
+    def trainset_args_suffix(self) -> str:
+        return ".train"
+
+    @property
+    def valset_args_suffix(self) -> str:
+        return ".val"
+
+    @property
+    def testset_args_suffix(self) -> str:
+        return ".test"
+
+    @property
     def model_args_suffix(self) -> str:
         return ".net"
 
@@ -150,6 +162,33 @@ class Parser(dict):
 
     def dataset_args(self) -> Dict:
         return {k[:-len(self.dataset_args_suffix)]: self[k] for k in self.dataset_keys()}
+
+    def trainset_args(self) -> Dict:
+        res = {}
+        for k in self.dataset_keys():
+            if f"{k[:-len(self.dataset_args_suffix)]}{self.trainset_args_suffix}" in self:
+                res[k[:-len(self.dataset_args_suffix)]] = self[f"{k[:-len(self.dataset_args_suffix)]}{self.trainset_args_suffix}"]
+            else:
+                res[k[:-len(self.dataset_args_suffix)]] = self[k]
+        return res
+
+    def valset_args(self) -> Dict:
+        res = {}
+        for k in self.dataset_keys():
+            if f"{k[:-len(self.dataset_args_suffix)]}{self.valset_args_suffix}" in self:
+                res[k[:-len(self.dataset_args_suffix)]] = self[f"{k[:-len(self.dataset_args_suffix)]}{self.valset_args_suffix}"]
+            else:
+                res[k[:-len(self.dataset_args_suffix)]] = self[k]
+        return res
+
+    def testset_args(self) -> Dict:
+        res = {}
+        for k in self.dataset_keys():
+            if f"{k[:-len(self.dataset_args_suffix)]}{self.testset_args_suffix}" in self:
+                res[k[:-len(self.dataset_args_suffix)]] = self[f"{k[:-len(self.dataset_args_suffix)]}{self.testset_args_suffix}"]
+            else:
+                res[k[:-len(self.dataset_args_suffix)]] = self[k]
+        return res
 
     def model_args(self) -> Dict:
         return {k[:-len(self.model_args_suffix)]: self[k] for k in self.model_keys()}

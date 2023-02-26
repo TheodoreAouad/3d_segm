@@ -14,6 +14,26 @@ from .binary_nn import BinaryNN
 from ..initializer import BiselInitIdentical, BiselInitializer, InitBiseHeuristicWeights, InitBiseEnum
 
 
+def invert_euclidian(x, div1, div2):
+    """x = mq + r
+    Returns rq + m
+    """
+    m = x // div1
+    r = x % div1
+    return div2 * r + m
+
+
+def recalibrate_input_lui(x, n_chin, n_chout):
+    """With the BiSe implementation of the group convolution, the input is recalibrated to be in the right order.
+    Example:
+       Given in channels (1, 2, 3), out_channels (1, 2), the group output channels are (1, 1, 2, 2, 3, 3). After
+       recalibration, the output channels are (1, 2, 3, 1, 2, 3), ready for the next group convolution.
+    """
+    index = invert_euclidian(torch.arange(n_chout*n_chin), n_chin, n_chout).to(x.device)
+    return torch.index_select(x, 1, index)
+
+
+
 class InitBiselEnum(Enum):
     DIFFERENT_INIT = 0
 
@@ -63,50 +83,63 @@ class BiSELBase(BinaryNN):
         return threshold_mode
 
     def _init_bises(self):
-        bises = []
+        # bises = []
         bise_initializer = self.initializer.get_bise_initializers(self)
-        for idx in range(self.in_channels):
-            layer = self.bise_module(
-                out_channels=self.out_channels, kernel_size=self.kernel_size,
-                threshold_mode=self.threshold_mode, initializer=bise_initializer,
-                **self.bise_kwargs
-            )
-            setattr(self, f'bise_{idx}', layer)
-            bises.append(layer)
+        bises = self.bise_module(
+            kernel_size=self.kernel_size, threshold_mode=self.threshold_mode, initializer=bise_initializer,
+            in_channels=self.in_channels, out_channels=self.out_channels * self.in_channels, groups=self.in_channels,
+            **self.bise_kwargs
+        )
+        # for idx in range(self.in_channels):
+        #     layer = self.bise_module(
+        #         out_channels=self.out_channels, kernel_size=self.kernel_size,
+        #         threshold_mode=self.threshold_mode, initializer=bise_initializer,
+        #         **self.bise_kwargs
+        #     )
+        #     setattr(self, f'bise_{idx}', layer)
+        #     bises.append(layer)
         return bises
 
     def _init_luis(self):
         luis = []
         lui_initializer = self.initializer.get_lui_initializers(self)
-        for idx in range(self.out_channels):
-            layer = self.lui_module(
-                in_channels=self.in_channels,
-                threshold_mode=self.threshold_mode,
-                out_channels=1,
-                # constant_activation_P=self.constant_P_lui,
-                # init_bias_value=self.init_bias_value_lui,
-                # input_mean=self.lui_input_mean,
-                # init_weight_mode=self.init_weight_mode,
-                initializer=lui_initializer,
-                **self.lui_kwargs
-            )
-            setattr(self, f'lui_{idx}', layer)
-            luis.append(layer)
+        # for idx in range(self.out_channels):
+        #     layer = self.lui_module(
+        #         in_channels=self.in_channels,
+        #         threshold_mode=self.threshold_mode,
+        #         out_channels=1,
+        #         # constant_activation_P=self.constant_P_lui,
+        #         # init_bias_value=self.init_bias_value_lui,
+        #         # input_mean=self.lui_input_mean,
+        #         # init_weight_mode=self.init_weight_mode,
+        #         initializer=lui_initializer,
+        #         **self.lui_kwargs
+        #     )
+        #     setattr(self, f'lui_{idx}', layer)
+        #     luis.append(layer)
+        luis = self.lui_module(
+            in_channels=self.in_channels * self.out_channels,
+            out_channels=self.out_channels,
+            threshold_mode=self.threshold_mode,
+            initializer=lui_initializer,
+            groups=self.out_channels,
+            **self.lui_kwargs,
+        )
         return luis
 
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        bise_res = torch.cat([
-            layer(x[:, chan_input:chan_input+1, ...])[:, None, ...] for chan_input, layer in enumerate(self.bises)
-        ], axis=1)  # bise_res shape: (batch_size, in_channels, out_channels, width, length)
-        # bise_res2 = torch.cat([
-        #     1-bise_res,
-        #     bise_res,
-        # ], axis=1)  # the chan_output does not change, so we have 2x chan_input
+        # bise_res = torch.cat([
+        #     layer(x[:, chan_input:chan_input+1, ...])[:, None, ...] for chan_input, layer in enumerate(self.bises)
+        # ], axis=1)  # bise_res shape: (batch_size, in_channels, out_channels, width, length)
 
-        lui_res = torch.cat([
-            layer(bise_res[:, :, chan_output, ...]) for chan_output, layer in enumerate(self.luis)
-        ], axis=1)
+        # lui_res = torch.cat([
+        #     layer(bise_res[:, :, chan_output, ...]) for chan_output, layer in enumerate(self.luis)
+        # ], axis=1)
+
+        bise_res = self.bises(x)
+        recalibrated = recalibrate_input_lui(bise_res, self.in_channels, self.out_channels)
+        lui_res = self.luis(recalibrated)
 
         return lui_res
 

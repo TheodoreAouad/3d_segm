@@ -72,3 +72,5 @@ def get_rect(width, height, angle):
     ar = np.asarray(img) + 0
 
     return ar
+
+

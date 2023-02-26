@@ -1,10 +1,11 @@
-from typing import Union, Optional, List, Callable
+from typing import Union, Optional, List, Callable, Tuple
 from random import shuffle
 
 import numpy as np
 from torch.utils.data.dataloader import DataLoader
 
 from .datamodule_base import DataModule
+from deep_morpho.experiments.parser import Parser
 
 
 class SelectIndexesDataset(DataModule):
@@ -34,10 +35,10 @@ class SelectIndexesDataset(DataModule):
     def get_loader(
         cls,
         batch_size,
-        train,
-        preprocessing: Callable = None,
-        indexes: List[int] = None,
-        first_idx: int = 0,
+        # train,
+        # preprocessing: Callable = None,
+        # indexes: List[int] = None,
+        # first_idx: int = 0,
         n_inputs: int = "all",
         num_workers: int = 0,
         shuffle: bool = False,
@@ -46,24 +47,28 @@ class SelectIndexesDataset(DataModule):
         if n_inputs == 0:
             return DataLoader([])
         return DataLoader(
-            cls(
-                n_inputs=n_inputs, first_idx=first_idx, indexes=indexes,
-                train=train, preprocessing=preprocessing, **kwargs
-            ), batch_size=batch_size, num_workers=num_workers, shuffle=shuffle, )
+            cls(n_inputs=n_inputs, **kwargs), batch_size=batch_size, num_workers=num_workers, shuffle=shuffle, )
 
     @classmethod
-    def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
+    def get_train_val_test_loader_from_experiment(cls, experiment: "ExperimentBase", ) -> Tuple[DataLoader, DataLoader, DataLoader]:
+        args: Parser = experiment.args
+
+        n_inputs_train = args[f"n_inputs{args.trainset_args_suffix}"]
+        n_inputs_val = args[f"n_inputs{args.valset_args_suffix}"]
+        n_inputs_test = args[f"n_inputs{args.testset_args_suffix}"]
+
+        train_kwargs, val_kwargs, test_kwargs = cls.get_train_val_test_kwargs_pop_keys(
+            experiment, keys=["n_inputs", "indexes", "train", "shuffle", "first_idx"]
+        )
+
         all_train_idxs = list(range(min(n_inputs_train + n_inputs_val, 60_000)))
         shuffle(all_train_idxs)
-
-        for key in ["indexes", "train", "shuffle"]:
-            if key in kwargs:
-                del kwargs[key]
 
         train_idxes = all_train_idxs[:n_inputs_train]
         val_idxes = all_train_idxs[n_inputs_train:n_inputs_train + n_inputs_val]
 
-        trainloader = cls.get_loader(indexes=train_idxes, train=True, shuffle=True, *args, **kwargs)
-        valloader = cls.get_loader(indexes=val_idxes, train=True, shuffle=False, *args, **kwargs)
-        testloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
+        trainloader = cls.get_loader(indexes=train_idxes, train=True, shuffle=True, **train_kwargs)
+        valloader = cls.get_loader(indexes=val_idxes, train=True, shuffle=False, **val_kwargs)
+        testloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False, **test_kwargs)
+
         return trainloader, valloader, testloader

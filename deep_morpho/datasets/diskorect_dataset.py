@@ -87,16 +87,20 @@ class DiskorectDataset(DataModule, Dataset):
             batch_size=batch_size, num_workers=num_workers,
         )
 
+    # @classmethod
+    # def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
+    #     if "n_inputs" in kwargs:
+    #         del kwargs["n_inputs"]
+
+    #     train_loader = cls.get_loader(n_inputs=n_inputs_train, *args, **kwargs)
+    #     val_loader = cls.get_loader(n_inputs=n_inputs_val, *args, **kwargs)
+    #     test_loader = cls.get_loader(n_inputs=n_inputs_test, *args, **kwargs)
+
+    #     return train_loader, val_loader, test_loader
+
     @classmethod
-    def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
-        if "n_inputs" in kwargs:
-            del kwargs["n_inputs"]
-
-        train_loader = cls.get_loader(n_inputs=n_inputs_train, *args, **kwargs)
-        val_loader = cls.get_loader(n_inputs=n_inputs_val, *args, **kwargs)
-        test_loader = cls.get_loader(n_inputs=n_inputs_test, *args, **kwargs)
-
-        return train_loader, val_loader, test_loader
+    def get_train_val_test_loader_from_experiment(cls, experiment: "ExperimentBase") -> Tuple[DataLoader, DataLoader, DataLoader]:
+        
 
 
 class MultiRectDataset(Dataset):

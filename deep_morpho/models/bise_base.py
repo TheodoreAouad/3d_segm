@@ -28,7 +28,6 @@ from general.utils import set_borders_to
 #     DISTANCE_BETWEEN_BOUNDS = 2
 #     DISTANCE_TO_AND_BETWEEN_BOUNDS = 3
 
-
 class BiseBiasOptimEnum(Enum):
     RAW = 0     # no transformation to bias
     POSITIVE = 1    # only softplus applied
@@ -43,8 +42,7 @@ class BiseWeightsOptimEnum(Enum):
     ELLIPSE_ROOT = 3
 
 
-conv_kwargs = {"in_channels", "out_channels", "kernel_size", "stride", "padding", "dilation", "groups", "bias",
-    "padding_mode", "device", "dtype"}
+conv_kwargs = {"stride", "dilation", "groups", "device", "dtype"}
 
 
 class BiSEBase(BinaryNN):
@@ -95,7 +93,6 @@ class BiSEBase(BinaryNN):
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=self.kernel_size,
-            # padding="same",
             padding=self.padding,
             padding_mode=self.padding_mode,
             bias=False,
@@ -113,14 +110,12 @@ class BiSEBase(BinaryNN):
         self.initializer.initialize(self)
 
         self._closest_selem = np.zeros((out_channels, in_channels, *self.kernel_size)).astype(bool)
-        self._closest_operation = np.zeros((out_channels))
-        self._closest_selem_dist = np.zeros((out_channels))
+        self._closest_operation = np.zeros((out_channels, in_channels))
+        self._closest_selem_dist = np.zeros((out_channels, in_channels))
 
         self._learned_selem = np.zeros((out_channels, in_channels, *self.kernel_size)).astype(bool)
-        self._learned_operation = np.zeros((out_channels))
-        self._is_activated = np.zeros((out_channels)).astype(bool)
-
-        # self.update_binary_selems()
+        self._learned_operation = np.zeros((out_channels, in_channels))
+        self._is_activated = np.zeros((out_channels, in_channels)).astype(bool)
 
     def _specific_numel_binary(self):
         return self._normalized_weight.numel() + self.bias.numel() + self.activation_P.numel()
@@ -184,13 +179,14 @@ class BiSEBase(BinaryNN):
         self.update_learned_selems()
 
     def update_learned_selems(self):
-        for chan in range(self.out_channels):
-            self.find_selem_and_operation_chan(chan)
+        for chin in range(self.in_channels):
+            for chout in range(self.out_channels):
+                self.find_selem_and_operation_chan(chin=chin, chout=chout)
 
     def binary(self, mode: bool = True, update_binaries: bool = True, *args, **kwargs):
         if mode and update_binaries:
             self.update_binary_selems()
-        return super().binary(mode,  *args, **kwargs)
+        return super().binary(mode, *args, **kwargs)
 
     # TODO: move to BiSE class
     @staticmethod
@@ -302,7 +298,7 @@ class BiSEBase(BinaryNN):
         W = normalized_weights.cpu().detach().numpy()
         return W[(~S) & (W > 0)].sum() + v1 * W[S & (W > 0)].sum(), v2 * W[S].min() + W[W < 0].sum()
 
-    def find_selem_for_operation_chan(self, operation: str, chout: int = 0, v1: float = 0, v2: float = 1):
+    def find_selem_for_operation_chan(self, operation: str, chin: int = 0, chout: int = 0, v1: float = 0, v2: float = 1):
         """
         We find the selem for either a dilation or an erosion. In theory, there is at most one selem that works.
         We verify this theory.
@@ -316,8 +312,8 @@ class BiSEBase(BinaryNN):
             np.ndarray if a selem is found
             None if none is found
         """
-        weights = self._normalized_weight[chout]
-        bias = self.bias[chout]
+        weights = self._normalized_weight[chout, chin]
+        bias = self.bias[chout, chin]
         is_op_fn = {'dilation': self.is_dilation_by, 'erosion': self.is_erosion_by}[operation]
         born = {'dilation': -bias / v2, "erosion": (weights.sum() + bias) / (1 - v1)}[operation]
 
@@ -329,7 +325,7 @@ class BiSEBase(BinaryNN):
             return selem
         return None
 
-    def find_closest_selem_and_operation_chan(self, chout: int = 0, v1: float = 0, v2: float = 1) -> Tuple[np.ndarray, str, float]:
+    def find_closest_selem_and_operation_chan(self, chin: int = 0, chout: int = 0, v1: float = 0, v2: float = 1) -> Tuple[np.ndarray, str, float]:
         """Find the closest selem and the operation given the almost binary features.
 
         Args:
@@ -339,14 +335,14 @@ class BiSEBase(BinaryNN):
         Returns:
             (np.ndarray, str, float): if the selem is found, returns the selem and the operation
         """
-        final_dist, final_selem, final_operation = self.closest_selem_handler(chout=chout, v1=v1, v2=v2)
+        final_dist, final_selem, final_operation = self.closest_selem_handler(chin=chin, chout=chout, v1=v1, v2=v2)
 
-        self._closest_selem[chout] = final_selem.astype(bool)
-        self._closest_operation[chout] = self.operation_code[final_operation]
-        self._closest_selem_dist[chout] = final_dist
+        self._closest_selem[chout, chin] = final_selem.astype(bool)
+        self._closest_operation[chout, chin] = self.operation_code[final_operation]
+        self._closest_selem_dist[chout, chin] = final_dist
         return final_selem, final_operation, final_dist
 
-    def find_selem_and_operation_chan(self, chout: int = 0, v1: float = 0, v2: float = 1):
+    def find_selem_and_operation_chan(self, chin: int = 0, chout: int = 0, v1: float = 0, v2: float = 1):
         """Find the selem and the operation given the almost binary features.
 
         Args:
@@ -358,16 +354,16 @@ class BiSEBase(BinaryNN):
             (None, None): if nothing is found, returns None
         """
         for operation in ['dilation', 'erosion']:
-            selem = self.find_selem_for_operation_chan(chout=chout, operation=operation, v1=v1, v2=v2)
+            selem = self.find_selem_for_operation_chan(chin=chin, chout=chout, operation=operation, v1=v1, v2=v2)
             if selem is not None:
-                self._learned_selem[chout] = selem.astype(bool)
-                self._learned_operation[chout] = self.operation_code[operation]  # str array has 1 character
-                self._is_activated[chout] = True
+                self._learned_selem[chout, chin] = selem.astype(bool)
+                self._learned_operation[chout, chin] = self.operation_code[operation]  # str array has 1 character
+                self._is_activated[chout, chin] = True
                 return selem, operation
 
-        self._is_activated[chout] = False
-        self._learned_selem[chout] = None
-        self._learned_operation[chout] = None
+        self._is_activated[chout, chin] = False
+        self._learned_selem[chout, chin] = None
+        self._learned_operation[chout, chin] = None
 
         return None, None
 
