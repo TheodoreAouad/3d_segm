@@ -1,3 +1,4 @@
+from typing import Tuple
 import os
 from os.path import join
 import re
@@ -100,7 +101,21 @@ class DiskorectDataset(DataModule, Dataset):
 
     @classmethod
     def get_train_val_test_loader_from_experiment(cls, experiment: "ExperimentBase") -> Tuple[DataLoader, DataLoader, DataLoader]:
-        
+        args = experiment.args
+
+        n_inputs_train = args[f"n_inputs{args.trainset_args_suffix}"]
+        n_inputs_val = args[f"n_inputs{args.valset_args_suffix}"]
+        n_inputs_test = args[f"n_inputs{args.testset_args_suffix}"]
+
+        train_kwargs, val_kwargs, test_kwargs = cls.get_train_val_test_kwargs_pop_keys(
+            experiment, keys=["n_inputs"]
+        )
+
+        train_loader = cls.get_loader(n_inputs=n_inputs_train, **train_kwargs)
+        val_loader = cls.get_loader(n_inputs=n_inputs_val, **val_kwargs)
+        test_loader = cls.get_loader(n_inputs=n_inputs_test, **test_kwargs)
+
+        return train_loader, val_loader, test_loader
 
 
 class MultiRectDataset(Dataset):

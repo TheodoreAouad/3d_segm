@@ -5,7 +5,7 @@ import numpy as np
 from torch.utils.data.dataloader import DataLoader
 
 from .datamodule_base import DataModule
-from deep_morpho.experiments.parser import Parser
+# from deep_morpho.experiments.parser import Parser
 
 
 class SelectIndexesDataset(DataModule):
@@ -51,7 +51,7 @@ class SelectIndexesDataset(DataModule):
 
     @classmethod
     def get_train_val_test_loader_from_experiment(cls, experiment: "ExperimentBase", ) -> Tuple[DataLoader, DataLoader, DataLoader]:
-        args: Parser = experiment.args
+        args: "Parser" = experiment.args
 
         n_inputs_train = args[f"n_inputs{args.trainset_args_suffix}"]
         n_inputs_val = args[f"n_inputs{args.valset_args_suffix}"]
@@ -67,8 +67,8 @@ class SelectIndexesDataset(DataModule):
         train_idxes = all_train_idxs[:n_inputs_train]
         val_idxes = all_train_idxs[n_inputs_train:n_inputs_train + n_inputs_val]
 
-        trainloader = cls.get_loader(indexes=train_idxes, train=True, shuffle=True, **train_kwargs)
-        valloader = cls.get_loader(indexes=val_idxes, train=True, shuffle=False, **val_kwargs)
-        testloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False, **test_kwargs)
+        trainloader = cls.get_loader(indexes=train_idxes, train=True, shuffle=True, batch_size=args["batch_size"], num_workers=args["num_workers"], **train_kwargs)
+        valloader = cls.get_loader(indexes=val_idxes, train=True, shuffle=False, batch_size=args["batch_size"], num_workers=args["num_workers"], **val_kwargs)
+        testloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False, batch_size=args["batch_size"], num_workers=args["num_workers"], **test_kwargs)
 
         return trainloader, valloader, testloader

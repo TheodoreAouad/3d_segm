@@ -2,6 +2,7 @@ import warnings
 import numpy as np
 import torch.optim as optim
 import torch.nn as nn
+import torchvision.transforms as transforms
 import os
 
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
@@ -49,7 +50,7 @@ all_args['n_try'] = [0]
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
     # "tests",
-    "Bimonn_exp_77/sandbox/"
+    "Bimonn_exp_77/sandbox1/"
 ]
 
 
@@ -76,9 +77,22 @@ all_args['dataset'] = [
 all_args['preprocessing'] = [  # for axspa roi
     None,
 ]
-all_args['transforms'] = [
-    transform_default,
+all_args['transform.train'] = [
+    transforms.Compose([
+        transforms.RandomRotation(degrees=10),
+        transform_default,
+    ])
 ]
+
+# degrees = 20
+# all_args['transform.val'] = [
+#     transform_default
+# ]
+# all_args['transform.test'] = [
+#     transform_default
+# ]
+
+
 all_args['dataset_path'] = [
     # 'data/deep_morpho/dataset_0',
     "data/deep_morpho/axspa_roi/axspa_roi.csv"
@@ -241,15 +255,15 @@ all_args['n_atoms'] = [
 ]
 
 all_args['kernel_size'] = [
-    7
-    # 5
+    # 7
+    5
     # 7
     # "adapt",
 ]
 all_args['channels'] = [
     # 'adapt',
     # [1, 1]
-    [100, 100, 100]
+    [100, 100, 100, 100]
     # [1, 100,],
     # [1, 100, ],
     # [50, 100, ],
