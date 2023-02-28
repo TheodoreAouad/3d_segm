@@ -71,7 +71,7 @@ class TestBiSE:
         weight = disk(3)
         layer.set_weights_param(torch.FloatTensor(100*(weight - 0.5))[None, None, ...])
         layer.set_bias(-torch.FloatTensor([weight.sum() - 1/2]))
-        assert layer.is_erosion_by(layer._normalized_weight[0, 0], layer.bias, weight, v1=0.003, v2=0.997)
+        assert layer.is_erosion_by(layer.weight[0, 0], layer.bias, weight, v1=0.003, v2=0.997)
 
     @staticmethod
     def test_bise_dilation_check():
@@ -79,31 +79,31 @@ class TestBiSE:
         weight = disk(3)
         layer.set_weights_param(torch.FloatTensor(10*(weight - 0.5))[None, None, ...])
         layer.set_bias(-torch.FloatTensor([1/2]))
-        assert layer.is_dilation_by(layer._normalized_weight[0, 0], layer.bias, weight, v1=0.003, v2=0.997)
+        assert layer.is_dilation_by(layer.weight[0, 0], layer.bias, weight, v1=0.003, v2=0.997)
 
     @staticmethod
     def test_bise_erosion_init():
         weight = disk(3)
         layer = BiSE.bise_from_selem(weight, 'erosion')
-        assert layer.is_erosion_by(layer._normalized_weight[0, 0], layer.bias, weight)
+        assert layer.is_erosion_by(layer.weight[0, 0], layer.bias, weight)
 
     @staticmethod
     def test_bise_dilation_init():
         weight = disk(3)
         layer = BiSE.bise_from_selem(weight, 'dilation')
-        assert layer.is_dilation_by(layer._normalized_weight[0, 0], layer.bias, weight)
+        assert layer.is_dilation_by(layer.weight[0, 0], layer.bias, weight)
 
     @staticmethod
     def test_bise_conv_erosion_init():
         weight = disk(3)
         layer = BiSE.bise_from_selem(weight, 'erosion', threshold_mode="identity")
-        assert layer.is_erosion_by(layer._normalized_weight[0, 0], layer.bias, weight)
+        assert layer.is_erosion_by(layer.weight[0, 0], layer.bias, weight)
 
     @staticmethod
     def test_bise_conv_dilation_init():
         weight = disk(3)
         layer = BiSE.bise_from_selem(weight, 'dilation', threshold_mode="identity")
-        assert layer.is_dilation_by(layer._normalized_weight[0, 0], layer.bias, weight)
+        assert layer.is_dilation_by(layer.weight[0, 0], layer.bias, weight)
 
 
     @staticmethod
@@ -230,7 +230,7 @@ class TestBiSE:
         model.cuda()
         assert model.weights_handler.param.is_cuda
         assert model.weights_handler.sigma_inv.is_cuda
-        assert model._normalized_weight.is_cuda
+        assert model.weight.is_cuda
 
 
 class TestBiseProperties:
@@ -297,7 +297,7 @@ class TestBiseProperties:
 
         otp1 = model(1 - x)
 
-        model.set_bias(-(model._normalized_weight.sum() + model.bias))
+        model.set_bias(-(model.weight.sum() + model.bias))
 
         otp2 = model(x)
 

@@ -16,7 +16,7 @@ class ThresholdPenalization:
     def __call__(self):
         loss = 0
         for dilation in self.bise_layers:
-            sum_weights = (dilation._normalized_weight > .5).sum()
+            sum_weights = (dilation.weight > .5).sum()
             if self.detach_weights:
                 sum_weights = sum_weights.detach()
             loss += self.coef * self.loss_fn(dilation.bias, 1 - self.epsilon, sum_weights - self.epsilon)

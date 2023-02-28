@@ -30,6 +30,7 @@ def default_load_observables_fn(experiment: "ExperimentBase", ) -> Tuple:
         # obs.CountInputs(freq=args['freq_scalars']),
 
         metric_float_obs,
+        obs.PlotPredsDefault(freq_batch={"train": np.infty, "val": np.infty, "test": np.infty}),
         # "InputAsPredMetric": obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
         # obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': 10000 // args['batch_size']}),
         # obs.PlotPreds(

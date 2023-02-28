@@ -23,11 +23,11 @@ def invert_euclidian(x, div1, div2):
     return div2 * r + m
 
 
-def recalibrate_input_lui(x, n_chin, n_chout):
+def regroup_input_lui(x, n_chin, n_chout):
     """With the BiSe implementation of the group convolution, the input is recalibrated to be in the right order.
     Example:
        Given in channels (1, 2, 3), out_channels (1, 2), the group output channels are (1, 1, 2, 2, 3, 3). After
-       recalibration, the output channels are (1, 2, 3, 1, 2, 3), ready for the next group convolution.
+       regrouping, the output channels are (1, 2, 3, 1, 2, 3), ready for the next group convolution.
     """
     index = invert_euclidian(torch.arange(n_chout*n_chin), n_chin, n_chout).to(x.device)
     return torch.index_select(x, 1, index)
@@ -138,7 +138,7 @@ class BiSELBase(BinaryNN):
         # ], axis=1)
 
         bise_res = self.bises(x)
-        recalibrated = recalibrate_input_lui(bise_res, self.in_channels, self.out_channels)
+        recalibrated = regroup_input_lui(bise_res, self.in_channels, self.out_channels)
         lui_res = self.luis(recalibrated)
 
         return lui_res
@@ -146,31 +146,94 @@ class BiSELBase(BinaryNN):
     def forward_save(self, x):
         output = {}
 
-        bise_res2 = torch.cat([
-            layer(x[:, chan_input:chan_input+1, ...])[:, None, ...] for chan_input, layer in enumerate(self.bises)
-        ], axis=1)
-        lui_res = torch.cat([
-            layer(bise_res2[:, :, chan_output, ...]) for chan_output, layer in enumerate(self.luis)
-        ], axis=1)
+        # bise_res2 = torch.cat([
+        #     layer(x[:, chan_input:chan_input+1, ...])[:, None, ...] for chan_input, layer in enumerate(self.bises)
+        # ], axis=1)
+        # lui_res = torch.cat([
+        #     layer(bise_res2[:, :, chan_output, ...]) for chan_output, layer in enumerate(self.luis)
+        # ], axis=1)
 
-        for chan_output in range(len(self.luis)):
-            output[chan_output] = lui_res[:, chan_output, ...]
-            for chan_input in range(len(self.bises)):
-                output[chan_input, chan_output] = bise_res2[:, chan_input, chan_output, ...]
+        bise_res = self.bises(x)
+        recalibrated = regroup_input_lui(bise_res, self.in_channels, self.out_channels)
+        lui_res = self.luis(recalibrated)
+
+        for chout in range(self.out_channels):
+            output[chout] = lui_res[:, chout, ...]
+            for chin in range(self.in_channels):
+                output[chin, chout] = bise_res[:, self.convert_chin_chout_bise_chan(chin, chout), ...]
 
         output['output'] = lui_res
 
         return output
 
+    def convert_chin_chout_bise_chan(self, chin: int, chout: int):
+        return chin * self.bises.groups + chout
+
+    def get_weight_bise(self, chin: int, chout: int):
+        return self.bises.weight[self.convert_chin_chout_bise_chan(chin, chout), 0, ...]
+
+    def get_weight_param_bise(self, chin: int, chout: int):
+        return self.bises.weight_param[self.convert_chin_chout_bise_chan(chin, chout), 0, ...]
+
+    def get_weight_grad_bise(self, chin: int, chout: int):
+        grad_weights = self.bises.weight.grad
+        if grad_weights is None:
+            return None
+        return grad_weights[self.convert_chin_chout_bise_chan(chin, chout), 0, ...]
+
+    def get_bias_grad_bise(self, chin: int, chout: int):
+        grad_biases = self.bises.bias.grad
+        if grad_biases is None:
+            return None
+        return grad_biases[self.convert_chin_chout_bise_chan(chin, chout)]
+
+    def get_bias_grad_lui(self, chin: int, chout: int):
+        grad_biases = self.luis.bias.grad
+        if grad_biases is None:
+            return None
+        return grad_biases[chout, chin]
+
     @property
     def weight(self) -> torch.Tensor:
         """ Returns the convolution weights, of shape (out_channels, in_channels, W, L).
         """
-        return torch.cat([layer.weight for layer in self.bises], axis=1)
+        # return torch.cat([layer.weight for layer in self.bises], axis=1)
+        return torch.stack([
+            torch.stack(
+                [self.get_weight_bise(chin, chout) for chin in range(self.in_channels)]
+            ) for chout in range(self.out_channels)
+        ])
+
+    def get_bias_bise(self, chin: int, chout: int):
+        return self.bises.bias[self.convert_chin_chout_bise_chan(chin, chout)]
+
+    @property
+    def bias_bise(self) -> torch.Tensor:
+        """ Returns the convolution biases, of shape (out_channels, in_channels).
+        """
+        return torch.stack([
+            torch.stack(
+                [self.get_bias_bise(chin, chout) for chin in range(self.in_channels)]
+            ) for chout in range(self.out_channels)
+        ])
 
     @property
     def weights(self) -> torch.Tensor:
         return self.weight
+
+    def get_weight_lui(self, chin: int, chout: int):
+        return self.luis.weight[chout, chin, ...]
+
+    def get_coef_lui(self, chin: int, chout: int):
+        return self.luis.coefs[chout, chin, ...]
+
+    @property
+    def coef(self):
+        return self.luis.coefs
+
+    @property
+    def bias_lui(self):
+        return self.luis.bias
 
     @property
     def activation_P_bise(self) -> torch.Tensor:
@@ -192,21 +255,21 @@ class BiSELBase(BinaryNN):
         return torch.cat([layer.activation_P for layer in self.luis])
 
 
-    @property
-    def bias_bise(self) -> torch.Tensor:
-        """ Returns the bias of the bise layers, of shape (out_channels, in_channels).
-        """
-        return torch.stack([layer.bias for layer in self.bises], axis=-1)
+    # @property
+    # def bias_bise(self) -> torch.Tensor:
+    #     """ Returns the bias of the bise layers, of shape (out_channels, in_channels).
+    #     """
+    #     return torch.stack([layer.bias for layer in self.bises], axis=-1)
 
     @property
     def bias_bises(self) -> torch.Tensor:
         return self.bias_bise
 
-    @property
-    def bias_lui(self) -> torch.Tensor:
-        """Returns the bias of the lui layer, of shape (out_channels).
-        """
-        return torch.cat([layer.bias for layer in self.luis])
+    # @property
+    # def bias_lui(self) -> torch.Tensor:
+    #     """Returns the bias of the lui layer, of shape (out_channels).
+    #     """
+    #     return torch.cat([layer.bias for layer in self.luis])
 
     @property
     def bias_luis(self) -> torch.Tensor:
@@ -267,24 +330,6 @@ class BiSELBase(BinaryNN):
     @property
     def learned_operation_lui(self) -> np.ndarray:
         return np.stack([layer.learned_operation for layer in self.luis], axis=-1)
-
-    @property
-    def normalized_weight(self) -> torch.Tensor:
-        """ Returns the convolution weights, of shape (out_channels, in_channels, W, L).
-        """
-        return torch.cat([layer._normalized_weight for layer in self.bises], axis=1)
-
-    @property
-    def normalized_weights(self) -> torch.Tensor:
-        return self.normalized_weight
-
-    @property
-    def _normalized_weight(self) -> torch.Tensor:
-        return self.normalized_weight
-
-    @property
-    def _normalized_weights(self) -> torch.Tensor:
-        return self.normalized_weights
 
     @property
     def coefs(self) -> torch.Tensor:

@@ -27,11 +27,6 @@ class PlotWeights(ObservableLayers):
         layer: "nn.Module",
         layer_idx: int,
     ):
-        # if isinstance(layer, (BiSE, COBiSE, BiSEC, COBiSEC)):
-        #     trainer.logger.experiment.add_figure(f"weights/Normalized_{layer_idx}", self.get_figure_normalized_weights(
-        #         layer._normalized_weight, layer.bias, layer.activation_P), trainer.global_step)
-        # trainer.logger.experiment.add_figure(f"weights/Raw_{layer_idx}", self.get_figure_weights(layer.weight), trainer.global_step)
-
         weights = layer.weight
         trainer.logger.experiment.add_figure(
             f"weights/layer_{layer_idx}",

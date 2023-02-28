@@ -13,6 +13,108 @@ from deep_morpho.datasets import GrayToChannelDatasetBase
 from general.nn.observables import Observable
 
 
+class PlotPredsDefault(Observable):
+
+    def __init__(
+        self,
+        freq_batch: Dict = {"train": 100, "val": 10, "test": 10},
+        figsize_atom=(4, 4),
+        n_imgs=10,
+        *args,
+        **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+        self.freq_batch = freq_batch
+        self.batch_idx = {"train": 0, "val": 0, "test": 0}
+        self.saved_fig = {"train": None, "val": None}
+        self.figsize_atom = figsize_atom
+        self.n_imgs = n_imgs
+
+    def on_validation_batch_end_with_preds(
+        self,
+        trainer: pl.Trainer,
+        pl_module: pl.LightningModule,
+        outputs: STEP_OUTPUT,
+        batch: Any,
+        batch_idx: int,
+        preds: Any
+    ) -> None:
+        if self.freq_batch["val"] is not None and self.batch_idx["val"] % self.freq_batch["val"] == 0:
+            self.plot_pred_state(
+                trainer=trainer, pl_module=pl_module, batch=batch, preds=preds, state="batch_val",
+                title=f'val | epoch {trainer.current_epoch}', step=self.batch_idx["val"])
+        self.batch_idx["val"] += 1
+
+    def on_train_batch_end_with_preds(
+        self,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: 'STEP_OUTPUT',
+        batch: 'Any',
+        batch_idx: int,
+        preds: 'Any',
+    ) -> None:
+        if self.freq_batch["train"] is not None and self.batch_idx["train"] % self.freq_batch["train"] == 0:
+            self.plot_pred_state(trainer=trainer, pl_module=pl_module, batch=batch, preds=preds, state="batch_train", title="train",
+                step=trainer.global_step)
+        self.batch_idx["train"] += 1
+
+    def on_test_batch_end_with_preds(
+        self,
+        trainer: 'pl.Trainer',
+        pl_module: 'pl.LightningModule',
+        outputs: 'STEP_OUTPUT',
+        batch: 'Any',
+        batch_idx: int,
+        preds: 'Any',
+    ) -> None:
+        if self.freq_batch["test"] is not None and self.batch_idx["test"] % self.freq_batch["test"] == 0:
+            self.plot_pred_state(trainer=trainer, pl_module=pl_module, batch=batch, preds=preds, state="batch_test", title="test",
+                step=self.batch_idx["test"])
+        self.batch_idx["test"] += 1
+
+    def plot_pred_state(self, trainer, pl_module, batch, preds, state, title, step):
+        with torch.no_grad():
+            imgs = [k.cpu().detach().numpy().transpose(1, 2, 0) for k in batch[0]]
+            fig = self.plot_pred(
+                imgs,
+                *[k.cpu().detach().numpy() for k in [preds, batch[1]]],
+                figsize_atom=self.figsize_atom,
+                n_imgs=self.n_imgs,
+                title=title,
+            )
+            trainer.logger.experiment.add_figure(f"preds/{state}/input_pred_target", fig, step)
+            self.saved_fig[state] = fig
+
+
+    @staticmethod
+    def plot_pred(imgs, preds, targets, figsize_atom, n_imgs, title='',):
+        n_imgs = min(n_imgs, len(imgs))
+        W, L = figsize_atom
+        fig, axs = plt.subplots(n_imgs, 1, figsize=(W, L * n_imgs))
+
+        for ax_idx in range(n_imgs):
+            img = imgs[ax_idx]
+            img = (img - img.min()) / (img.max() - img.min())
+            axs[ax_idx].imshow(img)
+
+        fig.suptitle(title)
+
+        return fig
+
+    def save(self, save_path: str):
+        for state in ['train', 'val']:
+            if self.saved_fig[state] is not None:
+                final_dir = join(save_path, self.__class__.__name__)
+                pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
+                self.saved_fig[state].savefig(join(final_dir, f"input_pred_target_{state}.png"))
+                plt.close(self.saved_fig[state])
+
+        return self.saved_fig
+
+
+
+
 class PlotPreds(Observable):
 
     def __init__(self, freq: Dict = {"train": 100, "val": 10}, fig_kwargs={}, *args, **kwargs):

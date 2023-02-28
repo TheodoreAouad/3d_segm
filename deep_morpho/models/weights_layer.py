@@ -94,9 +94,9 @@ class WeightsNormalizedBiSE(WeightsThresholdedBise):
         self.factor = factor
 
     def from_param_to_weights(self, param: torch.Tensor) -> torch.Tensor:
-        normalized_weights = super().from_param_to_weights(param)
-        # return self.factor * normalized_weights / normalized_weights.sum()
-        return self.factor * normalized_weights / normalized_weights.sum((1, 2, 3)).view(-1, 1, 1, 1)
+        weights = super().from_param_to_weights(param)
+        # return self.factor * weights / weights.sum()
+        return self.factor * weights / weights.sum((1, 2, 3)).view(-1, 1, 1, 1)
 
 
 class WeightsRaw(WeightsThresholdedBise):
@@ -105,6 +105,7 @@ class WeightsRaw(WeightsThresholdedBise):
         super().__init__(threshold_mode='identity', *args, **kwargs)
 
 
+# DEPRECATED
 class WeightsEllipse(WeightsBise):
     def init_param(self, *args, **kwargs) -> torch.Tensor:
         return nn.Parameter(torch.FloatTensor(size=(

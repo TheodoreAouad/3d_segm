@@ -56,3 +56,75 @@ class ConvNetLastLinear(BinaryNN):
         x = self.linear_layers(x)
 
         return x
+
+
+
+class ConvNetBinaryConnectCifar10(BinaryNN):
+    """ Conv Net used to train on CIFAR 10 in the paper Binary Connect
+    https://proceedings.neurips.cc/paper/2015/file/3e15cc11f979ed25912dff5b0669f2cd-Paper.pdf
+    Note: we do not use the SVM last layer, and we do not use the batch norm.
+    """
+    def __init__(
+        self,
+        input_size: Tuple[int, int, int],
+        n_classes: int,
+        activation_constructor: Callable = nn.ReLU,
+    ):
+        super().__init__()
+        self.input_size = input_size
+        self.n_classes = n_classes
+
+        alpha = .1
+        epsilon = 1e-4
+
+        self.conv_block1 = nn.Sequential(
+            nn.Conv2d(in_channels=input_size[0], out_channels=128, kernel_size=3, padding="same"),
+            nn.BatchNorm2d(128, eps=epsilon, momentum=alpha),
+            activation_constructor(),
+            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding="same"),
+            nn.MaxPool2d(2),
+            nn.BatchNorm2d(128, eps=epsilon, momentum=alpha),
+            activation_constructor(),
+        )
+
+        self.conv_block2 = nn.Sequential(
+            nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding="same"),
+            nn.BatchNorm2d(256, eps=epsilon, momentum=alpha),
+            activation_constructor(),
+            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, padding="same"),
+            nn.MaxPool2d(2),
+            nn.BatchNorm2d(256, eps=epsilon, momentum=alpha),
+            activation_constructor(),
+        )
+
+        self.conv_block3 = nn.Sequential(
+            nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, padding="same"),
+            nn.BatchNorm2d(512, eps=epsilon, momentum=alpha),
+            activation_constructor(),
+            nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, padding="same"),
+            nn.MaxPool2d(2),
+            nn.BatchNorm2d(512, eps=epsilon, momentum=alpha),
+            activation_constructor(),
+        )
+
+        self.flatten = nn.Flatten()
+
+        self.linear_block = nn.Sequential(
+            nn.Linear(in_features=512 * input_size[1] // (2 ** 3) * input_size[2] // (2 ** 3), out_features=1024),
+            nn.BatchNorm1d(1024, eps=epsilon, momentum=alpha),
+            activation_constructor(),
+            nn.Linear(in_features=1024, out_features=1024),
+            nn.BatchNorm1d(1024, eps=epsilon, momentum=alpha),
+            activation_constructor(),
+            nn.Linear(in_features=1024, out_features=n_classes),
+            nn.BatchNorm1d(n_classes, eps=epsilon, momentum=alpha),
+        )
+
+    def forward(self, x: torch.Tensor, *args, **kwargs) -> torch.Tensor:
+        x = self.conv_block1(x)
+        x = self.conv_block2(x)
+        x = self.conv_block3(x)
+        x = self.flatten(x)
+        x = self.linear_block(x)
+
+        return x

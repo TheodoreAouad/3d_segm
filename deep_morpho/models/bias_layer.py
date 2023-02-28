@@ -42,7 +42,7 @@ class BiasBise(nn.Module, ExperimentMethods):
 
     @property
     def shape(self):
-        return (self.bise_module.out_channels, self.bise_module.in_channels)
+        return (self.conv.weight.shape[0], )
 
     def init_param(self, *args, **kwargs) -> torch.Tensor:
         return nn.Parameter(torch.FloatTensor(size=self.shape))
@@ -93,7 +93,7 @@ class BiasBiseSoftplusReparametrized(BiasSoftplus):
         these bounds, then it is nonsense.
         The bounds are computed to avoid having always a negative convolution output or a positive convolution output.
         """
-        weights_aligned = self.bise_module._normalized_weight.reshape(self.bise_module._normalized_weight.shape[0], -1)
+        weights_aligned = self.bise_module.weight.reshape(self.bise_module.weight.shape[0], -1)
         weights_min = weights_aligned.min(1).values
         weights_2nd_min = weights_aligned.kthvalue(2, 1).values
         weights_sum = weights_aligned.sum(1)

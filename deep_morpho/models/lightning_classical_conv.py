@@ -1,7 +1,10 @@
 from .generic_lightning_model import GenericLightningModel
 
 from .classical_conv import (
-    ConvNetLastLinear
+    ConvNetLastLinear, ConvNetBinaryConnectCifar10
+)
+from .resnet import (
+    ResNet, ResNet18, ResNet34, ResNet50
 )
 
 
@@ -30,3 +33,46 @@ class LightningConvNetLastLinear(GenericLightningModel):
         )
         model.to(experiment.device)
         return model
+
+
+class LightningConvNetBinaryConnectCifar10(LightningConvNetLastLinear):
+    model_class = ConvNetBinaryConnectCifar10
+
+
+class LightningResNet(GenericLightningModel):
+    model_class = ResNet
+
+    @classmethod
+    def get_model_from_experiment(cls, experiment: "ExperimentBase") -> GenericLightningModel:
+        args = experiment.args
+        inpt = experiment.input_sample
+
+        model_args = args.model_args()
+
+        model_args.update({
+            "in_channels": inpt.shape[1],
+            "n_classes": experiment.trainloader.dataset.n_classes,
+        })
+
+        model = cls(
+            model_args=model_args,
+            learning_rate=args["learning_rate"],
+            loss=args["loss"],
+            optimizer=args["optimizer"],
+            optimizer_args=args["optimizer_args"],
+            observables=experiment.observables,
+        )
+        model.to(experiment.device)
+        return model
+
+
+class LightningResNet18(LightningResNet):
+    model_class = ResNet18
+
+
+class LightningResNet34(LightningResNet):
+    model_class = ResNet34
+
+
+class LightningResNet50(LightningResNet):
+    model_class = ResNet50

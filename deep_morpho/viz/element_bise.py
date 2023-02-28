@@ -22,7 +22,7 @@ class ElementBiseWeightsChan(ElementGrouper):
         # self.imshow_kwargs['vmax'] = self.imshow_kwargs.get('vmax', 1)
         # self.imshow_kwargs['cmap'] = self.imshow_kwargs.get('cmap', 'gray')
 
-        weights = self.model._normalized_weight[self.chout, 0].detach().cpu().numpy()
+        weights = self.model.weight[self.chout, 0].detach().cpu().numpy()
         if -self.model.bias[self.chout] <= weights.sum() / 2:
             operation = 'dilation'
         else:

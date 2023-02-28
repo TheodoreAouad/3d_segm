@@ -36,17 +36,19 @@ class PlotWeightsBiSE(ObservableLayersChans):
         chan_input: int,
         chan_output: int,
     ):
-        weights = layer.weights[chan_output, chan_input]
-        weights_norm = layer._normalized_weight[chan_output, chan_input]
+        # weights_param = layer.weights[chan_output, chan_input]
+        # weights_norm = layer.weight[chan_output, chan_input]
+        weights_param = layer.get_weight_param_bise(chin=chan_input, chout=chan_output)
+        weights = layer.get_weight_norm_bise(chin=chan_input, chout=chan_output)
+
         trainer.logger.experiment.add_figure(
-            f"weights_normalized/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
-            self.get_figure_raw_weights(weights_norm, layer.bias_bise[chan_output, chan_input], layer.activation_P_bise[chan_output, chan_input]),
-            # self.get_figure_normalized_weights(weights_norm, layer.bias_bise[chan_output, chan_input], layer.activation_P_bise[chan_output, chan_input]),
+            f"weights/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
+            self.get_figure_raw_weights(weights, layer.bias_bise[chan_output, chan_input], layer.activation_P_bise[chan_output, chan_input]),
             trainer.global_step
         )
         trainer.logger.experiment.add_figure(
             f"weights_raw/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
-            self.get_figure_raw_weights(weights, layer.bias_bise[chan_output, chan_input], layer.activation_P_bise[chan_output, chan_input]),
+            self.get_figure_raw_weights(weights_param, layer.bias_bise[chan_output, chan_input], layer.activation_P_bise[chan_output, chan_input]),
             trainer.global_step
         )
 
@@ -56,9 +58,9 @@ class PlotWeightsBiSE(ObservableLayersChans):
         for layer_idx, layer in enumerate(pl_module.model.layers):
             to_add = {"bias_bise": layer.bias_bise, "activation_P_bise": layer.activation_P_bise}
 
-            to_add["weights"] = layer.weights
+            to_add["weights_param"] = layer.weights_param
 
-            to_add["normalized_weights"] = layer._normalized_weight
+            to_add["weights"] = layer.weight
             self.last_weights.append(to_add)
 
     def save(self, save_path: str):
@@ -67,7 +69,7 @@ class PlotWeightsBiSE(ObservableLayersChans):
         pathlib.Path(join(final_dir, "npy")).mkdir(exist_ok=True, parents=True)
         for layer_idx, layer_dict in enumerate(self.last_weights):
             for key, weight in layer_dict.items():
-                if key not in ["normalized_weights", "weights"]:
+                if key not in ["weights", "weights_param"]:
                     continue
                 for chan_output in range(weight.shape[0]):
                     for chan_input in range(weight.shape[1]):
@@ -82,25 +84,6 @@ class PlotWeightsBiSE(ObservableLayersChans):
                         plt.close(fig)
 
         return self.last_weights
-
-
-    @staticmethod
-    def get_figure_normalized_weights(weights, bias, activation_P):
-        weights = weights.cpu().detach()
-        figure = plt.figure(figsize=(8, 8))
-        plt.title(f"bias={bias.item():.3f}  act_P={activation_P.item():.3f}  sum={weights.sum():.3f}")
-        plt.imshow(weights, interpolation='nearest',)
-        plt.colorbar()
-        plt.clim(0, 1)
-
-        # Use white text if squares are dark; otherwise black.
-
-        for i, j in itertools.product(range(weights.shape[0]), range(weights.shape[1])):
-            color = "white" if weights[i, j] < .5 else "black"
-            plt.text(j, i, round(weights[i, j].item(), 2), horizontalalignment="center", color=color)
-
-        plt.tight_layout()
-        return figure
 
     @staticmethod
     def get_figure_raw_weights(weights, bias, activation_P):
@@ -144,7 +127,7 @@ class PlotParametersBiSE(ObservableLayersChans):
     ):
         metrics = {}
         last_params = {}
-        weights = layer._normalized_weight[chan_output, chan_input]
+        weights = layer.weight[chan_output, chan_input]
 
 
         bias_bise = layer.bias_bise[chan_output, chan_input]

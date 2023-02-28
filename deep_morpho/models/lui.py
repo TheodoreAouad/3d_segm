@@ -39,7 +39,7 @@ class BiSELUIExtender:
 
     @property
     def coefs(self):
-        return self._normalized_weight[..., 0, 0]
+        return self.weight[..., 0, 0]
 
     def update_binary_sets(self, *args, **kwargs):
         return self.update_binary_selems(*args, **kwargs)
@@ -98,6 +98,7 @@ class LUI(BiSELUIExtender, BiSEBase):
         # init_weight_mode: InitBiseEnum = InitBiseEnum.CUSTOM_HEURISTIC,
         out_channels: int = 1,
         in_channels: int = 1,
+        groups: int = 1,
         # closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST_DIST_TO_BOUNDS,
         # closest_selem_args: Dict = {},
         bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED,
@@ -105,7 +106,7 @@ class LUI(BiSELUIExtender, BiSEBase):
         *args,
         **kwargs
     ):
-        self.force_identity = force_identity or (in_channels == out_channels == 1)
+        self.force_identity = force_identity or (in_channels == out_channels == groups)
         if self.force_identity:
             bias_optim_mode = BiseBiasOptimEnum.RAW
         super().__init__(
@@ -121,6 +122,7 @@ class LUI(BiSELUIExtender, BiSEBase):
             initializer=initializer,
             out_channels=out_channels,
             in_channels=in_channels,
+            groups=groups,
             do_mask_output=False,
             # # closest_selem_method=closest_selem_method,
             # # closest_selem_args=closest_selem_args,
@@ -146,6 +148,7 @@ class SyLUI(BiSELUIExtender, SyBiSEBase):
         initializer: BiseInitializer = InitSybiseConstantVarianceWeights(input_mean=0, mean_weight="auto"),
         in_channels: int = 1,
         out_channels: int = 1,
+        groups: int = 1,
         # closest_selem_method: ClosestSelemEnum = ClosestSelemEnum.MIN_DIST_DIST_TO_BOUNDS,
         # closest_selem_args: Dict = {},
         bias_optim_mode: BiseBiasOptimEnum = BiseBiasOptimEnum.RAW,
@@ -154,7 +157,7 @@ class SyLUI(BiSELUIExtender, SyBiSEBase):
         *args,
         **kwargs
     ):
-        self.force_identity = force_identity or (in_channels == out_channels == 1)
+        self.force_identity = force_identity or (in_channels == out_channels == groups)
         if self.force_identity:
             bias_optim_mode = BiseBiasOptimEnum.RAW
 
@@ -171,6 +174,7 @@ class SyLUI(BiSELUIExtender, SyBiSEBase):
             initializer=initializer,
             out_channels=out_channels,
             in_channels=in_channels,
+            groups=groups,
             do_mask_output=False,
             # # closest_selem_method=closest_selem_method,
             # # closest_selem_args=closest_selem_args,

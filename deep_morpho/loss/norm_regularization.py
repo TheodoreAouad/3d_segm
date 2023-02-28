@@ -34,7 +34,7 @@ class BoundRegularization(nn.Module):
 
 class BimonnBoundRegularization(BoundRegularization):
     def get_params_from_model(self):
-        return [bisel_layer.normalized_weight for bisel_layer in self.model.layers]
+        return [bisel_layer.weight for bisel_layer in self.model.layers]
 
 
 class QuadraticBoundRegularization(BimonnBoundRegularization):

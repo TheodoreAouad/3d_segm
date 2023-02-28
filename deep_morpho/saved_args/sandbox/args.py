@@ -1,4 +1,5 @@
 import warnings
+from functools import partial
 import numpy as np
 import torch.optim as optim
 import torch.nn as nn
@@ -36,6 +37,7 @@ loss_dict = {
     'NormalizedDiceLoss': NormalizedDiceLoss,
     "BCELoss": nn.BCELoss,
     "CrossEntropyLoss": nn.CrossEntropyLoss,
+    "SquaredHingeLoss": partial(nn.MultiMarginLoss, p=2),
 }
 
 all_args = MultiParser()
@@ -168,7 +170,8 @@ all_args["n_inputs_test"] = [10_000]
 # TRAINING ARGS
 all_args['learning_rate'] = [
     # 1e-2,
-    1e-4,
+    # 1e-4,
+    0.003,
 ]
 
 # if max_plus, then the loss is MSELoss
@@ -180,7 +183,8 @@ all_args['loss_data_str'] = [
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
     # "BCELoss",
-    "CrossEntropyLoss",
+    # "CrossEntropyLoss",
+    "SquaredHingeLoss",
     # "MSELoss",
     # "DiceLoss",
     # "MaskedDiceLoss",
@@ -196,7 +200,7 @@ all_args['optimizer'] = [
     # optim.SGD
 ]
 all_args['optimizer_args'] = [{}]
-all_args['batch_size'] = [32]
+all_args['batch_size'] = [50]
 all_args['num_workers'] = [
     20,
     # 0,
@@ -231,7 +235,11 @@ all_args["model"] = [
     # "BimonnDense",
     # "BimonnDenseNotBinary",
     # "BimonnBiselDenseNotBinary",
-    "ConvNetLastLinear",
+    # "ConvNetLastLinear",
+    "ConvNetBinaryConnectCifar10",
+    # "ResNet18",
+    # "ResNet34",
+    # "ResNet50",
 ]
 all_args["activation_constructor"] = [
     # nn.ReLU,

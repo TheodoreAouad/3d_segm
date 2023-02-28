@@ -148,14 +148,13 @@ class PlotWeightsBiseEllipse(ObservableLayersChans):
         chan_input: int,
         chan_output: int,
     ):
-        weights_norm = layer._normalized_weight[chan_output, chan_input]
+        weights_norm = layer.weight[chan_output, chan_input]
 
         mu_ellipse = layer.bises[chan_input].weights_handler.mu[chan_output, 0]
 
         trainer.logger.experiment.add_figure(
-            f"weights_normalized/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
+            f"weights/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
             self.get_figure_raw_weights(weights_norm, layer.bias_bise[chan_output, chan_input], layer.activation_P_bise[chan_output, chan_input], mu_ellipse),
-            # self.get_figure_normalized_weights(weights_norm, layer.bias_bise[chan_output, chan_input], layer.activation_P_bise[chan_output, chan_input]),
             trainer.global_step
         )
 
@@ -163,11 +162,11 @@ class PlotWeightsBiseEllipse(ObservableLayersChans):
     def on_train_end(self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule') -> None:
         for layer_idx, layer in enumerate(pl_module.model.layers):
             to_add = {
-                "bias_bise": layer.bias_bise, "activation_P_bise": layer.activation_P_bise, "normalized_weights": layer._normalized_weight,
+                "bias_bise": layer.bias_bise, "activation_P_bise": layer.activation_P_bise, "weights": layer.weight,
                 "mu_ellipse": torch.cat([bise.weights_handler.mu for bise in layer.bises], axis=1)
             }
 
-            to_add["normalized_weights"] = layer._normalized_weight
+            to_add["weights"] = layer.weight
 
             self.last_weights.append(to_add)
 
@@ -176,7 +175,7 @@ class PlotWeightsBiseEllipse(ObservableLayersChans):
         pathlib.Path(join(final_dir, "png")).mkdir(exist_ok=True, parents=True)
         pathlib.Path(join(final_dir, "npy")).mkdir(exist_ok=True, parents=True)
         for layer_idx, layer_dict in enumerate(self.last_weights):
-            weight = layer_dict['normalized_weights']
+            weight = layer_dict['weights']
             for chan_output in range(weight.shape[0]):
                 for chan_input in range(weight.shape[1]):
                     fig = self.get_figure_raw_weights(

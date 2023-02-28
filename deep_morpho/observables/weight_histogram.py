@@ -30,7 +30,7 @@ class WeightsHistogramBiSE(ObservableLayersChans):
 
         trainer.logger.experiment.add_histogram(
             f"weights_hist/Normalized/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
-            layer._normalized_weight[chan_output, chan_input],
+            layer.weight[chan_output, chan_input],
             trainer.global_step
         )
         trainer.logger.experiment.add_histogram(

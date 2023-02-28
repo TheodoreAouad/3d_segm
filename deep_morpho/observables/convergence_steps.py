@@ -136,7 +136,7 @@ class ConvergenceAlmostBinary(Observable):
         batch_idx: int,
         dataloader_idx: int,
     ):
-        # trainer.logger.experiment.add_image(f"weights/Normalized_{layer_idx}", layer._normalized_weight[0], trainer.global_step)
+        # trainer.logger.experiment.add_image(f"weights/Normalized_{layer_idx}", layer.weight[0], trainer.global_step)
         # trainer.logger.experiment.add_image(f"weights/Raw_{layer_idx}", max_min_norm(layer.weight[0]), trainer.global_step)
 
         if self.freq_idx % self.freq == 0:

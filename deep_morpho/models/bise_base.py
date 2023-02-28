@@ -28,6 +28,7 @@ from general.utils import set_borders_to
 #     DISTANCE_BETWEEN_BOUNDS = 2
 #     DISTANCE_TO_AND_BETWEEN_BOUNDS = 3
 
+
 class BiseBiasOptimEnum(Enum):
     RAW = 0     # no transformation to bias
     POSITIVE = 1    # only softplus applied
@@ -42,7 +43,8 @@ class BiseWeightsOptimEnum(Enum):
     ELLIPSE_ROOT = 3
 
 
-conv_kwargs = {"stride", "dilation", "groups", "device", "dtype"}
+conv_kwargs = {"in_channels", "out_channels", "kernel_size", "stride", "padding", "dilation", "groups", "bias",
+    "padding_mode", "device", "dtype"}
 
 
 class BiSEBase(BinaryNN):
@@ -93,6 +95,7 @@ class BiSEBase(BinaryNN):
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=self.kernel_size,
+            # padding="same",
             padding=self.padding,
             padding_mode=self.padding_mode,
             bias=False,
@@ -109,16 +112,18 @@ class BiSEBase(BinaryNN):
         self.initializer = initializer
         self.initializer.initialize(self)
 
-        self._closest_selem = np.zeros((out_channels, in_channels, *self.kernel_size)).astype(bool)
-        self._closest_operation = np.zeros((out_channels, in_channels))
-        self._closest_selem_dist = np.zeros((out_channels, in_channels))
+        self._closest_selem = np.zeros_like(self.conv.weight).astype(bool)
+        self._closest_operation = np.zeros((out_channels))
+        self._closest_selem_dist = np.zeros((out_channels))
 
-        self._learned_selem = np.zeros((out_channels, in_channels, *self.kernel_size)).astype(bool)
-        self._learned_operation = np.zeros((out_channels, in_channels))
-        self._is_activated = np.zeros((out_channels, in_channels)).astype(bool)
+        self._learned_selem = np.zeros_like(self.conv.weight).astype(bool)
+        self._learned_operation = np.zeros((out_channels))
+        self._is_activated = np.zeros((out_channels)).astype(bool)
+
+        # self.update_binary_selems()
 
     def _specific_numel_binary(self):
-        return self._normalized_weight.numel() + self.bias.numel() + self.activation_P.numel()
+        return self.weight.numel() + self.bias.numel() + self.activation_P.numel()
 
     def create_closest_selem_handler(self, **kwargs):
         if self.closest_selem_method.value == ClosestSelemEnum.MIN_DIST_DIST_TO_BOUNDS.value:
@@ -179,14 +184,13 @@ class BiSEBase(BinaryNN):
         self.update_learned_selems()
 
     def update_learned_selems(self):
-        for chin in range(self.in_channels):
-            for chout in range(self.out_channels):
-                self.find_selem_and_operation_chan(chin=chin, chout=chout)
+        for chan in range(self.out_channels):
+            self.find_selem_and_operation_chan(chan)
 
     def binary(self, mode: bool = True, update_binaries: bool = True, *args, **kwargs):
         if mode and update_binaries:
             self.update_binary_selems()
-        return super().binary(mode, *args, **kwargs)
+        return super().binary(mode,  *args, **kwargs)
 
     # TODO: move to BiSE class
     @staticmethod
@@ -222,7 +226,7 @@ class BiSEBase(BinaryNN):
             return self.forward_binary(x)
 
         return self._forward(x)
-        # output = self.conv._conv_forward(x, self._normalized_weight, self.bias, )
+        # output = self.conv._conv_forward(x, self.weight, self.bias, )
         # output = self.activation_threshold_layer(output)
 
         # if self.do_mask_output:
@@ -231,7 +235,7 @@ class BiSEBase(BinaryNN):
         # return output
 
     def _forward(self, x: Tensor) -> Tensor:
-        output = self.conv._conv_forward(x, self._normalized_weight, self.bias, )
+        output = self.conv._conv_forward(x, self.weight, self.bias, )
         output = self.activation_threshold_layer(output)
 
         if self.do_mask_output:
@@ -256,7 +260,7 @@ class BiSEBase(BinaryNN):
         """
         Get the closest learned selems as well as the bias corresponding to the operation (dilation or erosion).
         """
-        weights = torch.zeros_like(self._normalized_weight)
+        weights = torch.zeros_like(self.weight)
         bias = torch.zeros_like(self.bias)
         operations = torch.zeros_like(self.bias)
 
@@ -276,29 +280,29 @@ class BiSEBase(BinaryNN):
         masker = set_borders_to(torch.ones(output.shape[-2:], requires_grad=False), border=np.array(self.kernel_size) // 2)[None, None, ...]
         return output * masker.to(output.device)
 
-    def is_erosion_by(self, normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> bool:
+    def is_erosion_by(self, weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> bool:
         assert np.isin(np.unique(S), [0, 1]).all(), "S must be binary matrix"
-        lb, ub = self.bias_bounds_erosion(normalized_weights=normalized_weights, S=S, v1=v1, v2=v2)
+        lb, ub = self.bias_bounds_erosion(weights=weights, S=S, v1=v1, v2=v2)
         return lb < -bias < ub
 
-    def is_dilation_by(self, normalized_weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> bool:
+    def is_dilation_by(self, weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> bool:
         assert np.isin(np.unique(S), [0, 1]).all(), "S must be binary matrix"
-        lb, ub = self.bias_bounds_dilation(normalized_weights=normalized_weights, S=S, v1=v1, v2=v2)
+        lb, ub = self.bias_bounds_dilation(weights=weights, S=S, v1=v1, v2=v2)
         return lb < -bias < ub
 
     @staticmethod
-    def bias_bounds_erosion(normalized_weights: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> Tuple[float, float]:
+    def bias_bounds_erosion(weights: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> Tuple[float, float]:
         S = S.astype(bool)
-        W = normalized_weights.cpu().detach().numpy()
+        W = weights.cpu().detach().numpy()
         return W[W > 0].sum() - (1 - v1) * W[S].min(), v2 * W[S & (W > 0)].sum() + W[W < 0].sum()
 
     @staticmethod
-    def bias_bounds_dilation(normalized_weights: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> Tuple[float, float]:
+    def bias_bounds_dilation(weights: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> Tuple[float, float]:
         S = S.astype(bool)
-        W = normalized_weights.cpu().detach().numpy()
+        W = weights.cpu().detach().numpy()
         return W[(~S) & (W > 0)].sum() + v1 * W[S & (W > 0)].sum(), v2 * W[S].min() + W[W < 0].sum()
 
-    def find_selem_for_operation_chan(self, operation: str, chin: int = 0, chout: int = 0, v1: float = 0, v2: float = 1):
+    def find_selem_for_operation_chan(self, operation: str, chout: int = 0, v1: float = 0, v2: float = 1):
         """
         We find the selem for either a dilation or an erosion. In theory, there is at most one selem that works.
         We verify this theory.
@@ -312,8 +316,8 @@ class BiSEBase(BinaryNN):
             np.ndarray if a selem is found
             None if none is found
         """
-        weights = self._normalized_weight[chout, chin]
-        bias = self.bias[chout, chin]
+        weights = self.weight[chout]
+        bias = self.bias[chout]
         is_op_fn = {'dilation': self.is_dilation_by, 'erosion': self.is_erosion_by}[operation]
         born = {'dilation': -bias / v2, "erosion": (weights.sum() + bias) / (1 - v1)}[operation]
 
@@ -325,7 +329,7 @@ class BiSEBase(BinaryNN):
             return selem
         return None
 
-    def find_closest_selem_and_operation_chan(self, chin: int = 0, chout: int = 0, v1: float = 0, v2: float = 1) -> Tuple[np.ndarray, str, float]:
+    def find_closest_selem_and_operation_chan(self, chout: int = 0, v1: float = 0, v2: float = 1) -> Tuple[np.ndarray, str, float]:
         """Find the closest selem and the operation given the almost binary features.
 
         Args:
@@ -335,14 +339,14 @@ class BiSEBase(BinaryNN):
         Returns:
             (np.ndarray, str, float): if the selem is found, returns the selem and the operation
         """
-        final_dist, final_selem, final_operation = self.closest_selem_handler(chin=chin, chout=chout, v1=v1, v2=v2)
+        final_dist, final_selem, final_operation = self.closest_selem_handler(chout=chout, v1=v1, v2=v2)
 
-        self._closest_selem[chout, chin] = final_selem.astype(bool)
-        self._closest_operation[chout, chin] = self.operation_code[final_operation]
-        self._closest_selem_dist[chout, chin] = final_dist
+        self._closest_selem[chout] = final_selem.astype(bool)
+        self._closest_operation[chout] = self.operation_code[final_operation]
+        self._closest_selem_dist[chout] = final_dist
         return final_selem, final_operation, final_dist
 
-    def find_selem_and_operation_chan(self, chin: int = 0, chout: int = 0, v1: float = 0, v2: float = 1):
+    def find_selem_and_operation_chan(self, chout: int = 0, v1: float = 0, v2: float = 1):
         """Find the selem and the operation given the almost binary features.
 
         Args:
@@ -354,16 +358,16 @@ class BiSEBase(BinaryNN):
             (None, None): if nothing is found, returns None
         """
         for operation in ['dilation', 'erosion']:
-            selem = self.find_selem_for_operation_chan(chin=chin, chout=chout, operation=operation, v1=v1, v2=v2)
+            selem = self.find_selem_for_operation_chan(chout=chout, operation=operation, v1=v1, v2=v2)
             if selem is not None:
-                self._learned_selem[chout, chin] = selem.astype(bool)
-                self._learned_operation[chout, chin] = self.operation_code[operation]  # str array has 1 character
-                self._is_activated[chout, chin] = True
+                self._learned_selem[chout] = selem.astype(bool)
+                self._learned_operation[chout] = self.operation_code[operation]  # str array has 1 character
+                self._is_activated[chout] = True
                 return selem, operation
 
-        self._is_activated[chout, chin] = False
-        self._learned_selem[chout, chin] = None
-        self._learned_operation[chout, chin] = None
+        self._is_activated[chout] = False
+        self._learned_selem[chout] = None
+        self._learned_operation[chout] = None
 
         return None, None
 
@@ -402,6 +406,10 @@ class BiSEBase(BinaryNN):
         return threshold_mode
 
     @property
+    def groups(self):
+        return self.conv.groups
+
+    @property
     def weight_threshold_layer(self):
         return self.weights_handler.threshold_layer
 
@@ -414,15 +422,15 @@ class BiSEBase(BinaryNN):
         return self.threshold_mode["activation"]
 
     @property
-    def _normalized_weight(self):
+    def weight(self):
         return self.weights_handler()
 
     @property
-    def _normalized_weights(self):
-        return self._normalized_weight
+    def weights(self):
+        return self.weight
 
     @property
-    def weight(self):
+    def weight_param(self):
         return self.weights_handler.param
 
     def set_weights_param(self, new_param: torch.Tensor) -> torch.Tensor:
@@ -508,15 +516,15 @@ class SyBiSEBase(BiSEBase):
         **kwargs)
         assert isinstance(self.activation_threshold_layer, self.POSSIBLE_THRESHOLDS), "Choose a symetric threshold for activation."
 
-    def bias_bounds_erosion(self, normalized_weights: torch.Tensor, S: np.ndarray, v1=None, v2: float = 1) -> Tuple[float, float]:
-        lb_dil, ub_dil = self.bias_bounds_dilation(normalized_weights, S, v2=v2)
+    def bias_bounds_erosion(self, weights: torch.Tensor, S: np.ndarray, v1=None, v2: float = 1) -> Tuple[float, float]:
+        lb_dil, ub_dil = self.bias_bounds_dilation(weights, S, v2=v2)
         return -ub_dil, -lb_dil
 
     @staticmethod
-    def bias_bounds_dilation(normalized_weights: torch.Tensor, S: np.ndarray, v1=None, v2: float = 1) -> Tuple[float, float]:
+    def bias_bounds_dilation(weights: torch.Tensor, S: np.ndarray, v1=None, v2: float = 1) -> Tuple[float, float]:
         S = S.astype(bool)
         epsilon = v2
-        W = normalized_weights.cpu().detach().numpy()
+        W = weights.cpu().detach().numpy()
         return (
             -epsilon * W[(W > 0) & S].sum() - W[(W < 0) & S].sum() + np.abs(W[~S]).sum(),
             -np.abs(W).sum() + (1 + epsilon) * max(W[S].min(), 0)
