@@ -74,18 +74,16 @@ class ExperimentMethods(ABC):
         """Return the default arguments of the model, in the format of argparse.ArgumentParser"""
         res = {}
         for name, p in inspect.signature(cls.__init__).parameters.items():
-            # if name in ["args", "kwargs"]:
             if p.kind in [inspect._ParameterKind.VAR_POSITIONAL, inspect._ParameterKind.VAR_KEYWORD]:
-                if len(cls.__bases__) > 1:
-                    warnings.warn(""
-                        "Multiple inheritance is not supported."
-                        "Only the first parent class arguments will be transmitted."
-                    "")
+                # if len(cls.__bases__) > 1:
+                #     warnings.warn(""
+                #         "Multiple inheritance is not supported."
+                #         "Only the first parent class arguments will be transmitted."
+                #     "")
                 for parent_class in cls.__bases__:
-                    if isinstance(parent_class, ExperimentMethods):
+                    # if isinstance(parent_class, ExperimentMethods):
+                    if parent_class in ExperimentMethods.listing_subclasses():
                         res.update({k: v for k, v in parent_class.default_args().items() if k not in res})
-                # parent_class = cls.__bases__[0]
-                # res.update({k: v for k, v in parent_class.default_args().items() if k not in res})
 
             elif name != "self":
                 param_dict = {"default": p.default}

@@ -169,6 +169,11 @@ def close_handlers(logger):
 
 
 def save_yaml(dic, path):
+    # To be able to save abstract classes
+    from yaml.representer import Representer
+    from abc import ABCMeta
+    Representer.add_representer(ABCMeta, Representer.represent_name)
+
     with open(path, 'w') as f:
         yaml.dump(dic, f)
 

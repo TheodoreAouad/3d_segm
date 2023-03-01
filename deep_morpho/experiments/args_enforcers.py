@@ -58,7 +58,6 @@ class ArgsCifar(ArgsEnforcer):
         experiment.args["n_inputs.train"] = 45_000
         experiment.args["n_inputs.val"] = 5_000
         experiment.args["n_inputs.test"] = 10_000
-        # experiment.args["channels"].insert(0, experiment.args["channel_classif_args"]["levelset_handler_args"]["n_values"] * 3)
 
 
 class ArgsMnistClassifChannel(ArgsEnforcer):

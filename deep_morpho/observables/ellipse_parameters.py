@@ -11,6 +11,7 @@ from ..models.weights_layer import WeightsEllipse
 from general.utils import max_min_norm, save_json
 
 
+# DEPRECATED
 class PlotParametersBiseEllipse(ObservableLayersChans):
 
     def __init__(self, *args, **kwargs):

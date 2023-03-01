@@ -25,16 +25,15 @@ class WeightsHistogramBiSE(ObservableLayersChans):
         chan_input: int,
         chan_output: int,
     ):
-        # if isinstance(layer, (BiSE, BiSEC, COBiSEC, COBiSE)):
-
+        weight = layer.get_weight_bise(chin=chan_input, chout=chan_output)
 
         trainer.logger.experiment.add_histogram(
             f"weights_hist/Normalized/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
-            layer.weight[chan_output, chan_input],
+            weight,
             trainer.global_step
         )
         trainer.logger.experiment.add_histogram(
             f"weights_hist/Raw/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
-            layer.weight[chan_output, chan_input],
+            weight,
             trainer.global_step
         )

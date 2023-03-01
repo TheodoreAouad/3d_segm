@@ -141,7 +141,11 @@ class GrayToChannelDatasetBase(SelectIndexesDataset):
 
 
     def _transform_sample(self, input_: torch.Tensor, target: torch.Tensor) -> Tuple[TensorGray, torch.Tensor]:
-        input_ = torch.tensor(input_).float()
+        if isinstance(input_, torch.Tensor):
+            input_ = input_.clone().detach().float()
+        else:
+            input_ = torch.tensor(input_).float()
+        # input_ = torch.tensor(input_).float()
         original_img = input_ + 0
 
         target_int = target
@@ -228,14 +232,23 @@ class GrayToChannelDatasetBase(SelectIndexesDataset):
         train_idxes = all_train_idxs[:n_inputs_train]
         val_idxes = all_train_idxs[n_inputs_train:n_inputs_train + n_inputs_val]
 
-        trainloader = cls.get_loader(indexes=train_idxes, train=True, shuffle=True, **train_kwargs)
+        trainloader = cls.get_loader(
+            indexes=train_idxes, train=True, shuffle=True,
+            batch_size=args["batch_size"], num_workers=args["num_workers"], **train_kwargs
+        )
         for kwargs in [val_kwargs, test_kwargs]:
             kwargs.update({
                 "levelset_handler_mode": LevelsetValuesManual,
                 "levelset_handler_args": {"values": trainloader.dataset.levelset_values},
             })
-        valloader = cls.get_loader(indexes=val_idxes, train=True, shuffle=False, **val_kwargs)
-        testloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False, **test_kwargs)
+        valloader = cls.get_loader(
+            indexes=val_idxes, train=True, shuffle=False,
+            batch_size=args["batch_size"], num_workers=args["num_workers"], **val_kwargs
+        )
+        testloader = cls.get_loader(
+            first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False,
+            batch_size=args["batch_size"], num_workers=args["num_workers"], **test_kwargs
+        )
 
         return trainloader, valloader, testloader
 

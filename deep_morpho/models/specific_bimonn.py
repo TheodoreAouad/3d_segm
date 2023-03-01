@@ -1,3 +1,4 @@
+from abc import ABC
 from typing import List, Dict, Tuple
 
 import torch
@@ -12,10 +13,11 @@ from ..initializer import InitBiseEnum, BimonnInitializer, BiselInitializer
 
 
 # TODO: Merge with Bimonn class
-class BimonnDenseBase(BinaryNN):
+class BimonnDenseBase(BinaryNN, ABC):
+    last_layer: DenseLUI
+
     def __init__(
         self,
-        last_layer: DenseLUI,
         channels: List[int],
         input_size: int,
         n_classes: int,
@@ -62,7 +64,7 @@ class BimonnDenseBase(BinaryNN):
             ))
             self.layers.append(getattr(self, f"dense{idx}"))
 
-        self.classification_layer = last_layer(
+        self.classification_layer = self.last_layer(
             in_channels=self.channels[-2],
             out_channels=self.channels[-1],
             initializer=self.initializer_fn(**initializer_args),
@@ -77,21 +79,37 @@ class BimonnDenseBase(BinaryNN):
             x = layer(x)
         return x
 
+    @classmethod
+    def default_args(cls) -> Dict[str, dict]:
+        """Return the default arguments of the model, in the format of argparse.ArgumentParser"""
+        res = super().default_args()
+        res.update({
+            k: v for k, v in DenseLUI.default_args().items()
+            if k not in res
+            and k not in [
+                "initializer", "in_channels", "out_channels", "bise_module", "lui_module", "groups",
+            ]
+        })
+        return res
+
 
 class BimonnDense(BimonnDenseBase):
-    def __init__(self, *args, **kwargs):
-        super().__init__(last_layer=DenseLUI, *args, **kwargs)
+    last_layer = DenseLUI
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(last_layer=DenseLUI, *args, **kwargs)
 
 
 class BimonnDenseNotBinary(BimonnDenseBase):
-    def __init__(self, *args, **kwargs):
-        super().__init__(last_layer=DenseLuiNotBinary, *args, **kwargs)
+    last_layer = DenseLuiNotBinary
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(last_layer=DenseLuiNotBinary, *args, **kwargs)
 
 
-class BimonnBiselDenseBase(BinaryNN):
+class BimonnBiselDenseBase(BinaryNN, ABC):
+    last_layer: DenseLUI
     def __init__(
         self,
-        last_layer: DenseLUI,
+        # last_layer: DenseLUI,
         kernel_size: Tuple[int],
         channels: List[int],
         input_size: Tuple[int],
@@ -169,7 +187,7 @@ class BimonnBiselDenseBase(BinaryNN):
         )
         self.layers.append(self.dense1)
 
-        self.classification_layer = last_layer(
+        self.classification_layer = self.last_layer(
             in_channels=self.channels[-2],
             out_channels=self.channels[-1],
             initializer=self.initializer_bise_fn(**initializer_bise_args),
@@ -184,12 +202,27 @@ class BimonnBiselDenseBase(BinaryNN):
             x = layer(x)
         return x
 
+    @classmethod
+    def default_args(cls) -> Dict[str, dict]:
+        """Return the default arguments of the model, in the format of argparse.ArgumentParser"""
+        res = super().default_args()
+        res.update({
+            k: v for k, v in DenseLUI.default_args().items()
+            if k not in res
+            and k not in [
+                "initializer", "in_channels", "out_channels", "bise_module", "lui_module", "groups",
+            ]
+        })
+        return res
+
 
 class BimonnBiselDense(BimonnBiselDenseBase):
-    def __init__(self, *args, **kwargs):
-        super().__init__(last_layer=DenseLUI, *args, **kwargs)
+    last_layer = DenseLUI
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(last_layer=DenseLUI, *args, **kwargs)
 
 
 class BimonnBiselDenseNotBinary(BimonnBiselDenseBase):
-    def __init__(self, *args, **kwargs):
-        super().__init__(last_layer=DenseLuiNotBinary, *args, **kwargs)
+    last_layer = DenseLuiNotBinary
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(last_layer=DenseLuiNotBinary, *args, **kwargs)

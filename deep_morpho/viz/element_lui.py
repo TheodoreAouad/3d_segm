@@ -41,11 +41,12 @@ class ElementLuiCoefs(Element):
 class ElementLui(ElementGrouper):
     operation_element_dicts = {'erosion': ElementSymbolIntersection, 'dilation': ElementSymbolUnion}
 
-    def __init__(self, model, shape, imshow_kwargs={}, v1=None, v2=None, *args, **kwargs):
+    def __init__(self, model, chout, shape, imshow_kwargs={}, v1=None, v2=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.model = model
         self.v1 = v1
         self.v2 = v2
+        self.chout = chout
         self.imshow_kwargs = imshow_kwargs
         self.imshow_kwargs['color'] = self.imshow_kwargs.get('color', 'k')
 
@@ -57,8 +58,8 @@ class ElementLui(ElementGrouper):
 
 
         shape = self.element_lui_coefs.shape * OPERATION_FACTOR
-        if self.model.is_activated[0]:
-            operation = LUI_INVERT_CODE[self.model.learned_operation[0]]
+        if self.model.is_activated[self.chout]:
+            operation = LUI_INVERT_CODE[self.model.learned_operation[self.chout]]
             self.element_lui_operation = self.operation_element_dicts[operation](
                 width=shape[0], height=shape[1],
                 xy_coords_mean=(self.element_lui_coefs.xy_coords_mean +
@@ -66,7 +67,7 @@ class ElementLui(ElementGrouper):
             )
             self.add_element(self.element_lui_operation, key="operation")
 
-        if self.model.activation_P[0] < 0:
+        if self.model.activation_P[self.chout] < 0:
             self.element_no = ElementNO(
                 width=shape[0],
                 xy_coords_mean=(self.element_lui_coefs.xy_coords_mean +
@@ -79,11 +80,12 @@ class ElementLuiClosest(ElementGrouper):
     operation_element_dicts = {'erosion': ElementSymbolIntersection, 'dilation': ElementSymbolUnion}
     # operation_element_dicts = {'intersection': ElementSymbolIntersection, 'union': ElementSymbolUnion}
 
-    def __init__(self, model, shape, imshow_kwargs={}, v1=None, v2=None, *args, **kwargs):
+    def __init__(self, model, chout, shape, imshow_kwargs={}, v1=None, v2=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.model = model
         self.v1 = v1
         self.v2 = v2
+        self.chout = chout
         self.imshow_kwargs = imshow_kwargs
         self.imshow_kwargs['color'] = self.imshow_kwargs.get('color', 'k')
 
@@ -92,16 +94,16 @@ class ElementLuiClosest(ElementGrouper):
         self.element_lui_coefs = ElementLuiCoefs(model, imshow_kwargs, shape=shape, *args, **kwargs)
         self.add_element(self.element_lui_coefs, key="coefs")
 
-        operation = LUI_INVERT_CODE[self.model.closest_operation[0]]
+        operation = LUI_INVERT_CODE[self.model.closest_operation[self.chout]]
         shape = self.element_lui_coefs.shape * OPERATION_FACTOR
         self.element_lui_operation = self.operation_element_dicts[operation](
             width=shape[0], height=shape[1],
-            xy_coords_mean=(self.element_lui_coefs.xy_coords_mean + 
+            xy_coords_mean=(self.element_lui_coefs.xy_coords_mean +
                             np.array([-self.element_lui_coefs.shape[0] / 3, self.element_lui_coefs.shape[-1] / 2 + 2]))
         )
         self.add_element(self.element_lui_operation, key="operation")
 
-        if self.model.activation_P[0] < 0:
+        if self.model.activation_P[self.chout] < 0:
             self.element_no = ElementNO(
                 width=shape[0],
                 xy_coords_mean=(self.element_lui_coefs.xy_coords_mean +

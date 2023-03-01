@@ -40,29 +40,29 @@ class EltGeneratorConnectLuiBiseForwardSaveBase(EltGenerator):
         # coefs = self.model.layers[layer_idx].luis[chout].positive_weight[0].detach().cpu().numpy()
         # coefs = coefs / coefs.max() * self.max_width_coef
         # width = coefs[chin]
-        width = self.infer_width(self.model.layers[layer_idx].luis[chout], chin)
+        width = self.infer_width(self.model.layers[layer_idx].luis, chin=chin, chout=chout)
 
         # activation_P = bise_elt.model.activation_P[chout]
         # if activation_P > 0 or width == 0:
         return ElementArrow.link_elements(bise_elt, lui_elt, width=width)
         # return ElementArrowNo.link_elements(bise_elt, lui_elt, height_circle=max(self.model.kernel_size[layer_idx])*0.7, width=width)
 
-    def infer_width(self, model, chin):
+    def infer_width(self, model, chin, chout):
         raise NotImplementedError
 
 
 class EltGeneratorConnectLuiBiseForwardSave(EltGeneratorConnectLuiBiseForwardSaveBase):
 
-    def infer_width(self, model, chin):
-        coefs = model.coefs[0].detach().cpu().numpy()
+    def infer_width(self, model, chin, chout):
+        coefs = model.coefs[chout].detach().cpu().numpy()
         coefs = coefs / coefs.max() * self.max_width_coef
         return coefs[chin]
 
 
 class EltGeneratorConnectLuiBiseClosestForwardSave(EltGeneratorConnectLuiBiseForwardSaveBase):
 
-    def infer_width(self, model, chin):
-        return float(model.closest_set[chin])
+    def infer_width(self, model, chin, chout):
+        return float(model.closest_set[chout, chin])
 
 
 

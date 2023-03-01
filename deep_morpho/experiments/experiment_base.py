@@ -120,7 +120,10 @@ class ExperimentBase(ExperimentMethods):
                 for metric_name in self.metric_binary_obs.metrics.keys():
                     metric_dict[f"binary_{metric_name}_{state}"] = self.metric_binary_obs.last_value[state][metric_name]
 
-        self.tb_logger.log_hyperparams(self.args, metric_dict)
+        args_str = {}
+        for k, v in self.args.items():
+            args_str[k] = f"{v}"
+        self.tb_logger.log_hyperparams(args_str, metric_dict)
 
         for observable in self.observables:
             observable.save(join(self.log_dir, 'observables'))

@@ -166,9 +166,7 @@ class ExplosiveWeightGradientWatcher(GradientWatcher):
         if grad_weights is None:
             return
 
-        # weights = layer.weights[chan_output, chan_input]
         weights = layer.get_weight_bise(chin=chan_input, chout=chan_output)
-        # grad_bias = layer.bises[chan_input].bias_handler.grad[chan_output]
         grad_bias = layer.get_bias_grad_bise(chin=chan_input, chout=chan_output)
 
         # if grad_weights.mean().abs() < self.threshold:

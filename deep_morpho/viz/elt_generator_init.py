@@ -14,6 +14,6 @@ class EltGeneratorInitCircle(EltGenerator):
         return ElementCircle(
             xy_coords_mean=xy_coords_mean,
             # radius=self.input_radius_factor * self.box_height / (2 * n_elts),
-            radius=height * self.input_radius_factor,
+            radius=height / 2 * self.input_radius_factor,
             imshow_kwargs={"fill": True},
         )

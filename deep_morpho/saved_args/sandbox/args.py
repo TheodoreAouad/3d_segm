@@ -52,12 +52,25 @@ all_args['n_try'] = [0]
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
     # "tests",
-    "Bimonn_exp_77/sandbox1/"
+    "Bimonn_exp_77/sandbox2/"
 ]
 
+all_args["model"] = [
+    # "BiMoNNClassifierMaxPoolNotBinary",
+    # "BiMoNNClassifierMaxPool",
+    # "BiMoNNClassifierLastLinearNotBinary",
+    # "BiMoNNClassifierLastLinear",
+    # "BiMoNN",
+    # "BimonnDense",
+    # "BimonnDenseNotBinary",
+    "BimonnBiselDenseNotBinary",
+    # "ConvNetLastLinear",
+    # "ConvNetBinaryConnectCifar10",
+    # "ResNet18",
+    # "ResNet34",
+    # "ResNet50",
+]
 
-# DATA ARGS
-all_args['morp_operation'] = morp_operations
 all_args['dataset'] = [
     # 'diskorectdataset',
     # 'mnistmorphodataset',
@@ -70,12 +83,17 @@ all_args['dataset'] = [
     # 'mnistclassifdataset',
     # 'mnistclassifchanneldataset',
 
-    # 'cifar10dataset',
+    'cifar10dataset',
     # 'cifar100dataset',
 
-    'cifar10classical',
+    # 'cifar10classical',
     # 'cifar100classical',
 ]
+
+
+# DATA ARGS
+all_args['morp_operation'] = morp_operations
+
 all_args['preprocessing'] = [  # for axspa roi
     None,
 ]
@@ -86,19 +104,8 @@ all_args['transform.train'] = [
     ])
 ]
 
-# degrees = 20
-# all_args['transform.val'] = [
-#     transform_default
-# ]
-# all_args['transform.test'] = [
-#     transform_default
-# ]
-
-
 all_args['dataset_path'] = [
-    # 'data/deep_morpho/dataset_0',
     "data/deep_morpho/axspa_roi/axspa_roi.csv"
-    # 'generate',
 ]
 all_args['in_ram'] = [
     # False,
@@ -108,16 +115,10 @@ all_args['random_gen_fn'] = [
     get_random_diskorect_channels
 ]
 all_args['random_gen_args'] = [
-    # {'size': (50, 50), 'n_shapes': 2, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02}
     {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': .5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
-    # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
-    # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02,}
-    # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
-    # {'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 1, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02, "border": (0, 0)}
 ]
 all_args['mnist_args'] = [
     {"threshold": 30, "size": (50, 50), "invert_input_proba": 0,},
-    # {"threshold": 30, "size": (50, 50), "invert_input_proba": 1},
 ]
 all_args['mnist_gray_args'] = [
     {"n_gray_scale_values": 20, "size": (50, 50),}
@@ -129,19 +130,13 @@ all_args['fashionmnist_gray_args'] = [
 
 all_args['channel_classif_args'] = [
     {
-        "levelset_handler_mode": "LevelsetValuesEqualIndex",
+        "levelset_handler_mode": LevelsetValuesEqualIndex,
         "levelset_handler_args": {"n_values": 10},
     }
 ]
 
 all_args['sticks_noised_angles'] = [
-    # [0, 90],
-    # [30, 60],
-    # [0, 90],
     [0, 45, 90]
-    # np.linspace(0, 180, 5),
-    # np.linspace(0, 160, 5),
-    # [30, 120],
 ]
 all_args['sticks_noised_args'] = [
     {
@@ -159,22 +154,15 @@ all_args['nb_batch_indep'] = [0]
 all_args["n_inputs_train"] = [50_000]
 all_args["n_inputs_val"] = [10_000]
 all_args["n_inputs_test"] = [10_000]
-# all_args['n_inputs'] = [
-#     3_000_000,
-#     # 100_000,
-# ]
-# all_args['train_test_split'] = [(0.1, 0.1, 0.1)]
-# all_args['train_test_split'] = [(0.9, 0.1, 0.1)]
 
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    # 1e-2,
-    # 1e-4,
-    0.003,
+    1e-2,
+    1e-3,
+    1e-4,
 ]
 
-# if max_plus, then the loss is MSELoss
 all_args['loss_data_str'] = [
     # nn.BCELoss(),
     # "MaskedBCENormalizedLoss",
@@ -182,9 +170,9 @@ all_args['loss_data_str'] = [
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
-    # "BCELoss",
+    "BCELoss",
     # "CrossEntropyLoss",
-    "SquaredHingeLoss",
+    # "SquaredHingeLoss",
     # "MSELoss",
     # "DiceLoss",
     # "MaskedDiceLoss",
@@ -200,7 +188,7 @@ all_args['optimizer'] = [
     # optim.SGD
 ]
 all_args['optimizer_args'] = [{}]
-all_args['batch_size'] = [50]
+all_args['batch_size'] = [64]
 all_args['num_workers'] = [
     20,
     # 0,
@@ -208,7 +196,7 @@ all_args['num_workers'] = [
 all_args['freq_imgs'] = [500]
 all_args['freq_hist'] = [500]
 all_args["freq_update_binary_batch"] = [None]
-all_args["freq_update_binary_epoch"] = [3]
+all_args["freq_update_binary_epoch"] = [None]
 all_args['freq_scalars'] = [50]
 all_args['max_epochs.trainer'] = [200]
 
@@ -222,25 +210,7 @@ all_args['early_stopping_on'] = [
 
 
 # MODEL ARGS
-# all_args['n_atoms'] = [
-#     # 'adapt',
-#     4,
-# ]
-all_args["model"] = [
-    # "BiMoNNClassifierMaxPoolNotBinary",
-    # "BiMoNNClassifierMaxPool",
-    # "BiMoNNClassifierLastLinearNotBinary",
-    # "BiMoNNClassifierLastLinear",
-    # "BiMoNN",
-    # "BimonnDense",
-    # "BimonnDenseNotBinary",
-    # "BimonnBiselDenseNotBinary",
-    # "ConvNetLastLinear",
-    "ConvNetBinaryConnectCifar10",
-    # "ResNet18",
-    # "ResNet34",
-    # "ResNet50",
-]
+
 all_args["activation_constructor"] = [
     # nn.ReLU,
     # nn.Sigmoid,
@@ -264,27 +234,17 @@ all_args['n_atoms'] = [
 
 all_args['kernel_size'] = [
     # 7
-    5
+    3
     # 7
     # "adapt",
 ]
 all_args['channels'] = [
     # 'adapt',
-    # [1, 1]
-    [100, 100, 100, 100]
-    # [1, 100,],
-    # [1, 100, ],
-    # [50, 100, ],
-    # [200, 200, 200]
-    # [50, 50]
-    # [20, 20, 20],
-    # [40, 40, 40],
-    # [80, 20, 20],
-    # [80, 20,],
-    # [1, 50, 50],
-    # [1, 75, 75],
-    # [1, 100, 100],
-    # [1, 200, 200],
+    [100, 100, ],
+    [200, 200, ],
+    [100, 100, 100],
+    [100, 100, 100, 100],
+    [50, 50, ],
 ]
 all_args['closest_selem_method'] = [
     # ClosestSelemEnum.MIN_DIST

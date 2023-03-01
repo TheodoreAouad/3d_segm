@@ -43,7 +43,8 @@ class GenericLightningModel(NetLightning):
         #     for name, p in inspect.signature(cls.__init__).parameters.items() if name not in ["self", "model_args"]
         # }
         default_args = super().default_args()
-        default_args["model_args"] = {"default": cls.model_class.default_args()}
+        if hasattr(cls, "model_class"):
+            default_args["model_args"] = {"default": cls.model_class.default_args()}
         return default_args
 
     @classmethod
@@ -57,8 +58,11 @@ class GenericLightningModel(NetLightning):
     @classmethod
     def get_model_from_experiment(cls, experiment: "deep_morpho.experiment.ExperimentBase"):
         args = experiment.args
+
+        model_args = args.model_args()
+
         model = cls(
-            model_args=args["model_args"],
+            model_args=model_args,
             learning_rate=args["learning_rate"],
             loss=args["loss"],
             optimizer=args["optimizer"],

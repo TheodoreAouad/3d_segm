@@ -97,5 +97,5 @@ class LightningBimonnDenseNotBinary(LightningBiMoNNClassifier):
     model_class = BimonnDenseNotBinary
 
 
-class LightningBimonnBiselDenseNotBinary(GenericLightningModel):
+class LightningBimonnBiselDenseNotBinary(LightningBiMoNNClassifier):
     model_class = BimonnBiselDenseNotBinary

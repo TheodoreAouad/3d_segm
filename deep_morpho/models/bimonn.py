@@ -23,6 +23,7 @@ class BiMoNN(BinaryNN):
             "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
             "lui_init_method": InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS,
             "bise_init_args": {"ub": 1e-2, "max_output_value": 0.95, "p_for_init": "auto"},
+            "input_mean": .5,
         },
         **kwargs,
     ):
@@ -85,6 +86,7 @@ class BiMoNN(BinaryNN):
             return BimonnInitializer(**kwargs)
 
         elif self.initializer_method.value == InitBimonnEnum.INPUT_MEAN.value:
+            print(kwargs)
             return BimonnInitInputMean(**kwargs)
 
         raise NotImplementedError("Initializer not recognized.")
@@ -214,7 +216,7 @@ class BiMoNN(BinaryNN):
 
     def bisels_kwargs_idx(self, idx):
         return dict(
-            **{'shared_weights': None, },
+            **{'shared_weights': None, "in_channels": self.in_channels[idx], "out_channels": self.out_channels[idx]},
             **{k: getattr(self, k)[idx] for k in self.bisels_args if self.is_not_default(k)}
         )
 
@@ -225,7 +227,7 @@ class BiMoNN(BinaryNN):
     @property
     def bisels_args(self):
         return set(self.bises_args).union(
-            ['in_channels', 'constant_P_lui', "lui_kwargs",]
+            ['constant_P_lui', "lui_kwargs",]
         )
 
     def _make_layer(self, idx):

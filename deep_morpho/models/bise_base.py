@@ -175,16 +175,20 @@ class BiSEBase(BinaryNN):
 
         raise NotImplementedError(f'self.bias_optim_mode must be in {BiseWeightsOptimEnum._member_names_}')
 
-    def update_closest_selems(self):
-        for chan in range(self.out_channels):
+    def update_closest_selems(self, chans=None):
+        if chans is None:
+            chans = range(self.out_channels)
+        for chan in chans:
             self.find_closest_selem_and_operation_chan(chan)
 
-    def update_binary_selems(self):
-        self.update_closest_selems()
-        self.update_learned_selems()
+    def update_binary_selems(self, chans=None):
+        self.update_closest_selems(chans=chans)
+        self.update_learned_selems(chans=chans)
 
-    def update_learned_selems(self):
-        for chan in range(self.out_channels):
+    def update_learned_selems(self, chans=None):
+        if chans is None:
+            chans = range(self.out_channels)
+        for chan in chans:
             self.find_selem_and_operation_chan(chan)
 
     def binary(self, mode: bool = True, update_binaries: bool = True, *args, **kwargs):

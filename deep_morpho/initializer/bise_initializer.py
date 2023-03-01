@@ -7,7 +7,7 @@ import torch
 import math
 import torch.nn.init as init
 
-from deep_morpho.threshold_fn import tanh_threshold_inverse, sigmoid_threshold_inverse, arctan_threshold_inverse, relu_threshold_inverse
+from deep_morpho_old.threshold_fn import tanh_threshold_inverse, sigmoid_threshold_inverse, arctan_threshold_inverse, relu_threshold_inverse
 from general.utils import uniform_sampling_bound
 
 
@@ -39,6 +39,9 @@ class InitWeightsThenBias(BiseInitializer):
     def initialize(self, module: nn.Module):
         self.init_weights(module)
         self.init_bias(module)
+
+        assert not (module.weight.isnan().any()), "NaN in weights"
+        assert not (module.bias.isnan().any()), "NaN in bias"
         return module.weight, module.bias
 
     def init_weights(self, module):
@@ -104,7 +107,7 @@ class InitSybiseBias(InitWeightsThenBias):
         self.init_class = init_class(*args, **kwargs)
 
     def get_bias_from_weights(self, module):
-        self.init_bias_value = self.input_mean * module.weight.mean() * torch.tensor(module.weights.shape[2:]).prod()
+        self.init_bias_value = self.input_mean * module.weight.mean() * torch.tensor(module.weight.shape[1:]).prod()
 
     def init_weights(self, module):
         return self.init_class(module)
@@ -136,7 +139,7 @@ class InitBiseHeuristicWeights(InitBiasFixed):
         self.input_mean = input_mean
 
     def init_weights(self, module):
-        nb_params = torch.tensor(module.weights.shape[2:]).prod()
+        nb_params = torch.tensor(module.weight.shape[1:]).prod()
         mean = self.init_bias_value / (self.input_mean * nb_params)
         std = .5
         lb = mean * (1 - std)
@@ -186,7 +189,7 @@ class InitBiseConstantVarianceWeights(InitBiasFixed):
         return self._get_init_p(nb_params, thresh_inv, self.max_output_value)
 
     def init_weights(self, module):
-        nb_params = torch.tensor(module.weights.shape[2:]).prod()
+        nb_params = torch.tensor(module.weight.shape[1:]).prod()
         p = self.get_init_p(nb_params, module) if self.p_for_init == 'auto' else self.p_for_init
         # p = 1
         mean = self.get_mean(p, nb_params)
@@ -202,7 +205,7 @@ class InitBiseConstantVarianceWeights(InitBiasFixed):
             new_weights
         )
 
-        self.init_bias_value = self.input_mean * module.weights.sum((2, 3))
+        self.init_bias_value = self.input_mean * module.weight.sum((1, 2, 3))
 
 
 class InitBiseConstantVarianceConstantWeights(InitBiseConstantVarianceWeights):
@@ -210,7 +213,7 @@ class InitBiseConstantVarianceConstantWeights(InitBiseConstantVarianceWeights):
     """
 
     def init_weights(self, module):
-        nb_params = torch.tensor(module.weights.shape[2:]).prod()
+        nb_params = torch.tensor(module.weight.shape[1:]).prod()
         p = self.get_init_p(nb_params, module)
 
         mean = self.get_mean(p, nb_params)
@@ -222,7 +225,7 @@ class InitBiseConstantVarianceConstantWeights(InitBiseConstantVarianceWeights):
         )
 
 
-        self.init_bias_value = self.input_mean * module.weights.sum((2, 3))
+        self.init_bias_value = self.input_mean * module.weight.sum((1, 2, 3))
 
 
 class InitBiseConstantVarianceConstantWeightsRandomBias(InitBiseConstantVarianceConstantWeights):
@@ -242,7 +245,7 @@ class InitDualBiseConstantVarianceConstantWeights(InitBiseConstantVarianceWeight
     """
 
     def init_weights(self, module):
-        nb_params = torch.tensor(module.weights.shape[2:]).prod()
+        nb_params = torch.tensor(module.weight.shape[1:]).prod()
         p = self.get_init_p(nb_params, module)
 
         mean = self.get_mean(p, nb_params)
@@ -254,7 +257,7 @@ class InitDualBiseConstantVarianceConstantWeights(InitBiseConstantVarianceWeight
 
         module.weights_handler.factor = mean * nb_params  # set the factor to have the right mean and variance
 
-        self.init_bias_value = self.input_mean * module.weights.sum((2, 3))
+        self.init_bias_value = self.input_mean * module.weight.sum((1, 2, 3))
 
 
 class InitDualBiseConstantVarianceConstantWeightsRandomBias(InitDualBiseConstantVarianceConstantWeights):
@@ -272,7 +275,7 @@ class InitDualBiseConstantVarianceConstantWeightsRandomBias(InitDualBiseConstant
 class InitDualBiseConstantVarianceWeights(InitBiseConstantVarianceWeights):
 
     def init_weights(self, module):
-        nb_params = torch.tensor(module.weights.shape[2:]).prod()
+        nb_params = torch.tensor(module.weight.shape[1:]).prod()
         p = self.get_init_p(nb_params, module)
 
         mean = self.get_mean(p, nb_params)
@@ -290,7 +293,7 @@ class InitDualBiseConstantVarianceWeights(InitBiseConstantVarianceWeights):
 
         module.weights_handler.factor = mean * nb_params  # set the factor to have the right mean and variance
 
-        self.init_bias_value = self.input_mean * module.weights.sum((2, 3))
+        self.init_bias_value = self.input_mean * module.weight.sum((1, 2, 3))
 
 
 
@@ -328,7 +331,7 @@ class InitSybiseHeuristicWeights(InitWeightsThenBias):
         self.nb_params = None
 
     def init_weights(self, module):
-        nb_params = torch.tensor(module.weights.shape[2:]).prod()
+        nb_params = torch.tensor(module.weight.shape[1:]).prod()
         if self.mean_weight == 'auto':
             mean = .5
         else:
@@ -363,7 +366,7 @@ class InitSybiseConstantVarianceWeights(InitWeightsThenBias):
 
     def init_weights(self, module):
         p = 1
-        nb_params = torch.tensor(module.weights.shape[2:]).prod()
+        nb_params = torch.tensor(module.weight.shape[1:]).prod()
 
         if self.mean_weight == "auto":
             ub = 1 / (p * torch.sqrt(nb_params))
@@ -406,7 +409,7 @@ class InitSybiseConstantVarianceConstantWeights(InitSybiseConstantVarianceWeight
 
     def init_weights(self, module):
         p = 1
-        nb_params = torch.tensor(module.weights.shape[2:]).prod()
+        nb_params = torch.tensor(module.weight.shape[1:]).prod()
 
         if self.mean_weight == "auto":
             ub = 1 / (p * torch.sqrt(nb_params))

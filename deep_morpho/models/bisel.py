@@ -167,10 +167,26 @@ class BiSELBase(BinaryNN):
         return output
 
     def convert_chin_chout_bise_chan(self, chin: int, chout: int):
-        return chin * self.bises.groups + chout
+        # return chin * self.bises.groups + chout
+        return chin * self.out_channels + chout
+
+    def get_activation_P_bise(self, chin: int, chout: int):
+        return self.bises.activation_P[self.convert_chin_chout_bise_chan(chin, chout)]
+
+    def get_activation_P_lui(self, chout: int):
+        return self.luis.activation_P[chout]
+
+    def get_bias_bise(self, chin: int, chout: int):
+        return self.bises.bias[self.convert_chin_chout_bise_chan(chin, chout)]
+
+    def get_bias_lui(self, chout: int):
+        return self.luis.bias[chout]
 
     def get_weight_bise(self, chin: int, chout: int):
         return self.bises.weight[self.convert_chin_chout_bise_chan(chin, chout), 0, ...]
+
+    def get_closest_operation_bise(self, chin: int, chout: int):
+        return self.bises.closest_operation[self.convert_chin_chout_bise_chan(chin, chout)]
 
     def get_weight_param_bise(self, chin: int, chout: int):
         return self.bises.weight_param[self.convert_chin_chout_bise_chan(chin, chout), 0, ...]
@@ -187,25 +203,35 @@ class BiSELBase(BinaryNN):
             return None
         return grad_biases[self.convert_chin_chout_bise_chan(chin, chout)]
 
-    def get_bias_grad_lui(self, chin: int, chout: int):
+    def get_bias_grad_lui(self, chout: int):
         grad_biases = self.luis.bias.grad
         if grad_biases is None:
             return None
-        return grad_biases[chout, chin]
+        return grad_biases[chout]
 
     @property
     def weight(self) -> torch.Tensor:
         """ Returns the convolution weights, of shape (out_channels, in_channels, W, L).
         """
         # return torch.cat([layer.weight for layer in self.bises], axis=1)
+        with torch.no_grad():
+            return torch.stack([
+                torch.stack(
+                    [self.get_weight_bise(chin, chout) for chin in range(self.in_channels)]
+                ) for chout in range(self.out_channels)
+            ])
+
+
+    @property
+    def activation_P_bise(self) -> torch.Tensor:
+        """ Returns the activation P parameter, of shape (out_channels, in_channels).
+        """
+        # return torch.cat([layer.weight for layer in self.bises], axis=1)
         return torch.stack([
             torch.stack(
-                [self.get_weight_bise(chin, chout) for chin in range(self.in_channels)]
+                [self.get_activation_P_bise(chin, chout) for chin in range(self.in_channels)]
             ) for chout in range(self.out_channels)
         ])
-
-    def get_bias_bise(self, chin: int, chout: int):
-        return self.bises.bias[self.convert_chin_chout_bise_chan(chin, chout)]
 
     @property
     def bias_bise(self) -> torch.Tensor:
@@ -235,24 +261,18 @@ class BiSELBase(BinaryNN):
     def bias_lui(self):
         return self.luis.bias
 
-    @property
-    def activation_P_bise(self) -> torch.Tensor:
-        """ Returns the activations P of the bise layers, of shape (out_channels, in_channels).
-        """
-        return torch.stack([layer.activation_P for layer in self.bises], axis=-1)
-
-    @property
-    def weight_P_bise(self) -> torch.Tensor:
-        """ Returns the weights P of the bise layers, of shape (out_channels, in_channels).
-        """
-        return torch.stack([layer.weight_P for layer in self.bises], axis=-1)
+    # @property
+    # def weight_P_bise(self) -> torch.Tensor:
+    #     """ Returns the weights P of the bise layers, of shape (out_channels, in_channels).
+    #     """
+    #     return torch.stack([layer.weight_P for layer in self.bises], axis=-1)
 
 
     @property
     def activation_P_lui(self) -> torch.Tensor:
         """ Returns the activations P of the lui layer, of shape (out_channels).
         """
-        return torch.cat([layer.activation_P for layer in self.luis])
+        return self.luis.activation_P
 
 
     # @property
@@ -275,67 +295,67 @@ class BiSELBase(BinaryNN):
     def bias_luis(self) -> torch.Tensor:
         return self.bias_lui
 
-    @property
-    def is_activated_bise(self) -> np.ndarray:
-        """ Returns the activation status of the bise layers, of shape (out_channels, in_channels).
-        """
-        return np.stack([layer.is_activated for layer in self.bises], axis=-1)
+    # @property
+    # def is_activated_bise(self) -> np.ndarray:
+    #     """ Returns the activation status of the bise layers, of shape (out_channels, in_channels).
+    #     """
+    #     return np.stack([layer.is_activated for layer in self.bises], axis=-1)
 
-    @property
-    def closest_selem_dist_bise(self) -> np.ndarray:
-        """ Returns the activation status of the bise layers, of shape (out_channels, in_channels).
-        """
-        return np.stack([layer.closest_selem_dist for layer in self.bises], axis=-1)
+    # @property
+    # def closest_selem_dist_bise(self) -> np.ndarray:
+    #     """ Returns the activation status of the bise layers, of shape (out_channels, in_channels).
+    #     """
+    #     return np.stack([layer.closest_selem_dist for layer in self.bises], axis=-1)
 
-    @property
-    def learned_selem_bise(self) -> np.ndarray:
-        return np.stack([layer.learned_selem[:, None, ...] for layer in self.bises], axis=1)
+    # @property
+    # def learned_selem_bise(self) -> np.ndarray:
+    #     return np.stack([layer.learned_selem[:, None, ...] for layer in self.bises], axis=1)
 
-    @property
-    def closest_selem_bise(self) -> np.ndarray:
-        return np.stack([layer.closest_selem[:, None, ...] for layer in self.bises], axis=1)
+    # @property
+    # def closest_selem_bise(self) -> np.ndarray:
+    #     return np.stack([layer.closest_selem[:, None, ...] for layer in self.bises], axis=1)
 
-    @property
-    def closest_operation_bise(self) -> np.ndarray:
-        return np.stack([layer.closest_operation for layer in self.bises], axis=-1)
+    # @property
+    # def closest_operation_bise(self) -> np.ndarray:
+    #     return np.stack([layer.closest_operation for layer in self.bises], axis=-1)
 
-    @property
-    def learned_operation_bise(self) -> np.ndarray:
-        return np.stack([layer.learned_operation for layer in self.bises], axis=-1)
+    # @property
+    # def learned_operation_bise(self) -> np.ndarray:
+    #     return np.stack([layer.learned_operation for layer in self.bises], axis=-1)
 
-    @property
-    def is_activated_lui(self) -> np.ndarray:
-        """ Returns the activation status of the bise layers, of shape (out_channels, in_channels).
-        """
-        return np.stack([layer.is_activated for layer in self.luis], axis=-1)
+    # @property
+    # def is_activated_lui(self) -> np.ndarray:
+    #     """ Returns the activation status of the bise layers, of shape (out_channels, in_channels).
+    #     """
+    #     return np.stack([layer.is_activated for layer in self.luis], axis=-1)
 
-    @property
-    def closest_selem_dist_lui(self) -> np.ndarray:
-        """ Returns the activation status of the bise layers, of shape (out_channels, in_channels).
-        """
-        return np.stack([layer.closest_selem_dist for layer in self.luis], axis=-1)
+    # @property
+    # def closest_selem_dist_lui(self) -> np.ndarray:
+    #     """ Returns the activation status of the bise layers, of shape (out_channels, in_channels).
+    #     """
+    #     return np.stack([layer.closest_selem_dist for layer in self.luis], axis=-1)
 
-    @property
-    def learned_selem_lui(self) -> np.ndarray:
-        return np.stack([layer.learned_selem[:, None, ...] for layer in self.luis], axis=1)
+    # @property
+    # def learned_selem_lui(self) -> np.ndarray:
+    #     return np.stack([layer.learned_selem[:, None, ...] for layer in self.luis], axis=1)
 
-    @property
-    def closest_selem_lui(self) -> np.ndarray:
-        return np.stack([layer.closest_selem[:, None, ...] for layer in self.luis], axis=1)
+    # @property
+    # def closest_selem_lui(self) -> np.ndarray:
+    #     return np.stack([layer.closest_selem[:, None, ...] for layer in self.luis], axis=1)
 
-    @property
-    def closest_operation_lui(self) -> np.ndarray:
-        return np.stack([layer.closest_operation for layer in self.luis], axis=-1)
+    # @property
+    # def closest_operation_lui(self) -> np.ndarray:
+    #     return np.stack([layer.closest_operation for layer in self.luis], axis=-1)
 
-    @property
-    def learned_operation_lui(self) -> np.ndarray:
-        return np.stack([layer.learned_operation for layer in self.luis], axis=-1)
+    # @property
+    # def learned_operation_lui(self) -> np.ndarray:
+    #     return np.stack([layer.learned_operation for layer in self.luis], axis=-1)
 
     @property
     def coefs(self) -> torch.Tensor:
         """ Returns the coefficients of the linear operation of LUI, of shape (out_channels, in_channels).
         """
-        return torch.cat([layer.coefs for layer in self.luis], axis=0)
+        return self.coef
 
     @property
     def bises_args(self):
@@ -344,7 +364,7 @@ class BiSELBase(BinaryNN):
     @staticmethod
     def _bises_args():
         return [
-            'kernel_size', 'weight_P', 'threshold_mode', 'activation_P',
+            'kernel_size', 'weight_P', 'threshold_mode', 'activation_P', 'in_channels',
             'out_channels', "constant_activation_P", "constant_weight_P", "closest_selem_method",
             "bias_optim_mode", "bias_optim_args", "weights_optim_mode", "weights_optim_args",
         ]

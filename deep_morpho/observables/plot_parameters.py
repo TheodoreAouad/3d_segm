@@ -36,19 +36,19 @@ class PlotWeightsBiSE(ObservableLayersChans):
         chan_input: int,
         chan_output: int,
     ):
-        # weights_param = layer.weights[chan_output, chan_input]
-        # weights_norm = layer.weight[chan_output, chan_input]
         weights_param = layer.get_weight_param_bise(chin=chan_input, chout=chan_output)
-        weights = layer.get_weight_norm_bise(chin=chan_input, chout=chan_output)
+        weights = layer.get_weight_bise(chin=chan_input, chout=chan_output)
+        bias_bise = layer.get_bias_bise(chin=chan_input, chout=chan_output)
+        activation_P_bise = layer.get_activation_P_bise(chin=chan_input, chout=chan_output)
 
         trainer.logger.experiment.add_figure(
             f"weights/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
-            self.get_figure_raw_weights(weights, layer.bias_bise[chan_output, chan_input], layer.activation_P_bise[chan_output, chan_input]),
+            self.get_figure_raw_weights(weights, bias_bise, activation_P_bise),
             trainer.global_step
         )
         trainer.logger.experiment.add_figure(
             f"weights_raw/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
-            self.get_figure_raw_weights(weights_param, layer.bias_bise[chan_output, chan_input], layer.activation_P_bise[chan_output, chan_input]),
+            self.get_figure_raw_weights(weights_param, bias_bise, activation_P_bise),
             trainer.global_step
         )
 
@@ -127,15 +127,15 @@ class PlotParametersBiSE(ObservableLayersChans):
     ):
         metrics = {}
         last_params = {}
-        weights = layer.weight[chan_output, chan_input]
+        weights = layer.get_weight_norm_bise(chin=chan_input, chout=chan_output)
+        bias_bise = layer.get_bias_bise(chin=chan_input, chout=chan_output)
+        activation_P_bise = layer.get_activation_P_bise(chin=chan_input, chout=chan_output)
 
-
-        bias_bise = layer.bias_bise[chan_output, chan_input]
         weights_sum = weights.sum() / 2
         lb_bias = weights.min()
         ub_bias = 2 * weights_sum
 
-        metrics[f'params/activation_P/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}'] = layer.activation_P_bise[chan_output, chan_input]
+        metrics[f'params/activation_P/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}'] = activation_P_bise
         metrics[f'params/bias_bise/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}'] = bias_bise
 
         metrics[f'monitor/bise_B-Wsum/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}'] = -bias_bise - weights_sum
@@ -146,14 +146,9 @@ class PlotParametersBiSE(ObservableLayersChans):
         trainer.logger.log_metrics(metrics, trainer.global_step)
         self.last_params[layer_idx] = last_params
 
-        # trainer.logger.experiment.add_scalars(
-        #     f"comparative/weight_P/layer_{layer_idx}_chout_{chan_output}",
-        #     {f"chin_{chan_input}": layer.weight_P_bise[chan_output, chan_input]},
-        #     trainer.global_step
-        # )
         trainer.logger.experiment.add_scalars(
             f"comparative/activation_P/layer_{layer_idx}_chout_{chan_output}",
-            {f"chin_{chan_input}": layer.activation_P_bise[chan_output, chan_input]},
+            {f"chin_{chan_input}": activation_P_bise},
             trainer.global_step
         )
         trainer.logger.experiment.add_scalars(
