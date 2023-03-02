@@ -55,19 +55,26 @@ class ArgsMnist(ArgsEnforcer):
 
 class ArgsCifar(ArgsEnforcer):
     def enforce(self, experiment: "ExperimentBase"):
+        import torchvision.transforms as transforms
+        from deep_morpho.datasets.cifar_dataset import transform_default
+        
         experiment.args["n_inputs.train"] = 45_000
         experiment.args["n_inputs.val"] = 5_000
         experiment.args["n_inputs.test"] = 10_000
+        experiment.args["transform.train"] = transforms.Compose([
+            transforms.RandomRotation(degrees=10),
+            transform_default,
+        ])
 
 
-class ArgsMnistClassifChannel(ArgsEnforcer):
-    def enforce(self, experiment: "ExperimentBase"):
-        experiment.args["channels"].insert(0, experiment.args["channel_classif_args"]["levelset_handler_args"]["n_values"])
+# class ArgsMnistClassifChannel(ArgsEnforcer):
+#     def enforce(self, experiment: "ExperimentBase"):
+#         experiment.args["channels"].insert(0, experiment.args["channel_classif_args"]["levelset_handler_args"]["n_values"])
 
 
-class ArgsMnistClassif(ArgsEnforcer):
-    def enforce(self, experiment: "ExperimentBase"):
-        experiment.args["channels"].insert(0, 1)
+# class ArgsMnistClassif(ArgsEnforcer):
+#     def enforce(self, experiment: "ExperimentBase"):
+#         experiment.args["channels"].insert(0, 1)
 
 
 class ArgsClassifChannel(ArgsEnforcer):

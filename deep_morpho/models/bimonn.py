@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import List, Tuple, Union, Dict, Optional, Any
+from typing import List, Tuple, Union, Dict, Optional, Any, Callable
 import inspect
 
 import numpy as np
@@ -257,6 +257,26 @@ class BiMoNN(BinaryNN):
 
 class BiMoNNClassifier(BiMoNN, ABC):
 
+    def __init__(
+        self,
+        kernel_size: List[Union[Tuple, int]],
+        n_classes: int,
+        input_size: Tuple[int],
+        channels: List[int] = None,
+        *args,
+        **kwargs
+    ):
+        assert len(input_size) == 3, "input_size shape must be (n_chan, width, length)"
+        assert isinstance(n_classes, int), f"n_classes is {n_classes} but must be an integer"
+
+        channels = [input_size[0]] + channels + [n_classes]
+        super().__init__(*args, kernel_size=kernel_size, channels=channels, **kwargs)
+
+        self.n_classes = n_classes
+        self.input_size = input_size
+
+
+
     def forward(self, x):
         output = super().forward(x)
         batch_size = output.shape[0]
@@ -275,10 +295,10 @@ class BiMoNNClassifier(BiMoNN, ABC):
 
 
 class BiMoNNClassifierLastLinearBase(BiMoNNClassifier):
+    classif_layer_fn: Callable
 
     def __init__(
         self,
-        classif_layer_fn,
         kernel_size: List[Union[Tuple, int]],
         n_classes: int,
         input_size: Tuple[int],
@@ -286,24 +306,17 @@ class BiMoNNClassifierLastLinearBase(BiMoNNClassifier):
         *args,
         **kwargs
     ):
-        super().__init__(*args, kernel_size=kernel_size, **kwargs)
-        # if isinstance(input_size, int):
-        #     input_size = (input_size, input_size)
+        super().__init__(*args, kernel_size=kernel_size, n_classes=n_classes, input_size=input_size, **kwargs)
 
-        self.channels = [input_size[0]] + self.channels + [n_classes]
         self.repr_size = input_size[1:]
 
-        # if len(input_size) > 2:
-        #     input_size = input_size[-2:]
-
-        assert isinstance(n_classes, int), f"n_classes is {n_classes} but must be an integer"
 
         self.bisel_kwargs = self.bisels_kwargs_idx(0) if final_bisel_kwargs is None else final_bisel_kwargs
         self.bisel_kwargs["in_channels"] = self.out_channels[-1]
         self.bisel_kwargs["out_channels"] = n_classes
         self.bisel_kwargs["kernel_size"] = self.repr_size
         self.bisel_kwargs["padding"] = 0
-        self.classification_layer = classif_layer_fn(**self.bisel_kwargs)
+        self.classification_layer = self.classif_layer_fn(**self.bisel_kwargs)
 
         # self.in_channels.append(self.out_channels[-1])
         # self.out_channels.append(n_classes)
@@ -324,8 +337,8 @@ class BiMoNNClassifierLastLinear(BiMoNNClassifierLastLinearBase):
         *args,
         **kwargs
     ):
+        self.classif_layer_fn = SyBiSEL if atomic_element in ["sybisel", ["sybisel"]] else BiSEL
         super().__init__(
-            classif_layer_fn=SyBiSEL if atomic_element in ["sybisel", ["sybisel"]] else BiSEL,
             kernel_size=kernel_size,
             n_classes=n_classes,
             input_size=input_size,
@@ -347,8 +360,8 @@ class BiMoNNClassifierLastLinearNotBinary(BiMoNNClassifierLastLinearBase):
         *args,
         **kwargs
     ):
+        self.classif_layer_fn=SyBiSELNotBinary if atomic_element in ["sybisel", ["sybisel"]] else BiSELNotBinary
         super().__init__(
-            classif_layer_fn=SyBiSELNotBinary if atomic_element in ["sybisel", ["sybisel"]] else BiSELNotBinary,
             kernel_size=kernel_size,
             n_classes=n_classes,
             input_size=input_size,
@@ -361,9 +374,9 @@ class BiMoNNClassifierLastLinearNotBinary(BiMoNNClassifierLastLinearBase):
 
 
 class BiMoNNClassifierMaxPoolBase(BiMoNNClassifier):
+    classif_layer_fn: Callable
     def __init__(
         self,
-        classif_layer_fn,
         kernel_size: List[Union[Tuple, int]],
         n_classes: int,
         input_size: Tuple[int],
@@ -371,11 +384,11 @@ class BiMoNNClassifierMaxPoolBase(BiMoNNClassifier):
         *args,
         **kwargs
     ):
-        super().__init__(*args, kernel_size=kernel_size, **kwargs)
+        super().__init__(*args, kernel_size=kernel_size, n_classes=n_classes, input_size=input_size, **kwargs)
 
-        self.channels = [input_size[0]] + self.channels + [n_classes]
+        # self.channels = [input_size[0]] + self.channels + [n_classes]
 
-        assert len(input_size) == 3, "input_size shape must be (n_chan, width, length)"
+        # assert len(input_size) == 3, "input_size shape must be (n_chan, width, length)"
 
         self.repr_size = input_size[1:]
         self.maxpool_layers = []
@@ -400,7 +413,7 @@ class BiMoNNClassifierMaxPoolBase(BiMoNNClassifier):
         self.bisel_kwargs["kernel_size"] = self.repr_size
         self.bisel_kwargs["padding"] = 0
 
-        self.classification_layer = classif_layer_fn(**self.bisel_kwargs)
+        self.classification_layer = self.classif_layer_fn(**self.bisel_kwargs)
 
         # self.in_channels.append(self.out_channels[-1])
         # self.out_channels.append(n_classes)
@@ -421,8 +434,8 @@ class BiMoNNClassifierMaxPool(BiMoNNClassifierMaxPoolBase):
         *args,
         **kwargs
     ):
+        self.classif_layer_fn = SyBiSEL if atomic_element in ["sybisel", ["sybisel"]] else BiSEL
         super().__init__(
-            classif_layer_fn=SyBiSEL if atomic_element in ["sybisel", ["sybisel"]] else BiSEL,
             kernel_size=kernel_size,
             n_classes=n_classes,
             input_size=input_size,
@@ -443,8 +456,8 @@ class BiMoNNClassifierMaxPoolNotBinary(BiMoNNClassifierMaxPoolBase):
         *args,
         **kwargs
     ):
+        self.classif_layer_fn = SyBiSELNotBinary if atomic_element in ["sybisel", ["sybisel"]] else BiSELNotBinary
         super().__init__(
-            classif_layer_fn=SyBiSELNotBinary if atomic_element in ["sybisel", ["sybisel"]] else BiSELNotBinary,
             kernel_size=kernel_size,
             n_classes=n_classes,
             input_size=input_size,

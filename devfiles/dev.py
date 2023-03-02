@@ -1,5 +1,9 @@
-from deep_morpho.models import GenericLightningModel
-from deep_morpho.models import BinaryNN
+from deep_morpho.datasets import MNISTClassical
+from torch.utils.data import DataLoader
 
-GenericLightningModel.select("BimonnBiselDenseNotBinary").default_args()
-BinaryNN.select("BimonnBiselDenseNotBinary").default_args()
+dataset = MNISTClassical()
+# dataloader = DataLoader(dataset, batch_size=32)
+dataloader = MNISTClassical.get_loader(batch_size=32)
+
+img, tar = next(iter(dataloader))
+pass

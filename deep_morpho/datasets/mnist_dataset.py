@@ -20,6 +20,28 @@ with open('deep_morpho/datasets/root_mnist_dir.txt', 'r') as f:
     ROOT_MNIST_DIR = f.read()
 
 
+transform_default = ToTensor()
+
+
+class MNISTClassical(SelectIndexesDataset, MNIST):
+    def __init__(
+        self,
+        root: str = ROOT_MNIST_DIR,
+        preprocessing: Callable = None,
+        train: bool = True,
+        transform: Callable = transform_default,
+        *args, **kwargs
+    ):
+        MNIST.__init__(self, root=root, transform=transform, train=train,)
+        self.preprocessing = preprocessing
+
+        SelectIndexesDataset.__init__(self, *args, **kwargs)
+
+    @property
+    def processed_folder(self) -> str:
+        return join(self.root, 'processed')
+
+
 class MnistMorphoDataset(MnistBaseDataset, MNIST):
 
     def __init__(

@@ -12,7 +12,7 @@ from .experiment_base import ExperimentBase
 from .experiment_morpho import ExperimentMorphoBinary, ExperimentMorphoGrayScale, ExperimentDiskorect
 from .experiment_classification import ExperimentClassification, ExperimentClassificationChannel
 from .context import Task
-from .args_enforcers import ArgsMnist, ArgsCifar, ArgsMnistClassif, ArgsMnistClassifChannel
+from .args_enforcers import ArgsMnist, ArgsCifar  #, ArgsMnistClassif, ArgsMnistClassifChannel
 from general.nn.experiments.experiment_methods import ExperimentMethods
 from deep_morpho.models import LightningBiMoNN
 
@@ -35,6 +35,7 @@ class MultiExperiment(ExperimentMethods):
         "mnistgrayscaledataset",
         "mnistclassifdataset",
         "mnistclassifchanneldataset",
+        "mnistclassical",
     ]
 
     CIFAR_DATASETS = [
@@ -134,11 +135,11 @@ class MultiExperiment(ExperimentMethods):
         if args["dataset"] in self.CIFAR_DATASETS:
             args_enforcers.append(ArgsCifar())
 
-        if args["dataset"] == "mnistclassifdataset":
-            args_enforcers.append(ArgsMnistClassif())
+        # if args["dataset"] == "mnistclassifdataset":
+        #     args_enforcers.append(ArgsMnistClassif())
 
-        if args["dataset"] == "mnistclassifchanneldataset":
-            args_enforcers.append(ArgsMnistClassifChannel())
+        # if args["dataset"] == "mnistclassifchanneldataset":
+        #     args_enforcers.append(ArgsMnistClassifChannel())
 
         return args_enforcers
 

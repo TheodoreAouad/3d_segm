@@ -1,7 +1,7 @@
 from .generic_lightning_model import GenericLightningModel
 
 from .classical_conv import (
-    ConvNetLastLinear, ConvNetBinaryConnectCifar10
+    ConvNetLastLinear, ConvNetBinaryConnectCifar10, MLPBinaryConnectMNIST
 )
 from .resnet import (
     ResNet, ResNet18, ResNet34, ResNet50
@@ -37,6 +37,10 @@ class LightningConvNetLastLinear(GenericLightningModel):
 
 class LightningConvNetBinaryConnectCifar10(LightningConvNetLastLinear):
     model_class = ConvNetBinaryConnectCifar10
+
+
+class LightningMLPBinaryConnectMNIST(LightningConvNetLastLinear):
+    model_class = MLPBinaryConnectMNIST
 
 
 class LightningResNet(GenericLightningModel):

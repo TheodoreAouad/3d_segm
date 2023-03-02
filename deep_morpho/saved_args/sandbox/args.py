@@ -52,20 +52,21 @@ all_args['n_try'] = [0]
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
     # "tests",
-    "Bimonn_exp_77/sandbox2/"
+    "Bimonn_exp_77/bimonn_last_linear/"
 ]
 
 all_args["model"] = [
     # "BiMoNNClassifierMaxPoolNotBinary",
     # "BiMoNNClassifierMaxPool",
-    # "BiMoNNClassifierLastLinearNotBinary",
+    "BiMoNNClassifierLastLinearNotBinary",
     # "BiMoNNClassifierLastLinear",
     # "BiMoNN",
     # "BimonnDense",
     # "BimonnDenseNotBinary",
-    "BimonnBiselDenseNotBinary",
+    # "BimonnBiselDenseNotBinary",
     # "ConvNetLastLinear",
     # "ConvNetBinaryConnectCifar10",
+    # "MLPBinaryConnectMNIST",
     # "ResNet18",
     # "ResNet34",
     # "ResNet50",
@@ -81,11 +82,12 @@ all_args['dataset'] = [
     # AxspaROISimpleDataset
 
     # 'mnistclassifdataset',
-    # 'mnistclassifchanneldataset',
+    'mnistclassifchanneldataset',
 
-    'cifar10dataset',
+    # 'cifar10dataset',
     # 'cifar100dataset',
 
+    # 'mnistclassical',
     # 'cifar10classical',
     # 'cifar100classical',
 ]
@@ -97,12 +99,12 @@ all_args['morp_operation'] = morp_operations
 all_args['preprocessing'] = [  # for axspa roi
     None,
 ]
-all_args['transform.train'] = [
-    transforms.Compose([
-        transforms.RandomRotation(degrees=10),
-        transform_default,
-    ])
-]
+# all_args['transform.train'] = [
+#     transforms.Compose([
+#         transforms.RandomRotation(degrees=10),
+#         transform_default,
+#     ])
+# ]
 
 all_args['dataset_path'] = [
     "data/deep_morpho/axspa_roi/axspa_roi.csv"
@@ -158,9 +160,10 @@ all_args["n_inputs_test"] = [10_000]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-2,
-    1e-3,
-    1e-4,
+    1e-1,
+    # 0.001,
+    # 1e-3,
+    # 1e-4,
 ]
 
 all_args['loss_data_str'] = [
@@ -202,7 +205,7 @@ all_args['max_epochs.trainer'] = [200]
 
 all_args['patience_loss_batch'] = [2100]
 all_args['patience_loss_epoch'] = [15]
-all_args['patience_reduce_lr'] = [1/3]
+all_args['patience_reduce_lr'] = [1/5]
 all_args['early_stopping_on'] = [
     # 'batch',
     'epoch'
@@ -211,14 +214,18 @@ all_args['early_stopping_on'] = [
 
 # MODEL ARGS
 
+all_args["num_units"] = [  # For MLPBinaryConnectMNIST
+    1024
+]
+
 all_args["activation_constructor"] = [
     # nn.ReLU,
     # nn.Sigmoid,
     NormalizedTanh,
 ]
 all_args["do_maxpool"] = [
-    True,
-    # False,
+    # True,
+    False,
 ]
 
 all_args['atomic_element'] = [
@@ -234,17 +241,17 @@ all_args['n_atoms'] = [
 
 all_args['kernel_size'] = [
     # 7
-    3
+    5
     # 7
     # "adapt",
 ]
 all_args['channels'] = [
     # 'adapt',
-    [100, 100, ],
-    [200, 200, ],
-    [100, 100, 100],
-    [100, 100, 100, 100],
-    [50, 50, ],
+    [100, ],
+    # [200, 200, ],
+    # [100, 100, 100],
+    # [100, 100, 100, 100],
+    # [50, 50, ],
 ]
 all_args['closest_selem_method'] = [
     # ClosestSelemEnum.MIN_DIST

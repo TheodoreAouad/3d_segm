@@ -128,3 +128,57 @@ class ConvNetBinaryConnectCifar10(BinaryNN):
         x = self.linear_block(x)
 
         return x
+
+
+class MLPBinaryConnectMNIST(BinaryNN):
+    def __init__(
+        self,
+        input_size: Tuple[int, int, int],
+        n_classes: int,
+        activation_constructor: Callable = nn.ReLU,
+        num_units: int = 2048,
+    ):
+        super().__init__()
+        self.input_size = input_size
+        self.n_classes = n_classes
+
+        alpha = .15
+        epsilon = 1e-4
+
+        # num_units = 2048
+        n_hidden_layers = 3
+
+        self.flatten = nn.Flatten()
+
+        linear_blocks = []
+
+        linear_blocks.append(
+            nn.Sequential(
+                nn.Linear(in_features=input_size[0] * input_size[1] * input_size[2], out_features=num_units),
+                nn.BatchNorm1d(num_units, eps=epsilon, momentum=alpha),
+                activation_constructor(),
+            )
+        )
+
+        for _ in range(n_hidden_layers - 1):
+            linear_blocks.append(
+                nn.Sequential(
+                    nn.Linear(in_features=num_units, out_features=num_units),
+                    nn.BatchNorm1d(num_units, eps=epsilon, momentum=alpha),
+                    activation_constructor(),
+                )
+            )
+
+        self.linear_blocks = nn.Sequential(*linear_blocks)
+
+        self.linear_last = nn.Sequential(
+            nn.Linear(in_features=num_units, out_features=n_classes),
+            nn.BatchNorm1d(n_classes, eps=epsilon, momentum=alpha),
+        )
+
+    def forward(self, x: torch.Tensor, *args, **kwargs) -> torch.Tensor:
+        x = self.flatten(x)
+        x = self.linear_blocks(x)
+        x = self.linear_last(x)
+
+        return x
