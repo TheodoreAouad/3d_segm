@@ -214,7 +214,7 @@ class BiMoNN(BinaryNN):
 
     def bisels_kwargs_idx(self, idx):
         return dict(
-            **{'shared_weights': None, },
+            **{'shared_weights': None, "in_channels": self.in_channels[idx], "out_channels": self.out_channels[idx]},
             **{k: getattr(self, k)[idx] for k in self.bisels_args if self.is_not_default(k)}
         )
 

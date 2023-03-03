@@ -47,14 +47,15 @@ class BiMoNN(BinaryNN):
 
         self.bisel_initializers = self.initalizer.generate_bisel_initializers(self)
 
-        self.layers = []
+        # self.layers = []
+        self.layers = nn.Sequential()
         self.bises_idx = []
         self.bisecs_idx = []
         self.bisels_idx = []
         for idx in range(len(self)):
             layer = self._make_layer(idx)
             self.layers.append(layer)
-            setattr(self, f'layer{idx+1}', layer)
+            # setattr(self, f'layer{idx+1}', layer)
 
     def _check_args(self):
         assert isinstance(self.kernel_size, list), "kernel_size must be a list of int"
@@ -269,7 +270,7 @@ class BiMoNNClassifier(BiMoNN, ABC):
         assert len(input_size) == 3, "input_size shape must be (n_chan, width, length)"
         assert isinstance(n_classes, int), f"n_classes is {n_classes} but must be an integer"
 
-        channels = [input_size[0]] + channels + [n_classes]
+        channels = [input_size[0]] + channels
         super().__init__(*args, kernel_size=kernel_size, channels=channels, **kwargs)
 
         self.n_classes = n_classes
@@ -395,14 +396,14 @@ class BiMoNNClassifierMaxPoolBase(BiMoNNClassifier):
         for idx in range(len(self)):
             self.repr_size = (self.repr_size[0] // 2, self.repr_size[1] // 2)
             self.maxpool_layers.append(nn.MaxPool2d((2, 2)))
-            setattr(self, f"maxpool_{idx}", self.maxpool_layers[-1])
+            # setattr(self, f"maxpool_{idx}", self.maxpool_layers[-1])
 
 
         # Compatibility python 3.7
         layers2 = []
         for bisel, maxpool in zip(self.layers, self.maxpool_layers):
-            layers2 += [bisel, maxpool]
-        self.layers = layers2
+            layers2 += nn.Sequential(bisel, maxpool)
+        self.layers = nn.Sequential(*layers2)
         # self.layers = sum([[bisel, maxpool] for bisel, maxpool in zip(self.layers, self.maxpool_layers)], start=[])
 
         self.bisels_idx = [2*bisel_idx for bisel_idx in self.bisels_idx]
