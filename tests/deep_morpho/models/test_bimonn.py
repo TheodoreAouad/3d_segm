@@ -1,6 +1,6 @@
 import torch
 
-from deep_morpho.models import BiMoNN, BiMoNNClassifierMaxPool, BiMoNNClassifierMaxPoolNotBinary
+from deep_morpho.models import BiMoNN, BiMoNNClassifierMaxPool, BiMoNNClassifierMaxPoolNotBinary, BiMoNNClassifierLastLinear
 from deep_morpho.datasets import MnistClassifDataset, CIFAR10Dataset
 from deep_morpho.initializer import InitBiseEnum
 from deep_morpho.initializer import InitBimonnEnum, InitBiseEnum
@@ -163,7 +163,7 @@ class TestBimonnClassifierMaxPool():
     @staticmethod
     def test_numel_binary_not_binary_mnist():
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        
+
         trainloader, valloader, testloader = MnistClassifDataset.get_train_val_test_loader(
             n_inputs_train=500,
             n_inputs_val=1,
@@ -225,3 +225,66 @@ class TestBimonnClassifierMaxPool():
 
         otp = model(x)
         assert otp.shape == (x.shape[0], n_classes)
+
+
+class TestBimonnClassifierLastLinear:
+
+    @staticmethod
+    def test_forward():
+        x = torch.ones((3, 1, 51, 51))
+        n_classes = 10
+
+        model = BiMoNNClassifierLastLinear(
+            kernel_size=(7, 7),
+            channels=[5],
+            atomic_element='bisel',
+            input_size=x.shape[1:],
+            n_classes=n_classes,
+        )
+
+        otp = model(x)
+        assert otp.shape == (x.shape[0], n_classes)
+
+    @staticmethod
+    def test_forward_apply_activation():
+        x = torch.ones((3, 1, 51, 51))
+        n_classes = 10
+
+        model = BiMoNNClassifierLastLinear(
+            kernel_size=(7, 7),
+            channels=[5],
+            atomic_element='bisel',
+            threshold_mode={
+                "weight": 'softplus',
+                "activation": 'tanh',
+            },
+            input_size=x.shape[1:],
+            n_classes=n_classes,
+            apply_last_activation=True,
+        )
+
+        otp = model(x)
+
+        assert (otp >= 0).all() and (otp <= 1).all()
+
+    @staticmethod
+    def test_forward_apply_no_activation():
+        x = torch.ones((3, 1, 51, 51))
+        n_classes = 10
+
+        model = BiMoNNClassifierLastLinear(
+            kernel_size=(7, 7),
+            channels=[5],
+            atomic_element='bisel',
+            threshold_mode={
+                "weight": 'softplus',
+                "activation": 'tanh',
+            },
+            input_size=x.shape[1:],
+            n_classes=n_classes,
+            apply_last_activation=False,
+        )
+
+        otp = model(x)
+
+        assert (otp < 0).any() or (otp > 1).any()

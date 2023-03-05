@@ -304,12 +304,14 @@ class BiMoNNClassifierLastLinearBase(BiMoNNClassifier):
         n_classes: int,
         input_size: Tuple[int],
         final_bisel_kwargs: Dict = None,
+        apply_last_activation: bool = True,
         *args,
         **kwargs
     ):
         super().__init__(*args, kernel_size=kernel_size, n_classes=n_classes, input_size=input_size, **kwargs)
 
         self.repr_size = input_size[1:]
+        self.apply_last_activation = apply_last_activation
 
 
         self.bisel_kwargs = self.bisels_kwargs_idx(0) if final_bisel_kwargs is None else final_bisel_kwargs
@@ -317,6 +319,8 @@ class BiMoNNClassifierLastLinearBase(BiMoNNClassifier):
         self.bisel_kwargs["out_channels"] = n_classes
         self.bisel_kwargs["kernel_size"] = self.repr_size
         self.bisel_kwargs["padding"] = 0
+        if not self.apply_last_activation:
+            self.bisel_kwargs["threshold_mode"]["activation"] = "identity"
         self.classification_layer = self.classif_layer_fn(**self.bisel_kwargs)
 
         # self.in_channels.append(self.out_channels[-1])
@@ -330,20 +334,20 @@ class BiMoNNClassifierLastLinearBase(BiMoNNClassifier):
 class BiMoNNClassifierLastLinear(BiMoNNClassifierLastLinearBase):
     def __init__(
         self,
-        kernel_size: List[Union[Tuple, int]],
-        n_classes: int,
-        input_size: Tuple[int],
+        # kernel_size: List[Union[Tuple, int]],
+        # n_classes: int,
+        # input_size: Tuple[int],
         atomic_element: Union[str, List[str]],
-        final_bisel_kwargs: Dict = None,
+        # final_bisel_kwargs: Dict = None,
         *args,
         **kwargs
     ):
         self.classif_layer_fn = SyBiSEL if atomic_element in ["sybisel", ["sybisel"]] else BiSEL
         super().__init__(
-            kernel_size=kernel_size,
-            n_classes=n_classes,
-            input_size=input_size,
-            final_bisel_kwargs=final_bisel_kwargs,
+            # kernel_size=kernel_size,
+            # n_classes=n_classes,
+            # input_size=input_size,
+            # final_bisel_kwargs=final_bisel_kwargs,
             atomic_element=atomic_element,
             *args,
             **kwargs
@@ -353,20 +357,20 @@ class BiMoNNClassifierLastLinear(BiMoNNClassifierLastLinearBase):
 class BiMoNNClassifierLastLinearNotBinary(BiMoNNClassifierLastLinearBase):
     def __init__(
         self,
-        kernel_size: List[Union[Tuple, int]],
-        n_classes: int,
+        # kernel_size: List[Union[Tuple, int]],
+        # n_classes: int,
         atomic_element: Union[str, List[str]],
-        input_size: Tuple[int],
-        final_bisel_kwargs: Dict = None,
+        # input_size: Tuple[int],
+        # final_bisel_kwargs: Dict = None,
         *args,
         **kwargs
     ):
         self.classif_layer_fn=SyBiSELNotBinary if atomic_element in ["sybisel", ["sybisel"]] else BiSELNotBinary
         super().__init__(
-            kernel_size=kernel_size,
-            n_classes=n_classes,
-            input_size=input_size,
-            final_bisel_kwargs=final_bisel_kwargs,
+            # kernel_size=kernel_size,
+            # n_classes=n_classes,
+            # input_size=input_size,
+            # final_bisel_kwargs=final_bisel_kwargs,
             atomic_element=atomic_element,
             *args,
             **kwargs

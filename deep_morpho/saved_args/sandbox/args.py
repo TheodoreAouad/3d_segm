@@ -51,8 +51,8 @@ all_args['n_try'] = [0]
 
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
-    # "tests",
-    "Bimonn_exp_77/bimonn_last_linear/"
+    "tests",
+    # "Bimonn_exp_77/bimonn_last_linear/"
 ]
 
 all_args["model"] = [
@@ -199,7 +199,7 @@ all_args['num_workers'] = [
 all_args['freq_imgs'] = [500]
 all_args['freq_hist'] = [500]
 all_args["freq_update_binary_batch"] = [None]
-all_args["freq_update_binary_epoch"] = [None]
+all_args["freq_update_binary_epoch"] = [1]
 all_args['freq_scalars'] = [50]
 all_args['max_epochs.trainer'] = [200]
 
@@ -222,6 +222,10 @@ all_args["activation_constructor"] = [
     # nn.ReLU,
     # nn.Sigmoid,
     NormalizedTanh,
+]
+all_args["apply_last_activation"] = [
+    False,
+    True,
 ]
 all_args["do_maxpool"] = [
     # True,

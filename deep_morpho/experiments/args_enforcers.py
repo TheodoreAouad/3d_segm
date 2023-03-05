@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from torch.nn import CrossEntropyLoss, BCELoss
 
 from general.nn.experiments.experiment_methods import ExperimentMethods
 
@@ -57,7 +58,7 @@ class ArgsCifar(ArgsEnforcer):
     def enforce(self, experiment: "ExperimentBase"):
         import torchvision.transforms as transforms
         from deep_morpho.datasets.cifar_dataset import transform_default
-        
+
         experiment.args["n_inputs.train"] = 45_000
         experiment.args["n_inputs.val"] = 5_000
         experiment.args["n_inputs.test"] = 10_000
@@ -66,6 +67,24 @@ class ArgsCifar(ArgsEnforcer):
             transform_default,
         ])
 
+
+class ArgsClassifActivation(ArgsEnforcer):
+    def enforce(self, experiment: "ExperimentBase"):
+        args = experiment.args
+        if "apply_last_activation.net" in args:
+            if not args["apply_last_activation"] and args["loss_data_str"] == "BCELoss":
+                args.update({
+                    "loss_data_str": "CrossEntropyLoss",
+                    "loss_data": CrossEntropyLoss(),
+                    "loss": {"loss_data": CrossEntropyLoss()}
+                })
+
+            elif args["apply_last_activation"] and args["loss_data_str"] == "CrossEntropyLoss":
+                args.update({
+                    "loss_data_str": "BCELoss",
+                    "loss_data": BCELoss(),
+                    "loss": {"loss_data": BCELoss()}
+                })
 
 # class ArgsMnistClassifChannel(ArgsEnforcer):
 #     def enforce(self, experiment: "ExperimentBase"):
