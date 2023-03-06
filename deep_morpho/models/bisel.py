@@ -285,71 +285,9 @@ class BiSELBase(BinaryNN):
     def bias_bises(self) -> torch.Tensor:
         return self.bias_bise
 
-    # @property
-    # def bias_lui(self) -> torch.Tensor:
-    #     """Returns the bias of the lui layer, of shape (out_channels).
-    #     """
-    #     return torch.cat([layer.bias for layer in self.luis])
-
     @property
     def bias_luis(self) -> torch.Tensor:
         return self.bias_lui
-
-    # @property
-    # def is_activated_bise(self) -> np.ndarray:
-    #     """ Returns the activation status of the bise layers, of shape (out_channels, in_channels).
-    #     """
-    #     return np.stack([layer.is_activated for layer in self.bises], axis=-1)
-
-    # @property
-    # def closest_selem_dist_bise(self) -> np.ndarray:
-    #     """ Returns the activation status of the bise layers, of shape (out_channels, in_channels).
-    #     """
-    #     return np.stack([layer.closest_selem_dist for layer in self.bises], axis=-1)
-
-    # @property
-    # def learned_selem_bise(self) -> np.ndarray:
-    #     return np.stack([layer.learned_selem[:, None, ...] for layer in self.bises], axis=1)
-
-    # @property
-    # def closest_selem_bise(self) -> np.ndarray:
-    #     return np.stack([layer.closest_selem[:, None, ...] for layer in self.bises], axis=1)
-
-    # @property
-    # def closest_operation_bise(self) -> np.ndarray:
-    #     return np.stack([layer.closest_operation for layer in self.bises], axis=-1)
-
-    # @property
-    # def learned_operation_bise(self) -> np.ndarray:
-    #     return np.stack([layer.learned_operation for layer in self.bises], axis=-1)
-
-    # @property
-    # def is_activated_lui(self) -> np.ndarray:
-    #     """ Returns the activation status of the bise layers, of shape (out_channels, in_channels).
-    #     """
-    #     return np.stack([layer.is_activated for layer in self.luis], axis=-1)
-
-    # @property
-    # def closest_selem_dist_lui(self) -> np.ndarray:
-    #     """ Returns the activation status of the bise layers, of shape (out_channels, in_channels).
-    #     """
-    #     return np.stack([layer.closest_selem_dist for layer in self.luis], axis=-1)
-
-    # @property
-    # def learned_selem_lui(self) -> np.ndarray:
-    #     return np.stack([layer.learned_selem[:, None, ...] for layer in self.luis], axis=1)
-
-    # @property
-    # def closest_selem_lui(self) -> np.ndarray:
-    #     return np.stack([layer.closest_selem[:, None, ...] for layer in self.luis], axis=1)
-
-    # @property
-    # def closest_operation_lui(self) -> np.ndarray:
-    #     return np.stack([layer.closest_operation for layer in self.luis], axis=-1)
-
-    # @property
-    # def learned_operation_lui(self) -> np.ndarray:
-    #     return np.stack([layer.learned_operation for layer in self.luis], axis=-1)
 
     @property
     def coefs(self) -> torch.Tensor:
@@ -376,14 +314,17 @@ class BiSELBase(BinaryNN):
     @classmethod
     def default_args(cls) -> Dict[str, dict]:
         res = super().default_args()
-        # res.update({
-        #     f"bise.{arg}": v for arg, v in BiSE.default_args().items() if arg in cls._bises_args() and arg not in res
-        # })
         res.update({k: v for k, v in BiSE.default_args().items() if k not in res})
 
         return res
 
+    @property
+    def n_activated(self):
+        return self.bises.n_activated + self.luis.n_activated
 
+    @property
+    def percentage_activated(self):
+        return (self.bises.n_activated + self.luis.n_activated) / (self.bises.n_elements + self.luis.n_elements)
 
 
 class BiSEL(BiSELBase):

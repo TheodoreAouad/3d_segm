@@ -51,8 +51,8 @@ all_args['n_try'] = [0]
 
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
-    # "tests",
-    "Bimonn_exp_77/bimonn_last_linear/"
+    "tests",
+    # "Bimonn_exp_77/bimonn_last_linear/"
 ]
 
 all_args["model"] = [
@@ -200,7 +200,7 @@ all_args['freq_imgs'] = [500]
 all_args['freq_hist'] = [500]
 all_args["freq_update_binary_batch"] = [None]
 all_args["freq_update_binary_epoch"] = [
-    1,
+    2,
     # None,
 ]
 all_args['freq_scalars'] = [50]
@@ -256,6 +256,9 @@ all_args['kernel_size'] = [
 all_args['channels'] = [
     # 'adapt',
     [100, ],
+    [100, 100],
+    [50, ],
+    [50, 50],
     # [200, 200, ],
     # [100, 100, 100],
     # [100, 100, 100, 100],

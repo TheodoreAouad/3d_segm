@@ -410,6 +410,19 @@ class BiSEBase(BinaryNN):
         return threshold_mode
 
     @property
+    def n_activated(self):
+        return self.is_activated.sum()
+
+    @property
+    def percentage_activated(self):
+        return self.is_activated.mean()
+
+    @property
+    def n_elements(self):
+        """ Number of BiSE elements in the layer. In practice, the number of output channels. """
+        return self.out_channels
+
+    @property
     def groups(self):
         return self.conv.groups
 

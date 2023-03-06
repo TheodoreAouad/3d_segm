@@ -98,6 +98,7 @@ from general.utils import save_json
 #         save_json({k: str(v) for k, v in self.last_value.items()}, join(final_dir, "metrics.json"))
 #         return self.last_value
 
+
 class BinaryModeMetricBase(Observable, ABC):
 
     def __init__(

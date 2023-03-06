@@ -54,3 +54,15 @@ class BinaryNN(nn.Module, ExperimentMethods, ABC):
     def device(self):
         for param in self.parameters():
             return param.device
+
+
+class BinarySequential(nn.Sequential, BinaryNN):
+    def __init__(self, *args, **kwargs):
+        nn.Sequential.__init__(self, *args, **kwargs)
+        # BinaryNN.__init__(self)
+        self.binary_mode = False
+
+    def __gititem__(self, idx):
+        res = super().__getitem__(idx)
+        res.binary_mode = self.binary_mode
+        return res

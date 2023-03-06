@@ -1,6 +1,6 @@
 import torch
 
-from deep_morpho.models import BiMoNN, BiMoNNClassifierMaxPool, BiMoNNClassifierMaxPoolNotBinary, BiMoNNClassifierLastLinear
+from deep_morpho.models import BiMoNN, BiMoNNClassifierMaxPool, BiMoNNClassifierMaxPoolNotBinary, BiMoNNClassifierLastLinear, BiMoNNClassifierLastLinearNotBinary
 from deep_morpho.datasets import MnistClassifDataset, CIFAR10Dataset
 from deep_morpho.initializer import InitBiseEnum
 from deep_morpho.initializer import InitBimonnEnum, InitBiseEnum
@@ -288,3 +288,85 @@ class TestBimonnClassifierLastLinear:
         otp = model(x)
 
         assert (otp < 0).any() or (otp > 1).any()
+    
+    @staticmethod
+    def test_binary():
+        x = torch.ones((3, 1, 5, 5))
+        n_classes = 10
+
+        model = BiMoNNClassifierLastLinear(
+            kernel_size=(7, 7),
+            channels=[5, 5],
+            atomic_element='bisel',
+            threshold_mode={
+                "weight": 'softplus',
+                "activation": 'tanh',
+            },
+            input_size=x.shape[1:],
+            n_classes=n_classes,
+            apply_last_activation=False,
+        )
+        model.binary()
+
+        otp = model.forward_save(x)
+
+        for layer_idx, output_layer in otp.items():
+            if isinstance(output_layer, dict):
+                for key, value in output_layer.items():
+                    if key != "input":
+                        assert torch.isin(value, torch.tensor([0, 1])).all()
+        assert torch.isin(otp["output"], torch.tensor([0, 1])).all()
+        # assert torch.isin(otp, torch.tensor([0, 1])).all()
+
+
+class TestBimonnClassifierLastLinearNotBinary:
+
+    @staticmethod
+    def test_forward():
+        x = torch.ones((3, 1, 51, 51))
+        n_classes = 10
+
+        model = BiMoNNClassifierLastLinearNotBinary(
+            kernel_size=(7, 7),
+            channels=[5],
+            atomic_element='bisel',
+            input_size=x.shape[1:],
+            n_classes=n_classes,
+        )
+
+        model.layers[0:]
+
+        otp = model(x)
+        assert otp.shape == (x.shape[0], n_classes)
+
+
+    @staticmethod
+    def test_binary():
+        x = torch.ones((3, 1, 5, 5))
+        n_classes = 10
+
+        model = BiMoNNClassifierLastLinearNotBinary(
+            kernel_size=(7, 7),
+            channels=[5],
+            atomic_element='bisel',
+            threshold_mode={
+                "weight": 'softplus',
+                "activation": 'tanh',
+            },
+            input_size=x.shape[1:],
+            n_classes=n_classes,
+            apply_last_activation=False,
+        )
+        model.binary()
+
+        otp = model.forward_save(x)
+
+        for key, value in otp[0].items():
+            assert torch.isin(value, torch.tensor([0, 1])).all()
+
+        for key, value in otp[1].items():
+            if isinstance(key, tuple):
+                assert torch.isin(value, torch.tensor([0, 1])).all()
+
+        assert not (torch.isin(otp["output"], torch.tensor([0, 1])).all())
+        # assert torch.isin(otp, torch.tensor([0, 1])).all()

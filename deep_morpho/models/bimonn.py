@@ -8,7 +8,7 @@ import torch.nn as nn
 
 from .bisel import BiSEL, SyBiSEL, BiSELBase
 from .layers_not_binary import BiSELNotBinary, SyBiSELNotBinary
-from .binary_nn import BinaryNN
+from .binary_nn import BinaryNN, BinarySequential
 from ..initializer import BimonnInitializer, InitBimonnEnum, BimonnInitInputMean, InitBiseEnum
 
 
@@ -49,7 +49,7 @@ class BiMoNN(BinaryNN):
         self.bisel_initializers = self.initalizer.generate_bisel_initializers(self)
 
         # self.layers = []
-        self.layers = nn.Sequential()
+        self.layers = BinarySequential()
         self.bises_idx = []
         self.bisecs_idx = []
         self.bisels_idx = []
@@ -261,10 +261,9 @@ class BiMoNNClassifier(BiMoNN, ABC):
 
     def __init__(
         self,
-        kernel_size: List[Union[Tuple, int]],
         n_classes: int,
         input_size: Tuple[int],
-        channels: List[int] = None,
+        channels: List[int],
         *args,
         **kwargs
     ):
@@ -272,7 +271,7 @@ class BiMoNNClassifier(BiMoNN, ABC):
         assert isinstance(n_classes, int), f"n_classes is {n_classes} but must be an integer"
 
         channels = [input_size[0]] + channels
-        super().__init__(*args, kernel_size=kernel_size, channels=channels, **kwargs)
+        super().__init__(*args, channels=channels, **kwargs)
 
         self.n_classes = n_classes
         self.input_size = input_size
@@ -301,7 +300,6 @@ class BiMoNNClassifierLastLinearBase(BiMoNNClassifier):
 
     def __init__(
         self,
-        kernel_size: List[Union[Tuple, int]],
         n_classes: int,
         input_size: Tuple[int],
         final_bisel_kwargs: Dict = None,
@@ -309,7 +307,7 @@ class BiMoNNClassifierLastLinearBase(BiMoNNClassifier):
         *args,
         **kwargs
     ):
-        super().__init__(*args, kernel_size=kernel_size, n_classes=n_classes, input_size=input_size, **kwargs)
+        super().__init__(*args, n_classes=n_classes, input_size=input_size, **kwargs)
 
         self.repr_size = input_size[1:]
         self.apply_last_activation = apply_last_activation
@@ -327,14 +325,18 @@ class BiMoNNClassifierLastLinearBase(BiMoNNClassifier):
 
         if not self.apply_last_activation:
             self.bisel_kwargs["threshold_mode"]["activation"] = "identity"
-        self.classification_layer = self.classif_layer_fn(initializer=last_initializer, **self.bisel_kwargs)
+        classification_layer = self.classif_layer_fn(initializer=last_initializer, **self.bisel_kwargs)
 
         # self.in_channels.append(self.out_channels[-1])
         # self.out_channels.append(n_classes)
         self.kernel_size.append(self.repr_size)
 
-        self.layers.append(self.classification_layer)
+        self.layers.append(classification_layer)
         self.bisels_idx.append(len(self.layers) - 1)
+
+    @property
+    def classification_layer(self):
+        return self.layers[-1]
 
 
 class BiMoNNClassifierLastLinear(BiMoNNClassifierLastLinearBase):
@@ -412,8 +414,8 @@ class BiMoNNClassifierMaxPoolBase(BiMoNNClassifier):
         # Compatibility python 3.7
         layers2 = []
         for bisel, maxpool in zip(self.layers, self.maxpool_layers):
-            layers2 += nn.Sequential(bisel, maxpool)
-        self.layers = nn.Sequential(*layers2)
+            layers2 += BinarySequential(bisel, maxpool)
+        self.layers = BinarySequential(*layers2)
         # self.layers = sum([[bisel, maxpool] for bisel, maxpool in zip(self.layers, self.maxpool_layers)], start=[])
 
         self.bisels_idx = [2*bisel_idx for bisel_idx in self.bisels_idx]
