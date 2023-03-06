@@ -51,8 +51,8 @@ all_args['n_try'] = [0]
 
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
-    "tests",
-    # "Bimonn_exp_77/bimonn_last_linear/"
+    # "tests",
+    "Bimonn_exp_77/bimonn_last_linear/"
 ]
 
 all_args["model"] = [
@@ -199,8 +199,12 @@ all_args['num_workers'] = [
 all_args['freq_imgs'] = [500]
 all_args['freq_hist'] = [500]
 all_args["freq_update_binary_batch"] = [None]
-all_args["freq_update_binary_epoch"] = [1]
+all_args["freq_update_binary_epoch"] = [
+    1,
+    # None,
+]
 all_args['freq_scalars'] = [50]
+# all_args['max_epochs.trainer'] = [1]
 all_args['max_epochs.trainer'] = [200]
 
 all_args['patience_loss_batch'] = [2100]
@@ -401,7 +405,7 @@ for idx, args in enumerate(all_args.multi_args):
     #     args['init_bias_value_lui'] = "auto"
 
     # if args['dataset'] in [
-    #     # "diskorectdataset", 
+    #     # "diskorectdataset",
     #     'mnist', 'inverted_mnist', 'sticks_noised', 'mnist_gray', 'fashionmnist']:
     #     # args['kernel_size'] = 'adapt'
 
@@ -463,7 +467,7 @@ for idx, args in enumerate(all_args.multi_args):
     args['loss_data'] = loss_dict[args['loss_data_str']](**kwargs_loss)
 
     if args['dataset'] in [
-        # 'diskorectdataset', 
+        # 'diskorectdataset',
         'sticks_noised']:
         args['n_epochs'] = 1
         args['n_inputs'] = args['n_steps'] * args['batch_size']

@@ -42,6 +42,10 @@ def sigmoid_threshold_inverse(y):
     return torch.logit(y)
 
 
+def identity_threshold_inverse(y):
+    return y
+
+
 def softplus_threshold_inverse(y, beta=1, threshold=10):
     output = y + 0
     output[beta * y < threshold] = 1 / beta * torch.log(torch.exp(beta * y[beta * y < threshold]) - 1)

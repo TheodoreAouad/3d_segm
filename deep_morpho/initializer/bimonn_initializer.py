@@ -40,20 +40,35 @@ class BimonnInitializer:
     def generate_bisel_initializers(self, module) -> List[BiselInitializer]:
         res = []
         for layer_idx in range(len(module)):
-            attr_dict = {}
+            # attr_dict = {}
 
-            for attr in ["bise_init_method", "bise_init_args", "lui_init_method", "lui_init_args"]:
-                attr_value = getattr(self, attr)
-                if isinstance(attr_value, list):
-                    attr_value = attr_value[layer_idx]
-                attr_dict[attr] = deepcopy(attr_value)
+            # for attr in ["bise_init_method", "bise_init_args", "lui_init_method", "lui_init_args"]:
+            #     attr_value = getattr(self, attr)
+            #     if isinstance(attr_value, list):
+            #         attr_value = attr_value[layer_idx]
+            #     attr_dict[attr] = deepcopy(attr_value)
 
-            res.append(BiselInitializer(
-                bise_initializer=self.get_init_class(attr_dict["bise_init_method"], module.atomic_element[layer_idx])(**attr_dict["bise_init_args"]),
-                lui_initializer=self.get_init_class(attr_dict["lui_init_method"], module.atomic_element[layer_idx])(**attr_dict["lui_init_args"]),
-            ))
+            # res.append(BiselInitializer(
+            #     bise_initializer=self.get_init_class(attr_dict["bise_init_method"], module.atomic_element[layer_idx])(**attr_dict["bise_init_args"]),
+            #     lui_initializer=self.get_init_class(attr_dict["lui_init_method"], module.atomic_element[layer_idx])(**attr_dict["lui_init_args"]),
+            # ))
+            res.append(self.generate_bisel_initializers_layer(module, layer_idx))
 
         return res
+
+    def generate_bisel_initializers_layer(self, module, layer_idx: int):
+        attr_dict = {}
+
+        for attr in ["bise_init_method", "bise_init_args", "lui_init_method", "lui_init_args"]:
+            attr_value = getattr(self, attr)
+            if isinstance(attr_value, list):
+                attr_value = attr_value[layer_idx]
+            attr_dict[attr] = deepcopy(attr_value)
+
+        return BiselInitializer(
+            bise_initializer=self.get_init_class(attr_dict["bise_init_method"], module.atomic_element[layer_idx])(**attr_dict["bise_init_args"]),
+            lui_initializer=self.get_init_class(attr_dict["lui_init_method"], module.atomic_element[layer_idx])(**attr_dict["lui_init_args"]),
+        )
 
     def post_initialize(self, module):
         pass
@@ -99,7 +114,7 @@ class BimonnInitializer:
 
             elif bise_init_method.value == InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS.value:
                 return InitBiseConstantVarianceConstantWeightsRandomBias
-            
+
             elif bise_init_method.value == InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_DUAL_RANDOM_BIAS.value:
                 return InitDualBiseConstantVarianceConstantWeightsRandomBias
 
@@ -149,30 +164,26 @@ class BimonnInitInputMean(BimonnInitializer):
         self.lui_init_args = lui_init_args if lui_init_args is not None else bise_init_args
 
 
-    def generate_bisel_initializers(self, module) -> List[BiselInitializer]:
-        res = []
-        for layer_idx in range(len(module)):
-            attr_dict = {}
-            atomic_element = module.atomic_element[layer_idx]
+    def generate_bisel_initializer_layer(self, module, layer_idx) -> List[BiselInitializer]:
+        attr_dict = {}
+        atomic_element = module.atomic_element[layer_idx]
 
-            for attr in ["bise_init_method", "bise_init_args", "lui_init_method", "lui_init_args"]:
-                attr_value = getattr(self, attr)
-                if isinstance(attr_value, list):
-                    attr_value = attr_value[layer_idx]
-                attr_dict[attr] = deepcopy(attr_value)
+        for attr in ["bise_init_method", "bise_init_args", "lui_init_method", "lui_init_args"]:
+            attr_value = getattr(self, attr)
+            if isinstance(attr_value, list):
+                attr_value = attr_value[layer_idx]
+            attr_dict[attr] = deepcopy(attr_value)
 
-            if layer_idx == 0:
-                attr_dict["bise_init_args"]["input_mean"] = self.input_mean
-            elif atomic_element == "bisel":
-                attr_dict["bise_init_args"]["input_mean"] = attr_dict["bise_init_args"].get("input_mean", 0.5)
-                attr_dict["lui_init_args"]["input_mean"] = attr_dict["lui_init_args"].get("input_mean", 0.5)
-            elif atomic_element == "sybisel":
-                attr_dict["bise_init_args"]["input_mean"] = attr_dict["bise_init_args"].get("input_mean", 0)
-                attr_dict["lui_init_args"]["input_mean"] = attr_dict["lui_init_args"].get("input_mean", 0)
+        if layer_idx == 0:
+            attr_dict["bise_init_args"]["input_mean"] = self.input_mean
+        elif atomic_element == "bisel":
+            attr_dict["bise_init_args"]["input_mean"] = attr_dict["bise_init_args"].get("input_mean", 0.5)
+            attr_dict["lui_init_args"]["input_mean"] = attr_dict["lui_init_args"].get("input_mean", 0.5)
+        elif atomic_element == "sybisel":
+            attr_dict["bise_init_args"]["input_mean"] = attr_dict["bise_init_args"].get("input_mean", 0)
+            attr_dict["lui_init_args"]["input_mean"] = attr_dict["lui_init_args"].get("input_mean", 0)
 
-            res.append(BiselInitializer(
-                bise_initializer=self.get_init_class(attr_dict["bise_init_method"], atomic_element)(**attr_dict["bise_init_args"]),
-                lui_initializer=self.get_init_class(attr_dict["lui_init_method"], atomic_element)(**attr_dict["lui_init_args"]),
-            ))
-
-        return res
+        return BiselInitializer(
+            bise_initializer=self.get_init_class(attr_dict["bise_init_method"], atomic_element)(**attr_dict["bise_init_args"]),
+            lui_initializer=self.get_init_class(attr_dict["lui_init_method"], atomic_element)(**attr_dict["lui_init_args"]),
+        )

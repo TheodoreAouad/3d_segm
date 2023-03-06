@@ -1,7 +1,8 @@
 import importlib
 import sys
 import pathlib
-from typing import Tuple, Optional, List
+import copy
+from typing import Tuple, Optional, List, Dict
 from time import time
 import logging
 import os
@@ -16,6 +17,12 @@ from scipy import ndimage
 from skimage.morphology import disk, dilation, erosion, label
 from skimage.transform import warp
 from sklearn.model_selection import ParameterGrid
+
+
+def recursive_dict_copy(dic: Dict):
+    """ Recursively copies a dictionary.
+    """
+    return {k: recursive_dict_copy(v) if isinstance(v, dict) else v for k, v in dic.items()}
 
 
 def save_pickle(obj: object, path: str):
@@ -178,7 +185,7 @@ def save_yaml(dic, path):
         yaml.dump(dic, f)
 
 
-def dict_cross(dic):
+def dict_cross(dic, copy_dicts=True):
     """
     Does a cross product of all the values of the dict.
 
@@ -189,6 +196,9 @@ def dict_cross(dic):
         list: list of the dict
     """
 
+    if copy_dicts:
+        dicts = list(ParameterGrid(dic))
+        return [copy.deepcopy(d) for d in dicts]
     return list(ParameterGrid(dic))
 
 

@@ -311,7 +311,7 @@ class MultiParser(Parser):
                 new_dict["model"] = [model_name]
                 new_dict["dataset"] = [datamodule_name]
 
-                new_args = [Parser(d) for d in dict_cross(new_dict)]
+                new_args = [Parser(d) for d in dict_cross(new_dict, copy_dicts=True)]
                 for arg in new_args:
                     arg.given_args = set(self.given_args)
 
@@ -319,12 +319,7 @@ class MultiParser(Parser):
 
                 self.multi_args += new_args
 
-
-
         return self
-
-    # def __getitem__(self, idx):
-    #     return self.multi_args[idx]
 
     def __len__(self):
         return len(self.multi_args)

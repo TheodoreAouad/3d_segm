@@ -68,3 +68,5 @@ class TestSetSeed:
 
         for tensor1, tensor2 in zip(tensors1, tensors2):
             assert (tensor1 == tensor2).all()
+
+

@@ -7,7 +7,9 @@ import torch
 import math
 import torch.nn.init as init
 
-from deep_morpho_old.threshold_fn import tanh_threshold_inverse, sigmoid_threshold_inverse, arctan_threshold_inverse, relu_threshold_inverse
+from deep_morpho_old.threshold_fn import (
+    tanh_threshold_inverse, sigmoid_threshold_inverse, arctan_threshold_inverse, relu_threshold_inverse, identity_threshold_inverse
+)
 from general.utils import uniform_sampling_bound
 
 
@@ -155,6 +157,7 @@ class InitBiseConstantVarianceWeights(InitBiasFixed):
         "sigmoid": sigmoid_threshold_inverse,
         "arctan": arctan_threshold_inverse,
         "relu": relu_threshold_inverse,
+        "identity": identity_threshold_inverse,
     }
 
     def __init__(

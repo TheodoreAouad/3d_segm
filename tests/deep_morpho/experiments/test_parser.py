@@ -493,3 +493,23 @@ class TestMultiParser:
         assert prs.multi_args[0].trainset_args()["bbl"] == "train"
         assert prs.multi_args[0].valset_args()["bbl"] == "val"
         assert prs.multi_args[0].testset_args()["bbl"] == "test"
+
+    @staticmethod
+    def test_dict_copy():
+        from deep_morpho.experiments.parser import MultiParser
+
+        prs = MultiParser()
+        prs["model"] = ["BiMoNN"]
+        prs["dataset"] = ["cifar10dataset"]
+
+        prs["banane"] = [{"a": 1, "b": 2}]
+        prs["proxy"] = [1, 2]
+
+        prs.parse_args([])
+
+        # prs.multi_args[0]["banane"]["a"] = 5
+
+        assert prs.multi_args[0]["banane"] is not prs.multi_args[1]["banane"]
+        # assert prs.multi_args[0]["banane"]["a"] == 5
+        # assert prs.multi_args[1]["banane"]["a"] == 3
+

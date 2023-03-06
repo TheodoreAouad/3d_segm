@@ -1,6 +1,7 @@
 from abc import ABC
 from typing import List, Tuple, Union, Dict, Optional, Any, Callable
 import inspect
+import copy
 
 import numpy as np
 import torch.nn as nn
@@ -313,15 +314,20 @@ class BiMoNNClassifierLastLinearBase(BiMoNNClassifier):
         self.repr_size = input_size[1:]
         self.apply_last_activation = apply_last_activation
 
+        last_layer_idx = len(self.layers) - 1
 
-        self.bisel_kwargs = self.bisels_kwargs_idx(0) if final_bisel_kwargs is None else final_bisel_kwargs
+
+        self.bisel_kwargs = copy.deepcopy(self.bisels_kwargs_idx(last_layer_idx)) if final_bisel_kwargs is None else final_bisel_kwargs
         self.bisel_kwargs["in_channels"] = self.out_channels[-1]
         self.bisel_kwargs["out_channels"] = n_classes
         self.bisel_kwargs["kernel_size"] = self.repr_size
         self.bisel_kwargs["padding"] = 0
+
+        last_initializer = self.initalizer.generate_bisel_initializer_layer(self, layer_idx=last_layer_idx)
+
         if not self.apply_last_activation:
             self.bisel_kwargs["threshold_mode"]["activation"] = "identity"
-        self.classification_layer = self.classif_layer_fn(**self.bisel_kwargs)
+        self.classification_layer = self.classif_layer_fn(initializer=last_initializer, **self.bisel_kwargs)
 
         # self.in_channels.append(self.out_channels[-1])
         # self.out_channels.append(n_classes)
