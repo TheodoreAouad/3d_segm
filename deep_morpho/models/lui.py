@@ -87,10 +87,6 @@ class LUI(BiSELUIExtender, BiSEBase):
 
     def __init__(
         self,
-        threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh"},
-        activation_P: float = 1,
-        constant_activation_P: bool = False,
-        shared_weights: torch.tensor = None,
         initializer: BiseInitializer = InitBiseHeuristicWeights(input_mean=.5, init_bias_value=1),
         out_channels: int = 1,
         in_channels: int = 1,
@@ -103,12 +99,13 @@ class LUI(BiSELUIExtender, BiSEBase):
         self.force_identity = force_identity or (in_channels == out_channels == groups)
         if self.force_identity:
             bias_optim_mode = BiseBiasOptimEnum.RAW
+        
+        for key in ["do_mask_output", "padding", "kernel_size"]:
+            if key in kwargs:
+                del kwargs[key]
+
         super().__init__(
             kernel_size=(1, 1),
-            threshold_mode=threshold_mode,
-            activation_P=activation_P,
-            constant_activation_P=constant_activation_P,
-            shared_weights=shared_weights,
             initializer=initializer,
             out_channels=out_channels,
             in_channels=in_channels,

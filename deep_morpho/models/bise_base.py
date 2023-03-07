@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch import Tensor
+from tqdm import tqdm
 
 from .threshold_layer import dispatcher, ThresholdEnum
 from .binary_nn import BinaryNN
@@ -55,7 +56,7 @@ class BiSEBase(BinaryNN):
         self,
         kernel_size: Tuple,
         threshold_mode: Union[Dict[str, str], str] = {"weight": "softplus", "activation": "tanh"},
-        activation_P: float = 10,
+        activation_P: float = 1,
         constant_activation_P: bool = False,
         weights_optim_mode: BiseWeightsOptimEnum = BiseWeightsOptimEnum.THRESHOLDED,
         weights_optim_args: Dict = {},
@@ -175,26 +176,30 @@ class BiSEBase(BinaryNN):
 
         raise NotImplementedError(f'self.bias_optim_mode must be in {BiseWeightsOptimEnum._member_names_}')
 
-    def update_closest_selems(self, chans=None):
+    def update_closest_selems(self, chans=None, verbose: bool = True, desc_suffix: str = ""):
         if chans is None:
             chans = range(self.out_channels)
+        if verbose:
+            chans = tqdm(chans, leave=False, desc=f"Approximate binarization{desc_suffix}")
         for chan in chans:
             self.find_closest_selem_and_operation_chan(chan)
 
-    def update_binary_selems(self, chans=None):
-        self.update_closest_selems(chans=chans)
-        self.update_learned_selems(chans=chans)
+    def update_binary_selems(self, chans=None, verbose: bool = True, desc_suffix: str = ""):
+        self.update_closest_selems(chans=chans, verbose=verbose, desc_suffix=desc_suffix)
+        self.update_learned_selems(chans=chans, verbose=verbose, desc_suffix=desc_suffix)
 
-    def update_learned_selems(self, chans=None):
+    def update_learned_selems(self, chans=None, verbose: bool = True, desc_suffix: str = ""):
         if chans is None:
             chans = range(self.out_channels)
+        if verbose:
+            chans = tqdm(chans, leave=False, desc=f"Exact binarization{desc_suffix}")
         for chan in chans:
             self.find_selem_and_operation_chan(chan)
 
-    def binary(self, mode: bool = True, update_binaries: bool = True, *args, **kwargs):
+    def binary(self, mode: bool = True, update_binaries: bool = True, verbose: bool = True, desc_suffix: str = "", *args, **kwargs):
         if mode and update_binaries:
-            self.update_binary_selems()
-        return super().binary(mode,  *args, **kwargs)
+            self.update_binary_selems(verbose=verbose, desc_suffix=desc_suffix,)
+        return super().binary(mode, *args, **kwargs)
 
     # TODO: move to BiSE class
     @staticmethod
@@ -361,13 +366,21 @@ class BiSEBase(BinaryNN):
             (np.ndarray, operation): if the selem is found, returns the selem and the operation
             (None, None): if nothing is found, returns None
         """
-        for operation in ['dilation', 'erosion']:
-            selem = self.find_selem_for_operation_chan(chout=chout, operation=operation, v1=v1, v2=v2)
-            if selem is not None:
-                self._learned_selem[chout] = selem.astype(bool)
-                self._learned_operation[chout] = self.operation_code[operation]  # str array has 1 character
-                self._is_activated[chout] = True
-                return selem, operation
+        # for operation in ['dilation', 'erosion']:
+        #     selem = self.find_selem_for_operation_chan(chout=chout, operation=operation, v1=v1, v2=v2)
+        #     if selem is not None:
+        #         self._learned_selem[chout] = selem.astype(bool)
+        #         self._learned_operation[chout] = self.operation_code[operation]  # str array has 1 character
+        #         self._is_activated[chout] = True
+        #         return selem, operation
+
+        operation: str = self.approximate_operation_on_bias(chan=chout)
+        selem: np.ndarray = self.find_selem_for_operation_chan(chout=chout, operation=operation, v1=v1, v2=v2)
+        if selem is not None:
+            self._learned_selem[chout] = selem.astype(bool)
+            self._learned_operation[chout] = self.operation_code[operation]  # str array has 1 character
+            self._is_activated[chout] = True
+            return selem, operation
 
         self._is_activated[chout] = False
         self._learned_selem[chout] = None
@@ -465,6 +478,13 @@ class BiSEBase(BinaryNN):
         assert self.activation_P.shape == new_P.shape
         self.activation_threshold_layer.P_.data = new_P
         return new_P
+
+    def approximate_operation_on_bias(self, chan: int):
+        wsum = self.weights[chan].sum()
+        if -self.bias[chan] <= wsum / 2:
+            return "dilation"
+        else:
+            return "erosion"
 
     @property
     def activation_P(self):

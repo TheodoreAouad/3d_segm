@@ -5,6 +5,7 @@ import os
 import torch
 from pytorch_lightning.loggers import TensorBoardLogger
 
+from general.nn.observables import Observable
 from deep_morpho.trainers import Trainer
 from deep_morpho.datasets import DataModule
 from deep_morpho.models import GenericLightningModel
@@ -111,14 +112,17 @@ class ExperimentBase(ExperimentMethods):
 
     def save(self):
         metric_dict = {}
-        for state in ["train", "val", "test"]:
-            if self.metric_float_obs is not None:
-                for metric_name in self.metric_float_obs.metrics.keys():
-                    metric_dict[f"{metric_name}_{state}"] = self.metric_float_obs.last_value[state][metric_name]
+        for obs in self.observables:
+            if isinstance(obs, Observable):
+                metric_dict.update(obs.save_hparams())
+        # for state in ["train", "val", "test"]:
+        #     if self.metric_float_obs is not None:
+        #         for metric_name in self.metric_float_obs.metrics.keys():
+        #             metric_dict[f"{metric_name}_{state}"] = self.metric_float_obs.last_value[state][metric_name]
 
-            if self.metric_binary_obs is not None:
-                for metric_name in self.metric_binary_obs.metrics.keys():
-                    metric_dict[f"binary_{metric_name}_{state}"] = self.metric_binary_obs.last_value[state][metric_name]
+        #     if self.metric_binary_obs is not None:
+        #         for metric_name in self.metric_binary_obs.metrics.keys():
+        #             metric_dict[f"binary_{metric_name}_{state}"] = self.metric_binary_obs.last_value[state][metric_name]
 
         args_str = {}
         for k, v in self.args.items():
@@ -179,6 +183,7 @@ class ExperimentBase(ExperimentMethods):
         with Task("Loading Model", self.console_logger):
             self.load_model()
 
+        self.log_console(f"Model: {self.model}")
         self.log_binarizable_params()
 
         if "callbacks.trainer" in self.args:

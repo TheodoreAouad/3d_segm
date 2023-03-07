@@ -38,10 +38,6 @@ class GenericLightningModel(NetLightning):
     @classmethod
     def default_args(cls) -> Dict[str, dict]:
         """Return the default arguments of the model, in the format of argparse.ArgumentParser"""
-        # default_args = {
-        #     name: {"default": p.default}
-        #     for name, p in inspect.signature(cls.__init__).parameters.items() if name not in ["self", "model_args"]
-        # }
         default_args = super().default_args()
         if hasattr(cls, "model_class"):
             default_args["model_args"] = {"default": cls.model_class.default_args()}
@@ -67,9 +63,6 @@ class GenericLightningModel(NetLightning):
             loss=args["loss"],
             optimizer=args["optimizer"],
             optimizer_args=args["optimizer_args"],
-            # reduce_loss_fn=args["reduce_loss_fn"],
-            # initializer=args["initializer"],
-            # initializer_args=args["initializer_args"],
         )
         model.to(experiment.device)
         return model

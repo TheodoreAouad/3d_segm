@@ -19,7 +19,6 @@ class ObservableLayers(Observable):
         self.freq_idx = {"on_train_batch_end": 0, "on_train_batch_end_with_preds": 0}
         self.layer_name = layer_name
 
-
     def on_train_batch_end(
         self,
         trainer: 'pl.Trainer',

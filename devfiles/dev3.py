@@ -1,7 +1,8 @@
-from importlib import import_module
+import time
+from tqdm import tqdm
 
-# from devfiles.dev import prs
-modl = import_module("devfiles.dev")
-prs = modl.prs
 
-print(prs)
+for _ in tqdm(range(100), leave=False):
+    time.sleep(0.1)
+
+print('banana')

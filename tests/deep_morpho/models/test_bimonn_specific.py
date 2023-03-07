@@ -123,7 +123,7 @@ class TestBimonnDenseNotBinary:
         )
         n_binary = model.numel_binary()
         n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-        n_params_not = sum(p.numel() for name, p in model.named_parameters() if p.requires_grad if "classification" in name)
+        n_params_not = model.classification_layer.numel_float()
         assert n_binary + n_params_not == n_params
 
 
@@ -131,7 +131,7 @@ class TestBimonnDenseNotBinary:
     def test_forward_binary():
         x = torch.randint(0, 2, (12, 50)).float()
         model = BimonnDenseNotBinary(
-            channels=[200, 200, ],
+            channels=[200, ],
             input_size=x.shape[1],
             n_classes=14,
             threshold_mode={
@@ -147,8 +147,13 @@ class TestBimonnDenseNotBinary:
             weights_optim_args={"constant_P": True, "factor": 1},
         )
         model.binary(update_binaries=True)
-        out = model(x).detach().cpu().numpy()
-        # assert np.isin(out, [0, 1]).all()
+        # out = model(x).detach().cpu().numpy()
+        otp = model.forward_save(x)
+
+        for key, value in otp[0].items():
+            assert torch.isin(value, torch.tensor([0, 1])).all()
+
+        assert not (torch.isin(otp["output"], torch.tensor([0, 1])).all())
 
 
 class TestBimonnBiselDenseNotBinary:
@@ -194,13 +199,36 @@ class TestBimonnBiselDenseNotBinary:
         )
         n_binary = model.numel_binary()
         n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-        n_params_not = sum(p.numel() for name, p in model.named_parameters() if p.requires_grad if "classification" in name)
+        n_params_not = model.classification_layer.numel_float()
         assert n_binary + n_params_not == n_params
+
+    @staticmethod
+    def test_forward_save():
+        x = torch.randint(0, 2, (12, 1, 10, 10)).float()
+        model = BimonnBiselDenseNotBinary(
+            kernel_size=(5, 5),
+            channels=[50, 50, ],
+            input_size=x.shape[1:],
+            n_classes=14,
+            threshold_mode={
+                "weight": 'softplus',
+                "activation": 'tanh',
+            },
+            input_mean=x.mean(),
+            bias_optim_mode=BiseBiasOptimEnum.POSITIVE,
+            bias_optim_args={"offset": 0},
+            weights_optim_mode=BiseWeightsOptimEnum.THRESHOLDED,
+            weights_optim_args={"constant_P": True, "factor": 1},
+        )
+        otp = model.forward_save(x)
+        otp1 = model(x)
+
+        assert (otp["output"] - otp1).abs().sum() == 0
 
 
     @staticmethod
     def test_forward_binary():
-        x = torch.randint(0, 2, (12, 1, 28, 28)).float()
+        x = torch.randint(0, 2, (12, 1, 10, 10)).float()
         model = BimonnBiselDenseNotBinary(
             kernel_size=(5, 5),
             channels=[50, 50, ],
@@ -217,5 +245,13 @@ class TestBimonnBiselDenseNotBinary:
             weights_optim_args={"constant_P": True, "factor": 1},
         )
         model.binary(update_binaries=True)
-        out = model(x).detach().cpu().numpy()
+        otp = model.forward_save(x)
         # assert np.isin(out, [0, 1]).all()
+
+
+        for key, value in otp[0]["bisel"].items():
+            assert torch.isin(value, torch.tensor([0, 1])).all()
+
+        assert torch.isin(otp[1]["output"], torch.tensor([0, 1])).all()
+
+        assert not (torch.isin(otp["output"], torch.tensor([0, 1])).all())

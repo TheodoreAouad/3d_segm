@@ -136,6 +136,8 @@ def default_binary_load_observables_fn(experiment: "ExperimentBase", ) -> Tuple:
         # "ShowClosestSelemBinary": obs.ShowClosestSelemBinary(freq=args['freq_imgs']),
         # "ShowLUISetBinary": obs.ShowLUISetBinary(freq=args['freq_imgs']),
         metric_binary_obs,
+        obs.ActivatednessObservable(freq=args["freq_update_binary_epoch"]),
+        obs.ClosestDistObservable(freq=args["freq_update_binary_epoch"]),
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         # "ConvergenceBinary": obs.ConvergenceBinary(freq=args['freq_imgs']),
 
@@ -202,6 +204,8 @@ def load_observables_bimonn_morpho_binary(experiment):
         obs.ConvergenceMetrics(metrics, freq=args['freq_scalars']),
 
         obs.UpdateBinary(freq_batch=args["freq_update_binary_batch"], freq_epoch=args["freq_update_binary_epoch"]),
+        obs.ActivatednessObservable(freq=args["freq_update_binary_epoch"]),
+        obs.ClosestDistObservable(freq=args["freq_update_binary_epoch"]),
         obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),
@@ -283,6 +287,8 @@ def load_observables_bimonn_morpho_grayscale(experiment):
         obs.ConvergenceMetrics(metrics, freq=args['freq_scalars']),
 
         obs.UpdateBinary(freq_batch=args["freq_update_binary_batch"], freq_epoch=args["freq_update_binary_epoch"]),
+        obs.ActivatednessObservable(freq=args["freq_update_binary_epoch"]),
+        obs.ClosestDistObservable(freq=args["freq_update_binary_epoch"]),
         obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),
@@ -359,6 +365,8 @@ def load_observables_classification_bimonn(experiment):
         obs.ConvergenceMetrics(metrics, freq=args['freq_scalars']),
 
         obs.UpdateBinary(freq_batch=args["freq_update_binary_batch"], freq_epoch=args["freq_update_binary_epoch"]),
+        obs.ActivatednessObservable(freq=args["freq_update_binary_epoch"]),
+        obs.ClosestDistObservable(freq=args["freq_update_binary_epoch"]),
         # obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),
@@ -437,6 +445,8 @@ def load_observables_classification_channel_bimonn(experiment):
         obs.ConvergenceMetrics(metrics, freq=args['freq_scalars']),
 
         obs.UpdateBinary(freq_batch=args["freq_update_binary_batch"], freq_epoch=args["freq_update_binary_epoch"]),
+        obs.ActivatednessObservable(freq=args["freq_update_binary_epoch"]),
+        obs.ClosestDistObservable(freq=args["freq_update_binary_epoch"]),
         # obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),

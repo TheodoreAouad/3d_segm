@@ -46,23 +46,24 @@ all_args = MultiParser()
 all_args['batch_seed'] = [None]
 
 all_args['n_try'] = [0]
-# all_args['n_try'] = [0, 1, 2, 3, 4]
-# all_args['n_try'] = range(1, 20)
 
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
-    "tests",
+    # "tests",
+    "Bimonn_exp_77/analysis2/",
+    # "Bimonn_exp_77/bimonn_dense/",
+    # "Bimonn_exp_77/bimonn_bisel_dense/",
     # "Bimonn_exp_77/bimonn_last_linear/"
 ]
 
 all_args["model"] = [
     # "BiMoNNClassifierMaxPoolNotBinary",
     # "BiMoNNClassifierMaxPool",
-    "BiMoNNClassifierLastLinearNotBinary",
     # "BiMoNNClassifierLastLinear",
     # "BiMoNN",
     # "BimonnDense",
-    # "BimonnDenseNotBinary",
+    "BimonnDenseNotBinary",
+    # "BiMoNNClassifierLastLinearNotBinary",
     # "BimonnBiselDenseNotBinary",
     # "ConvNetLastLinear",
     # "ConvNetBinaryConnectCifar10",
@@ -228,7 +229,7 @@ all_args["activation_constructor"] = [
     NormalizedTanh,
 ]
 all_args["apply_last_activation"] = [
-    False,
+    # False,
     True,
 ]
 all_args["do_maxpool"] = [
@@ -249,16 +250,20 @@ all_args['n_atoms'] = [
 
 all_args['kernel_size'] = [
     # 7
+    3,
     5
     # 7
     # "adapt",
 ]
 all_args['channels'] = [
     # 'adapt',
-    [100, ],
+    [100],
     [100, 100],
-    [50, ],
-    [50, 50],
+    [50],
+    [200],
+    # [100, 100],
+    # [50, ],
+    # [50, 50],
     # [200, 200, ],
     # [100, 100, 100],
     # [100, 100, 100, 100],
@@ -297,6 +302,13 @@ all_args['weights_optim_args'] = [
     # {"constant_P": True}
     {"constant_P": True, "factor": 1}
 ]
+
+# all_args["initializer_dense"] = [
+#     {
+#         "initializer_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
+#         "initializer_args": {"ub": 1e-2, "max_output_value": 0.95, "p_for_init": "auto", "input_mean": .5},
+#     }
+# ]
 
 all_args['initializer_method'] = [
     InitBimonnEnum.INPUT_MEAN,
@@ -375,33 +387,33 @@ for idx, args in enumerate(all_args.multi_args):
     elif isinstance(args["initializer_args"], list):
         args['init_bise_str'] = [str(ar["bise_init_method"]) for ar in args["initializer_args"]]
 
-    if args['dataset'] == "axspa_roi":
-        args['dataset_path'] = "data/deep_morpho/axspa_roi/axspa_roi.csv"
-        args['morp_operation'] = []
-        args['freq_imgs'] = 20
-        args['freq_scalars'] = 1
-        args['batch_size'] = 16
-        args['n_atoms'] = len(args['channels']) - 1
-        args['experiment_subname'] = f"{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset']}/"
+    # if args['dataset'] == "axspa_roi":
+    #     args['dataset_path'] = "data/deep_morpho/axspa_roi/axspa_roi.csv"
+    #     args['morp_operation'] = []
+    #     args['freq_imgs'] = 20
+    #     args['freq_scalars'] = 1
+    #     args['batch_size'] = 16
+    #     args['n_atoms'] = len(args['channels']) - 1
+    #     args['experiment_subname'] = f"{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset']}/"
 
-        args['patience_loss'] = 360
-        args['patience_reduce_lr'] = 120
+    #     args['patience_loss'] = 360
+    #     args['patience_reduce_lr'] = 120
 
 
-        if args["kernel_size"] == "adapt":
-            size = np.ceil(41 / args['n_atoms'])
-            if size % 2 == 0:
-                size += 1
-            args['kernel_size'] = int(size)
+    #     if args["kernel_size"] == "adapt":
+    #         size = np.ceil(41 / args['n_atoms'])
+    #         if size % 2 == 0:
+    #             size += 1
+    #         args['kernel_size'] = int(size)
 
-    if args['dataset'] == "sticks_noised":
-        args["sticks_noised_args"] = args["sticks_noised_args"].copy()
-        args['sticks_noised_args']['angles'] = args['sticks_noised_angles']
-        args['morp_operation'] = SticksNoisedGeneratorDataset.get_default_morp_operation(
-            lengths_lim=args['sticks_noised_args']['lengths_lim'],
-            angles=args['sticks_noised_args']['angles'],
-        )
-        args['sticks_noised_args']['size'] = args['sticks_noised_args']['size'] + (args["morp_operation"].in_channels[0],)
+    # if args['dataset'] == "sticks_noised":
+    #     args["sticks_noised_args"] = args["sticks_noised_args"].copy()
+    #     args['sticks_noised_args']['angles'] = args['sticks_noised_angles']
+    #     args['morp_operation'] = SticksNoisedGeneratorDataset.get_default_morp_operation(
+    #         lengths_lim=args['sticks_noised_args']['lengths_lim'],
+    #         angles=args['sticks_noised_args']['angles'],
+    #     )
+    #     args['sticks_noised_args']['size'] = args['sticks_noised_args']['size'] + (args["morp_operation"].in_channels[0],)
 
     # if args['init_weight_mode'] == InitBiseEnum.CUSTOM_CONSTANT and args['atomic_element'] == "bisel":
     #     args['init_bias_value_bise'] = "auto"

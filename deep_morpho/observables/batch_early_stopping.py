@@ -6,6 +6,7 @@ import pathlib
 
 import torch
 
+from general.nn.observables import Observable
 from general.utils import save_json, log_console
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.callbacks import Callback
@@ -19,7 +20,7 @@ class ReasonCodeEnum(Enum):
 
 
 
-class EarlyStoppingBase(EarlyStopping, ABC):
+class EarlyStoppingBase(EarlyStopping, Observable, ABC):
 
     def __init__(self, name: str = '', console_logger=None, *args, **kwargs):
         super().__init__(*args, **kwargs)

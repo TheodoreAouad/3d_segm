@@ -92,10 +92,65 @@ class LightningBiMoNNClassifierLastLinear(LightningBiMoNNClassifier):
 class LightningBimonnDense(LightningBiMoNNClassifier):
     model_class = BimonnDense
 
+    @classmethod
+    def get_model_from_experiment(cls, experiment: "ExperimentBase") -> GenericLightningModel:
+        args = experiment.args
+        inpt = experiment.input_sample
 
-class LightningBimonnDenseNotBinary(LightningBiMoNNClassifier):
+        args["initializer_method"] = args["initializer_args"]["bise_init_method"]
+        args["initializer_args"] = args["initializer_args"]["bise_init_args"]
+
+        model_args = args.model_args()
+
+        model_args.update({
+            "input_size": inpt.shape[1:],
+            "n_classes": experiment.trainloader.dataset.n_classes,
+            "input_mean": inpt.mean().item(),
+        })
+
+        model = cls(
+            model_args=model_args,
+            learning_rate=args["learning_rate"],
+            loss=args["loss"],
+            optimizer=args["optimizer"],
+            optimizer_args=args["optimizer_args"],
+            observables=experiment.observables,
+        )
+        model.to(experiment.device)
+        return model
+
+
+class LightningBimonnDenseNotBinary(LightningBimonnDense):
     model_class = BimonnDenseNotBinary
 
 
 class LightningBimonnBiselDenseNotBinary(LightningBiMoNNClassifier):
     model_class = BimonnBiselDenseNotBinary
+
+    @classmethod
+    def get_model_from_experiment(cls, experiment: "ExperimentBase") -> GenericLightningModel:
+        args = experiment.args
+        inpt = experiment.input_sample
+
+        args["initializer_bise_method"] = args["initializer_args"]["bise_init_method"]
+        args["initializer_bise_args"] = args["initializer_args"]["bise_init_args"]
+        args["initializer_lui_method"] = args["initializer_args"]["lui_init_method"]
+
+        model_args = args.model_args()
+
+        model_args.update({
+            "input_size": inpt.shape[1:],
+            "n_classes": experiment.trainloader.dataset.n_classes,
+            "input_mean": inpt.mean().item(),
+        })
+
+        model = cls(
+            model_args=model_args,
+            learning_rate=args["learning_rate"],
+            loss=args["loss"],
+            optimizer=args["optimizer"],
+            optimizer_args=args["optimizer_args"],
+            observables=experiment.observables,
+        )
+        model.to(experiment.device)
+        return model

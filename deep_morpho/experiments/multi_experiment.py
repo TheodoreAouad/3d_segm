@@ -63,12 +63,14 @@ class MultiExperiment(ExperimentMethods):
         experiment_class: Type[ExperimentBase] = ExperimentBase,
         enforce_experiment_class: bool = False,
         stop_on_error: bool = False,
+        generate_new_folder: bool = True,
     ):
         self.multi_args = multi_args
         self.dest_dir = dest_dir
         self.experiment_class = experiment_class
         self.stop_on_error = stop_on_error
         self.enforce_experiment_class = enforce_experiment_class
+        self.generate_new_folder = generate_new_folder
 
         self.experiments = []
         self.console_logger = None
@@ -109,7 +111,9 @@ class MultiExperiment(ExperimentMethods):
             self.device = torch.device("cpu")
         self.log_console("device", self.device)
 
-        self.log_dir = get_next_same_name(join(self.dest_dir, self.multi_args[0]['experiment_name']))
+        self.log_dir = join(self.dest_dir, self.multi_args[0]['experiment_name'])
+        if self.generate_new_folder:
+            self.log_dir = get_next_same_name(self.log_dir)
         self.log_console("log_dir", self.log_dir)
 
         with Task("Saving code", self.console_logger):

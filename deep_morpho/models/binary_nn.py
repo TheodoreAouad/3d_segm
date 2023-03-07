@@ -57,10 +57,10 @@ class BinaryNN(nn.Module, ExperimentMethods, ABC):
 
 
 class BinarySequential(nn.Sequential, BinaryNN):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, binary_mode: bool = False, **kwargs):
         nn.Sequential.__init__(self, *args, **kwargs)
         # BinaryNN.__init__(self)
-        self.binary_mode = False
+        self.binary_mode = binary_mode
 
     def __gititem__(self, idx):
         res = super().__getitem__(idx)

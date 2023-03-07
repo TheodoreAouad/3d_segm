@@ -98,3 +98,6 @@ class Observable(pl.callbacks.Callback):
 
     def save(self, savepath: str):
         pass
+
+    def save_hparams(self) -> Dict:
+        return {}

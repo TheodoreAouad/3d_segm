@@ -1,5 +1,6 @@
 import pathlib
 from os.path import join
+from typing import Dict
 
 import torch
 from .observable import Observable
@@ -178,3 +179,10 @@ class CalculateAndLogMetrics(Observable):
                 dict_str[k1][k2] = str(v2)
         save_json(dict_str, join(final_dir, "metrics.json"))
         return self.last_value
+
+    def save_hparams(self) -> Dict:
+        res = {}
+        for state in ["train", "val", "test"]:
+            for metric_name in self.metrics.keys():
+                res[f"{metric_name}_{state}"] = self.last_value[state][metric_name]
+        return res
