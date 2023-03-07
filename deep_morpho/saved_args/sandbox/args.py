@@ -50,7 +50,7 @@ all_args['n_try'] = [0]
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
     # "tests",
-    "Bimonn_exp_77/analysis2/",
+    "Bimonn_exp_77/iccv_2023/",
     # "Bimonn_exp_77/bimonn_dense/",
     # "Bimonn_exp_77/bimonn_bisel_dense/",
     # "Bimonn_exp_77/bimonn_last_linear/"
@@ -63,8 +63,8 @@ all_args["model"] = [
     # "BiMoNN",
     # "BimonnDense",
     "BimonnDenseNotBinary",
-    # "BiMoNNClassifierLastLinearNotBinary",
-    # "BimonnBiselDenseNotBinary",
+    "BiMoNNClassifierLastLinearNotBinary",
+    "BimonnBiselDenseNotBinary",
     # "ConvNetLastLinear",
     # "ConvNetBinaryConnectCifar10",
     # "MLPBinaryConnectMNIST",
@@ -229,8 +229,8 @@ all_args["activation_constructor"] = [
     NormalizedTanh,
 ]
 all_args["apply_last_activation"] = [
-    # False,
-    True,
+    False,
+    # True,
 ]
 all_args["do_maxpool"] = [
     # True,
@@ -250,7 +250,7 @@ all_args['n_atoms'] = [
 
 all_args['kernel_size'] = [
     # 7
-    3,
+    # 3,
     5
     # 7
     # "adapt",
@@ -258,9 +258,9 @@ all_args['kernel_size'] = [
 all_args['channels'] = [
     # 'adapt',
     [100],
-    [100, 100],
-    [50],
-    [200],
+    # [100, 100],
+    # [50],
+    # [200],
     # [100, 100],
     # [50, ],
     # [50, 50],
@@ -344,13 +344,16 @@ all_args['constant_P_lui'] = [False]
 if all_args['dataset'] in [[k] for k in ['axspa_roi', "sticks_noised", "classif_mnist"]]:
     all_args['morp_operation'] = [None]
 
-all_args.parse_args()
+all_args.parse_args(["--apply_last_activation", "False"])
 
 # all_args = dict_cross(all_args)
 #
 
 to_remove = []
 for idx, args in enumerate(all_args.multi_args):
+
+    if args["model"] == "BimonnBiselDenseNotBinary":
+        args["channels"] = [args["channels"][0], args["channels"][0]]
 
     # Duality training
     # warnings.warn('Warning, duality training.')
