@@ -104,8 +104,8 @@ class DichotomyBinarization:
 
     def find_best_point(self):
         best_pts = [self.new_point().set_state(self.find_best_point_bounds(*self.init))]
-        best_pts.append(self.new_point().set_state(self.find_best_point_bounds(self.init[0], best_pts[0].index - 1)))
-        best_pts.append(self.new_point().set_state(self.find_best_point_bounds(best_pts[0].index + 1, self.init[1])))
+        # best_pts.append(self.new_point().set_state(self.find_best_point_bounds(self.init[0], best_pts[0].index - 1)))
+        # best_pts.append(self.new_point().set_state(self.find_best_point_bounds(best_pts[0].index + 1, self.init[1])))
 
 
         best_pt = best_pts[np.argmin([pt.objective_value for pt in best_pts])]

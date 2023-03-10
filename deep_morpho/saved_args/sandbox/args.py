@@ -201,7 +201,7 @@ all_args['freq_imgs'] = [500]
 all_args['freq_hist'] = [500]
 all_args["freq_update_binary_batch"] = [None]
 all_args["freq_update_binary_epoch"] = [
-    2,
+    4,
     # None,
 ]
 all_args['freq_scalars'] = [50]
@@ -257,7 +257,7 @@ all_args['kernel_size'] = [
 ]
 all_args['channels'] = [
     # 'adapt',
-    [100],
+    [100, 100],
     # [100, 100],
     # [50],
     # [200],
@@ -344,7 +344,7 @@ all_args['constant_P_lui'] = [False]
 if all_args['dataset'] in [[k] for k in ['axspa_roi', "sticks_noised", "classif_mnist"]]:
     all_args['morp_operation'] = [None]
 
-all_args.parse_args(["--apply_last_activation", "False"])
+all_args.parse_args()
 
 # all_args = dict_cross(all_args)
 #
@@ -352,8 +352,8 @@ all_args.parse_args(["--apply_last_activation", "False"])
 to_remove = []
 for idx, args in enumerate(all_args.multi_args):
 
-    if args["model"] == "BimonnBiselDenseNotBinary":
-        args["channels"] = [args["channels"][0], args["channels"][0]]
+    # if args["model"].lower() == ("BimonnBiselDenseNotBinary").lower():
+    #     args["channels"] = [args["channels"][0], args["channels"][0]]
 
     # Duality training
     # warnings.warn('Warning, duality training.')

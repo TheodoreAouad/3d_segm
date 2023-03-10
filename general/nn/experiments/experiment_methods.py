@@ -88,13 +88,20 @@ class ExperimentMethods(ABC):
             elif name != "self":
                 param_dict = {"default": p.default}
 
-                if isinstance(p.default, (bool, int, float, str)):
+                if isinstance(p.default, (int, float, str)):
                     param_dict["type"] = cls.convert_or_str_fn(type(p.default))
 
+                if isinstance(p.default, bool):
+                    param_dict["type"] = cls.convert_to_bool_or_str_fn()
+
                 if p.annotation is not None:
-                    for type_ in [bool, int, float, str]:
+                    for type_ in [int, float, str]:
                         if (p.annotation == type_) or (p.annotation == Optional[type_]):
                             param_dict["type"] = cls.convert_or_str_fn(type_)
+
+                    if (p.annotation == bool) or (p.annotation == Optional[bool]):
+                        param_dict["type"] = cls.convert_to_bool_or_str_fn()
+
                     # if p.annotation in [bool, int, float, str]:
                     #     param_dict["type"] = cls.convert_or_str_fn(p.annotation)
 
@@ -114,6 +121,18 @@ class ExperimentMethods(ABC):
             except ValueError:
                 return string
         return convert_or_str
+
+    @staticmethod
+    def convert_to_bool_or_str_fn() -> Any:
+        def convert_to_bool(string: str) -> Any:
+            """Convert a string to a type, or return the string."""
+            try:
+                if string.lower() in ["true", "t", "yes", "y", "1"]:
+                    return True
+                return False
+            except ValueError:
+                return string
+        return convert_to_bool
 
     @staticmethod
     def enum_to_str_fn(enum: EnumMeta) -> str:
