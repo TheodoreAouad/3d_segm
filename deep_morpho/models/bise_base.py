@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Tuple, Union, Dict
+from typing import Tuple, Union, Dict, List
 
 import numpy as np
 import torch
@@ -108,7 +108,7 @@ class BiSEBase(BinaryNN):
 
         self.bias_handler = self.create_bias_handler(**self.bias_optim_args)
         self.weights_handler = self.create_weights_handler(**self.weights_optim_args)
-        self.closest_selem_handler = self.create_closest_selem_handler(**self.closest_selem_args)
+        self.closest_selem_handler = self.create_closest_selem_handler(self.closest_selem_method, **self.closest_selem_args)
 
         self.initializer = initializer
         self.initializer.initialize(self)
@@ -126,20 +126,24 @@ class BiSEBase(BinaryNN):
     def _specific_numel_binary(self):
         return self.weight.numel() + self.bias.numel() + self.activation_P.numel()
 
-    def create_closest_selem_handler(self, **kwargs):
-        if self.closest_selem_method.value == ClosestSelemEnum.MIN_DIST_DIST_TO_BOUNDS.value:
+    def set_closest_selem_handler(self, closest_selem_method, **kwargs):
+        self.closest_selem_handler = self.create_closest_selem_handler(self.closest_selem_method, **self.closest_selem_args)
+        return self
+
+    def create_closest_selem_handler(self, closest_selem_method, **kwargs):
+        if closest_selem_method.value == ClosestSelemEnum.MIN_DIST_DIST_TO_BOUNDS.value:
             return BiseClosestMinDistBounds(bise_module=self, **kwargs)
 
-        elif self.closest_selem_method.value == ClosestSelemEnum.MIN_DIST.value:
+        elif closest_selem_method.value == ClosestSelemEnum.MIN_DIST.value:
             kwargs['distance_agg_fn'] = distance_agg_min
             kwargs['distance_fn'] = kwargs.get('distance_fn', distance_fn_to_bounds)
             return BiseClosestSelemWithDistanceAgg(bise_module=self, **kwargs)
 
-        elif self.closest_selem_method.value == ClosestSelemEnum.MAX_SECOND_DERIVATIVE.value:
+        elif closest_selem_method.value == ClosestSelemEnum.MAX_SECOND_DERIVATIVE.value:
             kwargs['distance_agg_fn'] = distance_agg_max_second_derivative
             return BiseClosestSelemWithDistanceAgg(bise_module=self, **kwargs)
 
-        elif self.closest_selem_method.value == ClosestSelemEnum.MIN_DIST_DIST_TO_CST.value:
+        elif closest_selem_method.value == ClosestSelemEnum.MIN_DIST_DIST_TO_CST.value:
             return BiseClosestMinDistOnCst(bise_module=self, **kwargs)
 
 
@@ -337,6 +341,21 @@ class BiSEBase(BinaryNN):
         if is_op_fn(weights, bias, selem, v1, v2):
             return selem
         return None
+
+    def find_closest_selem_and_operation(self, chans: List[int] = None, v1: float = 0, v2: float = 1, verbose: bool = True) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Find the closest selem and operation for all given chans. If no chans are given, for all chans.
+
+        Args:
+            chans (list): list of given channels. If non given, all channels computed.
+            v1 (float, optional): first argument for almost binary. Defaults to 0.
+            v2 (float, optional): second argument for almost binary. Defaults to 1.
+            verbose (bool, optional): shows progress bar.
+
+        Returns:
+            array (n_chan, *kernel_size) bool, array(n_chan) str, array(n_chan) float: the selem, the operation and the distance to the closest selem
+        """
+        return self.closest_selem_handler(chans, v1=v1, v2=v2, verbose=verbose)
+
 
     def find_closest_selem_and_operation_chan(self, chout: int = 0, v1: float = 0, v2: float = 1) -> Tuple[np.ndarray, str, float]:
         """Find the closest selem and the operation given the almost binary features.

@@ -1,6 +1,7 @@
 from typing import Callable, Tuple
 import time
 from IPython.display import clear_output
+import warnings
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -23,6 +24,15 @@ class PointDichotomy:
         self.derivative = None
 
         self.index_history = []
+
+    def __eq__(self, __o: object) -> bool:
+        if self.index != __o.index:
+            return False
+
+        if (self.w_values != __o.w_values).any():
+            return False
+
+        return True
 
     @property
     def objective_value(self):
@@ -140,7 +150,17 @@ class DichotomyBinarization:
             self.best_pt = self.pt2
             return self.pt2
 
+        prev_pt1 = self.new_point()
+        prev_pt2 = self.new_point()
+
         for _ in range(self.N):
+            if prev_pt1 == self.pt1 and prev_pt2 == self.pt2:
+                warnings.warn("DichotomyBinarization: No local max found. No change in iteration.")
+                break
+
+            prev_pt1.set_state(self.pt1)
+            prev_pt2.set_state(self.pt2)
+
             pt1_der = self.pt1.derivative
             pt2_der = self.pt2.derivative
 
@@ -187,7 +207,8 @@ class DichotomyBinarization:
             for pt in [self.pt1, self.pt2, self.pt_tmp]:
                 pt.update_history()
 
-
+        self.pt_tmp.update_history()
+        self.best_pt = self.pt_tmp
         return self.pt_tmp
 
     @property
