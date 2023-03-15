@@ -180,29 +180,30 @@ class BiSEBase(BinaryNN):
 
         raise NotImplementedError(f'self.bias_optim_mode must be in {BiseWeightsOptimEnum._member_names_}')
 
-    def update_closest_selems(self, chans=None, verbose: bool = True, desc_suffix: str = ""):
+    def update_closest_selems(self, chans=None, verbose: bool = True):
+        self.find_closest_selem_and_operation(chans=chans, verbose=verbose)
+        # if chans is None:
+        #     chans = range(self.out_channels)
+        # if verbose:
+        #     chans = tqdm(chans, leave=False, desc=f"Approximate binarization{desc_suffix}")
+        # for chan in chans:
+        #     self.find_closest_selem_and_operation_chan(chan)
+
+    def update_binary_selems(self, chans=None, verbose: bool = True):
+        self.update_closest_selems(chans=chans, verbose=verbose)
+        self.update_learned_selems(chans=chans, verbose=verbose)
+
+    def update_learned_selems(self, chans=None, verbose: bool = True):
         if chans is None:
             chans = range(self.out_channels)
         if verbose:
-            chans = tqdm(chans, leave=False, desc=f"Approximate binarization{desc_suffix}")
-        for chan in chans:
-            self.find_closest_selem_and_operation_chan(chan)
-
-    def update_binary_selems(self, chans=None, verbose: bool = True, desc_suffix: str = ""):
-        self.update_closest_selems(chans=chans, verbose=verbose, desc_suffix=desc_suffix)
-        self.update_learned_selems(chans=chans, verbose=verbose, desc_suffix=desc_suffix)
-
-    def update_learned_selems(self, chans=None, verbose: bool = True, desc_suffix: str = ""):
-        if chans is None:
-            chans = range(self.out_channels)
-        if verbose:
-            chans = tqdm(chans, leave=False, desc=f"Exact binarization{desc_suffix}")
+            chans = tqdm(chans, leave=False, desc=f"Exact binarization")
         for chan in chans:
             self.find_selem_and_operation_chan(chan)
 
-    def binary(self, mode: bool = True, update_binaries: bool = True, verbose: bool = True, desc_suffix: str = "", *args, **kwargs):
+    def binary(self, mode: bool = True, update_binaries: bool = True, verbose: bool = True, *args, **kwargs):
         if mode and update_binaries:
-            self.update_binary_selems(verbose=verbose, desc_suffix=desc_suffix,)
+            self.update_binary_selems(verbose=verbose,)
         return super().binary(mode, *args, **kwargs)
 
     # TODO: move to BiSE class
@@ -305,15 +306,82 @@ class BiSEBase(BinaryNN):
 
     @staticmethod
     def bias_bounds_erosion(weights: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> Tuple[float, float]:
+        """Get the bias bounds to check for the erosion operation, for one channel.
+        Args:
+            weights (torch.Tensor): (1, chin, *kernel_size) the weights of the BiSE
+            S (np.ndarray): (1, chin, *kernel_size) the structuring element
+            v1 (float): the first bound for the almost binary
+            v2 (float): the second bound for the almost binary
+
+        Returns:
+            float, float: lower and upper bound to be in to be an erosion for one channel.
+        """
         S = S.astype(bool)
         W = weights.cpu().detach().numpy()
         return W[W > 0].sum() - (1 - v1) * W[S].min(), v2 * W[S & (W > 0)].sum() + W[W < 0].sum()
 
     @staticmethod
     def bias_bounds_dilation(weights: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> Tuple[float, float]:
+        """Get the bias bounds to check for the dilation operation, for one channel.
+        Args:
+            weights (torch.Tensor): (1, chin, *kernel_size) the weights of the BiSE
+            S (np.ndarray): (1, chin, *kernel_size) the structuring element
+            v1 (float): the first bound for the almost binary
+            v2 (float): the second bound for the almost binary
+
+        Returns:
+            float, float: lower and upper bound to be in to be an dilation for one channel.
+        """
         S = S.astype(bool)
         W = weights.cpu().detach().numpy()
         return W[(~S) & (W > 0)].sum() + v1 * W[S & (W > 0)].sum(), v2 * W[S].min() + W[W < 0].sum()
+
+    @staticmethod
+    def bias_bounds_erosion_vectorized(weights: torch.Tensor, S: np.ndarray, v1: np.ndarray = 0, v2: np.ndarray = 1) -> Tuple[float, float]:
+        """Get the bias bounds to check for the erosion operation, in a vectorized way.
+        Args:
+            weights (torch.Tensor): (chout, chin, *kernel_size) the weights of the BiSE
+            S (np.ndarray): (chout, chin, *kernel_size) the structuring element
+            v1 (np.ndarray): (chout) the first bound for the almost binary
+            v2 (np.ndarray): (chout) the second bound for the almost binary
+
+        Returns:
+            torch.Tensor (chout), torch.Tensor (chout): lower and upper bound to be in to be an erosion for each channel.
+        """
+        S = S.astype(bool).reshape(S.shape[0], -1)
+        W = weights.cpu().detach().numpy().reshape(S.shape[0], -1)
+
+        posW = W > 0
+        negW = ~posW
+
+        return (
+            np.where(posW, W, 0).sum(1) - (1 - v1) * np.where(S, W, 0).min(1),
+            v2 * np.where(S & posW, W, 0).sum(1) + np.where(negW, W, 0).sum(1)
+        )
+        # return W[W > 0].sum() - (1 - v1) * W[S].min(), v2 * W[S & (W > 0)].sum() + W[W < 0].sum()
+
+    @staticmethod
+    def bias_bounds_dilation_vectorized(weights: torch.Tensor, S: np.ndarray, v1: np.ndarray = 0, v2: np.ndarray = 1) -> Tuple[float, float]:
+        """Get the bias bounds to check for the dilation operation, in a vectorized way.
+        Args:
+            weights (torch.Tensor): (chout, chin, *kernel_size) the weights of the BiSE
+            S (np.ndarray): (chout, chin, *kernel_size) the structuring element
+            v1 (np.ndarray): (chout) the first bound for the almost binary
+            v2 (np.ndarray): (chout) the second bound for the almost binary
+
+        Returns:
+            torch.Tensor (chout), torch.Tensor (chout): lower and upper bound to be in to be an dilation for each channel.
+        """
+        S = S.astype(bool).reshape(S.shape[0], -1)
+        W = weights.cpu().detach().numpy().reshape(S.shape[0], -1)
+
+        posW = W > 0
+        negW = ~posW
+
+        return (
+            np.where(~S & posW, W, 0).sum(1) + v1 * np.where(S & posW, W, 0).sum(1),
+            v2 * np.where(S, W, 0).min(1) + np.where(negW, W, 0).sum(1)
+        )
 
     def find_selem_for_operation_chan(self, operation: str, chout: int = 0, v1: float = 0, v2: float = 1):
         """
@@ -352,27 +420,32 @@ class BiSEBase(BinaryNN):
             verbose (bool, optional): shows progress bar.
 
         Returns:
-            array (n_chan, *kernel_size) bool, array(n_chan) str, array(n_chan) float: the selem, the operation and the distance to the closest selem
+            array (n_chan, *kernel_size) bool, array(n_chan) int, array(n_chan) int: the selem, the operation code and the distance to the closest selem
         """
-        return self.closest_selem_handler(chans, v1=v1, v2=v2, verbose=verbose)
+        (
+            self._closest_selem[chans],
+            self._closest_operation[chans],
+            self._closest_selem_dist[chans]
+        ) = self.closest_selem_handler(chans, v1=v1, v2=v2, verbose=verbose)
+        return self._closest_selem, self._closest_operation, self._closest_selem_dist
 
 
-    def find_closest_selem_and_operation_chan(self, chout: int = 0, v1: float = 0, v2: float = 1) -> Tuple[np.ndarray, str, float]:
-        """Find the closest selem and the operation given the almost binary features.
+    # def find_closest_selem_and_operation_chan(self, chout: int = 0, v1: float = 0, v2: float = 1) -> Tuple[np.ndarray, str, float]:
+    #     """Find the closest selem and the operation given the almost binary features.
 
-        Args:
-            v1 (float): lower bound of almost binary input deadzone. Defaults to 0.
-            v2 (float): upper bound of almost binary input deadzone. Defaults to 1.
+    #     Args:
+    #         v1 (float): lower bound of almost binary input deadzone. Defaults to 0.
+    #         v2 (float): upper bound of almost binary input deadzone. Defaults to 1.
 
-        Returns:
-            (np.ndarray, str, float): if the selem is found, returns the selem and the operation
-        """
-        final_dist, final_selem, final_operation = self.closest_selem_handler(chout=chout, v1=v1, v2=v2)
+    #     Returns:
+    #         (np.ndarray, str, float): if the selem is found, returns the selem and the operation
+    #     """
+    #     final_dist, final_selem, final_operation = self.closest_selem_handler(chout=chout, v1=v1, v2=v2)
 
-        self._closest_selem[chout] = final_selem.astype(bool)
-        self._closest_operation[chout] = self.operation_code[final_operation]
-        self._closest_selem_dist[chout] = final_dist
-        return final_selem, final_operation, final_dist
+    #     self._closest_selem[chout] = final_selem.astype(bool)
+    #     self._closest_operation[chout] = self.operation_code[final_operation]
+    #     self._closest_selem_dist[chout] = final_dist
+    #     return final_selem, final_operation, final_dist
 
     def find_selem_and_operation_chan(self, chout: int = 0, v1: float = 0, v2: float = 1):
         """Find the selem and the operation given the almost binary features.

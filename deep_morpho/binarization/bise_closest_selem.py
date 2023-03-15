@@ -1,7 +1,8 @@
-from typing import Tuple, TYPE_CHECKING
+from typing import Tuple, TYPE_CHECKING, List
 from enum import Enum
 from functools import partial
 
+from tqdm import tqdm
 import numpy as np
 
 if TYPE_CHECKING:
@@ -74,10 +75,21 @@ def distance_fn_between_bounds(self, weights: "torch.Tensor", bias: "torch.Tenso
 
 class BiseClosestSelemHandler(ExperimentMethods):
 
-    def __init__(self, bise_module: "BiSE"):
+    def __init__(self, bise_module: "BiSE" = None):
         self.bise_module = bise_module
 
-    def __call__(self, chout: int, v1: float, v2: float) -> Tuple[float, np.ndarray, str]:
+    def __call__(self, chans: List[int] = None, v1: float = 0, v2: float = 1, verbose: bool = True,) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Find the closest selem and operation for all given chans. If no chans are given, for all chans.
+
+        Args:
+            chans (list): list of given channels. If non given, all channels computed.
+            v1 (float, optional): first argument for almost binary. Defaults to 0.
+            v2 (float, optional): second argument for almost binary. Defaults to 1.
+            verbose (bool, optional): shows progress bar.
+
+        Returns:
+            array (n_chan, *kernel_size) bool, array(n_chan) str, array(n_chan) float: the selem, the operation and the distance to the closest selem
+        """
         pass
 
 
@@ -125,12 +137,30 @@ class BiseClosestSelemWithDistanceAgg(BiseClosestSelemHandler):
                 final_selem = new_selem
                 final_operation = operation
 
-        return final_dist, final_selem, final_operation
+        return final_selem, final_operation, final_dist
 
-    def __call__(self, chout: int, v1: float, v2: float) -> Tuple[float, np.ndarray, str]:
-        return self.find_closest_selem_and_operation_chan(
-            weights=self.bise_module.weights, bias=self.bise_module.bias, chout=chout, v1=v1, v2=v2
-        )
+    def __call__(self, chans: List[int] = None, v1: float = 0, v2: float = 1, verbose: bool = True,) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        if chans is None:
+            chans = range(self.bise_module.out_channels)
+        if verbose:
+            chans = tqdm(chans, leave=False, desc="Approximate binarization")
+
+        for chan in chans:
+            self.find_closest_selem_and_operation_chan(chan)
+
+        closest_selems = np.zeros((len(chans), *self.bise_module.kernel_size), dtype=bool)
+        closest_operations = np.zeros(len(chans), dtype=str)
+        closest_dists = np.zeros(len(chans))
+
+        for chout_idx, chout in enumerate(chans):
+            selem, op, dist = self.find_closest_selem_and_operation_chan(
+                weights=self.bise_module.weights, bias=self.bise_module.bias, chout=chout, v1=v1, v2=v2
+            )
+            closest_dists[chout_idx] = selem.astype(bool)
+            closest_selems[chout_idx] = self.bise_module.operation_code[op]
+            closest_operations[chout_idx] = dist
+
+        return closest_selems, closest_operations, closest_dists
 
 
 class BiseClosestMinDistBounds(BiseClosestSelemWithDistanceAgg):
@@ -139,7 +169,7 @@ class BiseClosestMinDistBounds(BiseClosestSelemWithDistanceAgg):
         super().__init__(distance_fn=distance_fn_to_bounds, distance_agg_fn=distance_agg_min, *args, **kwargs)
 
 
-class BiseClosestMinDistOnCst(BiseClosestSelemWithDistanceAgg):
+class BiseClosestMinDistOnCstOld(BiseClosestSelemWithDistanceAgg):
 
     def __init__(self, *args, **kwargs):
         super().__init__(distance_fn=self.distance_fn_selem, distance_agg_fn=distance_agg_min, *args, **kwargs)
@@ -179,56 +209,97 @@ class BiseClosestMinDistOnCst(BiseClosestSelemWithDistanceAgg):
 
         final_dist = final_dist_selem + final_dist_bias
 
-        return final_dist, final_selem, final_operation
+        return final_selem, final_operation, final_dist
 
 
-class BiseClosestMinDistOnCst2(BiseClosestSelemHandler):
+class BiseClosestMinDistOnCst(BiseClosestSelemHandler):
     @staticmethod
     def distance_fn_selem(weights: "torch.Tensor", S: np.ndarray,) -> float:
-        # if isinstance(weights, torch.Tensor):
-        #     weights = weights.cpu().detach().numpy()
-        return (weights ** 2).sum() - 1 / S.sum() * (weights[S].sum()) ** 2
+        # We reshape to sum over all dimensions except the first one.
+        weights = weights.reshape(weights.shape[0], -1)
+        S = S.reshape(S.shape[0], -1)
+        return (weights ** 2).sum(1) - 1 / S.sum(1) * (np.where(S, weights, 0).sum(axis=1)) ** 2
 
     @staticmethod
-    def find_best_index_dist(w_values: np.ndarray) -> Tuple[int, float]:
-        """Gives the arg maximum of the distance function.
+    def find_best_index(w_values: np.ndarray) -> np.ndarray:
+        r"""Gives the arg maximum of the distance function $\frac{\sum_{k \in S}{W_k}}{\sqrt{card{S}}} = \frac{\sum_{k = 1}^j{w_k}}{\sqrt{j}}$
+        with $w_k$ the sorted values in descending order of the weights $W$.
 
         Args:
-            w_values (np.ndarray): The values of the weights, in descending order.
+            w_values (np.ndarray): (n_chout, prod(kernel_size))
 
         Returns:
-            (int, float): the index of the best value, and the value itself.
+            array (n_chout): the index of the best value, for each channel.
         """
-        all_objs = (np.cumsum(w_values))**2 / np.arange(1, 1+len(w_values))
-        best_idx = np.argmax(all_objs)
-        return best_idx, all_objs[best_idx]
+        return (np.cumsum(w_values, axis=1) / np.sqrt(np.arange(1, 1+w_values.shape[1]))).argmax(1)
 
 
-    def find_closest_selem_and_operation_chan(
-        self, weights, bias, chout=0, v1=0, v2=1
+    def find_closest_selem_and_operation(
+        self, weights, bias, chans=None, v1=0, v2=1, verbose: bool = True,
     ):
-        W = weights[chout].cpu().detach().numpy()
-        bias = bias[chout].cpu().detach().numpy()
+        if chans is None:
+            chans = range(self.bise_module.out_channels)
 
-        w_values = np.unique(W)[::-1]
+        W = weights.cpu().detach().numpy()[chans]
+        bias = bias.cpu().detach().numpy()[chans]
 
-        best_idx, best_dist = self.find_best_index_dist(w_values)
-        S = W >= w_values[best_idx]
+        if verbose:
+            chans = tqdm(chans, leave=False, desc="Approximate binarization")
+
+
+        w_values = np.zeros((len(chans), np.prod(W.shape[1:])))
+        for chout_idx, _ in enumerate(chans):
+            w_value_tmp = np.unique(W[chout_idx])[::-1]
+            # if chout_idx == 920:
+            #     return w_value_tmp  # DEBUG
+            w_values[chout_idx, :len(w_value_tmp)] = w_value_tmp  # We assume that W don't repeat values. TODO: handle case with repeated values. Hint: add micro noise?
+
+        best_idx = self.find_best_index(w_values)
+        S = (W >= w_values[np.arange(w_values.shape[0]), best_idx, None, None, None])
 
         best_dist_selem = self.distance_fn_selem(weights=W, S=S,)
 
-        wsum = W.sum()
-        if -bias <= wsum / 2:
-            final_operation = "dilation"
-        else:
-            final_operation = "erosion"
+        wsum = W.reshape(W.shape[0], -1).sum(1)
+        final_operation = np.empty(len(chans), dtype=str)
+        final_operation[wsum / 2 >= -bias] = self.bise_module.operation_code["dilation"]
+        final_operation[wsum / 2 < -bias] = self.bise_module.operation_code["erosion"]
+        # if -bias <= wsum / 2:
+        #     final_operation = "dilation"
+        # else:
+        #     final_operation = "erosion"
 
         final_dist_bias = np.abs(-bias - wsum)
         final_dist = best_dist_selem + final_dist_bias
 
-        return final_dist, S, final_operation
+        return S, final_operation, final_dist
 
-    def __call__(self, chout: int, v1: float, v2: float) -> Tuple[float, np.ndarray, str]:
-        return self.find_closest_selem_and_operation_chan(
-            weights=self.bise_module.weights, bias=self.bise_module.bias, chout=chout, v1=v1, v2=v2
+    def find_closest_selem(self, W, chans):
+        w_values = np.zeros((len(chans), np.prod(W.shape[1:])))
+        for chout_idx, _ in enumerate(chans):
+            w_value_tmp = np.unique(W[chout_idx])[::-1]
+            # if chout_idx == 920:
+            #     return w_value_tmp  # DEBUG
+            w_values[chout_idx, :len(w_value_tmp)] = w_value_tmp  # We assume that W don't repeat values. TODO: handle case with repeated values. Hint: add micro noise?
+
+        best_idx = self.find_best_index(w_values)
+        S = (W >= w_values[np.arange(w_values.shape[0]), best_idx, None, None, None])
+        best_dist_selem = self.distance_fn_selem(weights=W, S=S,)
+        return S, best_dist_selem
+
+    def find_operation(self, W, bias, chans):
+        wsum = W.reshape(W.shape[0], -1).sum(1)
+        final_operation = np.empty(len(chans), dtype=str)
+        final_operation[wsum / 2 >= -bias] = self.bise_module.operation_code["dilation"]
+        final_operation[wsum / 2 < -bias] = self.bise_module.operation_code["erosion"]
+        # if -bias <= wsum / 2:
+        #     final_operation = "dilation"
+        # else:
+        #     final_operation = "erosion"
+
+        final_dist_bias = np.abs(-bias - wsum)
+        return final_operation, final_dist_bias
+
+    def __call__(self, chans: List[int], v1: float = 0, v2: float = 1, verbose: bool = True) -> Tuple[float, np.ndarray, str]:
+        return self.find_closest_selem_and_operation(
+            chans=chans, weights=self.bise_module.weights, bias=self.bise_module.bias, v1=v1, v2=v2, verbose=verbose,
         )

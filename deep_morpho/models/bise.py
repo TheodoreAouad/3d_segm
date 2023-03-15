@@ -51,13 +51,13 @@ class BiSE(BiSEBase):
     def closest_selem(self):
         if self._closest_selem is None:
             return None
-        return self._closest_selem[:, 0, ...]
+        return self._closest_selem
 
     @property
     def learned_selem(self):
         if self._learned_selem is None:
             return None
-        return self._learned_selem[:, 0, ...]
+        return self._learned_selem
 
 
 
