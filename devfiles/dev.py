@@ -41,5 +41,6 @@ model = lbimonn.LightningBiMoNNClassifierLastLinearNotBinary(
     model_args=model_args,
 )
 bise_net = model.model.layers[-1].bises
+bise_net.find_selem_and_operation()
 bise_net.closest_selem_handler = bcs.BiseClosestMinDistOnCst2(bise_module=bise_net)
 bise_net.binary(update_binaries=True)

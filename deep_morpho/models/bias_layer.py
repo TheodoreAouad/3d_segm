@@ -56,6 +56,12 @@ class BiasBise(nn.Module, ExperimentMethods):
         self.param.data = new_param
         return new_param
 
+    def set_param_from_bias(self, new_bias: torch.Tensor) -> torch.Tensor:
+        assert new_bias.shape == self.bise_module.bias.shape, f"Bias must be of same shape {self.bise_module.bias.shape}"
+        new_param = self.from_bias_to_param(new_bias)
+        self.set_param(new_param)
+        return new_param
+
     @property
     def grad(self):
         return self.param.grad

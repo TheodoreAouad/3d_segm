@@ -196,10 +196,11 @@ class BiSEBase(BinaryNN):
     def update_learned_selems(self, chans=None, verbose: bool = True):
         if chans is None:
             chans = range(self.out_channels)
-        if verbose:
-            chans = tqdm(chans, leave=False, desc=f"Exact binarization")
-        for chan in chans:
-            self.find_selem_and_operation_chan(chan)
+        # if verbose:
+        #     chans = tqdm(chans, leave=False, desc=f"Exact binarization")
+        # for chan in chans:
+        #     self.find_selem_and_operation_chan(chan)
+        self.find_selem_and_operation(chans=chans)
 
     def binary(self, mode: bool = True, update_binaries: bool = True, verbose: bool = True, *args, **kwargs):
         if mode and update_binaries:
@@ -299,10 +300,24 @@ class BiSEBase(BinaryNN):
         lb, ub = self.bias_bounds_erosion(weights=weights, S=S, v1=v1, v2=v2)
         return lb < -bias < ub
 
+    def is_erosion_by_vectorized(self, weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> bool:
+        assert np.isin(np.unique(S), [0, 1]).all(), "S must be binary matrix"
+        if isinstance(bias, torch.Tensor):
+            bias = bias.detach().cpu().numpy()
+        lb, ub = self.bias_bounds_erosion_vectorized(weights=weights, S=S, v1=v1, v2=v2)
+        return (lb < -bias) & (-bias < ub)
+
     def is_dilation_by(self, weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> bool:
         assert np.isin(np.unique(S), [0, 1]).all(), "S must be binary matrix"
         lb, ub = self.bias_bounds_dilation(weights=weights, S=S, v1=v1, v2=v2)
         return lb < -bias < ub
+
+    def is_dilation_by_vectorized(self, weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> bool:
+        assert np.isin(np.unique(S), [0, 1]).all(), "S must be binary matrix"
+        if isinstance(bias, torch.Tensor):
+            bias = bias.detach().cpu().numpy()
+        lb, ub = self.bias_bounds_dilation_vectorized(weights=weights, S=S, v1=v1, v2=v2)
+        return (lb < -bias) & (-bias < ub)
 
     @staticmethod
     def bias_bounds_erosion(weights: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> Tuple[float, float]:
@@ -317,24 +332,10 @@ class BiSEBase(BinaryNN):
             float, float: lower and upper bound to be in to be an erosion for one channel.
         """
         S = S.astype(bool)
-        W = weights.cpu().detach().numpy()
+        W = weights
+        if isinstance(weights, torch.Tensor):
+            W = weights.cpu().detach().numpy()
         return W[W > 0].sum() - (1 - v1) * W[S].min(), v2 * W[S & (W > 0)].sum() + W[W < 0].sum()
-
-    @staticmethod
-    def bias_bounds_dilation(weights: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> Tuple[float, float]:
-        """Get the bias bounds to check for the dilation operation, for one channel.
-        Args:
-            weights (torch.Tensor): (1, chin, *kernel_size) the weights of the BiSE
-            S (np.ndarray): (1, chin, *kernel_size) the structuring element
-            v1 (float): the first bound for the almost binary
-            v2 (float): the second bound for the almost binary
-
-        Returns:
-            float, float: lower and upper bound to be in to be an dilation for one channel.
-        """
-        S = S.astype(bool)
-        W = weights.cpu().detach().numpy()
-        return W[(~S) & (W > 0)].sum() + v1 * W[S & (W > 0)].sum(), v2 * W[S].min() + W[W < 0].sum()
 
     @staticmethod
     def bias_bounds_erosion_vectorized(weights: torch.Tensor, S: np.ndarray, v1: np.ndarray = 0, v2: np.ndarray = 1) -> Tuple[float, float]:
@@ -349,15 +350,37 @@ class BiSEBase(BinaryNN):
             torch.Tensor (chout), torch.Tensor (chout): lower and upper bound to be in to be an erosion for each channel.
         """
         S = S.astype(bool).reshape(S.shape[0], -1)
-        W = weights.cpu().detach().numpy().reshape(S.shape[0], -1)
+        W = weights
+        if isinstance(weights, torch.Tensor):
+            W = W.cpu().detach().numpy()
+        W = W.reshape(S.shape[0], -1)
 
         posW = W > 0
         negW = ~posW
 
         return (
-            np.where(posW, W, 0).sum(1) - (1 - v1) * np.where(S, W, 0).min(1),
+            np.where(posW, W, 0).sum(1) - (1 - v1) * np.where(S, W, np.infty).min(1),
             v2 * np.where(S & posW, W, 0).sum(1) + np.where(negW, W, 0).sum(1)
         )
+
+    @staticmethod
+    def bias_bounds_dilation(weights: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> Tuple[float, float]:
+        """Get the bias bounds to check for the dilation operation, for one channel.
+        Args:
+            weights (torch.Tensor): (1, chin, *kernel_size) the weights of the BiSE
+            S (np.ndarray): (1, chin, *kernel_size) the structuring element
+            v1 (float): the first bound for the almost binary
+            v2 (float): the second bound for the almost binary
+
+        Returns:
+            float, float: lower and upper bound to be in to be an dilation for one channel.
+        """
+        S = S.astype(bool)
+        W = weights
+        if isinstance(weights, torch.Tensor):
+            W = weights.cpu().detach().numpy()
+        return W[(~S) & (W > 0)].sum() + v1 * W[S & (W > 0)].sum(), v2 * W[S].min() + W[W < 0].sum()
+
         # return W[W > 0].sum() - (1 - v1) * W[S].min(), v2 * W[S & (W > 0)].sum() + W[W < 0].sum()
 
     @staticmethod
@@ -373,14 +396,16 @@ class BiSEBase(BinaryNN):
             torch.Tensor (chout), torch.Tensor (chout): lower and upper bound to be in to be an dilation for each channel.
         """
         S = S.astype(bool).reshape(S.shape[0], -1)
-        W = weights.cpu().detach().numpy().reshape(S.shape[0], -1)
+        W = weights
+        if isinstance(weights, torch.Tensor):
+            W = weights.cpu().detach().numpy()
+        W = W.reshape(S.shape[0], -1)
 
         posW = W > 0
         negW = ~posW
-
         return (
             np.where(~S & posW, W, 0).sum(1) + v1 * np.where(S & posW, W, 0).sum(1),
-            v2 * np.where(S, W, 0).min(1) + np.where(negW, W, 0).sum(1)
+            v2 * np.where(S, W, np.infty).min(1) + np.where(negW, W, 0).sum(1)
         )
 
     def find_selem_for_operation_chan(self, operation: str, chout: int = 0, v1: float = 0, v2: float = 1):
@@ -400,9 +425,9 @@ class BiSEBase(BinaryNN):
         weights = self.weight[chout]
         bias = self.bias[chout]
         is_op_fn = {'dilation': self.is_dilation_by, 'erosion': self.is_erosion_by}[operation]
-        born = {'dilation': -bias / v2, "erosion": (weights.sum() + bias) / (1 - v1)}[operation]
+        threshold = {'dilation': -bias / v2, "erosion": (weights.sum() + bias) / (1 - v1)}[operation]
 
-        selem = (weights > born).cpu().detach().numpy()
+        selem = (weights > threshold).cpu().detach().numpy()
         if not selem.any():
             return None
 
@@ -447,6 +472,47 @@ class BiSEBase(BinaryNN):
     #     self._closest_selem_dist[chout] = final_dist
     #     return final_selem, final_operation, final_dist
 
+    def find_selem_and_operation(self, chans: List[int] = None, v1: np.ndarray = 0, v2: np.ndarray = 1):
+        if chans is None:
+            chans = range(self.out_channels)
+
+        W = self.weights.cpu().detach().numpy()[chans]
+        W_reshaped = W.reshape(W.shape[0], -1)
+        bias = self.bias.cpu().detach().numpy()[chans]
+
+        learned_selem = np.zeros_like(W).astype(bool)
+        learned_operation = np.zeros((len(chans)))
+        is_activated = np.zeros((len(chans))).astype(bool)
+
+        operation: np.ndarray = self.approximate_operation_on_bias_vectorized(W_reshaped, bias)
+        threshold: np.ndarray = np.zeros(W.shape[0])
+
+        candidate_dilation = operation == self.operation_code["dilation"]
+        candidate_erosion = operation == self.operation_code["erosion"]
+
+        threshold[candidate_dilation] = (-bias / v2)[candidate_dilation]
+        threshold[candidate_erosion] = ((W_reshaped.sum(1) + bias) / (1 - v1))[candidate_erosion]
+
+        S = (W >= threshold[:, None, None, None])
+
+        is_dilation = self.is_dilation_by_vectorized(weights=W, bias=bias, S=S, v1=v1, v2=v2)
+
+        learned_selem[is_dilation] = S[is_dilation]
+        learned_operation[is_dilation] = self.operation_code["dilation"]
+
+        is_erosion = self.is_erosion_by_vectorized(weights=W, bias=bias, S=S, v1=v1, v2=v2)
+        learned_selem[is_erosion] = S[is_erosion]
+        learned_operation[is_erosion] = self.operation_code["erosion"]
+
+        is_activated = is_dilation | is_erosion
+
+        self._learned_selem[chans] = learned_selem
+        self._learned_operation[chans] = learned_operation
+        self._is_activated[chans] = is_activated
+
+        return self._learned_selem, self._learned_operation, self._is_activated
+
+
     def find_selem_and_operation_chan(self, chout: int = 0, v1: float = 0, v2: float = 1):
         """Find the selem and the operation given the almost binary features.
 
@@ -466,7 +532,7 @@ class BiSEBase(BinaryNN):
         #         self._is_activated[chout] = True
         #         return selem, operation
 
-        operation: str = self.approximate_operation_on_bias(chan=chout)
+        operation: str = self.approximate_operation_on_bias_chan(chan=chout)
         selem: np.ndarray = self.find_selem_for_operation_chan(chout=chout, operation=operation, v1=v1, v2=v2)
         if selem is not None:
             self._learned_selem[chout] = selem.astype(bool)
@@ -566,17 +632,28 @@ class BiSEBase(BinaryNN):
         self.bias_handler.set_bias(new_bias)
         return new_bias
 
+    def set_param_from_bias(self, new_bias: torch.Tensor) -> torch.Tensor:
+        return self.bias_handler.set_param_from_bias(new_bias)
+
     def set_activation_P(self, new_P: torch.Tensor) -> torch.Tensor:
         assert self.activation_P.shape == new_P.shape
         self.activation_threshold_layer.P_.data = new_P
         return new_P
 
-    def approximate_operation_on_bias(self, chan: int):
+    def approximate_operation_on_bias_chan(self, chan: int):
         wsum = self.weights[chan].sum()
         if -self.bias[chan] <= wsum / 2:
             return "dilation"
         else:
             return "erosion"
+
+    def approximate_operation_on_bias_vectorized(self, weights_reshaped, bias):
+        wsum = weights_reshaped.sum(1)
+
+        operation = np.empty(bias.shape[0], dtype=int)
+        operation[wsum / 2 < -bias] = self.operation_code["erosion"]
+        operation[wsum / 2 >= -bias] = self.operation_code["dilation"]
+        return operation
 
     @property
     def activation_P(self):
@@ -585,10 +662,6 @@ class BiSEBase(BinaryNN):
     @property
     def weight_P(self):
         return self.weight_threshold_layer.P_
-
-    @property
-    def weights(self):
-        return self.weight
 
     @property
     def bias(self):
