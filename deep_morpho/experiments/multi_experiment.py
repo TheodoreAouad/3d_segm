@@ -47,12 +47,12 @@ class MultiExperiment(ExperimentMethods):
 
     CLASSIFICATION_DATASETS = [
         "mnistclassifdataset",
-        "mnistclassifchanneldataset",
     ]
 
     CLASSIFICATION_CHANNEL_DATASETS = [
         "cifar10dataset",
         "cifar100dataset",
+        "mnistclassifchanneldataset",
     ]
 
 
@@ -175,6 +175,7 @@ class MultiExperiment(ExperimentMethods):
             experiment.console_logger = console_logger
             self.console_logger = console_logger
 
+            self.log_console(f'Running experiment {experiment.__class__.__name__}')
             if self.stop_on_error:
                 experiment.run()
             else:

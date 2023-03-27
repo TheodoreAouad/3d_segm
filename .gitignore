@@ -12,4 +12,6 @@ segmentations/
 **root_fashionmnist_dir.txt
 **root_cifar10_dir.txt
 **root_cifar100_dir.txt
+**root_vocdetection_dir.txt
+**root_vocsegmentation_dir.txt
 ruche_logs

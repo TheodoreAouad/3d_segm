@@ -50,7 +50,8 @@ all_args['n_try'] = [0]
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
     # "tests",
-    "Bimonn_exp_77/iccv_2023/",
+    "Bimonn_exp_77/sandbox/"
+    # "Bimonn_exp_77/iccv_2023/",
     # "Bimonn_exp_77/bimonn_dense/",
     # "Bimonn_exp_77/bimonn_bisel_dense/",
     # "Bimonn_exp_77/bimonn_last_linear/"
@@ -63,8 +64,8 @@ all_args["model"] = [
     # "BiMoNN",
     # "BimonnDense",
     "BimonnDenseNotBinary",
-    "BiMoNNClassifierLastLinearNotBinary",
-    "BimonnBiselDenseNotBinary",
+    # "BiMoNNClassifierLastLinearNotBinary",
+    # "BimonnBiselDenseNotBinary",
     # "ConvNetLastLinear",
     # "ConvNetBinaryConnectCifar10",
     # "MLPBinaryConnectMNIST",
@@ -201,7 +202,7 @@ all_args['freq_imgs'] = [500]
 all_args['freq_hist'] = [500]
 all_args["freq_update_binary_batch"] = [None]
 all_args["freq_update_binary_epoch"] = [
-    4,
+    1,
     # None,
 ]
 all_args['freq_scalars'] = [50]
@@ -229,8 +230,8 @@ all_args["activation_constructor"] = [
     NormalizedTanh,
 ]
 all_args["apply_last_activation"] = [
-    False,
-    # True,
+    # False,
+    True,
 ]
 all_args["do_maxpool"] = [
     # True,
@@ -244,20 +245,15 @@ all_args['atomic_element'] = [
 ]
 all_args['n_atoms'] = [
     'adapt',
-    # 1
-    # 11
 ]
 
 all_args['kernel_size'] = [
-    # 7
-    # 3,
     5
-    # 7
     # "adapt",
 ]
 all_args['channels'] = [
     # 'adapt',
-    [100, 100],
+    [1000, 1000],
     # [100, 100],
     # [50],
     # [200],

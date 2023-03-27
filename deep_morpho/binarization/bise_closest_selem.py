@@ -246,12 +246,9 @@ class BiseClosestMinDistOnCst(BiseClosestSelemHandler):
         if verbose:
             chans = tqdm(chans, leave=False, desc="Approximate binarization")
 
-
         w_values = np.zeros((len(chans), np.prod(W.shape[1:])))
         for chout_idx, _ in enumerate(chans):
             w_value_tmp = np.unique(W[chout_idx])[::-1]
-            # if chout_idx == 920:
-            #     return w_value_tmp  # DEBUG
             w_values[chout_idx, :len(w_value_tmp)] = w_value_tmp  # We assume that W don't repeat values. TODO: handle case with repeated values. Hint: add micro noise?
 
         best_idx = self.find_best_index(w_values)

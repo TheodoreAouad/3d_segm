@@ -35,10 +35,6 @@ class SelectIndexesDataset(DataModule):
     def get_loader(
         cls,
         batch_size,
-        # train,
-        # preprocessing: Callable = None,
-        # indexes: List[int] = None,
-        # first_idx: int = 0,
         n_inputs: int = "all",
         num_workers: int = 0,
         shuffle: bool = False,

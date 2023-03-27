@@ -182,12 +182,6 @@ class BiSEBase(BinaryNN):
 
     def update_closest_selems(self, chans=None, verbose: bool = True):
         self.find_closest_selem_and_operation(chans=chans, verbose=verbose)
-        # if chans is None:
-        #     chans = range(self.out_channels)
-        # if verbose:
-        #     chans = tqdm(chans, leave=False, desc=f"Approximate binarization{desc_suffix}")
-        # for chan in chans:
-        #     self.find_closest_selem_and_operation_chan(chan)
 
     def update_binary_selems(self, chans=None, verbose: bool = True):
         self.update_closest_selems(chans=chans, verbose=verbose)
@@ -196,10 +190,6 @@ class BiSEBase(BinaryNN):
     def update_learned_selems(self, chans=None, verbose: bool = True):
         if chans is None:
             chans = range(self.out_channels)
-        # if verbose:
-        #     chans = tqdm(chans, leave=False, desc=f"Exact binarization")
-        # for chan in chans:
-        #     self.find_selem_and_operation_chan(chan)
         self.find_selem_and_operation(chans=chans)
 
     def binary(self, mode: bool = True, update_binaries: bool = True, verbose: bool = True, *args, **kwargs):
@@ -241,13 +231,6 @@ class BiSEBase(BinaryNN):
             return self.forward_binary(x)
 
         return self._forward(x)
-        # output = self.conv._conv_forward(x, self.weight, self.bias, )
-        # output = self.activation_threshold_layer(output)
-
-        # if self.do_mask_output:
-        #     return self.mask_output(output)
-
-        # return output
 
     def _forward(self, x: Tensor) -> Tensor:
         output = self.conv._conv_forward(x, self.weight, self.bias, )
