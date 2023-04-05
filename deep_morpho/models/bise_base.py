@@ -346,8 +346,8 @@ class BiSEBase(BinaryNN):
             v2 * np.where(S & posW, W, 0).sum(1) + np.where(negW, W, 0).sum(1)
         )
 
-    @staticmethod
-    def bias_bounds_dilation(weights: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> Tuple[float, float]:
+    @classmethod
+    def bias_bounds_dilation(cls, weights: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> Tuple[float, float]:
         """Get the bias bounds to check for the dilation operation, for one channel.
         Args:
             weights (torch.Tensor): (1, chin, *kernel_size) the weights of the BiSE
@@ -362,8 +362,16 @@ class BiSEBase(BinaryNN):
         W = weights
         if isinstance(weights, torch.Tensor):
             W = weights.cpu().detach().numpy()
-        return W[(~S) & (W > 0)].sum() + v1 * W[S & (W > 0)].sum(), v2 * W[S].min() + W[W < 0].sum()
+        # return W[(~S) & (W > 0)].sum() + v1 * W[S & (W > 0)].sum(), v2 * W[S].min() + W[W < 0].sum()
+        return cls.bias_lower_bound_dilation(W, S, v1, v2), cls.bias_upper_bound_dilation(W, S, v1, v2)
 
+    @staticmethod
+    def bias_lower_bound_dilation(W: np.ndarray, S: np.ndarray, v1: float = 0, v2: float = 1) -> Tuple[float, float]:
+        return W[(~S) & (W > 0)].sum() + v1 * W[S & (W > 0)].sum()
+
+    @staticmethod
+    def bias_upper_bound_dilation(W: np.ndarray, S: np.ndarray, v1: float = 0, v2: float = 1) -> Tuple[float, float]:
+        return v2 * W[S].min() + W[W < 0].sum()
         # return W[W > 0].sum() - (1 - v1) * W[S].min(), v2 * W[S & (W > 0)].sum() + W[W < 0].sum()
 
     @staticmethod
