@@ -4,6 +4,7 @@ from functools import partial
 
 from tqdm import tqdm
 import numpy as np
+import cvxpy as cp
 
 if TYPE_CHECKING:
     from deep_morpho_old.bise import BiSE
@@ -101,22 +102,32 @@ class BiseClosestSelemWithDistanceAgg(BiseClosestSelemHandler):
         given a list of selems and dists in the form of arrays, outputs the best selem given the distances, and its corresponding distance
     """
 
-    def __init__(self, distance_fn, distance_agg_fn, *args, **kwargs):
+    def __init__(self, distance_fn=None, distance_agg_fn=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.distance_fn = partial(distance_fn, self=self)
-        self.distance_agg_fn = partial(distance_agg_fn, self=self)
+        self._distance_fn = partial(distance_fn, self=self) if distance_fn is not None else None
+        self._distance_agg_fn = partial(distance_agg_fn, self=self) if distance_agg_fn is not None else None
+
+    @property
+    def distance_fn(self):
+        return self._distance_fn
+
+    @property
+    def distance_agg_fn(self):
+        return self._distance_agg_fn
 
     def compute_selem_dist_for_operation_chan(
         self, weights, bias, operation: str, chout: int = 0, v1: float = 0, v2: float = 1
     ):
         weights = weights[chout]
-        weight_values = weights.unique().detach().cpu().numpy()
+        # weight_values = weights.unique().detach().cpu().numpy()
+        weight_values = np.unique(weights)
         bias = bias[chout]
 
         dists = np.zeros_like(weight_values)
         selems = []
         for value_idx, value in enumerate(weight_values):
-            selem = (weights >= value).cpu().detach().numpy()
+            selem = (weights >= value)
+            # selem = (weights >= value).cpu().detach().numpy()
             dists[value_idx] = self.distance_fn(weights=weights, bias=bias, operation=operation, S=selem, v1=v1, v2=v2)
             selems.append(selem)
 
@@ -127,6 +138,8 @@ class BiseClosestSelemWithDistanceAgg(BiseClosestSelemHandler):
         self, weights, bias, chout=0, v1=0, v2=1
     ):
         final_dist = np.infty
+        weights = weights.detach().cpu().numpy()
+        bias = bias.detach().cpu().numpy()
         for operation in ['dilation', 'erosion']:
             selems, dists = self.compute_selem_dist_for_operation_chan(
                 weights=weights, bias=bias, chout=chout, operation=operation, v1=v1, v2=v2
@@ -145,8 +158,8 @@ class BiseClosestSelemWithDistanceAgg(BiseClosestSelemHandler):
         if verbose:
             chans = tqdm(chans, leave=False, desc="Approximate binarization")
 
-        for chan in chans:
-            self.find_closest_selem_and_operation_chan(chan)
+        # for chan in chans:
+        #     self.find_closest_selem_and_operation_chan(chan)
 
         closest_selems = np.zeros((len(chans), *self.bise_module.kernel_size), dtype=bool)
         closest_operations = np.zeros(len(chans), dtype=str)
@@ -156,9 +169,9 @@ class BiseClosestSelemWithDistanceAgg(BiseClosestSelemHandler):
             selem, op, dist = self.find_closest_selem_and_operation_chan(
                 weights=self.bise_module.weights, bias=self.bise_module.bias, chout=chout, v1=v1, v2=v2
             )
-            closest_dists[chout_idx] = selem.astype(bool)
-            closest_selems[chout_idx] = self.bise_module.operation_code[op]
-            closest_operations[chout_idx] = dist
+            closest_selems[chout_idx] = selem.astype(bool)
+            closest_operations[chout_idx] = self.bise_module.operation_code[op]
+            closest_dists[chout_idx] = dist
 
         return closest_selems, closest_operations, closest_dists
 
@@ -167,6 +180,35 @@ class BiseClosestMinDistBounds(BiseClosestSelemWithDistanceAgg):
 
     def __init__(self, *args, **kwargs):
         super().__init__(distance_fn=distance_fn_to_bounds, distance_agg_fn=distance_agg_min, *args, **kwargs)
+
+
+class BiseClosestActivationSpaceIterated(BiseClosestSelemWithDistanceAgg):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(distance_agg_fn=distance_agg_min, *args, **kwargs)
+        self._distance_fn = partial(self.solve)
+
+    def solve(self, weights: np.ndarray, bias: np.ndarray, operation: str, S: np.ndarray, v1: float, v2: float) -> float:
+        if operation == "erosion":
+            bias = weights.sum() - bias
+
+        weights = weights.flatten()
+        S = S.flatten()
+
+        Wvar = cp.Variable(weights.shape)
+        bvar = cp.Variable(1)
+
+        constraint0 = [cp.sum(Wvar[~S]) <= bvar]
+        constraintsT = [bvar <= Wvar[S]]
+        constraintsK = [Wvar >= 0]
+
+        constraints = constraint0 + constraintsT + constraintsK
+
+        objective = cp.Minimize(1/2 * cp.sum_squares(Wvar - weights) + 1/2 * cp.sum_squares(bvar - bias))
+        prob = cp.Problem(objective, constraints)
+        prob.solve()
+
+        return prob.value
 
 
 class BiseClosestMinDistOnCstOld(BiseClosestSelemWithDistanceAgg):
