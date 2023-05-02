@@ -204,13 +204,15 @@ class ShowSelemBinary(ObservableLayersChans):
         chan_input: int,
         chan_output: int,
     ):
-        bise_layer = layer.bises[chan_input]
-        with torch.no_grad():
-            bise_layer.find_selem_and_operation_chan(chan_output, v1=0, v2=1)
-        if not bise_layer._is_activated[chan_output]:
+        # with torch.no_grad():
+        #     bise_layer.find_selem_and_operation_chan(chan_output, v1=0, v2=1)
+        is_activated = layer.is_activated_bise(chin=chan_input, chout=chan_output)
+        if not is_activated:
             return
 
-        selem, operation = bise_layer.learned_selem[chan_output], bise_layer.learned_operation[chan_output]
+
+        # selem, operation = bise_layer.learned_selem[chan_output], bise_layer.learned_operation[chan_output]
+        selem, operation = layer.get_learned_selem_bise(chin=chan_input, chout=chan_output), layer.get_learned_operation_bise(chin=chan_input, chout=chan_output)
         operation = operation_code_inverse[operation]
 
         fig = self.selem_fig(selem, operation)
@@ -261,8 +263,8 @@ class ShowLUISetBinary(ObservableLayersChans):
         chan_output: int,
     ):
         lui_layer = layer.luis[chan_output]
-        with torch.no_grad():
-            lui_layer.find_set_and_operation_chan(0)
+        # with torch.no_grad():
+        #     lui_layer.find_set_and_operation_chan(0)
             # C, operation = lui_layer.find_set_and_operation_chan(0, v1=None, v2=None)
         if not lui_layer._is_activated[0]:
             return
@@ -322,10 +324,14 @@ class ShowClosestSelemBinary(ObservableLayersChans):
         chan_output: int,
     ):
         with torch.no_grad():
-            layer.bises[chan_input].find_closest_selem_and_operation_chan(chan_output)
-            selem = layer.bises[chan_input].closest_selem[chan_output]
-            distance = layer.bises[chan_input].closest_selem_dist[chan_output]
-            operation = layer.bises[chan_input].closest_operation[chan_output]
+            # layer.bises[chan_input].find_closest_selem_and_operation_chan(chan_output)
+            # selem = layer.bises[chan_input].closest_selem[chan_output]
+            # distance = layer.bises[chan_input].closest_selem_dist[chan_output]
+            # operation = layer.bises[chan_input].closest_operation[chan_output]
+
+            selem = layer.get_closest_selem_bise(chin=chan_input, chout=chan_output)
+            distance = layer.get_closest_selem_dist_bise(chin=chan_input, chout=chan_output)
+            operation = layer.get_closest_operation_bise(chin=chan_input, chout=chan_output)
 
             operation = operation_code_inverse[operation]
 

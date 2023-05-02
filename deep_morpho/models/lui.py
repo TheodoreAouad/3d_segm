@@ -63,7 +63,7 @@ class BiSELUIExtender:
     @property
     def closest_set(self):
         if self.force_identity:
-            return np.ones_like(self.weight, dtype=bool)
+            return np.ones_like(self.weight.detach().cpu(), dtype=bool)
             # return np.array([True])
         # if self._closest_selem is None:
         #     return None
@@ -73,7 +73,7 @@ class BiSELUIExtender:
     def learned_selem(self):
         if self.force_identity:
             # return np.array([True])
-            return np.ones_like(self.weight, dtype=bool)
+            return np.ones_like(self.weight.detach().cpu(), dtype=bool)
         # if self._learned_selem is None:
         #     return None
         return self._learned_selem

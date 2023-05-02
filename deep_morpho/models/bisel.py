@@ -83,40 +83,17 @@ class BiSELBase(BinaryNN):
         return threshold_mode
 
     def _init_bises(self):
-        # bises = []
         bise_initializer = self.initializer.get_bise_initializers(self)
         bises = self.bise_module(
             kernel_size=self.kernel_size, threshold_mode=self.threshold_mode, initializer=bise_initializer,
             in_channels=self.in_channels, out_channels=self.out_channels * self.in_channels, groups=self.in_channels,
             **self.bise_kwargs
         )
-        # for idx in range(self.in_channels):
-        #     layer = self.bise_module(
-        #         out_channels=self.out_channels, kernel_size=self.kernel_size,
-        #         threshold_mode=self.threshold_mode, initializer=bise_initializer,
-        #         **self.bise_kwargs
-        #     )
-        #     setattr(self, f'bise_{idx}', layer)
-        #     bises.append(layer)
         return bises
 
     def _init_luis(self):
         luis = []
         lui_initializer = self.initializer.get_lui_initializers(self)
-        # for idx in range(self.out_channels):
-        #     layer = self.lui_module(
-        #         in_channels=self.in_channels,
-        #         threshold_mode=self.threshold_mode,
-        #         out_channels=1,
-        #         # constant_activation_P=self.constant_P_lui,
-        #         # init_bias_value=self.init_bias_value_lui,
-        #         # input_mean=self.lui_input_mean,
-        #         # init_weight_mode=self.init_weight_mode,
-        #         initializer=lui_initializer,
-        #         **self.lui_kwargs
-        #     )
-        #     setattr(self, f'lui_{idx}', layer)
-        #     luis.append(layer)
         luis = self.lui_module(
             in_channels=self.in_channels * self.out_channels,
             out_channels=self.out_channels,
@@ -129,14 +106,6 @@ class BiSELBase(BinaryNN):
 
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # bise_res = torch.cat([
-        #     layer(x[:, chan_input:chan_input+1, ...])[:, None, ...] for chan_input, layer in enumerate(self.bises)
-        # ], axis=1)  # bise_res shape: (batch_size, in_channels, out_channels, width, length)
-
-        # lui_res = torch.cat([
-        #     layer(bise_res[:, :, chan_output, ...]) for chan_output, layer in enumerate(self.luis)
-        # ], axis=1)
-
         bise_res = self.bises(x)
         recalibrated = regroup_input_lui(bise_res, self.in_channels, self.out_channels)
         lui_res = self.luis(recalibrated)
@@ -145,13 +114,6 @@ class BiSELBase(BinaryNN):
 
     def forward_save(self, x):
         output = {}
-
-        # bise_res2 = torch.cat([
-        #     layer(x[:, chan_input:chan_input+1, ...])[:, None, ...] for chan_input, layer in enumerate(self.bises)
-        # ], axis=1)
-        # lui_res = torch.cat([
-        #     layer(bise_res2[:, :, chan_output, ...]) for chan_output, layer in enumerate(self.luis)
-        # ], axis=1)
 
         bise_res = self.bises(x)
         recalibrated = regroup_input_lui(bise_res, self.in_channels, self.out_channels)
@@ -167,7 +129,6 @@ class BiSELBase(BinaryNN):
         return output
 
     def convert_chin_chout_bise_chan(self, chin: int, chout: int):
-        # return chin * self.bises.groups + chout
         return chin * self.out_channels + chout
 
     def get_activation_P_bise(self, chin: int, chout: int):
@@ -187,15 +148,39 @@ class BiSELBase(BinaryNN):
 
     def get_closest_operation_bise(self, chin: int, chout: int):
         return self.bises.closest_operation[self.convert_chin_chout_bise_chan(chin, chout)]
+    
+    def get_closest_selem_dist_bise(self, chin: int, chout: int):
+        return self.bises.closest_selem_dist[self.convert_chin_chout_bise_chan(chin, chout)]
+
+    def get_learned_operation_bise(self, chin: int, chout: int):
+        return self.bises.learned_operation[self.convert_chin_chout_bise_chan(chin, chout)]
 
     def get_weight_param_bise(self, chin: int, chout: int):
         return self.bises.weight_param[self.convert_chin_chout_bise_chan(chin, chout), 0, ...]
+
+    def get_learned_selem_bise(self, chin: int, chout: int):
+        return self.bises.learned_selem[self.convert_chin_chout_bise_chan(chin, chout), 0, ...]
+
+    def get_learned_selem_lui(self, chout: int):
+        return self.luis.learned_selem[chout, 0, ...]
+
+    def get_closest_selem_bise(self, chin: int, chout: int):
+        return self.bises.closest_selem[self.convert_chin_chout_bise_chan(chin, chout), 0, ...]
+
+    def get_closest_selem_lui(self, chout: int):
+        return self.luis.closest_selem[chout, 0, ...]
 
     def get_weight_grad_bise(self, chin: int, chout: int):
         grad_weights = self.bises.weight.grad
         if grad_weights is None:
             return None
         return grad_weights[self.convert_chin_chout_bise_chan(chin, chout), 0, ...]
+
+    def is_activated_bise(self, chin: int, chout: int):
+        return self.bises.is_activated[self.convert_chin_chout_bise_chan(chin, chout)]
+
+    def is_activated_lui(self, chout: int):
+        return self.luis.is_activated[chout]
 
     def get_bias_grad_bise(self, chin: int, chout: int):
         grad_biases = self.bises.bias.grad
@@ -208,6 +193,12 @@ class BiSELBase(BinaryNN):
         if grad_biases is None:
             return None
         return grad_biases[chout]
+
+    def get_weight_grad_lui(self, chin: int, chout: int):
+        grad_weights = self.luis.bias.grad
+        if grad_weights is None:
+            return None
+        return grad_weights[chin, chout]
 
     @property
     def weight(self) -> torch.Tensor:

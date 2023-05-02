@@ -55,10 +55,10 @@ class ElementBiseSelemChan(ElementGrouper):
         else:
             if self.learned:
                 # selem = model.learned_selem[..., chout]
-                selem = model.learned_selem[chout]
+                selem = model.learned_selem[chout, 0]
             else:
                 # selem = model.closest_selem[..., chout]
-                selem = model.closest_selem[chout]
+                selem = model.closest_selem[chout, 0]
             operation = BISE_INVERT_CODE[model.closest_operation[chout]]
 
             radius_operation = max(2, self.size / 4)

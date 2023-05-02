@@ -115,14 +115,6 @@ class ExperimentBase(ExperimentMethods):
         for obs in self.observables:
             if isinstance(obs, Observable):
                 metric_dict.update(obs.save_hparams())
-        # for state in ["train", "val", "test"]:
-        #     if self.metric_float_obs is not None:
-        #         for metric_name in self.metric_float_obs.metrics.keys():
-        #             metric_dict[f"{metric_name}_{state}"] = self.metric_float_obs.last_value[state][metric_name]
-
-        #     if self.metric_binary_obs is not None:
-        #         for metric_name in self.metric_binary_obs.metrics.keys():
-        #             metric_dict[f"binary_{metric_name}_{state}"] = self.metric_binary_obs.last_value[state][metric_name]
 
         args_str = {}
         for k, v in self.args.items():

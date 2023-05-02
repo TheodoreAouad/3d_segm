@@ -31,7 +31,7 @@ class PlotParametersBiseEllipse(ObservableLayersChans):
         chan_input: int,
         chan_output: int,
     ):
-        weights_handler = layer.bises[chan_input].weights_handler
+        weights_handler = layer.bises.weights_handler
         if not isinstance(weights_handler, WeightsEllipse):
             return
 

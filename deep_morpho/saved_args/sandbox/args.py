@@ -50,7 +50,7 @@ all_args['n_try'] = [0]
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
     # "tests",
-    "Bimonn_exp_77/sandbox/"
+    "Bimonn_exp_78/sandbox/"
     # "Bimonn_exp_77/iccv_2023/",
     # "Bimonn_exp_77/bimonn_dense/",
     # "Bimonn_exp_77/bimonn_bisel_dense/",
@@ -61,9 +61,9 @@ all_args["model"] = [
     # "BiMoNNClassifierMaxPoolNotBinary",
     # "BiMoNNClassifierMaxPool",
     # "BiMoNNClassifierLastLinear",
-    # "BiMoNN",
+    "BiMoNN",
     # "BimonnDense",
-    "BimonnDenseNotBinary",
+    # "BimonnDenseNotBinary",
     # "BiMoNNClassifierLastLinearNotBinary",
     # "BimonnBiselDenseNotBinary",
     # "ConvNetLastLinear",
@@ -75,7 +75,7 @@ all_args["model"] = [
 ]
 
 all_args['dataset'] = [
-    # 'diskorectdataset',
+    'diskorectdataset',
     # 'mnistmorphodataset',
     # 'mnistgrayscaledataset',
     # 'fashionmnistgrayscaledataset',
@@ -84,7 +84,7 @@ all_args['dataset'] = [
     # AxspaROISimpleDataset
 
     # 'mnistclassifdataset',
-    'mnistclassifchanneldataset',
+    # 'mnistclassifchanneldataset',
 
     # 'cifar10dataset',
     # 'cifar100dataset',
@@ -200,10 +200,10 @@ all_args['num_workers'] = [
 ]
 all_args['freq_imgs'] = [500]
 all_args['freq_hist'] = [500]
-all_args["freq_update_binary_batch"] = [None]
+all_args["freq_update_binary_batch"] = [500]
 all_args["freq_update_binary_epoch"] = [
-    1,
-    # None,
+    # 1,
+    None,
 ]
 all_args['freq_scalars'] = [50]
 # all_args['max_epochs.trainer'] = [1]
@@ -248,12 +248,12 @@ all_args['n_atoms'] = [
 ]
 
 all_args['kernel_size'] = [
-    5
-    # "adapt",
+    # 5
+    "adapt",
 ]
 all_args['channels'] = [
-    # 'adapt',
-    [1000, 1000],
+    'adapt',
+    # [1000, 1000],
     # [100, 100],
     # [50],
     # [200],
@@ -386,132 +386,19 @@ for idx, args in enumerate(all_args.multi_args):
     elif isinstance(args["initializer_args"], list):
         args['init_bise_str'] = [str(ar["bise_init_method"]) for ar in args["initializer_args"]]
 
-    # if args['dataset'] == "axspa_roi":
-    #     args['dataset_path'] = "data/deep_morpho/axspa_roi/axspa_roi.csv"
-    #     args['morp_operation'] = []
-    #     args['freq_imgs'] = 20
-    #     args['freq_scalars'] = 1
-    #     args['batch_size'] = 16
-    #     args['n_atoms'] = len(args['channels']) - 1
-    #     args['experiment_subname'] = f"{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset']}/"
-
-    #     args['patience_loss'] = 360
-    #     args['patience_reduce_lr'] = 120
-
-
-    #     if args["kernel_size"] == "adapt":
-    #         size = np.ceil(41 / args['n_atoms'])
-    #         if size % 2 == 0:
-    #             size += 1
-    #         args['kernel_size'] = int(size)
-
-    # if args['dataset'] == "sticks_noised":
-    #     args["sticks_noised_args"] = args["sticks_noised_args"].copy()
-    #     args['sticks_noised_args']['angles'] = args['sticks_noised_angles']
-    #     args['morp_operation'] = SticksNoisedGeneratorDataset.get_default_morp_operation(
-    #         lengths_lim=args['sticks_noised_args']['lengths_lim'],
-    #         angles=args['sticks_noised_args']['angles'],
-    #     )
-    #     args['sticks_noised_args']['size'] = args['sticks_noised_args']['size'] + (args["morp_operation"].in_channels[0],)
-
-    # if args['init_weight_mode'] == InitBiseEnum.CUSTOM_CONSTANT and args['atomic_element'] == "bisel":
-    #     args['init_bias_value_bise'] = "auto"
-    #     args['init_bias_value_lui'] = "auto"
-
-    # if args['dataset'] in [
-    #     # "diskorectdataset",
-    #     'mnist', 'inverted_mnist', 'sticks_noised', 'mnist_gray', 'fashionmnist']:
-    #     # args['kernel_size'] = 'adapt'
-
-
-    #     if args["kernel_size"] == "adapt":
-    #         # args["kernel_size"] = args["morp_operation"].selems[0][0][0].shape[0]
-    #         args["kernel_size"] = int(max(args['morp_operation'].max_selem_shape))
-
-    #     # kwargs_loss = {}
-    #     # if "Normalized" in args['loss_data_str'] and args['atomic_element'] == 'sybisel':
-    #     #     kwargs_loss.update({"vmin": -1, "vmax": 1})
-    #     #     # args['loss_data'] = loss_dict[args['loss_data_str']](
-    #     #     #     border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]),
-    #     #     #     vmin=-1, vmax=1,
-    #     #     # )
-    #     # if "Masked" in args['loss_data_str']:
-    #     #     kwargs_loss.update({"border": np.array([args['kernel_size'] // 2, args['kernel_size'] // 2])})
-    #     #     # args['loss_data'] = loss_dict[args['loss_data_str']]()
-    #     #     # args['loss_data'] = loss_dict[args['loss_data_str']](border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]))
-    #     # args['loss_data'] = loss_dict[args['loss_data_str']](**kwargs_loss)
-
-    #     # args['experiment_subname'] = f"{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset']}/{args['morp_operation'].name}"
-
-    #     if args['channels'] == 'adapt':
-    #         args['channels'] = args['morp_operation'].in_channels + [args['morp_operation'].out_channels[-1]]
-
-    #     if args["n_atoms"] == 'adapt':
-    #         args['n_atoms'] = len(args['morp_operation'])
-
-    # else:
-    #     args['experiment_subname'] = f"{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset']}"
-
-    # if args['dataset'] in CLASSIF_DATASETS:
-    #     if args['n_atoms'] == "adapt":
-    #         args["n_atoms"] = len(args['channels']) - 1
-    # else:
-    #     args["model_type"] = ["LightningBiMoNN"]
-
     if args['atomic_element'] == "sybisel":
-        # args['threshold_mode']["activation"] += "_symetric"
         args['threshold_mode'] = {'weight': args['threshold_mode']['weight'], 'activation': args['threshold_mode']['activation'] + "_symetric"}
         args['bias_optim_mode'] = BiseBiasOptimEnum.RAW
         if args["loss_data_str"] == "BCELoss":
             args["loss_data_str"] = "BCENormalizedLoss"
-        # if "mnist" in args['dataset']:
-        #     args['mnist_args']['do_symetric_output'] = True
-
-        # args['init_bias_value_bise'] = 0
-        # args['init_bias_value_lui'] = 0
 
     kwargs_loss = {}
     if "Normalized" in args['loss_data_str'] and args['atomic_element'] == 'sybisel':
         kwargs_loss.update({"vmin": -1, "vmax": 1})
-        # args['loss_data'] = loss_dict[args['loss_data_str']](
-        #     border=np.array([args['kernel_size'] // 2, args['kernel_size'] // 2]),
-        #     vmin=-1, vmax=1,
-        # )
 
     args['loss_data'] = loss_dict[args['loss_data_str']](**kwargs_loss)
 
-    if args['dataset'] in [
-        # 'diskorectdataset',
-        'sticks_noised']:
-        args['n_epochs'] = 1
-        args['n_inputs'] = args['n_steps'] * args['batch_size']
-
-    # if args['dataset'] == "diskorectdataset":
-    #     args["random_gen_args"] = args["random_gen_args"].copy()
-    #     # args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
-    #     args['random_gen_args']['size'] = args['random_gen_args']['size'] + (args["morp_operation"].in_channels[0],)
-
-    if args['dataset'] in ["mnist", "inverted_mnist", "mnist_gray", "fashionmnist", "classif_mnist", "classif_mnist_channel"]:
-        # args['freq_imgs'] = 300
-        args['n_inputs'] = 60_000
-
-    # if args['dataset'] in ["cifar10", "cifar100"]:
-    #     args["n_inputs"] = 50_000
-    #     args["channels"][0] = args["channel_classif_args"]["levelset_handler_args"]["n_values"] * 3
-
-    # if args['dataset'] in ["cifar10", "cifar100"]:
-    #     args["channels"][0] = args["channel_classif_args"]["levelset_handler_args"]["n_values"] * 1
-
-
-    # if args['dataset'] == 'inverted_mnist':
-    #     args['mnist_args']['invert_input_proba'] = 1
-        # args['experiment_subname'] = args['experiment_subname'].replace('mnist', 'inverted_mnist')
-
-
-
     args['loss'] = {"loss_data": args['loss_data']}
-    # import torch
-    # args['loss'] = {"loss_data": lambda *x: torch.ones(1, requires_grad=True)[0]}
 
     if isinstance(args['threshold_mode'], str) or args['threshold_mode']['weight'] != "identity":
         args['loss_regu'] = "None"

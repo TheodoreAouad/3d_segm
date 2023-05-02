@@ -60,19 +60,21 @@ class PlotGradientBise(GradientWatcher):
         chan_input: int,
         chan_output: int,
     ):
-        if layer.bises[chan_input].weight.grad is not None:
-            grad_weights = layer.bises[chan_input].weight.grad[chan_output][0]
-            if self.plot_figure:
-                trainer.logger.experiment.add_figure(
-                    f"weights_gradient/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
-                    self.get_figure_gradient(grad_weights),
-                    trainer.global_step
-                )
-            trainer.logger.experiment.add_histogram(
-                f"weights_gradient_hist/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
-                grad_weights,
+        grad_weights = layer.get_weight_grad_bise(chin=chan_input, chout=chan_output)
+        if grad_weights is None:
+            return
+
+        if self.plot_figure:
+            trainer.logger.experiment.add_figure(
+                f"weights_gradient/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
+                self.get_figure_gradient(grad_weights),
                 trainer.global_step
             )
+        trainer.logger.experiment.add_histogram(
+            f"weights_gradient_hist/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}",
+            grad_weights,
+            trainer.global_step
+        )
 
     def on_train_batch_end_layers_chans_always(
         self,
@@ -87,27 +89,25 @@ class PlotGradientBise(GradientWatcher):
         chan_input: int,
         chan_output: int,
     ):
-        # if isinstance(layer, (BiSE, BiSEC, COBiSEC, COBiSE, BiSEL)):
-        if layer.bises[chan_input].bias_handler.grad is not None:
-            grad_bise_bias = layer.bises[chan_input].bias_handler.grad[chan_output]
+        grad_bise_bias = layer.get_bias_grad_bise(chin=chan_input, chout=chan_output)
+        if grad_bise_bias is not None:
             trainer.logger.experiment.add_scalars(
                 f"weights/bisel/bias_gradient/layer_{layer_idx}_chout_{chan_output}",
                 {f"chin_{chan_input}": grad_bise_bias},
                 trainer.global_step
             )
 
-        if layer.bises[chan_input].weight.grad is not None:
-            grad_bise_weights = layer.bises[chan_input].weight.grad[chan_output]
+        grad_bise_weights = layer.get_weight_grad_bise(chin=chan_input, chout=chan_output)
+        if grad_bise_weights is not None:
             trainer.logger.experiment.add_scalars(
                 f"weights/bisel/weights_gradient_mean/layer_{layer_idx}_chout_{chan_output}",
                 {f"chin_{chan_input}": grad_bise_weights.mean()},
                 trainer.global_step
             )
 
-        # for chan in [chan_input, chan_input + layer.in_channels]:
         for chan in [chan_input]:
-            if layer.luis[chan_output].weight.grad is not None:
-                grad_lui_weight = layer.luis[chan_output].weight.grad[0, chan]
+            grad_lui_weight = layer.get_weight_grad_lui(chin=chan_input, chout=chan_output)
+            if grad_lui_weight is not None:
                 trainer.logger.experiment.add_scalars(
                     f"weights/lui/weights_gradient/layer_{layer_idx}_chout_{chan_output}",
                     {f"chin_{chan}": grad_lui_weight},
@@ -126,16 +126,15 @@ class PlotGradientBise(GradientWatcher):
         layer_idx: int,
         chan_output: int,
     ):
-        if layer.luis[chan_output].bias_handler.grad is None:
-        # if layer.luis[chan_output].bias_raw.grad is None:
+        grad_lui_bias = layer.get_bias_grad_lui(chout=chan_output)
+        if grad_lui_bias is None:
             return
-        grad_lui_bias = layer.luis[chan_output].bias_handler.grad[0]
-        if grad_lui_bias is not None:
-            trainer.logger.experiment.add_scalars(
-                f"weights/lui/bias_gradient/layer_{layer_idx}",
-                {f"chout_{chan_output}": grad_lui_bias},
-                trainer.global_step
-            )
+
+        trainer.logger.experiment.add_scalars(
+            f"weights/lui/bias_gradient/layer_{layer_idx}",
+            {f"chout_{chan_output}": grad_lui_bias},
+            trainer.global_step
+        )
 
 
 

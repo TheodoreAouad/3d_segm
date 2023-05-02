@@ -74,30 +74,32 @@ class DiskorectDataset(DataModule, Dataset):
     def __len__(self):
         return self.n_inputs
 
+    # @classmethod
+    # def get_loader(
+    #     cls, batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, max_generation_nb=0,
+    #     do_symetric_output: bool = False, seed=None, device='cpu', num_workers=0,
+    #     **kwargs
+    # ):
+    #     return DataLoader(
+    #         cls(
+    #             random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device,
+    #             n_inputs=n_inputs, seed=seed, max_generation_nb=max_generation_nb, do_symetric_output=do_symetric_output,
+    #         ),
+    #         batch_size=batch_size, num_workers=num_workers,
+    #     )
     @classmethod
     def get_loader(
-        cls, batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, max_generation_nb=0,
-        do_symetric_output: bool = False, seed=None, device='cpu', num_workers=0,
+        cls,
+        batch_size,
+        n_inputs: int = "all",
+        num_workers: int = 0,
+        shuffle: bool = False,
         **kwargs
     ):
+        if n_inputs == 0:
+            return DataLoader([])
         return DataLoader(
-            cls(
-                random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device,
-                n_inputs=n_inputs, seed=seed, max_generation_nb=max_generation_nb, do_symetric_output=do_symetric_output,
-            ),
-            batch_size=batch_size, num_workers=num_workers,
-        )
-
-    # @classmethod
-    # def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
-    #     if "n_inputs" in kwargs:
-    #         del kwargs["n_inputs"]
-
-    #     train_loader = cls.get_loader(n_inputs=n_inputs_train, *args, **kwargs)
-    #     val_loader = cls.get_loader(n_inputs=n_inputs_val, *args, **kwargs)
-    #     test_loader = cls.get_loader(n_inputs=n_inputs_test, *args, **kwargs)
-
-    #     return train_loader, val_loader, test_loader
+            cls(n_inputs=n_inputs, **kwargs), batch_size=batch_size, num_workers=num_workers, shuffle=shuffle, )
 
     @classmethod
     def get_train_val_test_loader_from_experiment(cls, experiment: "ExperimentBase") -> Tuple[DataLoader, DataLoader, DataLoader]:
@@ -111,9 +113,9 @@ class DiskorectDataset(DataModule, Dataset):
             experiment, keys=["n_inputs"]
         )
 
-        train_loader = cls.get_loader(n_inputs=n_inputs_train, **train_kwargs)
-        val_loader = cls.get_loader(n_inputs=n_inputs_val, **val_kwargs)
-        test_loader = cls.get_loader(n_inputs=n_inputs_test, **test_kwargs)
+        train_loader = cls.get_loader(n_inputs=n_inputs_train, shuffle=True, batch_size=args["batch_size"], num_workers=args["num_workers"], **train_kwargs)
+        val_loader = cls.get_loader(n_inputs=n_inputs_val, shuffle=False, batch_size=args["batch_size"], num_workers=args["num_workers"], **val_kwargs)
+        test_loader = cls.get_loader(n_inputs=n_inputs_test, shuffle=False, batch_size=args["batch_size"], num_workers=args["num_workers"], **test_kwargs)
 
         return train_loader, val_loader, test_loader
 

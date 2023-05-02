@@ -78,43 +78,6 @@ class MnistMorphoDataset(MnistBaseDataset, MNIST):
         return join(self.root, 'processed')
 
 
-    # @classmethod
-    # def get_loader(
-    #     cls, batch_size, morp_operation, train, indexes=None, first_idx=0, n_inputs=None, threshold=.5, size=(50, 50),
-    #     invert_input_proba=0, do_symetric_output=False, preprocessing=None, num_workers=0,
-    # **kwargs):
-    #     if n_inputs == 0:
-    #         return DataLoader([])
-    #     return DataLoader(
-    #         cls(
-    #             morp_operation=morp_operation, n_inputs=n_inputs, first_idx=first_idx, indexes=indexes,
-    #             train=train, threshold=threshold, preprocessing=preprocessing,
-    #             size=size, invert_input_proba=invert_input_proba,
-    #             do_symetric_output=do_symetric_output,
-    #         ), batch_size=batch_size, num_workers=num_workers)
-
-    # @classmethod
-    # def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
-    #     for key in ['n_inputs', 'first_idx', 'train', 'shuffle']:
-    #         if key in kwargs:
-    #             del kwargs[key]
-
-    #     all_train_idxs = list(range(min(n_inputs_train + n_inputs_val, 60_000)))
-    #     shuffle(all_train_idxs)
-
-    #     train_idxes = all_train_idxs[:n_inputs_train]
-    #     val_idxes = all_train_idxs[n_inputs_train:n_inputs_train + n_inputs_val]
-
-    #     for key in ["first_idx", "n_inputs", "indexes", "train"]:
-    #         if key in kwargs:
-    #             del kwargs[key]
-
-    #     trainloader = cls.get_loader(indexes=train_idxes, train=True, shuffle=True, *args, **kwargs)
-    #     valloader = cls.get_loader(indexes=val_idxes, train=True, shuffle=False, *args, **kwargs)
-    #     testloader = cls.get_loader(first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
-    #     return trainloader, valloader, testloader
-
-
 class MnistGrayScaleDataset(MnistGrayScaleBaseDataset, MNIST):
 
     def __init__(

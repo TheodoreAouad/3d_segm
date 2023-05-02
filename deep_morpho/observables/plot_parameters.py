@@ -58,9 +58,9 @@ class PlotWeightsBiSE(ObservableLayersChans):
         for layer_idx, layer in enumerate(pl_module.model.layers):
             to_add = {"bias_bise": layer.bias_bise, "activation_P_bise": layer.activation_P_bise}
 
-            to_add["weights_param"] = layer.weights_param
+            to_add["weights_param"] = layer.bises.weight_param
 
-            to_add["weights"] = layer.weight
+            to_add["weights"] = layer.bises.weight
             self.last_weights.append(to_add)
 
     def save(self, save_path: str):
@@ -127,7 +127,7 @@ class PlotParametersBiSE(ObservableLayersChans):
     ):
         metrics = {}
         last_params = {}
-        weights = layer.get_weight_norm_bise(chin=chan_input, chout=chan_output)
+        weights = layer.get_weight_bise(chin=chan_input, chout=chan_output)
         bias_bise = layer.get_bias_bise(chin=chan_input, chout=chan_output)
         activation_P_bise = layer.get_activation_P_bise(chin=chan_input, chout=chan_output)
 
