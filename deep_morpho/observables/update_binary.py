@@ -12,7 +12,7 @@ class UpdateBinary(Observable):
         self.freq_batch_idx = 0
         self.freq_epoch_idx = 0
 
-    def on_train_batch_end(self, trainer, pl_module, *args, **kwargs):
+    def on_train_batch_end_with_preds(self, trainer, pl_module, *args, **kwargs):
         if self.freq_batch is not None and self.freq_batch_idx % self.freq_batch == 0:
             self.apply_update(pl_module)
         self.freq_batch_idx += 1
