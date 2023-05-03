@@ -33,9 +33,11 @@ class STEClippedIdentity(STELayer):
 
 
 class _STEQuantizedK(Function):
-    """Defined in DoReFa-Net, Zhou et al. 2016, https://arxiv.org/abs/1606.06160"""
+    """Defined in DoReFa-Net, Zhou et al. 2016, https://arxiv.org/abs/1606.06160
+    Input must be in [0, 1]"""
     @staticmethod
     def forward(ctx, input_: torch.Tensor, k: int = 1) -> torch.Tensor:
+        assert input_.min() >= 0 and input_.max() <= 1, "input must be in [0, 1]"
         ctx.k = k
         cst = 2 ** k - 1
         return torch.round(input_ * cst) / cst
@@ -53,7 +55,7 @@ class STEQuantizedK(STELayer):
         self.k = k
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.STE_FN.apply(x, k=self.k)
+        return self.STE_FN.apply(x, self.k)
 
 
 class _STEBernoulli(Function):
@@ -75,8 +77,9 @@ class _STEXNor(Function):
     """Defined in XNOR-Net, Rastegari et al. 2016, https://arxiv.org/abs/1603.05279"""
     @staticmethod
     def forward(ctx, input_: torch.Tensor) -> torch.Tensor:
-        """input_ is a tensor of shape (batch_size, channels, height, width)"""
-        return torch.sign(input_) * input_.mean((2, 3)).abs()[..., None, None]
+        """input_ is a tensor of shape (out_channels, in_channels, height, width)"""
+        assert input_.dim() == 4, "input must be a tensor of shape (batch_size, channels, height, width)"
+        return torch.sign(input_) * input_.abs().mean((0, 2, 3))[..., None, None]
 
     @staticmethod
     def backward(ctx, grad_output: torch.Tensor) -> torch.Tensor:
@@ -91,8 +94,7 @@ class _STEDoReFaBinary(Function):
     """Defined in DoReFa-Net, Zhou et al. 2016, https://arxiv.org/abs/1606.06160"""
     @staticmethod
     def forward(ctx, input_: torch.Tensor) -> torch.Tensor:
-        """input_ is a tensor of shape (batch_size, channels, height, width)"""
-        return torch.sign(input_) * input_.mean((1, 2, 3)).abs()[..., None, None, None]
+        return torch.sign(input_) * input_.abs().mean()
 
     @staticmethod
     def backward(ctx, grad_output: torch.Tensor) -> torch.Tensor:
