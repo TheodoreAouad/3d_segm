@@ -223,30 +223,6 @@ class BimonnBiselDenseBase(BinaryNN, ABC):
 
         self.bisel_layers = BinarySequential()
 
-        # self.bisel1 = BiSEL(
-        #     in_channels=self.channels[0],
-        #     out_channels=self.channels[1],
-        #     kernel_size=kernel_size,
-        #     initializer=BiselInitializer(
-        #         bise_initializer=self.initializer_bise_fn(**self.first_init_args),
-        #         lui_initializer=self.initializer_lui_fn(**self.initializer_lui_args),
-        #     ),
-        #     *args, **kwargs
-        # )
-        # self.layers.append(self.bisel1)
-        # self.layers.append(BiSEL(
-        #     in_channels=self.channels[0],
-        #     out_channels=self.channels[1],
-        #     kernel_size=kernel_size,
-        #     initializer=BiselInitializer(
-        #         bise_initializer=self.initializer_bise_fn(**self.first_init_args),
-        #         lui_initializer=self.initializer_lui_fn(**self.initializer_lui_args),
-        #     ),
-        #     *args, **kwargs
-        # ))
-
-        # self.layers.append(nn.MaxPool2d(2))
-
         self.bisel_layers.append(BiselMaxPoolBlock(
             in_channels=self.channels[0],
             out_channels=self.channels[1],
@@ -258,37 +234,10 @@ class BimonnBiselDenseBase(BinaryNN, ABC):
             *args, **kwargs
         ))
 
-        # self.maxpool1 = nn.MaxPool2d(2)
-        # self.layers.append(self.maxpool1)
 
         self.input_dense[1:] = np.array(self.input_dense[1:]) // 2
 
         for idx, (chin, chout) in enumerate(zip(self.channels[1:-3], self.channels[2:-2]), start=2):
-            # setattr(self, f"bisel{idx}", BiSEL(
-            #     in_channels=chin,
-            #     out_channels=chout,
-            #     kernel_size=kernel_size,
-            #     initializer=BiselInitializer(
-            #         bise_initializer=self.initializer_bise_fn(**self.initializer_bise_args),
-            #         lui_initializer=self.initializer_lui_fn(**self.initializer_lui_args),
-            #     ),
-            #     *args, **kwargs
-            # ))
-            # self.layers.append(getattr(self, f"bisel{idx}"))
-
-            # setattr(self, f"maxpool{idx}", nn.MaxPool2d(2))
-            # self.layers.append(getattr(self, f"maxpool{idx}"))
-            # self.layers.append(BiSEL(
-            #     in_channels=chin,
-            #     out_channels=chout,
-            #     kernel_size=kernel_size,
-            #     initializer=BiselInitializer(
-            #         bise_initializer=self.initializer_bise_fn(**self.initializer_bise_args),
-            #         lui_initializer=self.initializer_lui_fn(**self.initializer_lui_args),
-            #     ),
-            #     *args, **kwargs
-            # ))
-            # self.layers.append(nn.MaxPool2d(2))
             self.bisel_layers.append(BiselMaxPoolBlock(
                 in_channels=chin,
                 out_channels=chout,
@@ -302,17 +251,8 @@ class BimonnBiselDenseBase(BinaryNN, ABC):
             self.input_dense[1:] = self.input_dense[1:] // 2
 
         self.flatten = nn.Flatten()
-        # self.layers.append(self.flatten)`
-        # self.layers.append(nn.Flatten())
         self.dense_layers = BinarySequential()
 
-        # self.dense1 = DenseLUI(
-        #     in_channels=self.channels[-3] * np.prod(self.input_dense[1:]),
-        #     out_channels=self.channels[-2],
-        #     initializer=self.initializer_bise_fn(**initializer_bise_args),
-        #     **kwargs
-        # )
-        # self.layers.append(self.dense1)
         self.dense_layers.append(DenseLUI(
             in_channels=self.channels[-3] * np.prod(self.input_dense[1:]),
             out_channels=self.channels[-2],
@@ -320,14 +260,6 @@ class BimonnBiselDenseBase(BinaryNN, ABC):
             **kwargs
         ))
 
-        # self.classification_layer = self.last_layer(
-        #     in_channels=self.channels[-2],
-        #     out_channels=self.channels[-1],
-        #     initializer=self.initializer_bise_fn(**initializer_bise_args),
-        #     **kwargs
-        # )
-
-        # self.layers.append(self.classification_layer)
         last_kwargs = copy.deepcopy(kwargs)
         if not self.apply_last_activation:
             last_kwargs["threshold_mode"]["activation"] = "identity"
@@ -397,11 +329,7 @@ class BimonnBiselDenseBase(BinaryNN, ABC):
 
 class BimonnBiselDense(BimonnBiselDenseBase):
     last_layer = DenseLUI
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(last_layer=DenseLUI, *args, **kwargs)
 
 
 class BimonnBiselDenseNotBinary(BimonnBiselDenseBase):
     last_layer = DenseLuiNotBinary
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(last_layer=DenseLuiNotBinary, *args, **kwargs)

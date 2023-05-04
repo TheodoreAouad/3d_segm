@@ -15,3 +15,5 @@ from .classical_conv import *
 from .lightning_classical_conv import *
 from .generic_lightning_model import *
 from .layers_not_binary import *
+from .ste_model import *
+from .lightning_ste_model import *

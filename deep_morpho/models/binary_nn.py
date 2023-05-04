@@ -43,13 +43,6 @@ class BinaryNN(nn.Module, ExperimentMethods, ABC):
         """Specifies the number of binarizable parameters that are not contained in the children."""
         return 0
 
-    # def to(self, device, *args, **kwargs):
-    #     super().to(device=device, *args, **kwargs)
-    #     self.device = device
-
-    # def cuda(self, device, *args, **kwargs):
-    #     super().cuda(device=device, *args, **kwargs)
-    #     self.device = device
     @property
     def device(self):
         for param in self.parameters():
@@ -59,7 +52,6 @@ class BinaryNN(nn.Module, ExperimentMethods, ABC):
 class BinarySequential(nn.Sequential, BinaryNN):
     def __init__(self, *args, binary_mode: bool = False, **kwargs):
         nn.Sequential.__init__(self, *args, **kwargs)
-        # BinaryNN.__init__(self)
         self.binary_mode = binary_mode
 
     def __gititem__(self, idx):

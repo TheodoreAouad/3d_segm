@@ -9,19 +9,27 @@ import torch
 from general.utils import format_time, log_console, create_logger, close_handlers, get_next_same_name
 from general.code_saver import CodeSaver
 from .experiment_base import ExperimentBase
-from .experiment_morpho import ExperimentMorphoBinary, ExperimentMorphoGrayScale, ExperimentDiskorect
+from .experiment_morpho import (
+    ExperimentMorphoBinary, ExperimentMorphoGrayScale, ExperimentDiskorect, ExperimentBimonnMorphoBinary,
+    ExperimentSteMorphoBinary
+)
 from .experiment_classification import ExperimentClassification, ExperimentClassificationChannel
 from .context import Task
-from .args_enforcers import ArgsMnist, ArgsCifar  #, ArgsMnistClassif, ArgsMnistClassifChannel
+from .args_enforcers import (
+    ArgsMnist, ArgsCifar, ArgsSymetricBinary
+)
 from general.nn.experiments.experiment_methods import ExperimentMethods
-from deep_morpho.models import LightningBiMoNN
-
+from deep_morpho.models import LightningBiMoNN, LightningSTEConv
 
 
 class MultiExperiment(ExperimentMethods):
     MORPHO_BINARY_DATASETS = [
         "mnistmorphodataset",
         "diskorectdataset",
+    ]
+
+    SYMETRIC_INPUT_MODELS = [
+        "bnnconv",
     ]
 
     MORPHO_GRAYSCALE_DATASETS = [
@@ -91,7 +99,7 @@ class MultiExperiment(ExperimentMethods):
                 return ExperimentDiskorect
 
             if args["dataset"] in self.MORPHO_BINARY_DATASETS:
-                return ExperimentMorphoBinary
+                return ExperimentBimonnMorphoBinary
 
             if args["dataset"] in self.MORPHO_GRAYSCALE_DATASETS:
                 return ExperimentMorphoGrayScale
@@ -102,6 +110,13 @@ class MultiExperiment(ExperimentMethods):
             if args["dataset"] in self.CLASSIFICATION_CHANNEL_DATASETS:
                 return ExperimentClassificationChannel
 
+        if LightningSTEConv.is_child(args["model"]):
+            if args["dataset"] in self.MORPHO_BINARY_DATASETS:
+                return ExperimentSteMorphoBinary
+
+        if args["dataset"] in self.MORPHO_BINARY_DATASETS:
+            return ExperimentMorphoBinary
+        
         return self.experiment_class
 
     def setup(self):
@@ -135,6 +150,8 @@ class MultiExperiment(ExperimentMethods):
 
         if args["dataset"] in self.MNIST_DATASETS:
             args_enforcers.append(ArgsMnist())
+            if args["model"] in self.SYMETRIC_INPUT_MODELS:
+                args_enforcers.append(ArgsSymetricBinary())
 
         if args["dataset"] in self.CIFAR_DATASETS:
             args_enforcers.append(ArgsCifar())

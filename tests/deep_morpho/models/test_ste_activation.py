@@ -1,6 +1,6 @@
 import torch
 
-from deep_morpho.models.ste import (
+from deep_morpho.models.ste_activation import (
     _STEClippedIdentity, _STEQuantizedK, _STEBernoulli, _STEXNor, _STEDoReFaBinary,
     STEClippedIdentity, STEQuantizedK, STEBernoulli, STEXNor, STEDoReFaBinary,
 )

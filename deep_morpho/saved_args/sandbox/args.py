@@ -50,7 +50,7 @@ all_args['n_try'] = [0]
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
     # "tests",
-    "Bimonn_exp_78/sandbox/"
+    "Bimonn_exp_78/bnn/"
     # "Bimonn_exp_77/iccv_2023/",
     # "Bimonn_exp_77/bimonn_dense/",
     # "Bimonn_exp_77/bimonn_bisel_dense/",
@@ -61,7 +61,7 @@ all_args["model"] = [
     # "BiMoNNClassifierMaxPoolNotBinary",
     # "BiMoNNClassifierMaxPool",
     # "BiMoNNClassifierLastLinear",
-    "BiMoNN",
+    # "BiMoNN",
     # "BimonnDense",
     # "BimonnDenseNotBinary",
     # "BiMoNNClassifierLastLinearNotBinary",
@@ -72,11 +72,12 @@ all_args["model"] = [
     # "ResNet18",
     # "ResNet34",
     # "ResNet50",
+    "BNNConv",
 ]
 
 all_args['dataset'] = [
-    'diskorectdataset',
-    # 'mnistmorphodataset',
+    # 'diskorectdataset',
+    'mnistmorphodataset',
     # 'mnistgrayscaledataset',
     # 'fashionmnistgrayscaledataset',
     # 'axsparoidataset',
@@ -162,7 +163,7 @@ all_args["n_inputs_test"] = [10_000]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-1,
+    1e-3,
     # 0.001,
     # 1e-3,
     # 1e-4,
@@ -175,10 +176,10 @@ all_args['loss_data_str'] = [
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
-    "BCELoss",
+    # "BCELoss",
     # "CrossEntropyLoss",
     # "SquaredHingeLoss",
-    # "MSELoss",
+    "MSELoss",
     # "DiceLoss",
     # "MaskedDiceLoss",
     # "NormalizedDiceLoss",
@@ -220,6 +221,10 @@ all_args['early_stopping_on'] = [
 
 # MODEL ARGS
 
+all_args["do_batchnorm"] = [  # For BNNConv
+    False
+]
+
 all_args["num_units"] = [  # For MLPBinaryConnectMNIST
     1024
 ]
@@ -252,7 +257,10 @@ all_args['kernel_size'] = [
     "adapt",
 ]
 all_args['channels'] = [
-    'adapt',
+    # 'adapt',
+    [1, 3, 3, 1],
+    [1, 3, 1],
+    [1, 10, 1],
     # [1000, 1000],
     # [100, 100],
     # [50],
@@ -392,21 +400,21 @@ for idx, args in enumerate(all_args.multi_args):
         if args["loss_data_str"] == "BCELoss":
             args["loss_data_str"] = "BCENormalizedLoss"
 
-    kwargs_loss = {}
+    args["kwargs_loss"] = {}
     if "Normalized" in args['loss_data_str'] and args['atomic_element'] == 'sybisel':
-        kwargs_loss.update({"vmin": -1, "vmax": 1})
+        args["kwargs_loss"].update({"vmin": -1, "vmax": 1})
 
-    args['loss_data'] = loss_dict[args['loss_data_str']](**kwargs_loss)
+    args['loss_data'] = loss_dict[args['loss_data_str']](**args["kwargs_loss"])
 
     args['loss'] = {"loss_data": args['loss_data']}
 
-    if isinstance(args['threshold_mode'], str) or args['threshold_mode']['weight'] != "identity":
-        args['loss_regu'] = "None"
+    # if isinstance(args['threshold_mode'], str) or args['threshold_mode']['weight'] != "identity":
+    #     args['loss_regu'] = "None"
 
 
-    if args['loss_regu'] != "None":
-        args['loss_regu'] = (loss_dict[args['loss_regu'][0]], args['loss_regu'][1])
-        args['loss']['loss_regu'] = args['loss_regu']
+    # if args['loss_regu'] != "None":
+    #     args['loss_regu'] = (loss_dict[args['loss_regu'][0]], args['loss_regu'][1])
+    #     args['loss']['loss_regu'] = args['loss_regu']
 
     for key in ['closest_selem_method', 'bias_optim_mode']:
         args[f'{key}_str'] = str(args[key])

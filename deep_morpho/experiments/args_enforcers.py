@@ -3,6 +3,8 @@ import warnings
 
 from torch.nn import CrossEntropyLoss, BCELoss
 
+from deep_morpho.loss import BCENormalizedLoss
+
 from general.utils import recursive_dict_copy
 from general.nn.experiments.experiment_methods import ExperimentMethods
 
@@ -21,14 +23,6 @@ class ArgsEnforcer(ExperimentMethods, ABC):
         pass
 
 
-# class ArgsDictCopy(ArgsEnforcer):
-#     def add_enforcer(self):
-#         def enforce_fn(experiment: "ExperimentBase"):
-#             experiment.args = recursive_dict_copy(experiment.args)
-
-#         self.enforcers.append(enforce_fn)
-
-
 class ArgsMorpho(ArgsEnforcer):
     def add_enforcer(self):
         def enforce_fn(experiment):
@@ -41,7 +35,21 @@ class ArgsMorpho(ArgsEnforcer):
             if experiment.args["n_atoms"] == 'adapt':
                 experiment.args['n_atoms'] = len(experiment.args['morp_operation'])
 
-            experiment.args["model"] = "BiMoNN"
+            # experiment.args["model"] = "BiMoNN"
+
+        self.enforcers.append(enforce_fn)
+
+
+class ArgsSymetricBinary(ArgsEnforcer):
+    def add_enforcer(self):
+        def enforce_fn(experiment):
+            experiment.args["do_symetric_output"] = True
+
+            if experiment.args["loss_data_str"] == "BCELoss":
+                experiment.args["loss_data_str"] = "BCENormalizedLoss"
+                experiment.args["kwargs_loss"].update({"vmin": -1, "vmax": 1})
+                experiment.args["loss_data"] = BCENormalizedLoss(**experiment.args["kwargs_loss"])
+                experiment.args['loss'] = {"loss_data": experiment.args['loss_data']}
 
         self.enforcers.append(enforce_fn)
 

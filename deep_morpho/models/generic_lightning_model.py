@@ -63,6 +63,7 @@ class GenericLightningModel(NetLightning):
             loss=args["loss"],
             optimizer=args["optimizer"],
             optimizer_args=args["optimizer_args"],
+            observables=experiment.observables,
         )
         model.to(experiment.device)
         return model
