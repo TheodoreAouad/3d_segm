@@ -7,7 +7,7 @@ from deep_morpho.morp_operations import ParallelMorpOperations
 
 from general.utils import one_hot_array
 from general.nn.utils import train_val_test_split
-from general.nn.dataloaders import dataloader_resolution
+from general.nn.dataloaders import dataloader_resolution_from_df
 
 from .datamodule_base import DataModule
 
@@ -47,7 +47,7 @@ class AxspaROIDataset(DataModule, Dataset):
 
     @staticmethod
     def get_loader(data, batch_size, preprocessing=transforms.ToTensor(), **kwargs):
-        return dataloader_resolution(
+        return dataloader_resolution_from_df(
             df=data,
             dataset=AxspaROIDataset,
             dataset_args={"preprocessing": preprocessing},
@@ -104,7 +104,7 @@ class AxspaROISimpleDataset(DataModule, Dataset):
     @classmethod
     def get_loader(cls, data, batch_size, morp_operations=None, preprocessing=None, do_symetric_output=False, num_workers=0,
             shuffle=False, **kwargs):
-        return dataloader_resolution(
+        return dataloader_resolution_from_df(
             df=data,
             dataset=cls,
             dataset_args={"morp_operations": morp_operations, "preprocessing": preprocessing, "do_symetric_output": do_symetric_output},

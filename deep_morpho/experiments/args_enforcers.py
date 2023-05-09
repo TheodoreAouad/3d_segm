@@ -4,6 +4,7 @@ import warnings
 from torch.nn import CrossEntropyLoss, BCELoss
 
 from deep_morpho.loss import BCENormalizedLoss
+from deep_morpho.datasets import NoistiDataset
 
 from general.utils import recursive_dict_copy
 from general.nn.experiments.experiment_methods import ExperimentMethods
@@ -40,6 +41,8 @@ class ArgsMorpho(ArgsEnforcer):
         self.enforcers.append(enforce_fn)
 
 
+
+
 class ArgsSymetricBinary(ArgsEnforcer):
     def add_enforcer(self):
         def enforce_fn(experiment):
@@ -62,15 +65,38 @@ class ArgsNotMorpho(ArgsEnforcer):
         self.enforcers.append(enforce_fn)
 
 
-class ArgsDiskorect(ArgsEnforcer):
+class ArgsGeneration(ArgsEnforcer):
     def add_enforcer(self):
         def enforce_fn(experiment: "ExperimentBase"):
             experiment.args["n_inputs.train"] = experiment.args['n_steps'] * experiment.args['batch_size']
             experiment.args["n_inputs.val"] = experiment.args["batch_size"]
             experiment.args["n_inputs.test"] = experiment.args["batch_size"]
 
+        self.enforcers.append(enforce_fn)
+
+
+class ArgsNoisti(ArgsGeneration):
+    def add_enforcer(self):
+        super().add_enforcer()
+
+        def enforce_fn(experiment):
+            experiment.args["angles"] = experiment.args["sticks_noised_angles"]
+            for key, value in experiment.args["sticks_noised_args"].items():
+                experiment.args[key] = value
+
+            experiment.args["morp_operation"] = NoistiDataset.get_default_morp_operation(
+                lengths_lim=experiment.args["lengths_lim"], angles=experiment.args["angles"]
+            )
+
+        self.enforcers.append(enforce_fn)
+
+
+class ArgsDiskorect(ArgsGeneration):
+    def add_enforcer(self):
+        super().add_enforcer()
+
+        def enforce_fn(experiment: "ExperimentBase"):
             experiment.args["random_gen_args"] = experiment.args["random_gen_args"].copy()
-            # args["random_gen_args"]["border"] = (args["kernel_size"]//2 + 1, args["kernel_size"]//2 + 1)
             experiment.args['random_gen_args']['size'] = experiment.args['random_gen_args']['size'] + (experiment.args["morp_operation"].in_channels[0],)
 
         self.enforcers.append(enforce_fn)

@@ -18,7 +18,7 @@ from deep_morpho.datasets.diskorect_dataset import DiskorectDataset, MultiRectDa
 from deep_morpho.datasets.axspa_roi_dataset import AxspaROIDataset, AxspaROISimpleDataset
 import deep_morpho.observables as obs
 import deep_morpho.biblio_comparison.observables as biblio_obs
-from deep_morpho.datasets.sticks_noised_dataset import SticksNoisedGeneratorDataset
+from deep_morpho.datasets.sticks_noised_dataset import NoistiDataset
 from general.nn.observables import CalculateAndLogMetrics
 from general.utils import format_time, log_console, create_logger, save_yaml, close_handlers
 from general.nn.utils import train_val_test_split
@@ -95,7 +95,7 @@ def get_dataloader(args):
         )
 
     elif args['dataset_type'] == "sticks_noised":
-        trainloader = SticksNoisedGeneratorDataset.get_loader(
+        trainloader = NoistiDataset.get_loader(
             batch_size=args['batch_size'],
             n_inputs=args['n_inputs'],
             max_generation_nb=args['nb_batch_indep'],

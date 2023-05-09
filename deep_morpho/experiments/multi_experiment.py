@@ -11,7 +11,8 @@ from general.code_saver import CodeSaver
 from .experiment_base import ExperimentBase
 from .experiment_morpho import (
     ExperimentMorphoBinary, ExperimentMorphoGrayScale, ExperimentDiskorect, ExperimentBimonnMorphoBinary,
-    ExperimentSteMorphoBinary
+    ExperimentSteMorphoBinary, ExperimentBimonnDiskorect, ExperimentBimonnMorphoGrayScale, ExperimentSteDiskorect,
+    ExperimentBimonnNoisti, ExperimentSteNoisti, ExperimentNoisti
 )
 from .experiment_classification import ExperimentClassification, ExperimentClassificationChannel
 from .context import Task
@@ -96,13 +97,16 @@ class MultiExperiment(ExperimentMethods):
         if LightningBiMoNN.is_child(args["model"]):
 
             if args["dataset"] == "diskorectdataset":
-                return ExperimentDiskorect
+                return ExperimentBimonnDiskorect
+
+            if args["dataset"] == "noistidataset":
+                return ExperimentBimonnNoisti
 
             if args["dataset"] in self.MORPHO_BINARY_DATASETS:
                 return ExperimentBimonnMorphoBinary
 
             if args["dataset"] in self.MORPHO_GRAYSCALE_DATASETS:
-                return ExperimentMorphoGrayScale
+                return ExperimentBimonnMorphoGrayScale
 
             if args["dataset"] in self.CLASSIFICATION_DATASETS:
                 return ExperimentClassification
@@ -111,12 +115,18 @@ class MultiExperiment(ExperimentMethods):
                 return ExperimentClassificationChannel
 
         if LightningSTEConv.is_child(args["model"]):
+            if args["dataset"] == "diskorectdataset":
+                return ExperimentSteDiskorect
+            
+            if args["dataset"] == "noistidataset":
+                return ExperimentSteNoisti
+
             if args["dataset"] in self.MORPHO_BINARY_DATASETS:
                 return ExperimentSteMorphoBinary
 
         if args["dataset"] in self.MORPHO_BINARY_DATASETS:
             return ExperimentMorphoBinary
-        
+
         return self.experiment_class
 
     def setup(self):

@@ -1,10 +1,9 @@
-
 from torch.utils.data.dataloader import DataLoader
 
 from .compose_dataloader import ComposeDataloaders
 
 
-def dataloader_resolution(df, dataset, dataset_args={}, shuffle=True, *args, **kwargs):
+def dataloader_resolution_from_df(df, dataset, dataset_args={}, shuffle=True, *args, **kwargs):
     """
     returns a data loader with same batch resolution.
 

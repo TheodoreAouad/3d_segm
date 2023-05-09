@@ -95,7 +95,6 @@ class EltGeneratorConnectLuiBiseBase(EltGenerator):
         if activation_P > 0 or width == 0:
             return ElementArrow.link_elements(bise_elt, lui_elt, width=width)
         return ElementArrowNo.link_elements(bise_elt, lui_elt, width=width)
-        # return ElementArrowNo.link_elements(bise_elt, lui_elt, height_circle=max(self.model.kernel_size[layer_idx])*0.7, width=width)
 
     def infer_width(self, lui_elt, chin, chout):
         raise NotImplementedError

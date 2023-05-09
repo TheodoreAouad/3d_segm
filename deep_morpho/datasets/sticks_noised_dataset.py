@@ -8,15 +8,10 @@ from torch.utils.data.dataloader import DataLoader
 from ..morp_operations import ParallelMorpOperations
 from .generate_sticks_noised import get_sticks_noised_channels
 from .utils import get_rect
-
-# def get_loader(batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, device='cpu', **kwargs):
-#     return DataLoader(
-#         MultiRectDatasetGenerator(random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device, len_dataset=n_inputs, ),
-#         batch_size=batch_size,  **kwargs
-#     )
+from .datamodule_base import DataModule
 
 
-class SticksNoisedGeneratorDataset(Dataset):
+class NoistiDataset(DataModule, Dataset):
     def __init__(
             self,
             size,
@@ -27,7 +22,7 @@ class SticksNoisedGeneratorDataset(Dataset):
             p_invert: float = 0,
             border: Tuple = (0, 0),
             noise_proba: float = 0.1,
-            len_dataset: int = 1000,
+            n_inputs: int = 1000,
             seed: int = None,
             max_generation_nb: int = 0,
             do_symetric_output: bool = False,
@@ -41,7 +36,7 @@ class SticksNoisedGeneratorDataset(Dataset):
         self.border = border
         self.noise_proba = noise_proba
 
-        self.len_dataset = len_dataset
+        self.n_inputs = n_inputs
         self.max_generation_nb = max_generation_nb
         self.do_symetric_output = do_symetric_output
         self.data = {}
@@ -80,6 +75,10 @@ class SticksNoisedGeneratorDataset(Dataset):
         )
 
     @property
+    def default_morp_operation(self):
+        return self.get_default_morp_operation(lengths_lim=self.lengths_lim, angles=self.angles)
+
+    @property
     def generation_kwargs(self):
         return {
             key: getattr(self, key) for key in [
@@ -107,39 +106,37 @@ class SticksNoisedGeneratorDataset(Dataset):
         return input_, target
 
     def __len__(self):
-        return self.len_dataset
+        return self.n_inputs
 
-    @staticmethod
+    # TODO: factorize with DiskorectDataset
+    @classmethod
     def get_loader(
+        cls,
         batch_size,
-        n_inputs,
-        size,
-        angles: np.ndarray = np.linspace(0, 180, 10),
-        n_shapes: int = 30,
-        lengths_lim: Tuple = (12, 15),
-        widths_lim: Tuple = (3, 3),
-        p_invert: float = 0.5,
-        border: Tuple = (0, 0),
-        noise_proba: float = 0.1,
-        len_dataset: int = 1000,
-        max_generation_nb=0,
-        do_symetric_output: bool = False,
-        seed=None,
-    **kwargs):
+        n_inputs: int = "all",
+        num_workers: int = 0,
+        shuffle: bool = False,
+        **kwargs
+    ):
+        if n_inputs == 0:
+            return DataLoader([])
         return DataLoader(
-            SticksNoisedGeneratorDataset(
-                len_dataset=n_inputs,
-                size=size,
-                angles=angles,
-                n_shapes=n_shapes,
-                lengths_lim=lengths_lim,
-                widths_lim=widths_lim,
-                p_invert=p_invert,
-                border=border,
-                noise_proba=noise_proba,
-                seed=seed,
-                max_generation_nb=max_generation_nb,
-                do_symetric_output=do_symetric_output,
-            ),
-            batch_size=batch_size, **kwargs
+            cls(n_inputs=n_inputs, **kwargs), batch_size=batch_size, num_workers=num_workers, shuffle=shuffle, )
+
+    @classmethod
+    def get_train_val_test_loader_from_experiment(cls, experiment: "ExperimentBase") -> Tuple[DataLoader, DataLoader, DataLoader]:
+        args = experiment.args
+
+        n_inputs_train = args[f"n_inputs{args.trainset_args_suffix}"]
+        n_inputs_val = args[f"n_inputs{args.valset_args_suffix}"]
+        n_inputs_test = args[f"n_inputs{args.testset_args_suffix}"]
+
+        train_kwargs, val_kwargs, test_kwargs = cls.get_train_val_test_kwargs_pop_keys(
+            experiment, keys=["n_inputs"]
         )
+
+        train_loader = cls.get_loader(n_inputs=n_inputs_train, shuffle=True, batch_size=args["batch_size"], num_workers=args["num_workers"], **train_kwargs)
+        val_loader = cls.get_loader(n_inputs=n_inputs_val, shuffle=False, batch_size=args["batch_size"], num_workers=args["num_workers"], **val_kwargs)
+        test_loader = cls.get_loader(n_inputs=n_inputs_test, shuffle=False, batch_size=args["batch_size"], num_workers=args["num_workers"], **test_kwargs)
+
+        return train_loader, val_loader, test_loader

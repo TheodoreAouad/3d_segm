@@ -41,7 +41,7 @@ class TestParser:
         from deep_morpho.experiments.parser import Parser
 
         prs = Parser()
-        prs.parse_args()
+        prs.parse_args(add_argv=False)
         assert prs["model"] == "BiMoNN"
         assert prs["dataset"] == "cifar10dataset"
 
@@ -309,8 +309,8 @@ class TestParser:
         from deep_morpho.experiments.parser import Parser
 
         prs = Parser()
-        prs["bbl.trainset"] = "train"
-        prs["bbl.valset"] = "val"
+        prs["bbl.train"] = "train"
+        prs["bbl.val"] = "val"
         prs["bbl"] = "test"
         prs["model"] = "BiMoNN"
         prs["dataset"] = "cifar10dataset"
@@ -357,8 +357,10 @@ class TestMultiParser:
 
         prs.parse_args([], add_argv=False)
 
-        assert "arg1.net" in prs
-        assert "bbl.datamodule" in prs
+        assert "arg1" in prs
+        assert "bbl" in prs
+        assert "arg1.net" not in prs
+        assert "bbl.datamodule" not in prs
         assert prs["arg1"] == ["value"]
         assert prs["bbl"] == ["value"]
 
@@ -483,16 +485,76 @@ class TestMultiParser:
         from deep_morpho.experiments.parser import MultiParser
 
         prs = MultiParser()
-        prs["bbl.trainset"] = ["train"]
-        prs["bbl.valset"] = ["val"]
+        prs["bbl.train"] = ["train"]
+        prs["bbl.val"] = ["val"]
         prs["bbl"] = ["test"]
         prs["model"] = ["BiMoNN"]
         prs["dataset"] = ["cifar10dataset"]
-        prs.parse_args([])
+        prs.parse_args([], add_argv=False)
 
         assert prs.multi_args[0].trainset_args()["bbl"] == "train"
         assert prs.multi_args[0].valset_args()["bbl"] == "val"
         assert prs.multi_args[0].testset_args()["bbl"] == "test"
+    
+    @staticmethod
+    def test_multi_dataset_args(mocker):
+        def mock_dataset_init(self, bbl="all"):
+            pass
+
+        def mock_dataset_init2(self, aau="all"):
+            pass
+
+        mocker.patch("deep_morpho.datasets.cifar_dataset.CIFAR10Dataset.__init__", mock_dataset_init)
+        mocker.patch("deep_morpho.datasets.cifar_dataset.CIFAR100Dataset.__init__", mock_dataset_init2)
+
+        from deep_morpho.experiments.parser import MultiParser
+
+        prs = MultiParser()
+        prs["bbl"] = ["train"]
+        prs["aau"] = ["seee"]
+        prs["model"] = ["BiMoNN"]
+        prs["dataset"] = ["cifar10dataset", "cifar100dataset"]
+        prs.parse_args([], add_argv=False)
+
+        assert prs.multi_args[0].trainset_args() == {"bbl": "train"}
+        assert "aau.datamodule" not in prs.multi_args[0].keys()
+        assert "bbl.datamodule" in prs.multi_args[0].keys()
+
+        assert prs.multi_args[1].trainset_args() == {"aau": "seee"}
+        assert "bbl.datamodule" not in prs.multi_args[1].keys()
+        assert "aau.datamodule" in prs.multi_args[1].keys()
+    
+    @staticmethod
+    def test_multi_model_args(mocker):
+        def mock_model_init(self, bbl="all"):
+            pass
+
+        def mock_model_init2(self, aau="all"):
+            pass
+
+        # mocker.patch("deep_morpho.datasets.cifar_dataset.CIFAR10Dataset.__init__", mock_dataset_init)
+        # mocker.patch("deep_morpho.datasets.cifar_dataset.CIFAR100Dataset.__init__", mock_dataset_init2)
+        mocker.patch("deep_morpho.models.BiMoNN.__init__", mock_model_init)
+        mocker.patch("deep_morpho.models.BiMoNNClassifier.__init__", mock_model_init2)
+
+        from deep_morpho.experiments.parser import MultiParser
+
+        prs = MultiParser()
+        prs["bbl"] = ["train"]
+        prs["aau"] = ["seee"]
+        prs["model"] = ["BiMoNN", "BiMoNNClassifier"]
+        prs["dataset"] = ["cifar10dataset"]
+        prs.parse_args([], add_argv=False)
+
+        assert prs.multi_args[0].model_args()["bbl"] == "train"
+        assert "aau" not in prs.multi_args[0].model_args().keys()
+        assert "aau.net" not in prs.multi_args[0].keys()
+        assert "bbl.net" in prs.multi_args[0].keys()
+
+        assert prs.multi_args[1].model_args()["aau"] == "seee"
+        assert "bbl" not in prs.multi_args[1].model_args().keys()
+        assert "bbl.net" not in prs.multi_args[1].keys()
+        assert "aau.net" in prs.multi_args[1].keys()
 
     @staticmethod
     def test_dict_copy():

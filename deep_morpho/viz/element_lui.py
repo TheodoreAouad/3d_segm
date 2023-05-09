@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib.patches import Polygon
 
-from general.nn.viz import Element, ElementGrouper, ElementSymbolIntersection, ElementSymbolUnion, ElementNO
+from general.nn.viz import Element, ElementGrouper, ElementSymbolIntersection, ElementSymbolUnion, ElementNO, ElementSymbolDilation
 from ..models import LUI, BiSEBase
 
 
@@ -33,9 +33,6 @@ class ElementLuiCoefs(Element):
         canva.ax.add_patch(Polygon(np.stack([
             self.xy_coords_botleft, self.xy_coords_topleft, self.xy_coords_midright
         ]), closed=True, **self.imshow_kwargs))
-
-
-
 
 
 class ElementLui(ElementGrouper):
@@ -110,3 +107,7 @@ class ElementLuiClosest(ElementGrouper):
                                 np.array([self.element_lui_coefs.shape[0] / 3, self.element_lui_coefs.shape[-1] / 2 + 2]))
             )
             self.add_element(self.element_no, key="no")
+
+
+class ElementLuiSum(ElementSymbolDilation):
+    pass

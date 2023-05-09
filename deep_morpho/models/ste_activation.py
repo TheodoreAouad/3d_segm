@@ -6,8 +6,9 @@ from torch.autograd import Function
 
 
 def sign(x: torch.Tensor) -> torch.Tensor:
-    """torch.sign with 0 -> -1"""
+    """torch.sign with f(0) = +1"""
     return (x >= 0).float() * 2 - 1
+    # return (x > -0.01).float() * 2 - 1
 
 
 class STELayer(nn.Module, ABC):

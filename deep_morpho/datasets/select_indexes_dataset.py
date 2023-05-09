@@ -29,6 +29,7 @@ class SelectIndexesDataset(DataModule):
             self.data = self.data[self.indexes]
             self.targets = np.array(self.targets)[self.indexes]
 
+        self.indexes = np.array(self.indexes)
         self.n_classes = len(np.unique(self.targets))
 
     @classmethod

@@ -6,7 +6,7 @@ import torchvision.transforms as transforms
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
 from general.utils import dict_cross
 from general.nn.loss import DiceLoss
-from deep_morpho.datasets.sticks_noised_dataset import SticksNoisedGeneratorDataset
+from deep_morpho.datasets.sticks_noised_dataset import NoistiDataset
 from deep_morpho.loss import (
     MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization,
     MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss, BCENormalizedLoss,
@@ -103,8 +103,8 @@ all_args['patience_reduce_lr'] = [700]
 
 all_args['loss_data_str'] = ['MSELoss']
 all_args['num_workers'] = [
-    20,
-    # 0,
+    # 20,
+    0,
 ]
 all_args['freq_imgs'] = [300]
 all_args['n_epochs'] = [5]
@@ -246,7 +246,7 @@ for idx, args in enumerate(final_args):
     if args['dataset_type'] == "sticks_noised":
         args["sticks_noised_args"] = args["sticks_noised_args"].copy()
         args['sticks_noised_args']['angles'] = args['sticks_noised_angles']
-        args['morp_operation'] = SticksNoisedGeneratorDataset.get_default_morp_operation(
+        args['morp_operation'] = NoistiDataset.get_default_morp_operation(
             lengths_lim=args['sticks_noised_args']['lengths_lim'],
             angles=args['sticks_noised_args']['angles'],
         )

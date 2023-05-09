@@ -5,7 +5,7 @@ import torch.nn as nn
 import os
 
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
-from deep_morpho.datasets.sticks_noised_dataset import SticksNoisedGeneratorDataset
+from deep_morpho.datasets.sticks_noised_dataset import NoistiDataset
 from deep_morpho.loss import (
     MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization,
     MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss, BCENormalizedLoss, DiceLoss, NormalizedDiceLoss
@@ -358,7 +358,7 @@ for idx, args in enumerate(all_args):
     if args['dataset_type'] == "sticks_noised":
         args["sticks_noised_args"] = args["sticks_noised_args"].copy()
         args['sticks_noised_args']['angles'] = args['sticks_noised_angles']
-        args['morp_operation'] = SticksNoisedGeneratorDataset.get_default_morp_operation(
+        args['morp_operation'] = NoistiDataset.get_default_morp_operation(
             lengths_lim=args['sticks_noised_args']['lengths_lim'],
             angles=args['sticks_noised_args']['angles'],
         )

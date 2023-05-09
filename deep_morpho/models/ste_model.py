@@ -17,15 +17,18 @@ class BNNLayer(BinaryNN, ABC):
 
     def __init__(self, *args, **kwargs):
         super().__init__()
-        self.layer = self.LAYER(*args, **kwargs)
+        self.layer = self.LAYER(bias=None, *args, **kwargs)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        self.layer.weight.data = torch.clip(self.weight.data, -1, 1)  # Clipping weights onto [-1, 1]
+        self.clip_weights()  # Clipping weights onto [-1, 1]
         return self._forward(x, self.binarized_weight)
 
     def real_forward(self, x: torch.Tensor) -> torch.Tensor:
-        self.layer.weight.data = torch.clip(self.weight.data, -1, 1)  # Clipping weights onto [-1, 1]
+        self.clip_weights()  # Clipping weights onto [-1, 1]
         return self._forward(x, self.weight)
+
+    def clip_weights(self):
+        self.layer.weight.data = torch.clip(self.weight.data, -1, 1)
 
     @abstractmethod
     def _forward(self, x: torch.Tensor, weight: torch.Tensor) -> torch.Tensor:
@@ -74,6 +77,9 @@ class BNNConvBlock(BinaryNN):
             x = self.bn(x)
         return self.ste(x)
 
+    def clip_weights(self):
+        self.conv.clip_weights()
+
     @property
     def weight(self):
         return self.conv.weight
@@ -90,6 +96,8 @@ class BNNConv(BinaryNN):
 
     def __init__(self, kernel_size: Union[Tuple[int], int], channels: List[int], do_batchnorm: bool = True):
         super().__init__()
+        if isinstance(kernel_size, int):
+            kernel_size = (kernel_size, kernel_size)
         self.kernel_size = kernel_size
         self.channels = channels
         self.layers = BinarySequential()
@@ -108,3 +116,11 @@ class BNNConv(BinaryNN):
             else:
                 x = layer(x)
         return x
+
+    @property
+    def in_channels(self):
+        return self.channels[:-1]
+
+    @property
+    def out_channels(self):
+        return self.channels[1:]

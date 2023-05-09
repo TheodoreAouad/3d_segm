@@ -19,6 +19,7 @@ class Parser(dict):
 
         self.root_parser = ArgumentParser(allow_abbrev=False)
         self.parsers: Dict = {}
+        self.replaced_keys: Dict = {}
 
         self.given_args = set()
 
@@ -91,15 +92,12 @@ class Parser(dict):
 
         # We use suffix instead of prefix because the abbrev of argparse matches the beginning of the str.
         for arg_name, arg_dict in datamodule.default_args().items():
-            # self.parser_add_argument(parser=parser, name=f"{arg_name}{self.dataset_args_suffix}", **arg_dict)
             self.parser_add_datamodule_argument(parser=parser, name=arg_name, **arg_dict)
 
         for arg_name, arg_dict in model.default_args().items():
-            # self.parser_add_argument(parser=parser, name=f"{arg_name}{self.model_args_suffix}", **arg_dict)
             self.parser_add_model_argument(parser=parser, name=arg_name, **arg_dict)
 
         for arg_name, arg_dict in self.trainer_class.default_args().items():
-            # self.parser_add_argument(parser=parser, name=f"{arg_name}{self.trainer_args_suffix}", **arg_dict)
             self.parser_add_trainer_argument(parser=parser, name=arg_name, **arg_dict)
 
         self._parse_args_to_dict(dict_=self, parser=parser, args=args, namespace=namespace)  # parse remaining args
@@ -112,16 +110,22 @@ class Parser(dict):
         self.parser_add_argument(parser, f"{name}{self.dataset_args_suffix}", **kwargs)
         if name in self:
             self.replace_key(name, f"{name}{self.dataset_args_suffix}")
+            self.replaced_keys[name] = f"{name}{self.dataset_args_suffix}"
+        # parser.default_datamodule_args.append(name)
 
     def parser_add_model_argument(self, parser, name: str, **kwargs):
         self.parser_add_argument(parser, f"{name}{self.model_args_suffix}", **kwargs)
         if name in self:
             self.replace_key(name, f"{name}{self.model_args_suffix}")
+            self.replaced_keys[name] = f"{name}{self.model_args_suffix}"
+        # parser.default_model_args.append(name)
 
     def parser_add_trainer_argument(self, parser, name: str, **kwargs):
         self.parser_add_argument(parser, f"{name}{self.trainer_args_suffix}", **kwargs)
         if name in self:
             self.replace_key(name, f"{name}{self.trainer_args_suffix}")
+            self.replaced_keys[name] = f"{name}{self.trainer_args_suffix}"
+        # parser.default_trainer_args.append(name)
 
     def replace_key(self, key: str, new_key: str):
         self[new_key] = self[key]
@@ -280,8 +284,6 @@ class MultiParser(Parser):
 
         for model_name in self["model"]:
             for datamodule_name in self["dataset"]:
-
-                # new_dict = self.copy()
                 self.given_args = set()
 
                 model_name = model_name.lower()
@@ -294,15 +296,12 @@ class MultiParser(Parser):
 
                 # We use suffix instead of prefix because the abbrev of argparse matches the beginning of the str.
                 for arg_name, arg_dict in datamodule.default_args().items():
-                    # self.parser_add_argument(parser, f"{arg_name}{self.dataset_args_suffix}", **arg_dict)
                     self.parser_add_datamodule_argument(parser, arg_name, **arg_dict)
 
                 for arg_name, arg_dict in model.default_args().items():
-                    # self.parser_add_argument(parser, f"{arg_name}{self.model_args_suffix}", **arg_dict)
                     self.parser_add_model_argument(parser, arg_name, **arg_dict)
 
                 for arg_name, arg_dict in self.trainer_class.default_args().items():
-                    # self.parser_add_argument(parser, f"{arg_name}{self.trainer_args_suffix}", **arg_dict)
                     self.parser_add_trainer_argument(parser, arg_name, **arg_dict)
 
                 new_dict = copy.deepcopy(self)
@@ -315,6 +314,8 @@ class MultiParser(Parser):
                 for arg in new_args:
                     arg.given_args = set(self.given_args)
 
+                self.invert_replace_key()
+
                 self.all_given_args.update(self.given_args)
 
                 self.multi_args += new_args
@@ -323,3 +324,14 @@ class MultiParser(Parser):
 
     def __len__(self):
         return len(self.multi_args)
+
+
+    def invert_replace_key(self):
+        """ During the adding of the default arguments, some keys are replaced by their values added with a suffix.
+        We revert this operation here for the sake of consistency with the next arguments.
+        """
+        for key, key_suffix in self.replaced_keys.items():
+            value = self[key_suffix]
+            del self[key_suffix]
+            self[key] = value
+        self.replaced_keys = {}

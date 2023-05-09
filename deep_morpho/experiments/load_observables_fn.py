@@ -177,7 +177,7 @@ def load_observables_bimonn_morpho_binary(experiment):
     metric_binary_obs = obs.BinaryModeMetricMorpho(
         metrics=metrics,
         freq={"train": args['freq_scalars'], "val": 1, "test": 1},
-        plot_freq={"train": args['freq_imgs'], "val": args["n_inputs_val"] // args['batch_size'], "test": args['freq_imgs']},
+        plot_freq={"train": args['freq_imgs'], "val": args["n_inputs.val"] // args['batch_size'], "test": args['freq_imgs']},
     )
 
     observables = [
@@ -187,9 +187,9 @@ def load_observables_bimonn_morpho_binary(experiment):
 
         metric_float_obs,
         obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
-        obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs_val"] // args['batch_size']}),
+        obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs.val"] // args['batch_size']}),
         obs.PlotPreds(
-            freq={'train': args['freq_imgs'], 'val': args["n_inputs_val"] // args['batch_size']},
+            freq={'train': args['freq_imgs'], 'val': args["n_inputs.val"] // args['batch_size']},
             fig_kwargs={"vmax": 1, "vmin": -1 if args['atomic_element'] == 'sybisel' else 0}
         ),
 
@@ -209,7 +209,7 @@ def load_observables_bimonn_morpho_binary(experiment):
         obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),
-        obs.ActivationHistogramBinaryBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs_val"] // args['batch_size']}),
+        obs.ActivationHistogramBinaryBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs.val"] // args['batch_size']}),
         # "CheckMorpOperation": obs.CheckMorpOperation(
         #     selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50
         # ) if args['dataset_type'] == 'diskorect' else obs.Observable(),
@@ -258,7 +258,7 @@ def load_observables_morpho_binary(experiment):
     metric_binary_obs = obs.BinaryModeMetricMorpho(
         metrics=metrics,
         freq={"train": args['freq_scalars'], "val": 1, "test": 1},
-        plot_freq={"train": args['freq_imgs'], "val": args["n_inputs_val"] // args['batch_size'], "test": args['freq_imgs']},
+        plot_freq={"train": args['freq_imgs'], "val": args["n_inputs.val"] // args['batch_size'], "test": args['freq_imgs']},
     )
 
     observables = [
@@ -268,9 +268,9 @@ def load_observables_morpho_binary(experiment):
 
         metric_float_obs,
         obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
-        # obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs_val"] // args['batch_size']}),
+        # obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs.val"] // args['batch_size']}),
         obs.PlotPreds(
-            freq={'train': args['freq_imgs'], 'val': args["n_inputs_val"] // args['batch_size']},
+            freq={'train': args['freq_imgs'], 'val': args["n_inputs.val"] // args['batch_size']},
             fig_kwargs={"vmax": 1, "vmin": -1 if (args['atomic_element'] == 'sybisel') or (args["do_symetric_output"]) else 0}
         ),
 
@@ -290,7 +290,7 @@ def load_observables_morpho_binary(experiment):
         # obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),
-        # obs.ActivationHistogramBinaryBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs_val"] // args['batch_size']}),
+        # obs.ActivationHistogramBinaryBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs.val"] // args['batch_size']}),
         # "CheckMorpOperation": obs.CheckMorpOperation(
         #     selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50
         # ) if args['dataset_type'] == 'diskorect' else obs.Observable(),
@@ -339,7 +339,7 @@ def load_observables_ste_morpho_binary(experiment):
     metric_binary_obs = obs.BinaryModeMetricMorpho(
         metrics=metrics,
         freq={"train": args['freq_scalars'], "val": 1, "test": 1},
-        plot_freq={"train": args['freq_imgs'], "val": args["n_inputs_val"] // args['batch_size'], "test": args['freq_imgs']},
+        plot_freq={"train": args['freq_imgs'], "val": args["n_inputs.val"] // args['batch_size'], "test": args['freq_imgs']},
     )
 
     observables = [
@@ -349,12 +349,13 @@ def load_observables_ste_morpho_binary(experiment):
 
         metric_float_obs,
         obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
-        # obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs_val"] // args['batch_size']}),
+        # obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs.val"] // args['batch_size']}),
         obs.PlotPreds(
-            freq={'train': args['freq_imgs'], 'val': args["n_inputs_val"] // args['batch_size']},
+            freq={'train': args['freq_imgs'], 'val': args["n_inputs.val"] // args['batch_size']},
             fig_kwargs={"vmax": 1, "vmin": -1 if (args['atomic_element'] == 'sybisel') or (args["do_symetric_output"]) else 0}
         ),
         obs.PlotSteWeights(freq=args['freq_imgs']),
+        obs.PlotSTE(freq=args['freq_imgs']),
 
         # obs.PlotParametersBiSE(freq=args['freq_scalars']),
         # obs.PlotLUIParametersBiSEL(freq=args['freq_scalars']),
@@ -372,7 +373,7 @@ def load_observables_ste_morpho_binary(experiment):
         # obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),
-        # obs.ActivationHistogramBinaryBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs_val"] // args['batch_size']}),
+        # obs.ActivationHistogramBinaryBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs.val"] // args['batch_size']}),
         # "CheckMorpOperation": obs.CheckMorpOperation(
         #     selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50
         # ) if args['dataset_type'] == 'diskorect' else obs.Observable(),
@@ -423,7 +424,7 @@ def load_observables_bimonn_morpho_grayscale(experiment):
     metric_binary_obs = obs.BinaryModeMetricMorpho(
         metrics=metrics,
         freq={"train": args['freq_scalars'], "val": 1, "test": 1},
-        plot_freq={"train": args['freq_imgs'], "val": args["n_inputs_val"] // args['batch_size'], "test": args['freq_imgs']},
+        plot_freq={"train": args['freq_imgs'], "val": args["n_inputs.val"] // args['batch_size'], "test": args['freq_imgs']},
     )
 
     observables = [
@@ -436,9 +437,9 @@ def load_observables_bimonn_morpho_grayscale(experiment):
         obs.InputAsPredMetricGrayScale(metrics_gray_scale, freq=args['freq_scalars']),
         obs.BinaryModeMetricGrayScale(metrics_gray_scale, freq=args['freq_imgs']),
         # "InputAsPredMetric": obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
-        obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs_val"] // args['batch_size']}),
+        obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs.val"] // args['batch_size']}),
         obs.PlotPredsGrayscale(
-            freq={'train': args['freq_imgs'], 'val': args["n_inputs_val"] // args['batch_size']},
+            freq={'train': args['freq_imgs'], 'val': args["n_inputs.val"] // args['batch_size']},
         ),
         obs.PlotParametersBiSE(freq=args['freq_scalars']),
         obs.PlotLUIParametersBiSEL(freq=args['freq_scalars']),
@@ -456,7 +457,7 @@ def load_observables_bimonn_morpho_grayscale(experiment):
         obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),
-        obs.ActivationHistogramBinaryBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs_val"] // args['batch_size']}),
+        obs.ActivationHistogramBinaryBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs.val"] // args['batch_size']}),
         # "CheckMorpOperation": obs.CheckMorpOperation(
         #     selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50
         # ) if args['dataset_type'] == 'diskorect' else obs.Observable(),
@@ -501,7 +502,7 @@ def load_observables_classification_bimonn(experiment):
     metric_binary_obs = obs.BinaryModeMetricClassif(
         metrics=metrics,
         freq={"train": args['freq_scalars'], "val": 1, "test": 1},
-        plot_freq={"train": args['freq_imgs'], "val": args["n_inputs_val"] // args['batch_size'], "test": args['freq_imgs']},
+        plot_freq={"train": args['freq_imgs'], "val": args["n_inputs.val"] // args['batch_size'], "test": args['freq_imgs']},
     )
 
     observables = [
@@ -514,9 +515,9 @@ def load_observables_classification_bimonn(experiment):
         # obs.InputAsPredMetricGrayScale(metrics_gray_scale, freq=args['freq_scalars']),
         # obs.BinaryModeMetricGrayScale(metrics_gray_scale, freq=args['freq_imgs']),
         # "InputAsPredMetric": obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
-        obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs_val"] // args['batch_size']}),
+        obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs.val"] // args['batch_size']}),
         obs.PlotPredsClassif(
-            freq={'train': args['freq_imgs'], 'val': args["n_inputs_val"] // args['batch_size']},
+            freq={'train': args['freq_imgs'], 'val': args["n_inputs.val"] // args['batch_size']},
         ),
         # obs.PlotParametersBiSE(freq=args['freq_scalars']),
         # obs.PlotLUIParametersBiSEL(freq=args['freq_scalars']),
@@ -534,7 +535,7 @@ def load_observables_classification_bimonn(experiment):
         # obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),
-        obs.ActivationHistogramBinaryBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs_val"] // args['batch_size']}),
+        obs.ActivationHistogramBinaryBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs.val"] // args['batch_size']}),
         # "CheckMorpOperation": obs.CheckMorpOperation(
         #     selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50
         # ) if args['dataset_type'] == 'diskorect' else obs.Observable(),
@@ -579,7 +580,7 @@ def load_observables_classification_channel_bimonn(experiment):
     metric_binary_obs = obs.BinaryModeMetricClassifChannel(
         metrics=metrics,
         freq={"train": args['freq_scalars'], "val": 1, "test": 1},
-        plot_freq={"train": args['freq_imgs'], "val": args["n_inputs_val"] // args['batch_size'], "test": args['freq_imgs']},
+        plot_freq={"train": args['freq_imgs'], "val": args["n_inputs.val"] // args['batch_size'], "test": args['freq_imgs']},
         dataset=experiment.trainloader.dataset,
     )
 
@@ -593,9 +594,9 @@ def load_observables_classification_channel_bimonn(experiment):
         # obs.InputAsPredMetricGrayScale(metrics_gray_scale, freq=args['freq_scalars']),
         # obs.BinaryModeMetricGrayScale(metrics_gray_scale, freq=args['freq_imgs']),
         # "InputAsPredMetric": obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
-        obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs_val"] // args['batch_size']}),
+        obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs.val"] // args['batch_size']}),
         obs.PlotPredsClassifChannel(
-            freq={'train': args['freq_imgs'], 'val': args["n_inputs_val"] // args['batch_size']},
+            freq={'train': args['freq_imgs'], 'val': args["n_inputs.val"] // args['batch_size']},
             dataset=experiment.trainloader.dataset,
         ),
         # obs.PlotParametersBiSE(freq=args['freq_scalars']),
@@ -614,7 +615,7 @@ def load_observables_classification_channel_bimonn(experiment):
         # obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),
-        obs.ActivationHistogramBinaryBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs_val"] // args['batch_size']}),
+        obs.ActivationHistogramBinaryBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs.val"] // args['batch_size']}),
         # "CheckMorpOperation": obs.CheckMorpOperation(
         #     selems=args['morp_operation'].selems, operations=args['morp_operation'].operations, freq=50
         # ) if args['dataset_type'] == 'diskorect' else obs.Observable(),

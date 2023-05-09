@@ -74,19 +74,6 @@ class DiskorectDataset(DataModule, Dataset):
     def __len__(self):
         return self.n_inputs
 
-    # @classmethod
-    # def get_loader(
-    #     cls, batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, max_generation_nb=0,
-    #     do_symetric_output: bool = False, seed=None, device='cpu', num_workers=0,
-    #     **kwargs
-    # ):
-    #     return DataLoader(
-    #         cls(
-    #             random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device,
-    #             n_inputs=n_inputs, seed=seed, max_generation_nb=max_generation_nb, do_symetric_output=do_symetric_output,
-    #         ),
-    #         batch_size=batch_size, num_workers=num_workers,
-    #     )
     @classmethod
     def get_loader(
         cls,

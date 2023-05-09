@@ -25,7 +25,7 @@ print('Import modules...')
 from deep_morpho.datasets import (
     MnistMorphoDataset, MnistGrayScaleDataset, MnistClassifDataset, FashionMnistGrayScaleDataset,
     DiskorectDataset, AxspaROISimpleDataset, AxspaROISimpleDataset, CIFAR10Dataset, CIFAR100Dataset,
-    MnistClassifChannelDataset, SticksNoisedGeneratorDataset
+    MnistClassifChannelDataset, NoistiDataset
 )
 from deep_morpho.datasets.gray_to_channels_dataset import LevelsetValuesEqualIndex
 # from deep_morpho.datasets.mnist_dataset import MnistMorphoDataset, MnistGrayScaleDataset, MnistClassifDataset
@@ -145,7 +145,7 @@ def get_dataloader(args):
         )
 
     elif args['dataset_type'] == "sticks_noised":
-        trainloader = SticksNoisedGeneratorDataset.get_loader(
+        trainloader = NoistiDataset.get_loader(
             batch_size=args['batch_size'],
             n_inputs=args['n_inputs'],
             max_generation_nb=args['nb_batch_indep'],

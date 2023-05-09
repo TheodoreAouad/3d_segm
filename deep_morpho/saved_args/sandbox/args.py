@@ -7,7 +7,7 @@ import torchvision.transforms as transforms
 import os
 
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
-from deep_morpho.datasets.sticks_noised_dataset import SticksNoisedGeneratorDataset
+from deep_morpho.datasets.sticks_noised_dataset import NoistiDataset
 from deep_morpho.datasets.gray_to_channels_dataset import LevelsetValuesEqualIndex
 from deep_morpho.loss import (
     MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization,
@@ -49,8 +49,10 @@ all_args['n_try'] = [0]
 
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
-    # "tests",
-    "Bimonn_exp_78/bnn/"
+    # "debug",
+    # "Bimonn_exp_78/bnn/"
+    "Bimonn_exp_79/sandbox/",
+    # "Bimonn_exp_78/sandbox/"
     # "Bimonn_exp_77/iccv_2023/",
     # "Bimonn_exp_77/bimonn_dense/",
     # "Bimonn_exp_77/bimonn_bisel_dense/",
@@ -65,27 +67,29 @@ all_args["model"] = [
     # "BimonnDense",
     # "BimonnDenseNotBinary",
     # "BiMoNNClassifierLastLinearNotBinary",
-    # "BimonnBiselDenseNotBinary",
+    "BimonnBiselDenseNotBinary",
     # "ConvNetLastLinear",
     # "ConvNetBinaryConnectCifar10",
     # "MLPBinaryConnectMNIST",
     # "ResNet18",
     # "ResNet34",
     # "ResNet50",
-    "BNNConv",
+
+    ###### BIBLIO ######
+    # "BNNConv",
 ]
 
 all_args['dataset'] = [
     # 'diskorectdataset',
-    'mnistmorphodataset',
+    # 'mnistmorphodataset',
+    # "noistidataset",
     # 'mnistgrayscaledataset',
     # 'fashionmnistgrayscaledataset',
     # 'axsparoidataset',
     # 'axsparoisimpledataset',
-    # AxspaROISimpleDataset
 
     # 'mnistclassifdataset',
-    # 'mnistclassifchanneldataset',
+    'mnistclassifchanneldataset',
 
     # 'cifar10dataset',
     # 'cifar100dataset',
@@ -140,6 +144,8 @@ all_args['channel_classif_args'] = [
     }
 ]
 
+
+##### Noisti Args #####
 all_args['sticks_noised_angles'] = [
     [0, 45, 90]
 ]
@@ -154,16 +160,18 @@ all_args['sticks_noised_args'] = [
         "noise_proba": 0.1,
     }
 ]
-all_args['n_steps'] = [10000]
+########################
+
+
+all_args['n_steps'] = [1000]  # for Diskorect
 all_args['nb_batch_indep'] = [0]
 all_args["n_inputs_train"] = [50_000]
 all_args["n_inputs_val"] = [10_000]
 all_args["n_inputs_test"] = [10_000]
 
-
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-3,
+    1e-2,
     # 0.001,
     # 1e-3,
     # 1e-4,
@@ -176,10 +184,10 @@ all_args['loss_data_str'] = [
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
-    # "BCELoss",
+    "BCELoss",
     # "CrossEntropyLoss",
     # "SquaredHingeLoss",
-    "MSELoss",
+    # "MSELoss",
     # "DiceLoss",
     # "MaskedDiceLoss",
     # "NormalizedDiceLoss",
@@ -201,10 +209,12 @@ all_args['num_workers'] = [
 ]
 all_args['freq_imgs'] = [500]
 all_args['freq_hist'] = [500]
-all_args["freq_update_binary_batch"] = [500]
+all_args["freq_update_binary_batch"] = [
+    None
+]
 all_args["freq_update_binary_epoch"] = [
-    # 1,
-    None,
+    1,
+    # None,
 ]
 all_args['freq_scalars'] = [50]
 # all_args['max_epochs.trainer'] = [1]
@@ -222,7 +232,8 @@ all_args['early_stopping_on'] = [
 # MODEL ARGS
 
 all_args["do_batchnorm"] = [  # For BNNConv
-    False
+    True,
+    # False,
 ]
 
 all_args["num_units"] = [  # For MLPBinaryConnectMNIST
@@ -239,8 +250,8 @@ all_args["apply_last_activation"] = [
     True,
 ]
 all_args["do_maxpool"] = [
-    # True,
-    False,
+    True,
+    # False,
 ]
 
 all_args['atomic_element'] = [
@@ -253,17 +264,19 @@ all_args['n_atoms'] = [
 ]
 
 all_args['kernel_size'] = [
-    # 5
-    "adapt",
+    3
+    # "adapt",
 ]
 all_args['channels'] = [
     # 'adapt',
-    [1, 3, 3, 1],
-    [1, 3, 1],
-    [1, 10, 1],
+    # [1, 3, 3, 1],
+    # [1, 3, 1],
+    # [1, 10, 1],
+    # [1, 1],
+    # [1, 10, 1],
     # [1000, 1000],
-    # [100, 100],
-    # [50],
+    [100, 100],
+    # [50, 50],
     # [200],
     # [100, 100],
     # [50, ],
@@ -280,8 +293,8 @@ all_args['closest_selem_method'] = [
 ]
 
 all_args['bias_optim_mode'] = [
-    # BiseBiasOptimEnum.RAW,
-    BiseBiasOptimEnum.POSITIVE,
+    BiseBiasOptimEnum.RAW,
+    # BiseBiasOptimEnum.POSITIVE,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
@@ -296,8 +309,8 @@ all_args['weights_optim_mode'] = [
 
 all_args['threshold_mode'] = [
     {
-        # "weight": 'identity',
-        "weight": 'softplus',
+        "weight": 'identity',
+        # "weight": 'softplus',
         "activation": 'tanh',
         # "activation": 'sigmoid',
     },
@@ -320,10 +333,10 @@ all_args['initializer_method'] = [
 all_args['initializer_args'] = [
     # force operations at init
     {
-        # "bise_init_method": InitBiseEnum.KAIMING_UNIFORM,
+        "bise_init_method": InitBiseEnum.KAIMING_UNIFORM,
         # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC,
 
-        "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
+        # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
         "lui_init_method": InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS,
         "bise_init_args": {"ub": 1e-2, "max_output_value": 0.95, "p_for_init": "auto"},
 
