@@ -259,13 +259,14 @@ class NetLightning(ObsLightningModule):
             return super().load_from_checkpoint(path, *args, **kwargs)
 
         model_type = checkpoint["hyper_parameters"]["model_type"].lower()
-        if model_type not in NetLightning.listing():
-            return NetLightning.select(model_type).load_from_checkpoint_ignore_keys(
-                path, ignore_keys=[("hyper_parameters", "model_type")]
-                *args, **kwargs
-            )
+        # if model_type not in NetLightning.listing():
+        #     return NetLightning.select(model_type).load_from_checkpoint_ignore_keys(
+        #         path, ignore_keys=[("hyper_parameters", "model_type")]
+        #         *args, **kwargs
+        #     )
 
-        return NetLightning.select(model_type).load_from_checkpoint_ignore_keys(
+        # return NetLightning.select(model_type).load_from_checkpoint_ignore_keys(
+        return cls.select(model_type).load_from_checkpoint_ignore_keys(
             path, ignore_keys=[("hyper_parameters", "model_type")], model_kwargs=model_kwargs,
             *args, **kwargs
         )

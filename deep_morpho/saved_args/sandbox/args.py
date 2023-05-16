@@ -51,8 +51,9 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
     # "debug",
     # "Bimonn_exp_78/bnn/"
-    "Bimonn_exp_79/sandbox/",
-    # "Bimonn_exp_78/sandbox/"
+    # "Bimonn_exp_79/bimonn-equivalent-binaryconnect/",
+    # "Bimonn_exp_78/equivalent-params-sota/"
+    "Bimonn_exp_78/raw_weights/"
     # "Bimonn_exp_77/iccv_2023/",
     # "Bimonn_exp_77/bimonn_dense/",
     # "Bimonn_exp_77/bimonn_bisel_dense/",
@@ -65,9 +66,9 @@ all_args["model"] = [
     # "BiMoNNClassifierLastLinear",
     # "BiMoNN",
     # "BimonnDense",
-    # "BimonnDenseNotBinary",
+    "BimonnDenseNotBinary",
     # "BiMoNNClassifierLastLinearNotBinary",
-    "BimonnBiselDenseNotBinary",
+    # "BimonnBiselDenseNotBinary",
     # "ConvNetLastLinear",
     # "ConvNetBinaryConnectCifar10",
     # "MLPBinaryConnectMNIST",
@@ -275,9 +276,10 @@ all_args['channels'] = [
     # [1, 1],
     # [1, 10, 1],
     # [1000, 1000],
-    [100, 100],
+    # [587, 2048, 2048,],  # Nb of channels for Dense Mnist for BinaryConnect, Courbariaux and Bengio 2015
+    # [415],  # Nb of channels for fc1 of Laydevant et al. 2021
     # [50, 50],
-    # [200],
+    [200],
     # [100, 100],
     # [50, ],
     # [50, 50],
@@ -337,7 +339,7 @@ all_args['initializer_args'] = [
         # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC,
 
         # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
-        "lui_init_method": InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS,
+        # "lui_init_method": InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS,
         "bise_init_args": {"ub": 1e-2, "max_output_value": 0.95, "p_for_init": "auto"},
 
         # "bise_init_method": InitBiseEnum.ELLIPSE_ROOT,

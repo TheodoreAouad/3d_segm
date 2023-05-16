@@ -182,7 +182,7 @@ class BiseClosestMinDistBounds(BiseClosestSelemWithDistanceAgg):
         super().__init__(distance_fn=distance_fn_to_bounds, distance_agg_fn=distance_agg_min, *args, **kwargs)
 
 
-class BiseClosestActivationSpaceIterated(BiseClosestSelemWithDistanceAgg):
+class BiseClosestActivationSpaceIteratedPositive(BiseClosestSelemWithDistanceAgg):
 
     def __init__(self, *args, **kwargs):
         super().__init__(distance_agg_fn=distance_agg_min, *args, **kwargs)
@@ -191,6 +191,7 @@ class BiseClosestActivationSpaceIterated(BiseClosestSelemWithDistanceAgg):
     def solve(self, weights: np.ndarray, bias: np.ndarray, operation: str, S: np.ndarray, v1: float, v2: float) -> float:
         if operation == "erosion":
             bias = weights.sum() - bias
+        # print("banana")
 
         weights = weights.flatten()
         S = S.flatten()
@@ -198,17 +199,30 @@ class BiseClosestActivationSpaceIterated(BiseClosestSelemWithDistanceAgg):
         Wvar = cp.Variable(weights.shape)
         bvar = cp.Variable(1)
 
-        constraint0 = [cp.sum(Wvar[~S]) <= bvar]
-        constraintsT = [bvar <= Wvar[S]]
-        constraintsK = [Wvar >= 0]
+        if operation == "dilation":
+            constraints = self.dilation_constraints(Wvar, bvar, S)
+        elif operation == "erosion":
+            constraints = self.erosion_constraints(Wvar, bvar, S)
+        else:
+            raise ValueError("operation must be dilation or erosion")
 
-        constraints = constraint0 + constraintsT + constraintsK
-
-        objective = cp.Minimize(1/2 * cp.sum_squares(Wvar - weights) + 1/2 * cp.sum_squares(bvar - bias))
+        objective = cp.Minimize(1/2 * cp.sum_squares(Wvar - weights) + 1/2 * cp.sum_squares(bvar + bias))
         prob = cp.Problem(objective, constraints)
         prob.solve()
 
         return prob.value
+
+    def dilation_constraints(self, Wvar: cp.Variable, bvar: cp.Variable, S: np.ndarray):
+        self.constraint0 = [cp.sum(Wvar[~S]) <= bvar]
+        self.constraintsT = [bvar <= Wvar[S]]
+        self.constraintsK = [Wvar >= 0]
+        return self.constraint0 + self.constraintsT + self.constraintsK
+
+    def erosion_constraints(self, Wvar: cp.Variable, bvar: cp.Variable, S: np.ndarray):
+        self.constraint0 = [cp.sum(Wvar[S]) >= bvar]
+        self.constraintsT = [cp.sum(Wvar) - Wvar[S] <= bvar]
+        self.constraintsK = [Wvar >= 0]
+        return self.constraint0 + self.constraintsT + self.constraintsK
 
 
 class BiseClosestMinDistOnCstOld(BiseClosestSelemWithDistanceAgg):
