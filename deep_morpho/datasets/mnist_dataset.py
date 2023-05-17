@@ -217,37 +217,6 @@ class MnistClassifDataset(MNIST, DataModule):
     def processed_folder(self) -> str:
         return join(self.root, 'processed')
 
-    # @staticmethod
-    # def get_loader(
-    #     batch_size, train, preprocessing, indexes=None, first_idx=0, n_inputs=None,
-    #     threshold=.5, invert_input_proba=0, do_symetric_output=False,
-    #     size=(28, 28), shuffle=False, num_workers=0, **kwargs):
-    #     if n_inputs == 0:
-    #         return DataLoader([])
-    #     return DataLoader(
-    #         MnistClassifDataset(
-    #             n_inputs=n_inputs, first_idx=first_idx, indexes=indexes,
-    #             train=train, threshold=threshold, invert_input_proba=invert_input_proba,
-    #             preprocessing=preprocessing, do_symetric_output=do_symetric_output, size=size,
-    #         ), batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
-
-    # @staticmethod
-    # def get_train_val_test_loader(n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
-    #     all_train_idxs = list(range(min(n_inputs_train + n_inputs_val, 60_000)))
-    #     shuffle(all_train_idxs)
-
-    #     train_idxes = all_train_idxs[:n_inputs_train]
-    #     val_idxes = all_train_idxs[n_inputs_train:n_inputs_train + n_inputs_val]
-
-    #     for key in ["first_idx", "n_inputs", "indexes", "train"]:
-    #         if key in kwargs:
-    #             del kwargs[key]
-
-    #     trainloader = MnistClassifDataset.get_loader(indexes=train_idxes, train=True, shuffle=True, *args, **kwargs)
-    #     valloader = MnistClassifDataset.get_loader(indexes=val_idxes, train=True, shuffle=False, *args, **kwargs)
-    #     testloader = MnistClassifDataset.get_loader(first_idx=0, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
-    #     return trainloader, valloader, testloader
-
 
 class MnistClassifChannelDataset(GrayToChannelDatasetBase, MNIST):
     def __init__(

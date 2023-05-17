@@ -64,6 +64,7 @@ class GrayToChannelDatasetBase(SelectIndexesDataset):
         levelset_handler_mode: LevelsetValuesHandler = LevelsetValuesEqualIndex,
         levelset_handler_args: Dict = {"n_values": 10},
         do_symetric_output: bool = False,
+        apply_one_hot_target: bool = True,
         *args, **kwargs
     ):
         self.levelset_handler_mode = levelset_handler_mode
@@ -72,6 +73,7 @@ class GrayToChannelDatasetBase(SelectIndexesDataset):
         self.levelset_handler_args["img"] = img
         self.levelset_handler = levelset_handler_mode(**levelset_handler_args)
         self.do_symetric_output = do_symetric_output
+        self.apply_one_hot_target = apply_one_hot_target
 
         assert hasattr(self, "data"), "Must have data attribute."
         super().__init__(*args, **kwargs)
@@ -148,9 +150,10 @@ class GrayToChannelDatasetBase(SelectIndexesDataset):
         # input_ = torch.tensor(input_).float()
         original_img = input_ + 0
 
-        target_int = target
-        target = torch.zeros(10)
-        target[target_int] = 1
+        if self.apply_one_hot_target:
+            target_int = target
+            target = torch.zeros(10)
+            target[target_int] = 1
 
         input_ = input_.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)
 
@@ -161,7 +164,8 @@ class GrayToChannelDatasetBase(SelectIndexesDataset):
 
         if self.do_symetric_output:
             input_ = 2 * input_ - 1
-            target = 2 * target - 1
+            if self.apply_one_hot_target:
+                target = 2 * target - 1
 
         input_.original = original_img
 

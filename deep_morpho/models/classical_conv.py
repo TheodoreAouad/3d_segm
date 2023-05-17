@@ -130,6 +130,62 @@ class ConvNetBinaryConnectCifar10(BinaryNN):
         return x
 
 
+class MLPBatchNormClassical(BinaryNN):
+    def __init__(
+        self,
+        input_size: Tuple[int, int, int],
+        channels: List[int],
+        n_classes: int,
+        activation_constructor: Callable = nn.ReLU,
+        alpha: float = .15,
+        epsilon: float = 1e-4,
+    ):
+        super().__init__()
+        self.input_size = input_size
+        self.n_classes = n_classes
+        self.alpha = alpha
+        self.epsilon = epsilon
+
+        self.flatten = nn.Flatten()
+
+        linear_blocks = []
+
+        linear_blocks.append(
+            nn.Sequential(
+                nn.Linear(in_features=input_size[0] * input_size[1] * input_size[2], out_features=channels[0]),
+                nn.BatchNorm1d(channels[0], eps=epsilon, momentum=alpha),
+                activation_constructor(),
+            )
+        )
+
+        for idx, neurons in enumerate(channels[1:]):
+            linear_blocks.append(
+                nn.Sequential(
+                    nn.Linear(in_features=channels[idx], out_features=neurons),
+                    nn.BatchNorm1d(neurons, eps=epsilon, momentum=alpha),
+                    activation_constructor(),
+                )
+            )
+
+        self.linear_blocks = nn.Sequential(*linear_blocks)
+
+        self.linear_last = nn.Sequential(
+            nn.Linear(in_features=channels[-1], out_features=n_classes),
+            nn.BatchNorm1d(n_classes, eps=epsilon, momentum=alpha),
+        )
+
+    def forward(self, x: torch.Tensor, *args, **kwargs) -> torch.Tensor:
+        x = self.flatten(x)
+        x = self.linear_blocks(x)
+        x = self.linear_last(x)
+
+        return x
+
+    @property
+    def num_units(self) -> List[int]:
+        return self.channels
+
+
 class MLPBinaryConnectMNIST(BinaryNN):
     def __init__(
         self,

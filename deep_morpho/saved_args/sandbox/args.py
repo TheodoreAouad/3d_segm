@@ -53,7 +53,9 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_78/bnn/"
     # "Bimonn_exp_79/bimonn-equivalent-binaryconnect/",
     # "Bimonn_exp_78/equivalent-params-sota/"
-    "Bimonn_exp_78/raw_weights/"
+    # "Bimonn_exp_78/raw_weights/"
+    "Bimonn_exp_78/sandbox/"
+    # "Bimonn_exp_78/baseline/"
     # "Bimonn_exp_77/iccv_2023/",
     # "Bimonn_exp_77/bimonn_dense/",
     # "Bimonn_exp_77/bimonn_bisel_dense/",
@@ -61,23 +63,29 @@ all_args['experiment_name'] = [
 ]
 
 all_args["model"] = [
+    ##### MORPHO ####
+    # "BiMoNN",
+
+    ##### CLASSIFIERS #####
     # "BiMoNNClassifierMaxPoolNotBinary",
     # "BiMoNNClassifierMaxPool",
     # "BiMoNNClassifierLastLinear",
-    # "BiMoNN",
     # "BimonnDense",
     "BimonnDenseNotBinary",
     # "BiMoNNClassifierLastLinearNotBinary",
     # "BimonnBiselDenseNotBinary",
     # "ConvNetLastLinear",
-    # "ConvNetBinaryConnectCifar10",
-    # "MLPBinaryConnectMNIST",
+
+    ##### CLASSICAL MODELS ####
+    # "MLPBatchNormClassical",
     # "ResNet18",
     # "ResNet34",
     # "ResNet50",
 
     ###### BIBLIO ######
     # "BNNConv",
+    # "MLPBinaryConnectMNIST",
+    # "ConvNetBinaryConnectCifar10",
 ]
 
 all_args['dataset'] = [
@@ -103,6 +111,12 @@ all_args['dataset'] = [
 
 # DATA ARGS
 all_args['morp_operation'] = morp_operations
+
+# TODO: put in an args enforcer
+all_args['apply_one_hot_target'] = [
+    False,  # For cross entropy loss
+    # True,
+]
 
 all_args['preprocessing'] = [  # for axspa roi
     None,
@@ -172,7 +186,7 @@ all_args["n_inputs_test"] = [10_000]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-2,
+    1e-1,
     # 0.001,
     # 1e-3,
     # 1e-4,
@@ -185,8 +199,8 @@ all_args['loss_data_str'] = [
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
-    "BCELoss",
-    # "CrossEntropyLoss",
+    # "BCELoss",
+    "CrossEntropyLoss",
     # "SquaredHingeLoss",
     # "MSELoss",
     # "DiceLoss",
@@ -279,7 +293,10 @@ all_args['channels'] = [
     # [587, 2048, 2048,],  # Nb of channels for Dense Mnist for BinaryConnect, Courbariaux and Bengio 2015
     # [415],  # Nb of channels for fc1 of Laydevant et al. 2021
     # [50, 50],
-    [200],
+    [1000],
+    # [4096],
+    # [1975],  # Baseline for the best dense bimonn on mnist
+    # [2048, 2048, 2048],
     # [100, 100],
     # [50, ],
     # [50, 50],
@@ -295,8 +312,8 @@ all_args['closest_selem_method'] = [
 ]
 
 all_args['bias_optim_mode'] = [
-    BiseBiasOptimEnum.RAW,
-    # BiseBiasOptimEnum.POSITIVE,
+    # BiseBiasOptimEnum.RAW,
+    BiseBiasOptimEnum.POSITIVE,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
@@ -311,9 +328,10 @@ all_args['weights_optim_mode'] = [
 
 all_args['threshold_mode'] = [
     {
-        "weight": 'identity',
-        # "weight": 'softplus',
+        # "weight": 'identity',
+        "weight": 'softplus',
         "activation": 'tanh',
+        # "activation": 'tanh',
         # "activation": 'sigmoid',
     },
 ]
@@ -335,11 +353,11 @@ all_args['initializer_method'] = [
 all_args['initializer_args'] = [
     # force operations at init
     {
-        "bise_init_method": InitBiseEnum.KAIMING_UNIFORM,
+        # "bise_init_method": InitBiseEnum.KAIMING_UNIFORM,
         # "bise_init_method": InitBiseEnum.CUSTOM_HEURISTIC,
 
-        # "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
-        # "lui_init_method": InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS,
+        "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
+        "lui_init_method": InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS,
         "bise_init_args": {"ub": 1e-2, "max_output_value": 0.95, "p_for_init": "auto"},
 
         # "bise_init_method": InitBiseEnum.ELLIPSE_ROOT,
