@@ -16,7 +16,7 @@ from general.utils import log_console, save_yaml
 from .load_model_fn import default_load_model_fn
 from .load_datamodule_fn import default_load_datamodule_fn
 from .load_observables_fn import default_load_observables_fn
-from .args_enforcers import ArgsEnforcer
+from.enforcers import ArgsEnforcer
 from general.nn.experiments.experiment_methods import ExperimentMethods
 
 
@@ -45,7 +45,7 @@ class ExperimentBase(ExperimentMethods):
         self.load_model_fn = load_model_fn
         self.load_datamodule_fn = load_datamodule_fn
         self.load_observables_fn = load_observables_fn
-        self.args_enforcers = args_enforcers
+        self.args_enforcers = self.args.get("args_enforcers", []) + args_enforcers
 
         name = self.get_experiment_name()
         self.tb_logger = TensorBoardLogger(dest_dir, name=name, default_hp_metric=False)

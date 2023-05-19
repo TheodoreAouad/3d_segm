@@ -5,7 +5,7 @@ from os.path import join
 
 import matplotlib.pyplot as plt
 
-from .args_enforcers import ArgsMorpho, ArgsDiskorect, ArgsNoisti
+from.enforcers import ArgsMorpho, ArgsDiskorect, ArgsNoisti
 from .experiment_base import ExperimentBase
 from .load_observables_fn import (
     load_observables_bimonn_morpho_binary, load_observables_bimonn_morpho_grayscale, load_observables_morpho_binary,

@@ -1,7 +1,7 @@
 from .experiment_base import ExperimentBase
 from .load_observables_fn import load_observables_classification_bimonn, load_observables_classification_channel_bimonn
 from .load_model_fn import load_model_bimonn_classical_classification
-from .args_enforcers import ArgsClassification, ArgsClassifChannel, ArgsClassifActivation
+from.enforcers import ArgsClassification, ArgsClassifChannel, ArgsClassifActivation
 
 
 class ExperimentClassification(ExperimentBase):

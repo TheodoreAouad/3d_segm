@@ -7,7 +7,7 @@ import numpy as np
 import cvxpy as cp
 
 if TYPE_CHECKING:
-    from deep_morpho_old.bise import BiSE
+    from deep_morpho.bise import BiSE
     import torch
 
 

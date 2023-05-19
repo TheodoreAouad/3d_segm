@@ -16,7 +16,7 @@ from .experiment_morpho import (
 )
 from .experiment_classification import ExperimentClassification, ExperimentClassificationChannel
 from .context import Task
-from .args_enforcers import (
+from.enforcers import (
     ArgsMnist, ArgsCifar, ArgsSymetricBinary
 )
 from general.nn.experiments.experiment_methods import ExperimentMethods
