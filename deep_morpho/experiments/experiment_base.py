@@ -16,7 +16,7 @@ from general.utils import log_console, save_yaml
 from .load_model_fn import default_load_model_fn
 from .load_datamodule_fn import default_load_datamodule_fn
 from .load_observables_fn import default_load_observables_fn
-from.enforcers import ArgsEnforcer
+from .enforcers import ArgsEnforcer
 from general.nn.experiments.experiment_methods import ExperimentMethods
 
 
@@ -146,6 +146,8 @@ class ExperimentBase(ExperimentMethods):
             self.model.model.numel_float() if hasattr(self.model.model, "numel_float")
             else sum([p.numel() for p in self.model.model.parameters() if p.requires_grad])
         )
+        self.args["float_params"] = nb_float
+        self.args["binary_params"] = nb_binary
         self.log_console(
             f"Binarizable parameters: {nb_binary} / {nb_float} = {nb_binary/nb_float:.4f}"
         )

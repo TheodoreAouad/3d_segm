@@ -103,4 +103,4 @@ class ArgsEnforcersCurrent(ArgsEnforcer):
         self.enforcers.append(enforce_fn)
 
 
-enforcers = [ArgsEnforcersCurrent()]
+enforcers = [[ArgsEnforcersCurrent()]]

@@ -30,6 +30,10 @@ def arctan_threshold_inverse(y):
     return torch.tan((y - 1/2) * pi)
 
 
+def identity_threshold_inverse(y):
+    return y
+
+
 def relu_threshold_inverse(y):
     return y
 
