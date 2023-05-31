@@ -29,25 +29,39 @@ class ActivatednessObservable(Observable):
         layers = self._get_layers(pl_module)
 
 
-        self.last["all"] = {"n_dilation": 0, "n_erosion": 0, "n_activated": 0, "n_total": 0, }
+        self.last["all"] = {
+            "n_bise_dilation": 0, "n_bise_erosion": 0, "n_bise_activated": 0, "n_bise_total": 0,
+            "n_params_activated": 0, "n_params_total": 0,
+        }
         for layer_idx, layer in enumerate(layers):
-            self.last[layer_idx] = {"n_dilation": 0, "n_erosion": 0, "n_activated": 0, "n_total": 0, }
+            self.last[layer_idx] = {
+                "n_bise_dilation": 0, "n_bise_erosion": 0, "n_bise_activated": 0, "n_bise_total": 0,
+                "n_params_activated": 0, "n_params_total": 0,
+            }
             for module_ in layer.modules():
                 if isinstance(module_, BiSEBase) and not isinstance(module_, NotBinaryNN):
-                    is_activated = module_.is_activated
-                    self.last[layer_idx]["n_dilation"] += (module_.learned_operation[is_activated] == module_.operation_code["dilation"]).sum()
-                    self.last[layer_idx]["n_erosion"] += (module_.learned_operation[is_activated] == module_.operation_code["erosion"]).sum()
+                    # is_activated = module_.is_activated
+                    # self.last[layer_idx]["n_dilation"] += (module_.learned_operation[is_activated] == module_.operation_code["dilation"]).sum()
+                    # self.last[layer_idx]["n_erosion"] += (module_.learned_operation[is_activated] == module_.operation_code["erosion"]).sum()
 
-                    self.last[layer_idx]["n_activated"] += self.last[layer_idx]["n_dilation"] + self.last[layer_idx]["n_erosion"]
-                    self.last[layer_idx]["n_total"] += len(is_activated)
+                    # self.last[layer_idx]["n_activated"] += self.last[layer_idx]["n_dilation"] + self.last[layer_idx]["n_erosion"]
+                    # self.last[layer_idx]["n_total"] += len(is_activated)
+                    self.last[layer_idx]["n_bise_dilation"] += module_.n_dilation_activated
+                    self.last[layer_idx]["n_bise_erosion"] += module_.n_erosion_activated
+                    self.last[layer_idx]["n_bise_activated"] += module_.n_bise_activated
+                    self.last[layer_idx]["n_bise_total"] += module_.n_bise
+
+                    self.last[layer_idx]["n_params_activated"] += module_.n_params_activated
+                    self.last[layer_idx]["n_params_total"] += module_.numel_float()
 
             for key, value in self.last[layer_idx].items():
                 self.last["all"][key] += value
 
             self.last[layer_idx].update({
-                "ratio_dilation": self.last[layer_idx]["n_dilation"] / (self.last[layer_idx]["n_total"] + 1e-5),
-                "ratio_erosion": self.last[layer_idx]["n_erosion"] / (self.last[layer_idx]["n_total"] + 1e-5),
-                "ratio_activated": self.last[layer_idx]["n_activated"] / (self.last[layer_idx]["n_total"] + 1e-5),
+                "ratio_bise_dilation": self.last[layer_idx]["n_bise_dilation"] / (self.last[layer_idx]["n_bise_total"] + 1e-5),
+                "ratio_bise_erosion": self.last[layer_idx]["n_bise_erosion"] / (self.last[layer_idx]["n_bise_total"] + 1e-5),
+                "ratio_bise_activated": self.last[layer_idx]["n_bise_activated"] / (self.last[layer_idx]["n_bise_total"] + 1e-5),
+                "ratio_params_activated": self.last[layer_idx]["n_params_activated"] / (self.last[layer_idx]["n_params_total"] + 1e-5),
             })
 
             for key, value in self.last[layer_idx].items():
@@ -56,9 +70,10 @@ class ActivatednessObservable(Observable):
 
 
         self.last["all"].update({
-            "ratio_dilation": self.last["all"]["n_dilation"] / (self.last["all"]["n_total"] + 1e-5),
-            "ratio_erosion": self.last["all"]["n_erosion"] / (self.last["all"]["n_total"] + 1e-5),
-            "ratio_activated": self.last["all"]["n_activated"] / (self.last["all"]["n_total"] + 1e-5),
+            "ratio_bise_dilation": self.last["all"]["n_bise_dilation"] / (self.last["all"]["n_bise_total"] + 1e-5),
+            "ratio_bise_erosion": self.last["all"]["n_bise_erosion"] / (self.last["all"]["n_bise_total"] + 1e-5),
+            "ratio_bise_activated": self.last["all"]["n_bise_activated"] / (self.last["all"]["n_bise_total"] + 1e-5),
+            "ratio_params_activated": self.last["all"]["n_params_activated"] / (self.last["all"]["n_params_total"] + 1e-5),
         })
 
         for key, value in self.last["all"].items():

@@ -37,6 +37,9 @@ all_keys_line = [
     "closest_selem_distance_fn",
     "bias_optim_mode",
     "loss_data_str",
+    "binary_params",
+    "float_params",
+    "n_values",   # DEBUG: FOR LEVELST HANDLER, TODO: GENERALIZE
 ]
 bise_keys = ["init_weight_mode", "initializer_method", "initializer_args", "bise_init_method", "closest_selem_method", "closest_selem_distance_fn", "bias_optim_mode"]
 
@@ -92,7 +95,7 @@ def parse_yaml_dict_loss(yaml_str: str) -> Any:
 
 
 def parse_yaml_dict_loss_data(yaml_str: str) -> Any:
-    return regex_find_or_none(r"\n? loss_data[^\n]+\.(\w+)\n", yaml_str)
+    return regex_find_or_none(r"\n?   loss_data[^\n]+\.(\w+)\n", yaml_str)
 
 
 def parse_yaml_dict_optimizer(yaml_str: str) -> Any:

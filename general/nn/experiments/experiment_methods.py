@@ -68,20 +68,13 @@ class ExperimentMethods(ABC):
 
         return list(subclasses)
 
-    # TODO: if *args or **kwargs present, go see the parent class arguments
     @classmethod
     def default_args(cls) -> Dict[str, dict]:
         """Return the default arguments of the model, in the format of argparse.ArgumentParser"""
         res = {}
         for name, p in inspect.signature(cls.__init__).parameters.items():
             if p.kind in [inspect._ParameterKind.VAR_POSITIONAL, inspect._ParameterKind.VAR_KEYWORD]:
-                # if len(cls.__bases__) > 1:
-                #     warnings.warn(""
-                #         "Multiple inheritance is not supported."
-                #         "Only the first parent class arguments will be transmitted."
-                #     "")
                 for parent_class in cls.__bases__:
-                    # if isinstance(parent_class, ExperimentMethods):
                     if parent_class in ExperimentMethods.listing_subclasses():
                         res.update({k: v for k, v in parent_class.default_args().items() if k not in res})
 
@@ -101,9 +94,6 @@ class ExperimentMethods(ABC):
 
                     if (p.annotation == bool) or (p.annotation == Optional[bool]):
                         param_dict["type"] = cls.convert_to_bool_or_str_fn()
-
-                    # if p.annotation in [bool, int, float, str]:
-                    #     param_dict["type"] = cls.convert_or_str_fn(p.annotation)
 
                     if isinstance(p.annotation, EnumMeta) or (p.annotation == Optional[EnumMeta]):
                         param_dict["type"] = cls.enum_to_str_fn(p.annotation)
@@ -140,9 +130,3 @@ class ExperimentMethods(ABC):
         def enum_to_str(string) -> str:
             return enum[string]
         return enum_to_str
-
-
-    # @staticmethod
-    # def str_to_list(string: str) -> List[str]:
-    #     """Convert a string to a list of strings."""
-    #     return [s.strip() for s in string.split(",") if s.strip() != ""]

@@ -31,12 +31,13 @@ all_args['n_try'] = [0]
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
     # "debug",
+    "Bimonn_exp_79/sandbox/0/"
     # "Bimonn_exp_78/bnn/"
     # "Bimonn_exp_79/bimonn-equivalent-binaryconnect/",
     # "Bimonn_exp_78/equivalent-params-sota/"
     # "Bimonn_exp_78/raw_weights/"
     # "Bimonn_exp_78/levelset_numbers/"
-    "Bimonn_exp_78/grid_search/"
+    # "Bimonn_exp_78/grid_search/"
     # "Bimonn_exp_78/baseline/"
     # "Bimonn_exp_77/iccv_2023/",
     # "Bimonn_exp_77/bimonn_dense/",
@@ -53,8 +54,8 @@ all_args["model"] = [
     # "BiMoNNClassifierMaxPool",
     # "BiMoNNClassifierLastLinear",
     # "BimonnDense",
-    "BimonnDenseNotBinary",
-    # "BiMoNNClassifierLastLinearNotBinary",
+    # "BimonnDenseNotBinary",
+    "BiMoNNClassifierLastLinearNotBinary",
     # "BimonnBiselDenseNotBinary",
     # "ConvNetLastLinear",
 
@@ -138,7 +139,7 @@ all_args['channel_classif_args'] = [
     {
         "levelset_handler_mode": LevelsetValuesEqualIndex,
         # "levelset_handler_args": {"n_values": 10},
-        "levelset_handler_args": {"n_values": 20},
+        "levelset_handler_args": {"n_values": 10},
     }
 ]
 
@@ -183,7 +184,7 @@ all_args['loss_data_str'] = [
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
     "BCELoss",
-    "CrossEntropyLoss",
+    # "CrossEntropyLoss",
     # "SquaredHingeLoss",
     # "MSELoss",
     # "DiceLoss",
@@ -254,7 +255,7 @@ all_args["do_maxpool"] = [
 
 all_args['atomic_element'] = [
     "bisel",
-    "dual_bisel",
+    # "dual_bisel",
     # "sybisel",
 ]
 all_args['n_atoms'] = [
@@ -262,7 +263,7 @@ all_args['n_atoms'] = [
 ]
 
 all_args['kernel_size'] = [
-    3
+    5
     # "adapt",
 ]
 all_args['channels'] = [
@@ -273,14 +274,17 @@ all_args['channels'] = [
     # [1, 1],
     # [1, 10, 1],
     # [1000, 1000],
+    # [100],
     [200],
+    # [200, 200, 200],
+    # [300],
     # [415],  # Nb of channels for fc1 of Laydevant et al. 2021, 3.3M params, 10 level sets
     # [587, 2048, 2048,],  # 10 level sets, Nb of channels for Dense Mnist for BinaryConnect, Courbariaux and Bengio 2015, 10M params, 10 level sets
     # [50, 50],
     # [840],  # 5 level sets, 3.3M params
     # [1000, 2048, 2048,],  # 5 level sets, 10M params
-    [210],  # 20 level sets, 3.3M params
-    [330, 2048, 2048,],  # 20 level sets, 10M params
+    # [210],  # 20 level sets, 3.3M params
+    # [330, 2048, 2048,],  # 20 level sets, 10M params
     # [4096],  # 1 level sets, 3.3M params
     # [2048, 2048, 2048],  # 1 level sets, 10M params
     # [1975],  # Baseline for the best dense bimonn on mnist
@@ -301,8 +305,8 @@ all_args['closest_selem_method'] = [
 all_args['bias_optim_mode'] = [
     # BiseBiasOptimEnum.RAW,
     BiseBiasOptimEnum.POSITIVE,
-    BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
-    BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+    # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
+    # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]
 all_args['bias_optim_args'] = [
     {"offset": 0}

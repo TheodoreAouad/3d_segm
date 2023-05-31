@@ -123,6 +123,26 @@ class BiSEBase(BinaryNN):
 
         # self.update_binary_selems()
 
+    @property
+    def n_params_activated(self) -> int:
+        return self.weight[self.is_activated].numel() + self.bias[self.is_activated].numel() + self.activation_P[self.is_activated].numel()
+
+    @property
+    def n_dilation_activated(self) -> int:
+        return (self.is_activated & (self.operation == self.operation_code["dilation"])).sum()
+
+    @property
+    def n_erosion_activated(self) -> int:
+        return (self.is_activated & (self.operation == self.operation_code["erosion"])).sum()
+
+    @property
+    def n_bise_activated(self) -> int:
+        return self.is_activated.sum()
+
+    @property
+    def n_bise(self) -> int:
+        return self.weight.shape[0]
+
     def _specific_numel_binary(self):
         return self.weight.numel() + self.bias.numel() + self.activation_P.numel()
 

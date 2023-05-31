@@ -220,6 +220,8 @@ class DisplayResults:
 
         table_html = ''
         results_html = ''
+        summary_html = ''
+        boxplot_html = ''
 
         if show_table:
             table_html = self.write_all_tables(results_dict, changing_args)
@@ -312,12 +314,28 @@ class DisplayResults:
         return res
 
     @staticmethod
+    def update_results_BinaryModeMetricClassifChannel(path):
+        res = {}
+
+        file_metrics = join(path, "metrics.json")
+        if os.path.exists(file_metrics):
+            # res['dice'] = load_json(file_metrics)["dice"]
+            for state, metrics in load_json(file_metrics).items():
+                for metric_name, metric_value in metrics.items():
+                    res[f"binary_{state}_{metric_name}"] = metric_value
+
+        return res
+
+    @staticmethod
     def update_results_CalculateAndLogMetrics(path):
         res = {}
 
         file_metrics = join(path, "metrics.json")
         if os.path.exists(file_metrics):
-            res['dice'] = load_json(file_metrics)["dice"]
+            # res['dice'] = load_json(file_metrics)["dice"]
+            for state, metrics in load_json(file_metrics).items():
+                for metric_name, metric_value in metrics.items():
+                    res[f"{state}_{metric_name}"] = metric_value
 
         return res
 
@@ -327,7 +345,10 @@ class DisplayResults:
 
         file_convergence_metrics = join(path, "convergence_step.json")
         if os.path.exists(file_convergence_metrics):
-            res['convergence_dice'] = load_json(file_convergence_metrics)['train']['dice']
+            # res['convergence_dice'] = load_json(file_convergence_metrics)['train']['dice']
+            for state, metrics in load_json(file_convergence_metrics).items():
+                for metric_name, metric_value in metrics.items():
+                    res[f"convergence_{state}_{metric_name}"] = metric_value
 
         return res
 
@@ -433,7 +454,8 @@ class DisplayResults:
 
         return res
 
-    def get_results_from_tensorboard(self, tb_path: str, load_long_args: bool = True,):
+    @classmethod
+    def get_results_from_tensorboard(cls, tb_path: str, load_long_args: bool = True,):
         res = {
             "args": {},
             "tb_path": None,
@@ -477,30 +499,31 @@ class DisplayResults:
             "ConvergenceBinary",
             "InputAsPredMetric",
             "CalculateAndLogMetrics",
+            "BinaryModeMetricClassifChannel",
             "ConvergenceMetrics",
             "ShowSelemBinary",
             "BatchEarlyStopping",
         ]:
             if not load_long_args and obs_name in long_args:
                 continue
-            res.update(getattr(self, f"update_results_{obs_name}")(join(obs_path, obs_name)))
+            res.update(getattr(cls, f"update_results_{obs_name}")(join(obs_path, obs_name)))
 
         for obs_name in [
             "loss_train_loss",
             "loss_train_loss_data",
         ]:
-            res.update(getattr(self, f"update_results_{obs_name}")(tb_path))
+            res.update(getattr(cls, f"update_results_{obs_name}")(tb_path))
 
-        # res.update(self.update_results_target_SE(join(tb_path, "target_SE")))
+        # res.update(cls.update_results_target_SE(join(tb_path, "target_SE")))
         if load_long_args:
-            res.update(self.update_results_target_operation(join(tb_path, "morp_operations")))
-            res.update(self.update_results_PlotBimonn(tb_path))
+            res.update(cls.update_results_target_operation(join(tb_path, "morp_operations")))
+            res.update(cls.update_results_PlotBimonn(tb_path))
 
         return res
 
 
 
-    def save(self, tb_paths: List[str], save_path: str, title: str = "", show_table: bool = True, show_details: bool = True):
+    def save(self, tb_paths: List[str], save_path: str, title: str = "", show_table: bool = True, show_details: bool = True, show_boxplot: bool = True):
         # results_dict = []
 
         # iterator = tb_paths
@@ -510,19 +533,20 @@ class DisplayResults:
         # for tb_path in iterator:
         #     results_dict.append(self.get_results_from_tensorboard(tb_path, load_long_args=show_details))
 
-        results_dict = self.get_all_results_from_tensorboard(tb_paths, load_long_args=show_details)
+        results_dict = self.get_all_results_from_tensorboard(tb_paths, load_long_args=show_details, verbose=self.verbose)
         # results_dict = [self.get_results_from_tensorboard(tb_path) for tb_path in tb_paths]
-        return self.write_html_from_dict_deep_morpho(results_dict, save_path, title, show_table, show_details)
+        return self.write_html_from_dict_deep_morpho(results_dict, save_path, title, show_table, show_details, show_boxplot=show_boxplot)
 
-    def get_all_results_from_tensorboard(self, tb_path_list: List[str], load_long_args: bool = True):
+    @classmethod
+    def get_all_results_from_tensorboard(cls, tb_path_list: List[str], load_long_args: bool = True, verbose: bool = True):
         results_dict = []
 
         iterator = tb_path_list
-        if self.verbose:
+        if verbose:
             iterator = tqdm(iterator, desc='Reading results')
 
         for tb_path in iterator:
-            results_dict.append(self.get_results_from_tensorboard(tb_path, load_long_args=load_long_args))
+            results_dict.append(cls.get_results_from_tensorboard(tb_path, load_long_args=load_long_args))
 
         return results_dict
 
@@ -533,8 +557,8 @@ class DisplayResults:
         df = pd.DataFrame(results_dict)
         df['dice'] = df['dice'].astype(float)
         df['binary_mode_dice'] = df['binary_mode_dice'].astype(float)
-        df['operation'] = df['experiment_subname'].apply(lambda x: pathlib.Path(x).parent.stem)
-        df['selem'] = df['experiment_subname'].apply(lambda x: pathlib.Path(x).stem)
+        df['operation'] = df['experiment_subname'].apply(lambda x: pathlib.Path(x).parent.stem if x is not None else None)  # TODO: handle when no operation
+        df['selem'] = df['experiment_subname'].apply(lambda x: pathlib.Path(x).stem if x is not None else None)  # TODO: handle when no selem
 
         return df
 
