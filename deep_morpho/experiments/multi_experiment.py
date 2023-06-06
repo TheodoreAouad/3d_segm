@@ -117,7 +117,7 @@ class MultiExperiment(ExperimentMethods):
         if LightningSTEConv.is_child(args["model"]):
             if args["dataset"] == "diskorectdataset":
                 return ExperimentSteDiskorect
-            
+
             if args["dataset"] == "noistidataset":
                 return ExperimentSteNoisti
 

@@ -129,11 +129,11 @@ class BiSEBase(BinaryNN):
 
     @property
     def n_dilation_activated(self) -> int:
-        return (self.is_activated & (self.operation == self.operation_code["dilation"])).sum()
+        return (self.is_activated & (self.learned_operation == self.operation_code["dilation"])).sum()
 
     @property
     def n_erosion_activated(self) -> int:
-        return (self.is_activated & (self.operation == self.operation_code["erosion"])).sum()
+        return (self.is_activated & (self.learned_operation == self.operation_code["erosion"])).sum()
 
     @property
     def n_bise_activated(self) -> int:

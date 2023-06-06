@@ -20,7 +20,8 @@ print(type(all_args.multi_args[0]["max_epochs"]))
 all_experiments = MultiExperiment(
     multi_args=all_args.multi_args,
     dest_dir="deep_morpho/results/results_tensorboards",
-    stop_on_error=True,
+    stop_on_error=False,
+    # stop_on_error=True,
     enforce_experiment_class=False,
     generate_new_folder=True,
 )

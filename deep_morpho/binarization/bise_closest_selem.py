@@ -290,6 +290,32 @@ class BiseClosestMinDistOnCst(BiseClosestSelemHandler):
         return (np.cumsum(w_values, axis=1) / np.sqrt(np.arange(1, 1+w_values.shape[1]))).argmax(1)
 
 
+    # @classmethod
+    # def compute_projection_constant(cls, weights: np.ndarray, bias: np.ndarray, verbose: bool = True,) -> (np.ndarray, np.ndarray, np.ndarray):
+    #     if verbose:
+    #         chans = tqdm(chans, leave=False, desc="Approximate binarization")
+
+    #     w_values = np.zeros((len(chans), np.prod(W.shape[1:])))
+    #     for chout_idx, _ in enumerate(chans):
+    #         w_value_tmp = np.unique(W[chout_idx])[::-1]
+    #         w_values[chout_idx, :len(w_value_tmp)] = w_value_tmp  # We assume that W don't repeat values. TODO: handle case with repeated values. Hint: add micro noise?
+
+    #     best_idx = self.find_best_index(w_values)
+    #     S = (W >= w_values[np.arange(w_values.shape[0]), best_idx, None, None, None])
+
+    #     best_dist_selem = self.distance_fn_selem(weights=W, S=S,)
+
+    #     wsum = W.reshape(W.shape[0], -1).sum(1)
+    #     final_operation = np.empty(len(chans), dtype=str)
+    #     final_operation[wsum / 2 >= -bias] = self.bise_module.operation_code["dilation"]
+    #     final_operation[wsum / 2 < -bias] = self.bise_module.operation_code["erosion"]
+
+    #     final_dist_bias = np.abs(-bias - wsum)
+    #     final_dist = best_dist_selem + final_dist_bias
+
+        # return S, final_operation, final_dist
+
+
     def find_closest_selem_and_operation(
         self, weights, bias, chans=None, v1=0, v2=1, verbose: bool = True,
     ):
@@ -316,10 +342,6 @@ class BiseClosestMinDistOnCst(BiseClosestSelemHandler):
         final_operation = np.empty(len(chans), dtype=str)
         final_operation[wsum / 2 >= -bias] = self.bise_module.operation_code["dilation"]
         final_operation[wsum / 2 < -bias] = self.bise_module.operation_code["erosion"]
-        # if -bias <= wsum / 2:
-        #     final_operation = "dilation"
-        # else:
-        #     final_operation = "erosion"
 
         final_dist_bias = np.abs(-bias - wsum)
         final_dist = best_dist_selem + final_dist_bias
