@@ -10,6 +10,8 @@ from deep_morpho.loss import (
     MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss, BCENormalizedLoss, DiceLoss, NormalizedDiceLoss
 )
 
+from general.nn.loss import LossHandler
+
 
 loss_dict = {
     "MaskedMSELoss": MaskedMSELoss,
@@ -82,7 +84,7 @@ class ArgsEnforcersCurrent(ArgsEnforcer):
 
             experiment.args['loss_data'] = loss_dict[experiment.args['loss_data_str']](**experiment.args["kwargs_loss"])
 
-            experiment.args['loss'] = {"loss_data": experiment.args['loss_data']}
+            experiment.args['loss'] = LossHandler({"loss_data": experiment.args['loss_data']})
 
             # if isinstance(experiment.args['threshold_mode'], str) or experiment.args['threshold_mode']['weight'] != "identity":
             #     experiment.args['loss_regu'] = "None"

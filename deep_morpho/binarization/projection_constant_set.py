@@ -20,9 +20,15 @@ class ProjectionConstantSet:
 
     @staticmethod
     def distance_fn_selem(weights: Union[np.ndarray, torch.tensor], S: Union[np.ndarray, torch.tensor], module_: ModuleType = np) -> float:
-        # We reshape to sum over all dimensions except the first one.
-        # weights = weights.reshape(weights.shape[0], -1)
-        # S = S.reshape(S.shape[0], -1)
+        """
+        Args:
+            weights (Union[np.ndarray, torch.tensor]): shape (nb_weights, nb_params_per_weight)
+            S (Union[np.ndarray, torch.tensor]): shape (nb_weights, nb_params_per_weight)
+            module_ (ModuleType, optional): Module to work with. Defaults to np.
+
+        Returns:
+            float: _description_
+        """
         return (weights ** 2).sum(1) - 1 / S.sum(1) * (module_.where(S, weights, 0).sum(axis=1)) ** 2
 
     @staticmethod
@@ -60,38 +66,28 @@ class ProjectionConstantSet:
         else:
             module_ = np
 
-
-        # w_values = module_.zeros((W.shape[0], W.shape[1:]))
         w_values = module_.zeros_like(W)
-
 
         iterate = range(W.shape[0])
         if verbose:
             iterate = tqdm(iterate, leave=False, desc="Approximate binarization")
 
         for chout_idx, _ in enumerate(iterate):
-            # w_value_tmp = module_.unique(W[chout_idx])[::-1]
             w_value_tmp = self.flip(module_.unique(W[chout_idx]))
             w_values[chout_idx, :len(w_value_tmp)] = w_value_tmp  # We assume that W don't repeat values. TODO: handle case with repeated values. Hint: add micro noise?
 
         best_idx = self.find_best_index(w_values, module_=module_)
         self.S = (W >= w_values[module_.arange(w_values.shape[0]), best_idx, None])
-        # S = (W >= w_values[module_.arange(w_values.shape[0]), best_idx, None, None, None])
 
         self.final_dist_weight = self.distance_fn_selem(weights=W, S=self.S, module_=module_)
 
         wsum = W.sum(1)
         self.final_operation = np.empty(W.shape[0], dtype=str)
         dilation_idx = np.array(wsum / 2 >= -bias)
-        # if 
-        #     dilation_idx = dilation_idx.detach().cpu().numpy()
-        
         if dilation_idx.any():
-            # self.final_operation[wsum / 2 >= -bias] = self.operation_code["dilation"]
             self.final_operation[dilation_idx] = self.operation_code["dilation"]
         if (~dilation_idx).any():
             self.final_operation[~dilation_idx] = self.operation_code["erosion"]
-            # self.final_operation[wsum / 2 < -bias] = cls.operation_code["erosion"]
 
         self.final_dist_bias = module_.abs(-bias - wsum)
         self.final_dist = self.final_dist_weight + self.final_dist_bias

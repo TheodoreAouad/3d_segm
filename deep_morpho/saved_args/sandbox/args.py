@@ -30,8 +30,8 @@ all_args['n_try'] = [0]
 
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
-    # "debug",
-    "Bimonn_exp_79/sandbox/1_/"
+    "debug",
+    # "Bimonn_exp_79/sandbox/1_/"
     # "Bimonn_exp_78/bnn/"
     # "Bimonn_exp_79/bimonn-equivalent-binaryconnect/",
     # "Bimonn_exp_78/equivalent-params-sota/"
@@ -54,8 +54,8 @@ all_args["model"] = [
     # "BiMoNNClassifierMaxPool",
     # "BiMoNNClassifierLastLinear",
     # "BimonnDense",
-    # "BimonnDenseNotBinary",
-    "BiMoNNClassifierLastLinearNotBinary",
+    "BimonnDenseNotBinary",
+    # "BiMoNNClassifierLastLinearNotBinary",
     # "BimonnBiselDenseNotBinary",
     # "ConvNetLastLinear",
 

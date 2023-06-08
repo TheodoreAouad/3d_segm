@@ -342,7 +342,8 @@ class BiseClosestMinDistOnCst(BiseClosestSelemHandler):
         W = weights.cpu().detach().numpy()[chans]
         bias = bias.cpu().detach().numpy()[chans]
 
-        S, final_operation, final_dist = ProjectionConstantSet.compute(W.reshape(W.shape[0], -1), bias, verbose=verbose)
+        proj = ProjectionConstantSet(W.reshape(W.shape[0], -1), bias).compute(verbose=verbose)
+        S, final_operation, final_dist = proj.S, proj.final_operation, proj.final_dist
         S = S.reshape(W.shape)
         return S, final_operation, final_dist
 

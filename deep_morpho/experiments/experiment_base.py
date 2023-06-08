@@ -47,15 +47,15 @@ class ExperimentBase(ExperimentMethods):
         self.load_observables_fn = load_observables_fn
         self.args_enforcers = self.args.get("args_enforcers", []) + args_enforcers
 
-        name = self.get_experiment_name()
+        name: str = self.get_experiment_name()
         self.tb_logger = TensorBoardLogger(dest_dir, name=name, default_hp_metric=False)
         self.console_logger = None
 
         self.device = None
 
-        self.trainer = None
-        self.observables = None
-        self.callbacks = None
+        self.trainer: self.trainer_class = None
+        self.observables: list = None
+        self.callbacks: list = None
         self.trainloader, self.valloader, self.testloader = None, None, None
         self.input_sample = None
 

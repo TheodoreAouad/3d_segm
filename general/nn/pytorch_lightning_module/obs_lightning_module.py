@@ -10,6 +10,7 @@ from pytorch_lightning.core.saving import load_hparams_from_tags_csv, load_hpara
 
 from ..observables.observable import Observable
 from ..experiments.experiment_methods import ExperimentMethods
+from ..loss import LossHandler
 
 
 class ObsLightningModule(LightningModule, ExperimentMethods):
@@ -87,7 +88,8 @@ class NetLightning(ObsLightningModule):
             self,
             model: "nn.Module",
             learning_rate: float,
-            loss: Union[Callable, Tuple[Callable, Dict], Dict[str, Union[Callable, Tuple[Callable, Dict]]]],
+            # loss_handler: Union[Callable, Tuple[Callable, Dict], Dict[str, Union[Callable, Tuple[Callable, Dict]]]],
+            loss: Union[Callable, LossHandler],
             optimizer: Callable,
             optimizer_args: Dict = {},
             observables: Optional[List[Observable]] = [],
@@ -100,13 +102,7 @@ class NetLightning(ObsLightningModule):
         Args:
             model (nn.Module): the module we want to train
             learning_rate (float): learning rate of the optimizer
-            loss : if a callable is given, loss will be this callable. We can also give a constructor and the arguments.
-                If the constructor is given, then the model will also be given as argument. This can be used for losses
-                using arguments of the model (e.g. regularization loss on weights). Finally, we can also give a
-                dictionary if multiple losses are needed.
-                >>> loss = nn.MSELoss()
-                >>> loss = (nn.MSELoss, {size_average=True})
-                >>> loss = {"mse": (nn.MSELoss, {size_average=True}), "regu": (MyReguLoss, {"lambda_": lambda_})}
+            loss (callable): the loss function we want to use
             optimizer (Callable): the constructor of the optimizer used to upgrade the parameters using their gradient
             optimizer_args (dict): the init arguments of the constructor of the optimizer, minus the learning rate
             observables (list): list of observables that we want to follow
@@ -116,23 +112,26 @@ class NetLightning(ObsLightningModule):
         super().__init__(observables, **kwargs)
         self.model = model
         self.learning_rate = learning_rate
-        self.loss = self.configure_loss(loss)
+        # self.loss = self.configure_loss(loss)
+        
+        self.loss = loss
+
         self.optimizer = optimizer
         self.optimizer_args = optimizer_args
-        self.reduce_loss_fn = reduce_loss_fn
+        # self.reduce_loss_fn = reduce_loss_fn
         # self.save_hyperparameters()
 
     def forward(self, x):
         return self.model(x)
 
-    def configure_loss(self, loss):
-        if isinstance(loss, dict):
-            return {k: self.configure_loss(v) for (k, v) in loss.items()}
+    # def configure_loss(self, loss):
+    #     if isinstance(loss, dict):
+    #         return {k: self.configure_loss(v) for (k, v) in loss.items()}
 
-        if isinstance(loss, tuple):
-            return loss[0](model=self.model, **loss[1])
+    #     if isinstance(loss, tuple):
+    #         return loss[0](model=self.model, **loss[1])
 
-        return loss
+    #     return loss
 
     def configure_optimizers(self):
         return self.optimizer(self.parameters(), lr=self.learning_rate, **self.optimizer_args)
@@ -143,7 +142,6 @@ class NetLightning(ObsLightningModule):
 
         outputs = self.compute_loss(state="/training", ypred=predictions, ytrue=y)
 
-        # return {'loss': loss}, predictions
         return outputs, predictions
 
     def obs_validation_step(self, batch, batch_idx):
@@ -152,7 +150,6 @@ class NetLightning(ObsLightningModule):
 
         outputs = self.compute_loss(state="/validation", ypred=predictions, ytrue=y)
 
-        # return {'val_loss': loss}, predictions
         return outputs, predictions
 
     def obs_test_step(self, batch, batch_idx):
@@ -161,7 +158,6 @@ class NetLightning(ObsLightningModule):
 
         outputs = self.compute_loss(state="/test", ypred=predictions, ytrue=y)
 
-        # return {'test_loss': loss}, predictions
         return outputs, predictions
 
     def compute_loss_value(self, ypred, ytrue):
@@ -172,80 +168,49 @@ class NetLightning(ObsLightningModule):
     def compute_loss(self, ypred, ytrue, state="", do_log=True):
         """Computes total loss for each component of the loss.
         """
-        values = {}
-        assert not ypred.isnan().any(), "NaN in prediction"
-        if isinstance(self.loss, dict):
-            for key, loss_fn in self.loss.items():
-                values[key] = loss_fn(ypred, ytrue)
+        values = self.loss(ypred, ytrue)
 
-            if "loss" in self.loss.keys():
-                i = 0
-                while f"loss_{i}" in self.loss.keys():
-                    i += 1
-                values[f"loss_{i}"] = values["loss"]
-
-            values["loss"] = self.reduce_loss_fn(values.values())
-
-        else:
-            values["loss"] = self.loss(ypred, ytrue)
-
-        grad_values = {}
-        for key, value in values.items():
-            if do_log:
-                self.log(f"loss{state}/{key}", value.item())  # put .item() to avoid memory leak
-            if key == "loss":
-                continue
-
-            if value.requires_grad:
-                value.retain_grad()  # see graph of each loss term
-                grad_values[f'{key}_grad'] = value.grad
-                values[key] = values[key].detach()
-
-        values['grads'] = grad_values
+        if do_log:
+            if isinstance(values, dict):
+                for key, value in values.items():
+                    if hasattr(value, "item"):
+                        self.log(f"loss{state}/{key}", value.item())  # put .item() to avoid memory leak
+            else:
+                self.log(f"loss{state}", values.item())
 
         return values
+        # values = {}
+        # assert not ypred.isnan().any(), "NaN in prediction"
+        # if isinstance(self.loss, dict):
+        #     for key, loss_fn in self.loss.items():
+        #         values[key] = loss_fn(ypred, ytrue)
 
+        #     if "loss" in self.loss.keys():
+        #         i = 0
+        #         while f"loss_{i}" in self.loss.keys():
+        #             i += 1
+        #         values[f"loss_{i}"] = values["loss"]
 
-    # @classmethod
-    # def select_(cls, name: str) -> Optional["NetLightning"]:
-    #     """
-    #     Recursive class method iterating over all subclasses to return the
-    #     desired model class.
-    #     """
-    #     if cls.__name__.lower() == name:
-    #         return cls
+        #     values["loss"] = self.reduce_loss_fn(values.values())
 
-    #     for subclass in cls.__subclasses__():
-    #         selected = subclass.select_(name)
-    #         if selected is not None:
-    #             return selected
+        # else:
+        #     values["loss"] = self.loss(ypred, ytrue)
 
-    #     return None
+        # grad_values = {}
+        # for key, value in values.items():
+        #     if do_log:
+        #         self.log(f"loss{state}/{key}", value.item())  # put .item() to avoid memory leak
+        #     if key == "loss":
+        #         continue
 
-    # @classmethod
-    # def select(cls, name: str) -> "NetLightning":
-    #     """
-    #     Class method iterating over all subclasses to instantiate the desired
-    #     model.
-    #     """
+        #     if value.requires_grad:
+        #         value.retain_grad()  # see graph of each loss term
+        #         grad_values[f'{key}_grad'] = value.grad
+        #         values[key] = values[key].detach()
 
-    #     selected = cls.select_(name)
-    #     if selected is None:
-    #         raise ValueError("The selected model was not found.")
+        # values['grads'] = grad_values
 
-    #     return selected
-
-    # @classmethod
-    # def listing(cls) -> List[str]:
-    #     """List all the available models."""
-    #     subclasses = set()
-    #     if not inspect.isabstract(cls):
-    #         subclasses = {cls.__name__.lower()}
-
-    #     for subclass in cls.__subclasses__():
-    #         subclasses = subclasses.union(subclass.listing())
-
-    #     return list(subclasses)
+        # return values
 
     @classmethod
     def load_from_checkpoint(cls, path: str, model_kwargs: Dict = {}, *args, **kwargs):
@@ -259,13 +224,7 @@ class NetLightning(ObsLightningModule):
             return super().load_from_checkpoint(path, *args, **kwargs)
 
         model_type = checkpoint["hyper_parameters"]["model_type"].lower()
-        # if model_type not in NetLightning.listing():
-        #     return NetLightning.select(model_type).load_from_checkpoint_ignore_keys(
-        #         path, ignore_keys=[("hyper_parameters", "model_type")]
-        #         *args, **kwargs
-        #     )
 
-        # return NetLightning.select(model_type).load_from_checkpoint_ignore_keys(
         return cls.select(model_type).load_from_checkpoint_ignore_keys(
             path, ignore_keys=[("hyper_parameters", "model_type")], model_kwargs=model_kwargs,
             *args, **kwargs
