@@ -194,7 +194,11 @@ all_args['loss_data_str'] = [
 all_args['loss_regu'] = [
     # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
     # "linear",
-    "None",
+    # "None",
+    ("RegularizationProjConstant", {})
+]
+all_args["loss_coefs"] = [
+    {"loss_data": 1, "loss_regu": 0},
 ]
 all_args['optimizer'] = [
     optim.Adam,
@@ -331,13 +335,6 @@ all_args['weights_optim_args'] = [
     {"constant_P": True, "factor": 1}
 ]
 
-# all_args["initializer_dense"] = [
-#     {
-#         "initializer_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
-#         "initializer_args": {"ub": 1e-2, "max_output_value": 0.95, "p_for_init": "auto", "input_mean": .5},
-#     }
-# ]
-
 all_args['initializer_method'] = [
     InitBimonnEnum.INPUT_MEAN,
 ]
@@ -376,97 +373,23 @@ all_args["args_enforcers"] = enforcers
 
 all_args.parse_args()
 
-# all_args = dict_cross(all_args)
-#
 
 
-# to_remove = []
-# for idx, args in enumerate(all_args.multi_args):
-
-#     # if args["model"].lower() == ("BimonnBiselDenseNotBinary").lower():
-#     #     args["channels"] = [args["channels"][0], args["channels"][0]]
-
-#     # Duality training
-#     # warnings.warn('Warning, duality training.')
-#     # if "erosion" in args['morp_operation'].name:
-#     #     args['random_gen_args']['p_invert'] = 1
-#     # elif "dilation" in args['morp_operation'].name:
-#     #     args['random_gen_args']['p_invert'] = 0
-
-#     # elif "closing" in args['morp_operation'].name:
-#     #     args['random_gen_args']['p_invert'] = 1
-#     # elif "opening" in args['morp_operation'].name:
-#     #     args['random_gen_args']['p_invert'] = 0
-
-#     # elif "white_tophat" in args['morp_operation'].name:
-#     #     args['random_gen_args']['p_invert'] = 1
-#     # elif "black_tophat" in args['morp_operation'].name:
-#     #     args['random_gen_args']['p_invert'] = 0
-
-#     args['patience_loss'] = args[f"patience_loss_{args['early_stopping_on']}"]
-#     args['patience_reduce_lr'] = max(int(args["patience_loss"] * args['patience_reduce_lr']) - 1, 1)
-
-#     if args['atomic_element'] == "dual_bisel":
-#         args['weights_optim_mode'] = BiseWeightsOptimEnum.NORMALIZED
-
-#     if args['weights_optim_mode'] == BiseWeightsOptimEnum.NORMALIZED:
-#         args['initializer_args'].update({
-#             'bise_init_method': InitBiseEnum.CUSTOM_CONSTANT_DUAL_RANDOM_BIAS,
-#             'lui_init_method': InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_DUAL_RANDOM_BIAS,
-#         })
-
-#     args['init_bimonn_str'] = str(args["initializer_method"])
-#     if isinstance(args["initializer_args"], dict):
-#         args['init_bise_str'] = str(args["initializer_args"]["bise_init_method"])
-#     elif isinstance(args["initializer_args"], list):
-#         args['init_bise_str'] = [str(ar["bise_init_method"]) for ar in args["initializer_args"]]
-
-#     if args['atomic_element'] == "sybisel":
-#         args['threshold_mode'] = {'weight': args['threshold_mode']['weight'], 'activation': args['threshold_mode']['activation'] + "_symetric"}
-#         args['bias_optim_mode'] = BiseBiasOptimEnum.RAW
-#         if args["loss_data_str"] == "BCELoss":
-#             args["loss_data_str"] = "BCENormalizedLoss"
-
-#     args["kwargs_loss"] = {}
-#     if "Normalized" in args['loss_data_str'] and args['atomic_element'] == 'sybisel':
-#         args["kwargs_loss"].update({"vmin": -1, "vmax": 1})
-
-#     args['loss_data'] = loss_dict[args['loss_data_str']](**args["kwargs_loss"])
-
-#     args['loss'] = {"loss_data": args['loss_data']}
-
-#     # if isinstance(args['threshold_mode'], str) or args['threshold_mode']['weight'] != "identity":
-#     #     args['loss_regu'] = "None"
-
-
-#     # if args['loss_regu'] != "None":
-#     #     args['loss_regu'] = (loss_dict[args['loss_regu'][0]], args['loss_regu'][1])
-#     #     args['loss']['loss_regu'] = args['loss_regu']
-
-#     for key in ['closest_selem_method', 'bias_optim_mode']:
-#         args[f'{key}_str'] = str(args[key])
-
-#     if args['dataset'] in ['mnist_gray', 'fashionmnist']:
-#         assert "gray" in args['morp_operation'].name
-#     elif args['dataset'] in ["mnist", "diskorectdataset", "inverted_mnist"]:
-#         assert "gray" not in args['morp_operation'].name
-
-
-    # already_seen_path = f"deep_morpho/results/results_tensorboards/{args['experiment_name']}/{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset']}/seen_args.txt"
-    # if not os.path.exists(already_seen_path):
-    #     continue
-    # with open(already_seen_path, "r") as f:
-    #     already_seen = f.read()
-    # if str((
-    #     args['morp_operation'].name.split('/')[0],
-    #     args['morp_operation'].selem_names[0][-1][0],
-    #     # str(args["init_weight_mode"]).split(".")[-1],
-    #     # str(args["bias_optim_mode"]).split(".")[-1],
-    #     args["loss_data_str"],
-    #     str(args["learning_rate"]),
-    #     args["optimizer"].__name__, args["bias_optim_mode"].__str__().split(".")[-1]
-    # )) in already_seen:
-    #     to_remove.append(idx)
+# already_seen_path = f"deep_morpho/results/results_tensorboards/{args['experiment_name']}/{args['atomic_element']}/{args['threshold_mode']['weight']}/{args['dataset']}/seen_args.txt"
+# if not os.path.exists(already_seen_path):
+#     continue
+# with open(already_seen_path, "r") as f:
+#     already_seen = f.read()
+# if str((
+#     args['morp_operation'].name.split('/')[0],
+#     args['morp_operation'].selem_names[0][-1][0],
+#     # str(args["init_weight_mode"]).split(".")[-1],
+#     # str(args["bias_optim_mode"]).split(".")[-1],
+#     args["loss_data_str"],
+#     str(args["learning_rate"]),
+#     args["optimizer"].__name__, args["bias_optim_mode"].__str__().split(".")[-1]
+# )) in already_seen:
+#     to_remove.append(idx)
 
 # print(f'Deleting {len(to_remove)} already seen args...')
 # for idx in to_remove[::-1]:

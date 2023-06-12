@@ -7,7 +7,8 @@ from deep_morpho.models.bise_base import ClosestSelemEnum, ClosestSelemDistanceE
 from deep_morpho.initializer import InitBimonnEnum, InitBiseEnum
 from deep_morpho.loss import (
     MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization,
-    MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss, BCENormalizedLoss, DiceLoss, NormalizedDiceLoss
+    MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss, BCENormalizedLoss, DiceLoss, NormalizedDiceLoss,
+    RegularizationProjConstant
 )
 
 from general.nn.loss import LossHandler
@@ -28,6 +29,7 @@ loss_dict = {
     "BCELoss": nn.BCELoss,
     "CrossEntropyLoss": nn.CrossEntropyLoss,
     "SquaredHingeLoss": partial(nn.MultiMarginLoss, p=2),
+    "RegularizationProjConstant": RegularizationProjConstant,
 }
 
 
@@ -78,13 +80,22 @@ class ArgsEnforcersCurrent(ArgsEnforcer):
                 if experiment.args["loss_data_str"] == "BCELoss":
                     experiment.args["loss_data_str"] = "BCENormalizedLoss"
 
-            experiment.args["kwargs_loss"] = {}
+            experiment.args["kwargs_loss_data"] = {}
             if "Normalized" in experiment.args['loss_data_str'] and experiment.args['atomic_element'] == 'sybisel':
                 experiment.args["kwargs_loss"].update({"vmin": -1, "vmax": 1})
 
-            experiment.args['loss_data'] = loss_dict[experiment.args['loss_data_str']](**experiment.args["kwargs_loss"])
+            experiment.args['loss_data'] = loss_dict[experiment.args['loss_data_str']](**experiment.args["kwargs_loss_data"])
+            loss = {"loss_data": experiment.args['loss_data']}
 
-            experiment.args['loss'] = LossHandler({"loss_data": experiment.args['loss_data']})
+            if experiment.args['loss_regu'] != "None":
+                experiment.args['loss_regu_str'] = experiment.args['loss_regu'][0]
+                experiment.args['kwargs_loss_regu'] = experiment.args['loss_regu'][1]
+                experiment.args['loss_regu'] = loss_dict[experiment.args['loss_regu_str']](**experiment.args["kwargs_loss_regu"])
+                loss["loss_regu"] = experiment.args['loss_regu']
+            else:
+                experiment.args['loss_regu_str'] = "None"
+
+            experiment.args['loss'] = LossHandler(loss=loss, coefs=experiment.args["loss_coefs"])
 
             # if isinstance(experiment.args['threshold_mode'], str) or experiment.args['threshold_mode']['weight'] != "identity":
             #     experiment.args['loss_regu'] = "None"

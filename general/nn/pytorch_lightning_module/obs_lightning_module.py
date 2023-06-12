@@ -11,6 +11,7 @@ from pytorch_lightning.core.saving import load_hparams_from_tags_csv, load_hpara
 from ..observables.observable import Observable
 from ..experiments.experiment_methods import ExperimentMethods
 from ..loss import LossHandler
+from general.extend_signature import extend_signature
 
 
 class ObsLightningModule(LightningModule, ExperimentMethods):
@@ -115,6 +116,7 @@ class NetLightning(ObsLightningModule):
         # self.loss = self.configure_loss(loss)
         
         self.loss = loss
+        self.loss_forward = extend_signature(self.loss)
 
         self.optimizer = optimizer
         self.optimizer_args = optimizer_args
@@ -168,7 +170,7 @@ class NetLightning(ObsLightningModule):
     def compute_loss(self, ypred, ytrue, state="", do_log=True):
         """Computes total loss for each component of the loss.
         """
-        values = self.loss(ypred, ytrue)
+        values = self.loss_forward(ypred, ytrue, pl_module=self)
 
         if do_log:
             if isinstance(values, dict):

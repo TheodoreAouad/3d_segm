@@ -492,7 +492,7 @@ class BiSEBase(BinaryNN):
         bias = self.bias.cpu().detach().numpy()[chans]
 
         learned_selem = np.zeros_like(W).astype(bool)
-        learned_operation = np.zeros((len(chans)))
+        learned_operation = np.zeros((len(chans))) - 1
         is_activated = np.zeros((len(chans))).astype(bool)
 
         operation: np.ndarray = self.approximate_operation_on_bias_vectorized(W_reshaped, bias)

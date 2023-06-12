@@ -1,0 +1,9 @@
+{
+    "exclude": [
+        "**/site-packages/**/*.py",
+        ".vscode/*.py",
+        "**/results/**",
+        "**/data/**",
+        "**weights_png/**"
+    ]
+}

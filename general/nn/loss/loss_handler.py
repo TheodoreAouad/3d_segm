@@ -74,7 +74,7 @@ class LossHandler:
     #     for key, value in values.items():
     #         self.log(f"loss{state}/{key}", value.item())  # put .item() to avoid memory leak
 
-    def compute_loss(self, ypred, ytrue) -> dict:
+    def compute_loss(self, ypred, ytrue, *args, **kwargs) -> dict:
         """Computes total loss for each component of the loss.
         Args:
             ypred: predictions
@@ -89,14 +89,14 @@ class LossHandler:
         if isinstance(self.loss, dict):
             total_loss = 0
             for key, loss_fn in self.loss.items():
-                values[key] = loss_fn(ypred, ytrue)
+                values[key] = loss_fn(ypred, ytrue, *args, **kwargs)
                 total_loss += self.coefs[key] * values[key]
 
             values["loss"] = total_loss
             # values["loss"] = self.reduce_loss_fn(values.values())
 
         else:
-            values["loss"] = self.loss(ypred, ytrue)
+            values["loss"] = self.loss(ypred, ytrue, *args, **kwargs)
 
         grad_values = {}
         for key, value in values.items():
@@ -111,10 +111,6 @@ class LossHandler:
         values['grads'] = grad_values
 
         return values
-
-    # def log(self, *args, **kwargs):
-    #     if self.pl_module is not None:
-    #         self.pl_module.log(*args, **kwargs)
 
     def __call__(self, *args, **kwargs):
         return self.compute_loss(*args, **kwargs)
