@@ -31,6 +31,7 @@ all_args['n_try'] = [0]
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
     "debug",
+    # "Bimonn_exp_80/sandbox/0_/"
     # "Bimonn_exp_79/sandbox/1_/"
     # "Bimonn_exp_78/bnn/"
     # "Bimonn_exp_79/bimonn-equivalent-binaryconnect/",
@@ -47,14 +48,14 @@ all_args['experiment_name'] = [
 
 all_args["model"] = [
     ##### MORPHO ####
-    # "BiMoNN",
+    "BiMoNN",
 
     ##### CLASSIFIERS #####
     # "BiMoNNClassifierMaxPoolNotBinary",
     # "BiMoNNClassifierMaxPool",
     # "BiMoNNClassifierLastLinear",
     # "BimonnDense",
-    "BimonnDenseNotBinary",
+    # "BimonnDenseNotBinary",
     # "BiMoNNClassifierLastLinearNotBinary",
     # "BimonnBiselDenseNotBinary",
     # "ConvNetLastLinear",
@@ -72,16 +73,18 @@ all_args["model"] = [
 ]
 
 all_args['dataset'] = [
+    ##### MORPHO ####
     # 'diskorectdataset',
     # 'mnistmorphodataset',
-    # "noistidataset",
+    "noistidataset",
     # 'mnistgrayscaledataset',
     # 'fashionmnistgrayscaledataset',
     # 'axsparoidataset',
     # 'axsparoisimpledataset',
 
+    ##### CLASSIFICATION #####
     # 'mnistclassifdataset',
-    'mnistclassifchanneldataset',
+    # 'mnistclassifchanneldataset',
 
     # 'cifar10dataset',
     # 'cifar100dataset',
@@ -198,6 +201,9 @@ all_args['loss_regu'] = [
     ("RegularizationProjConstant", {})
 ]
 all_args["loss_coefs"] = [
+    {"loss_data": 1, "loss_regu": 0.1},
+    {"loss_data": 1, "loss_regu": 0.01},
+    {"loss_data": 1, "loss_regu": 0.001},
     {"loss_data": 1, "loss_regu": 0},
 ]
 all_args['optimizer'] = [
@@ -267,11 +273,11 @@ all_args['n_atoms'] = [
 ]
 
 all_args['kernel_size'] = [
-    3
+    5
     # "adapt",
 ]
 all_args['channels'] = [
-    # 'adapt',
+    'adapt',
     # [1, 3, 3, 1],
     # [1, 3, 1],
     # [1, 10, 1],
@@ -279,7 +285,7 @@ all_args['channels'] = [
     # [1, 10, 1],
     # [1000, 1000],
     # [100],
-    [200],
+    # [200, 200],
     # [200, 200, 200],
     # [300],
     # [415],  # Nb of channels for fc1 of Laydevant et al. 2021, 3.3M params, 10 level sets
@@ -318,7 +324,7 @@ all_args['bias_optim_args'] = [
 all_args['weights_optim_mode'] = [
     BiseWeightsOptimEnum.THRESHOLDED,
     # BiseWeightsOptimEnum.ELLIPSE_ROOT,
-    # BiseWeightsOptimEnum.NORMALIZED
+    BiseWeightsOptimEnum.NORMALIZED
 ]
 
 all_args['threshold_mode'] = [

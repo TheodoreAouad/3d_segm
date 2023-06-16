@@ -1,6 +1,8 @@
 from copy import deepcopy
-
 from typing import Callable, Dict, Tuple, Union
+
+from ..extend_signature_and_forward import extend_signature_and_forward
+
 
 
 class LossHandler:
@@ -57,14 +59,14 @@ class LossHandler:
                 while f"loss_{i}" in loss.keys():
                     i += 1
                 loss[f"loss_{i}"] = loss["loss"]
-            return loss
+            # return loss
 
             return {k: self.instantiate(v) for (k, v) in loss.items()}
 
         if isinstance(loss, tuple):
-            return loss[0](model=self.model, **loss[1])
+            return extend_signature_and_forward(loss[0](model=self.model, **loss[1]))
 
-        return loss
+        return extend_signature_and_forward(loss)
 
     # def log_loss(self, values: dict, state: str = "") -> None:
     #     """

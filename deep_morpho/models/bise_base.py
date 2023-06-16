@@ -462,7 +462,7 @@ class BiSEBase(BinaryNN):
             self._closest_selem[chans],
             self._closest_operation[chans],
             self._closest_selem_dist[chans]
-        ) = self.closest_selem_handler(chans, v1=v1, v2=v2, verbose=verbose)
+        ) = self.closest_selem_handler(chans=chans, v1=v1, v2=v2, verbose=verbose)
         return self._closest_selem, self._closest_operation, self._closest_selem_dist
 
 

@@ -270,21 +270,26 @@ class BiseClosestMinDistOnCstOld(BiseClosestSelemWithDistanceAgg):
 
 class BiseClosestMinDistOnCst(BiseClosestSelemHandler):
 
+    # TODO: handle differently the return_np_array to handle both cases: the observable and the loss
     def find_closest_selem_and_operation(
-        self, weights, bias, chans=None, v1=0, v2=1, verbose: bool = True,
+        self, weights, bias, chans=None, v1=0, v2=1, verbose: bool = True, return_np_array: bool = True,
     ):
         if chans is None:
             chans = range(self.bise_module.out_channels)
 
-        W = weights.cpu().detach().numpy()[chans]
-        bias = bias.cpu().detach().numpy()[chans]
+        W = weights[chans]
+        bias = bias[chans]
+        if return_np_array:
+            W = weights.cpu().detach().numpy()
+            bias = bias.cpu().detach().numpy()
 
         proj = ProjectionConstantSet(W.reshape(W.shape[0], -1), bias).compute(verbose=verbose)
         S, final_operation, final_dist = proj.S, proj.final_operation, proj.final_dist
         S = S.reshape(W.shape)
         return S, final_operation, final_dist
 
-    def __call__(self, chans: List[int] = None, v1: float = 0, v2: float = 1, verbose: bool = True) -> Tuple[float, np.ndarray, str]:
+    def __call__(self, *args, **kwargs) -> Tuple[float, np.ndarray, str]:
         return self.find_closest_selem_and_operation(
-            chans=chans, weights=self.bise_module.weights, bias=self.bise_module.bias, v1=v1, v2=v2, verbose=verbose,
+            weights=self.bise_module.weights, bias=self.bise_module.bias,
+            *args, **kwargs
         )

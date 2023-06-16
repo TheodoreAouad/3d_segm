@@ -42,10 +42,14 @@ class ProjectionConstantSet:
         Returns:
             array (n_chout): the index of the best value, for each channel.
         """
-        return (module_.cumsum(w_values, axis=1) / module_.sqrt(module_.arange(1, 1+w_values.shape[1]))).argmax(1)
+        if module_ == torch:
+            arange = module_.sqrt(module_.arange(1, 1+w_values.shape[1])).to(device=w_values.device)
+        else:
+            arange = module_.sqrt(module_.arange(1, 1+w_values.shape[1]))
+        return (module_.cumsum(w_values, axis=1) / arange).argmax(1)
 
 
-    def compute(self, verbose: bool = True,) -> (Union[np.ndarray, torch.tensor], Union[np.ndarray, torch.tensor], Union[np.ndarray, torch.tensor]):
+    def compute(self, verbose: bool = True,) -> "ProjectionConstantSet":
         r"""Computes the projection onto constant set for each weight and bias.
 
         Args:
@@ -83,7 +87,12 @@ class ProjectionConstantSet:
 
         wsum = W.sum(1)
         self.final_operation = np.empty(W.shape[0], dtype=str)
-        dilation_idx = np.array(wsum / 2 >= -bias)
+
+        if isinstance(W, torch.Tensor):
+            dilation_idx = np.array(wsum.cpu().detach().numpy() / 2 >= -bias.cpu().detach().numpy())
+        else:
+            dilation_idx = np.array(wsum / 2 >= -bias)
+
         if dilation_idx.any():
             self.final_operation[dilation_idx] = self.operation_code["dilation"]
         if (~dilation_idx).any():

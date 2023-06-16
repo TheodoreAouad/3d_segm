@@ -11,7 +11,7 @@ from pytorch_lightning.core.saving import load_hparams_from_tags_csv, load_hpara
 from ..observables.observable import Observable
 from ..experiments.experiment_methods import ExperimentMethods
 from ..loss import LossHandler
-from general.extend_signature import extend_signature
+from general.nn.extend_signature_and_forward import extend_signature_and_forward
 
 
 class ObsLightningModule(LightningModule, ExperimentMethods):
@@ -114,9 +114,9 @@ class NetLightning(ObsLightningModule):
         self.model = model
         self.learning_rate = learning_rate
         # self.loss = self.configure_loss(loss)
-        
+
         self.loss = loss
-        self.loss_forward = extend_signature(self.loss)
+        self.loss_forward = extend_signature_and_forward(self.loss)
 
         self.optimizer = optimizer
         self.optimizer_args = optimizer_args

@@ -58,9 +58,9 @@ class PlotWeightsBiSE(ObservableLayersChans):
         for layer_idx, layer in enumerate(pl_module.model.layers):
             to_add = {"bias_bise": layer.bias_bise, "activation_P_bise": layer.activation_P_bise}
 
-            to_add["weights_param"] = layer.bises.weight_param
+            # to_add["weights_param"] = layer.bises.weight_param
 
-            to_add["weights"] = layer.bises.weight
+            to_add["weights"] = layer.weight
             self.last_weights.append(to_add)
 
     def save(self, save_path: str):
@@ -68,20 +68,23 @@ class PlotWeightsBiSE(ObservableLayersChans):
         pathlib.Path(join(final_dir, "png")).mkdir(exist_ok=True, parents=True)
         pathlib.Path(join(final_dir, "npy")).mkdir(exist_ok=True, parents=True)
         for layer_idx, layer_dict in enumerate(self.last_weights):
-            for key, weight in layer_dict.items():
-                if key not in ["weights", "weights_param"]:
-                    continue
-                for chan_output in range(weight.shape[0]):
-                    for chan_input in range(weight.shape[1]):
-                        fig = self.get_figure_raw_weights(
-                            weight[chan_output, chan_input],
-                            bias=layer_dict['bias_bise'][chan_output, chan_input],
-                            activation_P=layer_dict['activation_P_bise'][chan_output, chan_input]
-                        )
+            # for key, weight in layer_dict.items():
+                # if key not in [
+                #     "weights", "weights_param"
+                # ]:
+                    # continue
+            weight = layer_dict["weights"]
+            for chan_output in range(weight.shape[0]):
+                for chan_input in range(weight.shape[1]):
+                    fig = self.get_figure_raw_weights(
+                        weight[chan_output, chan_input],
+                        bias=layer_dict['bias_bise'][chan_output, chan_input],
+                        activation_P=layer_dict['activation_P_bise'][chan_output, chan_input]
+                    )
 
-                        fig.savefig(join(final_dir, "png", f"{key}_layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}.png"))
-                        np.save(join(final_dir, "npy", f"{key}_layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}.npy"), weight[chan_output, chan_input].cpu().detach())
-                        plt.close(fig)
+                    fig.savefig(join(final_dir, "png", f"weight_layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}.png"))
+                    np.save(join(final_dir, "npy", f"weight_layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}.npy"), weight[chan_output, chan_input].cpu().detach())
+                    plt.close(fig)
 
         return self.last_weights
 
