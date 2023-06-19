@@ -74,9 +74,9 @@ all_args["model"] = [
 
 all_args['dataset'] = [
     ##### MORPHO ####
-    # 'diskorectdataset',
+    'diskorectdataset',
     # 'mnistmorphodataset',
-    "noistidataset",
+    # "noistidataset",
     # 'mnistgrayscaledataset',
     # 'fashionmnistgrayscaledataset',
     # 'axsparoidataset',
@@ -165,7 +165,7 @@ all_args['sticks_noised_args'] = [
 ########################
 
 
-all_args['n_steps'] = [1000]  # for Diskorect
+all_args['n_steps'] = [100]  # for Diskorect
 all_args['nb_batch_indep'] = [0]
 all_args["n_inputs_train"] = [50_000]
 all_args["n_inputs_val"] = [10_000]
@@ -201,7 +201,7 @@ all_args['loss_regu'] = [
     ("RegularizationProjConstant", {})
 ]
 all_args["loss_coefs"] = [
-    {"loss_data": 1, "loss_regu": 0.1},
+    # {"loss_data": 1, "loss_regu": 0.1},
     {"loss_data": 1, "loss_regu": 0.01},
     {"loss_data": 1, "loss_regu": 0.001},
     {"loss_data": 1, "loss_regu": 0},
@@ -213,8 +213,8 @@ all_args['optimizer'] = [
 all_args['optimizer_args'] = [{}]
 all_args['batch_size'] = [64]
 all_args['num_workers'] = [
-    20,
-    # 0,
+    # 20,
+    0,
 ]
 all_args['freq_imgs'] = [800]
 all_args['freq_hist'] = [800]
@@ -324,7 +324,7 @@ all_args['bias_optim_args'] = [
 all_args['weights_optim_mode'] = [
     BiseWeightsOptimEnum.THRESHOLDED,
     # BiseWeightsOptimEnum.ELLIPSE_ROOT,
-    BiseWeightsOptimEnum.NORMALIZED
+    # BiseWeightsOptimEnum.NORMALIZED
 ]
 
 all_args['threshold_mode'] = [

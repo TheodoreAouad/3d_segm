@@ -201,3 +201,21 @@ class TestInputOutputGeneratorDataset:
         for inp2, tar2 in dataloader:
             assert (inp1 - inp2).abs().sum() == 0
             assert (tar1 - tar2).abs().sum() == 0
+
+    @staticmethod
+    def test_two_batch_randomness():
+        morp_operation = ParallelMorpOperations.erosion(('disk', 3))
+        dataloader = DiskorectDataset.get_loader(
+            random_gen_fn=get_random_diskorect_channels,
+            random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
+            morp_operation=morp_operation,
+            n_inputs=256 * 10,
+            batch_size=256,
+            max_generation_nb=256,
+            num_workers=0,
+        )
+
+        inp1, tar1 = next(iter(dataloader))
+        inp2, tar2 = next(iter(dataloader))
+
+        assert (inp1 - inp2).abs().sum() != 0

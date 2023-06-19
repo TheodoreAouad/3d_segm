@@ -171,7 +171,7 @@ class BiSELBase(BinaryNN):
         return self.luis.closest_selem[chout, 0, ...]
 
     def get_weight_grad_bise(self, chin: int, chout: int):
-        grad_weights = self.bises.weight.grad
+        grad_weights = self.bises.weights_handler.grad
         if grad_weights is None:
             return None
         return grad_weights[self.convert_chin_chout_bise_chan(chin, chout), 0, ...]

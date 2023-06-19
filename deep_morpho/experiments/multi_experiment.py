@@ -188,6 +188,8 @@ class MultiExperiment(ExperimentMethods):
             self.log_console('==================')
             self.log_console(f'Experiment number {exp_idx + 1} / {len(self.experiments)}')
             self.log_console('Time since beginning: {} '.format(format_time(time() - start_all)))
+            self.log_console(f'Experiment type: {experiment.__class__.__name__}')
+            self.log_console(f'Experiment observables: {experiment.load_observables_fn}')
 
             with open(join(self.log_dir, 'state.txt'), 'w') as f:
                 f.write(f'Args number {exp_idx + 1} / {len(self.experiments)} running. Time since beginning: {format_time(time() - start_all)}')
