@@ -211,7 +211,7 @@ class TestInputOutputGeneratorDataset:
             morp_operation=morp_operation,
             n_inputs=256 * 10,
             batch_size=256,
-            max_generation_nb=256,
+            max_generation_nb=0,
             num_workers=0,
         )
 

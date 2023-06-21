@@ -8,7 +8,7 @@ from deep_morpho.initializer import InitBimonnEnum, InitBiseEnum
 from deep_morpho.loss import (
     MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization,
     MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss, BCENormalizedLoss, DiceLoss, NormalizedDiceLoss,
-    RegularizationProjConstant
+    RegularizationProjConstant, RegularizationProjActivated
 )
 
 from general.nn.loss import LossHandler
@@ -30,6 +30,7 @@ loss_dict = {
     "CrossEntropyLoss": nn.CrossEntropyLoss,
     "SquaredHingeLoss": partial(nn.MultiMarginLoss, p=2),
     "RegularizationProjConstant": RegularizationProjConstant,
+    "RegularizationProjActivated": RegularizationProjActivated,
 }
 
 
@@ -55,6 +56,12 @@ class ArgsEnforcersCurrent(ArgsEnforcer):
             #     experiment.args['random_gen_args']['p_invert'] = 1
             # elif "black_tophat" in experiment.args['morp_operation'].name:
             #     experiment.args['random_gen_args']['p_invert'] = 0
+
+            if experiment.args["freq_imgs"] == "epoch":
+                experiment.args["freq_imgs"] = experiment.args["n_steps"]
+
+            if experiment.args["freq_hist"] == "epoch":
+                experiment.args["freq_hist"] = experiment.args["n_steps"]
 
             experiment.args['patience_loss'] = experiment.args[f"patience_loss_{experiment.args['early_stopping_on']}"]
             experiment.args['patience_reduce_lr'] = max(int(experiment.args["patience_loss"] * experiment.args['patience_reduce_lr']) - 1, 1)

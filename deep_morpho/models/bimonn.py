@@ -88,7 +88,7 @@ class BiMoNN(BinaryNN):
             return BimonnInitializer(**kwargs)
 
         elif self.initializer_method.value == InitBimonnEnum.INPUT_MEAN.value:
-            print(kwargs)
+            # print(kwargs)
             return BimonnInitInputMean(**kwargs)
 
         raise NotImplementedError("Initializer not recognized.")

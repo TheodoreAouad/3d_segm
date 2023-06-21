@@ -339,7 +339,7 @@ class ShowClosestSelemBinary(ObservableLayersChans):
 
         trainer.logger.experiment.add_scalar(f"comparative/closest_binary_dist/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}", distance, trainer.global_step)
 
-        fig = self.selem_fig(selem, f"{operation} dist {distance:.2f}")
+        fig = self.selem_fig(selem, f"{operation} dist {distance:.2e}")
         trainer.logger.experiment.add_figure(f"closest_selem/binary/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}", fig, trainer.global_step)
         self.last_elts[str((layer_idx, chan_input, chan_output))] = {"operation": operation, "distance": str(distance)}
         self.last_selems[(layer_idx, chan_input, chan_output)] = selem

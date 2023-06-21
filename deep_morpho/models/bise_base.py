@@ -14,7 +14,8 @@ from .weights_layer import WeightsThresholdedBise, WeightsNormalizedBiSE, Weight
 from deep_morpho.initializer import InitBiseHeuristicWeights, BiseInitializer, InitSybiseConstantVarianceWeights, InitBiseConstantVarianceWeights
 from deep_morpho.binarization import (
     ClosestSelemEnum, BiseClosestMinDistBounds, distance_agg_min, distance_agg_max_second_derivative,
-    ClosestSelemDistanceEnum, BiseClosestSelemWithDistanceAgg, distance_fn_to_bounds, BiseClosestMinDistOnCst
+    ClosestSelemDistanceEnum, BiseClosestSelemWithDistanceAgg, distance_fn_to_bounds, BiseClosestMinDistOnCst,
+    BiseClosestActivationSpaceIteratedPositive
 )
 from general.utils import set_borders_to
 
@@ -165,6 +166,9 @@ class BiSEBase(BinaryNN):
 
         elif closest_selem_method.value == ClosestSelemEnum.MIN_DIST_DIST_TO_CST.value:
             return BiseClosestMinDistOnCst(bise_module=self, **kwargs)
+        
+        elif closest_selem_method.value == ClosestSelemEnum.MIN_DIST_ACTIVATED_POSITIVE.value:
+            return BiseClosestActivationSpaceIteratedPositive(bise_module=self, **kwargs)
 
 
     def create_bias_handler(self, **kwargs):

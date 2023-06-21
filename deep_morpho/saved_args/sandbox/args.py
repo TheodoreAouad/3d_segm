@@ -30,8 +30,8 @@ all_args['n_try'] = [0]
 
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
-    "debug",
-    # "Bimonn_exp_80/sandbox/0_/"
+    # "debug",
+    "Bimonn_exp_80/sandbox/0_/"
     # "Bimonn_exp_79/sandbox/1_/"
     # "Bimonn_exp_78/bnn/"
     # "Bimonn_exp_79/bimonn-equivalent-binaryconnect/",
@@ -198,15 +198,17 @@ all_args['loss_regu'] = [
     # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
     # "linear",
     # "None",
-    ("RegularizationProjConstant", {})
+    # ("RegularizationProjConstant", {}),
+    ("RegularizationProjActivated", {}),
 ]
 all_args["loss_coefs"] = [
-    # {"loss_data": 1, "loss_regu": 0.1},
+    # {"loss_data": 0, "loss_regu": 0.1},
+    {"loss_data": 1, "loss_regu": 0.1},
     {"loss_data": 1, "loss_regu": 0.01},
     {"loss_data": 1, "loss_regu": 0.001},
     {"loss_data": 1, "loss_regu": 0},
 ]
-all_args['optimizer'] = [
+all_args['optimizer'] = [ 
     optim.Adam,
     # optim.SGD
 ]
@@ -216,8 +218,14 @@ all_args['num_workers'] = [
     # 20,
     0,
 ]
-all_args['freq_imgs'] = [800]
-all_args['freq_hist'] = [800]
+all_args['freq_imgs'] = [
+    # 100,
+    "epoch"
+]
+all_args['freq_hist'] = [
+    # 100,
+    "epoch"
+]
 all_args["freq_update_binary_batch"] = [
     None
 ]
@@ -225,7 +233,7 @@ all_args["freq_update_binary_epoch"] = [
     1,
     # None,
 ]
-all_args['freq_scalars'] = [50]
+all_args['freq_scalars'] = [2]
 # all_args['max_epochs.trainer'] = [1]
 all_args['max_epochs.trainer'] = [200]
 
@@ -273,8 +281,8 @@ all_args['n_atoms'] = [
 ]
 
 all_args['kernel_size'] = [
-    5
-    # "adapt",
+    # 7
+    "adapt",
 ]
 all_args['channels'] = [
     'adapt',
@@ -309,7 +317,8 @@ all_args['channels'] = [
 all_args['closest_selem_method'] = [
     # ClosestSelemEnum.MIN_DIST
     # ClosestSelemEnum.MAX_SECOND_DERIVATIVE
-    ClosestSelemEnum.MIN_DIST_DIST_TO_CST
+    # ClosestSelemEnum.MIN_DIST_DIST_TO_CST,
+    ClosestSelemEnum.MIN_DIST_ACTIVATED_POSITIVE,
 ]
 
 all_args['bias_optim_mode'] = [

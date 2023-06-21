@@ -20,6 +20,7 @@ class ClosestSelemEnum(Enum):
     MAX_SECOND_DERIVATIVE = 2
     MIN_DIST_DIST_TO_BOUNDS = 3
     MIN_DIST_DIST_TO_CST = 4
+    MIN_DIST_ACTIVATED_POSITIVE = 5
 
 
 class ClosestSelemDistanceEnum(Enum):
