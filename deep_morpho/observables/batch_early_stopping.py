@@ -48,12 +48,12 @@ class EarlyStoppingBase(EarlyStopping, Observable, ABC):
     def on_save_checkpoint(self, *args, **kwargs):
         res = super().on_save_checkpoint(None, None, None)  # lightning necessity to avoid *args and kwargs. May change in future versions.
         res['stopped_batch'] = self.stopped_batch
-        res['stopped_epoch'] = self.stopped_batch
+        res['stopped_epoch'] = self.stopped_epoch
         return res
 
     def on_load_checkpoint(self, callback_state: Dict[str, Any]) -> None:
         super().on_load_checkpoint(callback_state)
-        self.stopped_batch = callback_state['stopped_epoch']
+        self.stopped_batch = callback_state['stopped_batch']
 
     def save(self, save_path: str):
         final_dir = join(save_path, join(self.__class__.__name__, self.name))

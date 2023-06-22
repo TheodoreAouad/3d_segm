@@ -31,7 +31,8 @@ all_args['n_try'] = [0]
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
     # "debug",
-    "Bimonn_exp_80/sandbox/0_/"
+    # "Bimonn_exp_80/sandbox/0_/"
+    "Bimonn_exp_80/sandbox/dilation_proj_activated/"
     # "Bimonn_exp_79/sandbox/1_/"
     # "Bimonn_exp_78/bnn/"
     # "Bimonn_exp_79/bimonn-equivalent-binaryconnect/",
@@ -215,23 +216,23 @@ all_args['optimizer'] = [
 all_args['optimizer_args'] = [{}]
 all_args['batch_size'] = [64]
 all_args['num_workers'] = [
-    # 20,
-    0,
+    20,
+    # 0,
 ]
 all_args['freq_imgs'] = [
-    # 100,
-    "epoch"
+    5,
+    # "epoch"
 ]
 all_args['freq_hist'] = [
-    # 100,
-    "epoch"
+    5,
+    # "epoch"
 ]
 all_args["freq_update_binary_batch"] = [
-    None
+    1
 ]
 all_args["freq_update_binary_epoch"] = [
-    1,
-    # None,
+    # 1,
+    None,
 ]
 all_args['freq_scalars'] = [2]
 # all_args['max_epochs.trainer'] = [1]
