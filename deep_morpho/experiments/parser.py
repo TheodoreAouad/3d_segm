@@ -251,7 +251,7 @@ class Parser(dict):
         return super().__getitem__(key)
 
 
-class MultiParser(Parser):
+class GridParser(Parser):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.multi_args = None

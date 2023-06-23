@@ -15,13 +15,13 @@ from deep_morpho.datasets.gray_to_channels_dataset import LevelsetValuesEqualInd
 from deep_morpho.models.bise_base import ClosestSelemEnum, BiseBiasOptimEnum, BiseWeightsOptimEnum
 from deep_morpho.models.activations import NormalizedTanh
 from deep_morpho.initializer import InitBimonnEnum, InitBiseEnum
-from deep_morpho.experiments.parser import MultiParser
+from deep_morpho.experiments.parser import GridParser
 from .args_morp_ops import morp_operations
 from .args_enforcers import enforcers
 from deep_morpho.datasets.cifar_dataset import transform_default
 
 
-all_args = MultiParser()
+all_args = GridParser()
 
 # all_args['batch_seed'] = [2249939862]
 all_args['batch_seed'] = [None]

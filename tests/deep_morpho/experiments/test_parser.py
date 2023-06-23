@@ -328,9 +328,9 @@ class TestMultiParser:
     def test_cli_args(mocker):
         testargs = ["file.py", "--dataset", "cifar10dataset", "--model", "BiMoNN", "bimonnclassifier"]
         mocker.patch("sys.argv", testargs)
-        from deep_morpho.experiments.parser import MultiParser
+        from deep_morpho.experiments.parser import GridParser
 
-        prs = MultiParser()
+        prs = GridParser()
         prs.parse_args()
         assert prs["model"] == ["BiMoNN", "bimonnclassifier"]
         assert prs["dataset"] == ["cifar10dataset"]
@@ -346,9 +346,9 @@ class TestMultiParser:
         mocker.patch("deep_morpho.models.BiMoNN.__init__", mock_model_init)
         mocker.patch("deep_morpho.datasets.cifar_dataset.CIFAR10Dataset.__init__", mock_dataset_init)
 
-        from deep_morpho.experiments.parser import MultiParser
+        from deep_morpho.experiments.parser import GridParser
 
-        prs = MultiParser()
+        prs = GridParser()
         prs["model"] = ["BiMoNN"]
         prs["dataset"] = ["cifar10dataset"]
         prs["arg1"] = ["value"]
@@ -373,9 +373,9 @@ class TestMultiParser:
     def test_unknown_args(mocker):
         testargs = ["file.py", ]
         mocker.patch("sys.argv", testargs)
-        from deep_morpho.experiments.parser import MultiParser
+        from deep_morpho.experiments.parser import GridParser
 
-        prs = MultiParser().parse_args(""
+        prs = GridParser().parse_args(""
             '--model BiMoNN --dataset cifar10dataset --epoch 20 40'
             "".split(" ")
         )
@@ -394,9 +394,9 @@ class TestMultiParser:
     def test_cli_over_dict(mocker):
         testargs = ["file.py", "--dataset", "mnistgrayscaledataset", "--model", "bimonnclassifier", "bimonn"]
         mocker.patch("sys.argv", testargs)
-        from deep_morpho.experiments.parser import MultiParser
+        from deep_morpho.experiments.parser import GridParser
 
-        prs = MultiParser()
+        prs = GridParser()
         prs["model"] = "BiMoNN"
         prs["dataset"] = "cifar10dataset"
         prs.parse_args()
@@ -415,9 +415,9 @@ class TestMultiParser:
     def test_cli_over_dict2(mocker):
         testargs = ["file.py", "--dataset", "mnistgrayscaledataset", "--kernel_size", "adapt"]
         mocker.patch("sys.argv", testargs)
-        from deep_morpho.experiments.parser import MultiParser
+        from deep_morpho.experiments.parser import GridParser
 
-        prs = MultiParser()
+        prs = GridParser()
         prs["model"] = ["BiMoNN"]
         prs["dataset"] = ["cifar10dataset"]
         prs.parse_args()
@@ -432,9 +432,9 @@ class TestMultiParser:
 
     @staticmethod
     def test_multi_dict(mocker):
-        from deep_morpho.experiments.parser import MultiParser
+        from deep_morpho.experiments.parser import GridParser
 
-        prs = MultiParser()
+        prs = GridParser()
         prs["model"] = ["BiMoNN", "bimonnclassifier"]
         prs["dataset"] = ["cifar10dataset"]
         prs.parse_args()
@@ -467,9 +467,9 @@ class TestMultiParser:
         mocker.patch("deep_morpho.datasets.cifar_dataset.CIFAR10Dataset.__init__", mock_dataset_init1)
         mocker.patch("deep_morpho.datasets.cifar_dataset.CIFAR100Dataset.__init__", mock_dataset_init2)
 
-        from deep_morpho.experiments.parser import MultiParser
+        from deep_morpho.experiments.parser import GridParser
 
-        prs = MultiParser()
+        prs = GridParser()
         prs.parse_args()
 
         assert prs.multi_args[0].given_args == set(["dataset", "model", "bbl.datamodule", "aau"])
@@ -482,9 +482,9 @@ class TestMultiParser:
 
         mocker.patch("deep_morpho.datasets.cifar_dataset.CIFAR10Dataset.__init__", mock_dataset_init)
 
-        from deep_morpho.experiments.parser import MultiParser
+        from deep_morpho.experiments.parser import GridParser
 
-        prs = MultiParser()
+        prs = GridParser()
         prs["bbl.train"] = ["train"]
         prs["bbl.val"] = ["val"]
         prs["bbl"] = ["test"]
@@ -507,9 +507,9 @@ class TestMultiParser:
         mocker.patch("deep_morpho.datasets.cifar_dataset.CIFAR10Dataset.__init__", mock_dataset_init)
         mocker.patch("deep_morpho.datasets.cifar_dataset.CIFAR100Dataset.__init__", mock_dataset_init2)
 
-        from deep_morpho.experiments.parser import MultiParser
+        from deep_morpho.experiments.parser import GridParser
 
-        prs = MultiParser()
+        prs = GridParser()
         prs["bbl"] = ["train"]
         prs["aau"] = ["seee"]
         prs["model"] = ["BiMoNN"]
@@ -537,9 +537,9 @@ class TestMultiParser:
         mocker.patch("deep_morpho.models.BiMoNN.__init__", mock_model_init)
         mocker.patch("deep_morpho.models.BiMoNNClassifier.__init__", mock_model_init2)
 
-        from deep_morpho.experiments.parser import MultiParser
+        from deep_morpho.experiments.parser import GridParser
 
-        prs = MultiParser()
+        prs = GridParser()
         prs["bbl"] = ["train"]
         prs["aau"] = ["seee"]
         prs["model"] = ["BiMoNN", "BiMoNNClassifier"]
@@ -558,9 +558,9 @@ class TestMultiParser:
 
     @staticmethod
     def test_dict_copy():
-        from deep_morpho.experiments.parser import MultiParser
+        from deep_morpho.experiments.parser import GridParser
 
-        prs = MultiParser()
+        prs = GridParser()
         prs["model"] = ["BiMoNN"]
         prs["dataset"] = ["cifar10dataset"]
 
