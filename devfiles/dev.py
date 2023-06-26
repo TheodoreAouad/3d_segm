@@ -1,7 +1,7 @@
 import pydicom
 from pydicom import tag
 
-file = "/hdd/aouadt/projets/data challenge sfr 2023/data/IGR/test/TAP.Seq4.Ser5.Img1.dcm"
+file = "/hdd/aouadt/projets/data challenge sfr 2023/data/IGR/NLASSAU_01_BENIN"
 
 dcm = pydicom.read_file(file)
 

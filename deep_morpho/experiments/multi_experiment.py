@@ -85,6 +85,8 @@ class MultiExperiment(ExperimentMethods):
         self.console_logger = None
         self.log_dir = None
 
+        self._is_setup = False
+
     def save_code(self):
         CodeSaver(
             src_path=os.getcwd(),
@@ -144,6 +146,8 @@ class MultiExperiment(ExperimentMethods):
         with Task("Saving code", self.console_logger):
             self.save_code()
 
+        self._is_setup = True
+
     def setup_experiment(self, args: Dict, **kwargs) -> ExperimentBase:
         if self.enforce_experiment_class:
             exp_class = self.experiment_class
@@ -174,30 +178,35 @@ class MultiExperiment(ExperimentMethods):
 
         return args_enforcers
 
-    def generate_experiments(self, **kwargs):
-        for args_idx, args in enumerate(self.multi_args):
-            experiment = self.setup_experiment(args, dest_dir=self.log_dir, **kwargs)
-            self.experiments.append(experiment)
+    # def generate_experiments(self, **kwargs):
+    #     for args_idx, args in enumerate(self.multi_args):
+    #         experiment = self.setup_experiment(args, dest_dir=self.log_dir, **kwargs)
+    #         self.experiments.append(experiment)
 
     def run_experiments(self):
         start_all = time()
 
+        if not self._is_setup:
+            self.setup()
+
         self.log_console('==================')
         bugged = []
-        for exp_idx, experiment in enumerate(self.experiments):
+        # for exp_idx, experiment in enumerate(self.experiments):
+        for arg_idx, args in enumerate(self.multi_args):
+            experiment = self.setup_experiment(args, dest_dir=self.log_dir, )
             self.log_console('==================')
-            self.log_console(f'Experiment number {exp_idx + 1} / {len(self.experiments)}')
+            self.log_console(f'Experiment number {arg_idx + 1} / {len(self.multi_args)}')
             self.log_console('Time since beginning: {} '.format(format_time(time() - start_all)))
             self.log_console(f'Experiment type: {experiment.__class__.__name__}')
             self.log_console(f'Experiment observables: {experiment.load_observables_fn}')
 
             with open(join(self.log_dir, 'state.txt'), 'w') as f:
-                f.write(f'Args number {exp_idx + 1} / {len(self.experiments)} running. Time since beginning: {format_time(time() - start_all)}')
+                f.write(f'Args number {arg_idx + 1} / {len(self.multi_args)} running. Time since beginning: {format_time(time() - start_all)}')
 
             pathlib.Path(experiment.tb_logger.log_dir).mkdir(parents=True, exist_ok=True)
 
             console_logger = create_logger(
-                f'experiment_{exp_idx}',
+                f'experiment_{arg_idx}',
                 all_logs_path=join(experiment.tb_logger.log_dir, 'all_logs.log'),
                 error_path=join(experiment.tb_logger.log_dir, 'error_logs.log')
             )
@@ -212,8 +221,8 @@ class MultiExperiment(ExperimentMethods):
                     experiment.run()
                 except Exception:
                     self.console_logger.exception(
-                        f'Args nb {exp_idx + 1} / {len(self.multi_args)} failed : ')
-                    bugged.append(exp_idx + 1)
+                        f'Args nb {arg_idx + 1} / {len(self.multi_args)} failed : ')
+                    bugged.append(arg_idx + 1)
 
             close_handlers(experiment.console_logger)
 
@@ -221,7 +230,7 @@ class MultiExperiment(ExperimentMethods):
             f.write(f'{len(self.multi_args)} experiments done in {format_time(time() - start_all)}')
 
         self.log_console(f'{len(bugged)} Experiments Bugged: ', bugged)
-        self.log_console(f'{len(self.experiments)} experiments done in {format_time(time() - start_all)}')
+        self.log_console(f'{len(self.multi_args)} experiments done in {format_time(time() - start_all)}')
         self.log_console(f"Log dir: {self.log_dir}")
 
     def log_console(self, *args, **kwargs):
