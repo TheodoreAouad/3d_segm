@@ -257,6 +257,9 @@ class GridParser(Parser):
         self.multi_args = None
         self.all_given_args = set()
 
+    def get_args(self, arg_idx: int) -> Parser:
+        return self.multi_args[arg_idx]
+
     def add_default_args_to_dict(self, dict_, args):
         dict_.update({k: [v] for k, v in args.__dict__.items() if k not in self.given_args.union(self.keys())})
 

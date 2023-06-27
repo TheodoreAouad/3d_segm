@@ -16,9 +16,10 @@ from .experiment_morpho import (
 )
 from .experiment_classification import ExperimentClassification, ExperimentClassificationChannel
 from .context import Task
-from.enforcers import (
+from .enforcers import (
     ArgsMnist, ArgsCifar, ArgsSymetricBinary
 )
+from .parser import GridParser, Parser
 from general.nn.experiments.experiment_methods import ExperimentMethods
 from deep_morpho.models import LightningBiMoNN, LightningSTEConv
 
@@ -67,7 +68,7 @@ class MultiExperiment(ExperimentMethods):
 
     def __init__(
         self,
-        multi_args: List[Dict],
+        multi_args: GridParser,
         dest_dir: str = "deep_morpho/results/results_tensorboards",
         experiment_class: Type[ExperimentBase] = ExperimentBase,
         enforce_experiment_class: bool = False,
@@ -86,6 +87,10 @@ class MultiExperiment(ExperimentMethods):
         self.log_dir = None
 
         self._is_setup = False
+
+    @property
+    def n_experiments(self):
+        return len(self.multi_args)
 
     def save_code(self):
         CodeSaver(
@@ -138,7 +143,8 @@ class MultiExperiment(ExperimentMethods):
             self.device = torch.device("cpu")
         self.log_console("device", self.device)
 
-        self.log_dir = join(self.dest_dir, self.multi_args[0]['experiment_name'])
+        self.log_dir = join(self.dest_dir, self.multi_args['experiment_name'][0])
+        # self.log_dir = join(self.dest_dir, self.multi_args[0]['experiment_name'])
         if self.generate_new_folder:
             self.log_dir = get_next_same_name(self.log_dir)
         self.log_console("log_dir", self.log_dir)
@@ -147,6 +153,9 @@ class MultiExperiment(ExperimentMethods):
             self.save_code()
 
         self._is_setup = True
+
+    def setup_args(self, arg_idx: int) -> Parser:
+        return self.multi_args.get_args(arg_idx)
 
     def setup_experiment(self, args: Dict, **kwargs) -> ExperimentBase:
         if self.enforce_experiment_class:
@@ -191,17 +200,19 @@ class MultiExperiment(ExperimentMethods):
 
         self.log_console('==================')
         bugged = []
-        # for exp_idx, experiment in enumerate(self.experiments):
-        for arg_idx, args in enumerate(self.multi_args):
+
+        exp_done = 0
+        for arg_idx in enumerate(self.n_experiments):
+            args = self.setup_args(arg_idx)
             experiment = self.setup_experiment(args, dest_dir=self.log_dir, )
             self.log_console('==================')
-            self.log_console(f'Experiment number {arg_idx + 1} / {len(self.multi_args)}')
+            self.log_console(f'Experiment number {arg_idx + 1} / {self.n_experiments}')
             self.log_console('Time since beginning: {} '.format(format_time(time() - start_all)))
             self.log_console(f'Experiment type: {experiment.__class__.__name__}')
             self.log_console(f'Experiment observables: {experiment.load_observables_fn}')
 
             with open(join(self.log_dir, 'state.txt'), 'w') as f:
-                f.write(f'Args number {arg_idx + 1} / {len(self.multi_args)} running. Time since beginning: {format_time(time() - start_all)}')
+                f.write(f'Args number {arg_idx + 1} / {self.n_experiments} running. Time since beginning: {format_time(time() - start_all)}')
 
             pathlib.Path(experiment.tb_logger.log_dir).mkdir(parents=True, exist_ok=True)
 
@@ -221,16 +232,17 @@ class MultiExperiment(ExperimentMethods):
                     experiment.run()
                 except Exception:
                     self.console_logger.exception(
-                        f'Args nb {arg_idx + 1} / {len(self.multi_args)} failed : ')
+                        f'Args nb {arg_idx + 1} / {self.n_experiments} failed : ')
                     bugged.append(arg_idx + 1)
 
             close_handlers(experiment.console_logger)
+            exp_done += 1
 
         with open(join(self.log_dir, 'state.txt'), 'w') as f:
-            f.write(f'{len(self.multi_args)} experiments done in {format_time(time() - start_all)}')
+            f.write(f'{exp_done} experiments done in {format_time(time() - start_all)}')
 
         self.log_console(f'{len(bugged)} Experiments Bugged: ', bugged)
-        self.log_console(f'{len(self.multi_args)} experiments done in {format_time(time() - start_all)}')
+        self.log_console(f'{exp_done} experiments done in {format_time(time() - start_all)}')
         self.log_console(f"Log dir: {self.log_dir}")
 
     def log_console(self, *args, **kwargs):
