@@ -1,15 +1,17 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Dict, Any, Tuple
 from os.path import join
 import pathlib
 
 import torch
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping as LightningEarlyStopping
+from pytorch_lightning.callbacks import Callback
 
 from general.nn.observables import Observable
 from general.utils import save_json, log_console
-from pytorch_lightning.callbacks.early_stopping import EarlyStopping
-from pytorch_lightning.callbacks import Callback
+
+from ..models import BiSEBase
 
 
 class ReasonCodeEnum(Enum):
@@ -17,17 +19,17 @@ class ReasonCodeEnum(Enum):
     STOPPING_THRESHOLD = 1
     DIVERGENCE_THRESHOLD = 2
     STOP_IMPROVING = 3
+    ALL_BISE_ACTIVATED = 4
 
 
-
-class EarlyStoppingBase(EarlyStopping, Observable, ABC):
-
-    def __init__(self, name: str = '', console_logger=None, *args, **kwargs):
+class EarlyStoppingBase(Observable, ABC):
+    def __init__(self, name: str = '', console_logger=None, verbose: bool = True, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = name
         self.reason_code = None
         self.stopped_batch = None
         self.stopped_epoch = None
+        self.verbose = verbose
         self.console_logger = console_logger
 
     def on_train_epoch_end(self, trainer, pl_module) -> None:
@@ -39,11 +41,44 @@ class EarlyStoppingBase(EarlyStopping, Observable, ABC):
     def on_train_batch_end(self, trainer: 'pl.Trainer', *args, **kwargs) -> None:
         return
 
-    def perform_early_stopping(self, trainer):
-        if self._should_skip_check(trainer):
-            return
-        self._run_early_stopping_check(trainer)
+    def get_save_dict(self):
+        return {
+            "stopped_batch": self.stopped_batch,
+            "stopped_epoch": self.stopped_epoch,
+            "stopping_reason": str(self.reason_code),
+        }
 
+    def save(self, save_path: str):
+        final_dir = join(save_path, join(self.__class__.__name__, self.name))
+        pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
+
+        to_save = self.get_save_dict()
+
+        save_json(to_save, join(final_dir, "results.json"))
+        return to_save
+
+    def perform_early_stopping(self, trainer, pl_module):
+        should_stop, reason, reason_code = self.run_early_stopping_check(trainer, pl_module)
+
+        trainer.should_stop = trainer.should_stop or should_stop
+
+        if should_stop:
+            self.reason_code = reason_code
+            self.stopped_epoch = trainer.current_epoch
+            self.stopped_batch = trainer.global_step
+            if self.verbose:
+                log_console(f"epoch={self.stopped_epoch}, batch={self.stopped_batch}", reason)
+
+
+    @abstractmethod
+    def run_early_stopping_check(self, trainer, pl_module) -> Tuple[bool, str, ReasonCodeEnum]:
+        should_stop: bool = None
+        reason_code: ReasonCodeEnum = None
+        reason: str = None
+        return should_stop, reason, reason_code
+
+
+class EarlyStoppingMetricBase(EarlyStoppingBase, LightningEarlyStopping, ABC):
 
     def on_save_checkpoint(self, *args, **kwargs):
         res = super().on_save_checkpoint(None, None, None)  # lightning necessity to avoid *args and kwargs. May change in future versions.
@@ -55,33 +90,13 @@ class EarlyStoppingBase(EarlyStopping, Observable, ABC):
         super().on_load_checkpoint(callback_state)
         self.stopped_batch = callback_state['stopped_batch']
 
-    def save(self, save_path: str):
-        final_dir = join(save_path, join(self.__class__.__name__, self.name))
-        pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
-
-        best_score = self.best_score
-        if isinstance(best_score, torch.Tensor):
-            best_score = best_score.item()
-
-        to_save = {
-            "stopped_batch": self.stopped_batch,
-            "stopped_epoch": self.stopped_epoch,
-            "wait_count": self.wait_count,
-            "best_score": best_score,
-            "patience": self.patience,
-            "monitor": self.monitor,
-            "stopping_reason": str(self.reason_code),
-        }
-
-        save_json(to_save, join(final_dir, "results.json"))
-        return to_save
-
-
     def _run_early_stopping_check(self, trainer) -> None:
         """
         Checks whether the early stopping condition is met
         and if so tells the trainer to stop the training.
         """
+        if self._should_skip_check(trainer):
+            return None, None, None
         logs = trainer.logged_metrics
         # logs = trainer.callback_metrics
 
@@ -96,17 +111,14 @@ class EarlyStoppingBase(EarlyStopping, Observable, ABC):
         # when in dev debugging
         trainer.dev_debugger.track_early_stopping_history(self, current)
 
-        should_stop, reason, self.reason_code = self._evalute_stopping_criteria(current)
+        should_stop, reason, reason_code = self._evalute_stopping_criteria(current)
 
         # stop every ddp process if any world process decides to stop
         should_stop = trainer.training_type_plugin.reduce_boolean_decision(should_stop)
-        trainer.should_stop = trainer.should_stop or should_stop
-        if should_stop:
-            self.stopped_epoch = trainer.current_epoch
-            self.stopped_batch = trainer.global_step
-            log_console(f"epoch={self.stopped_epoch}, batch={self.stopped_batch}", reason)
-        if reason and self.verbose:
-            self._log_info(trainer, reason)
+
+        return should_stop, reason, reason_code
+
+
 
     def _evalute_stopping_criteria(self, current: torch.Tensor) -> Tuple[bool, str]:
         should_stop = False
@@ -154,19 +166,38 @@ class EarlyStoppingBase(EarlyStopping, Observable, ABC):
 
         return should_stop, reason_str, reason_code
 
+    def run_early_stopping_check(self, trainer, pl_module) -> Tuple[bool, str, ReasonCodeEnum]:
+        return self._run_early_stopping_check(trainer)
 
-class BatchEarlyStopping(EarlyStoppingBase):
-    def on_train_batch_end(self, trainer: 'pl.Trainer', *args, **kwargs) -> None:
-        return self.perform_early_stopping(trainer)
+    def get_save_dict(self):
+        to_save = super().get_save_dict()
+
+        best_score = self.best_score
+        if isinstance(best_score, torch.Tensor):
+            best_score = best_score.item()
+
+        to_save.update({
+            "wait_count": self.wait_count,
+            "patience": self.patience,
+            "monitor": self.monitor,
+            "best_score": best_score,
+        })
+
+        return to_save
 
 
-class EpochValEarlyStopping(EarlyStoppingBase):
-    def on_validation_end(self, trainer: 'pl.Trainer', *args, **kwargs) -> None:
-        return self.perform_early_stopping(trainer)
+class BatchEarlyStopping(EarlyStoppingMetricBase):
+    def on_train_batch_end(self, trainer: 'pl.Trainer', pl_module, *args, **kwargs) -> None:
+        return self.perform_early_stopping(trainer, pl_module)
+
+
+class EpochValEarlyStopping(EarlyStoppingMetricBase):
+    def on_validation_end(self, trainer: 'pl.Trainer', pl_module, *args, **kwargs) -> None:
+        return self.perform_early_stopping(trainer, pl_module)
 
 
 
-class BatchActivatedEarlyStopping(Callback):
+class BatchActivatedEarlyStopping(EarlyStoppingBase):
 
     def __init__(self, patience=300, *args, **kwargs):
         """Callback to stop training when all BiSE are activated.
@@ -175,33 +206,41 @@ class BatchActivatedEarlyStopping(Callback):
             patience (int, optional): Number of batches to wait until we start the stopping. We avoid initial activations. Defaults to 300.
         """
         super().__init__(*args, **kwargs)
-        self.stopped_batch = None
-        self.stopped_epoch = None
         self.patience = patience
 
     def on_train_batch_end(self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule', outputs: "STEP_OUTPUT", batch: Any, batch_idx: int, dataloader_idx: int) -> None:
+        self.perform_early_stopping(trainer, pl_module)
+
+    def run_early_stopping_check(self, trainer, pl_module) -> Tuple[bool, str, ReasonCodeEnum]:
         if trainer.global_step < self.patience:
             return
 
-        for bisel in pl_module.model.layers:
-            for bise in bisel.bises:
-                bise.update_learned_selems()
-                if not bise.is_activated.all():
-                    return
+        # for bisel in pl_module.model.layers:
+        #     for bise in bisel.bises:
+        #         bise.update_learned_selems()
+        #         if not bise.is_activated.all():
+        #             return
+        for bise_module in pl_module.model.modules():
+            if not isinstance(bise_module, BiSEBase):
+                continue
+            if not bise_module.is_activated.all():
+                return False, None, None
 
-        trainer.should_stop = True
-        if trainer.should_stop:
-            self.stopped_epoch = trainer.current_epoch
-            self.stopped_batch = trainer.global_step
+        return True, "All BiSE activated", ReasonCodeEnum.ALL_BISE_ACTIVATED
 
-    def save(self, save_path: str):
-        final_dir = join(save_path, join(self.__class__.__name__))
-        pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
+        # trainer.should_stop = True
+        # if trainer.should_stop:
+        #     self.stopped_epoch = trainer.current_epoch
+        #     self.stopped_batch = trainer.global_step
 
-        to_save = {
-            "stopped_batch": self.stopped_batch,
-            "patience": self.patience,
-        }
+    # def save(self, save_path: str):
+    #     final_dir = join(save_path, join(self.__class__.__name__))
+    #     pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
 
-        save_json(to_save, join(final_dir, "results.json"))
-        return to_save
+    #     to_save = {
+    #         "stopped_batch": self.stopped_batch,
+    #         "patience": self.patience,
+    #     }
+
+    #     save_json(to_save, join(final_dir, "results.json"))
+    #     return to_save

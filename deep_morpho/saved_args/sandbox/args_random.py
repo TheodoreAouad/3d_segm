@@ -15,23 +15,24 @@ from deep_morpho.datasets.gray_to_channels_dataset import LevelsetValuesEqualInd
 from deep_morpho.models.bise_base import ClosestSelemEnum, BiseBiasOptimEnum, BiseWeightsOptimEnum
 from deep_morpho.models.activations import NormalizedTanh
 from deep_morpho.initializer import InitBimonnEnum, InitBiseEnum
-from deep_morpho.experiments.parser import GridParser
+from deep_morpho.experiments.random_parser import RandomParser, UniformSearch
 from .args_morp_ops import morp_operations
 from .args_enforcers import enforcers
 from deep_morpho.datasets.cifar_dataset import transform_default
+from deep_morpho.morp_operations import ParallelMorpOperations, ParallelMorpOperationsGrayTopHats
 
 
-all_args = GridParser()
+all_args = RandomParser(n_tries=100)
 
-all_args['batch_seed'] = [2249939862]
-# all_args['batch_seed'] = [None]
+# all_args['batch_seed'] = [2249939862]
+all_args['batch_seed'] = [None]
 
 all_args['n_try'] = [0]
 
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
     # "debug",
-    "Bimonn_exp_80/sandbox/1_/"
+    "Bimonn_exp_80/sandbox/random/0_/"
     # "Bimonn_exp_80/sandbox/dilation_proj_activated/"
     # "Bimonn_exp_79/sandbox/1_/"
     # "Bimonn_exp_78/bnn/"
@@ -97,8 +98,14 @@ all_args['dataset'] = [
 
 
 # DATA ARGS
-all_args['morp_operation'] = morp_operations
-
+all_args['morp_operation'] = (
+    [
+        ParallelMorpOperations.dilation(("dcross", 7), name="dilation/dcross"),
+        ParallelMorpOperations.dilation(("disk", 3), name="dilation/dcross"),
+        ParallelMorpOperations.erosion(("dcross", 7), name="erosion/dcross"),
+        ParallelMorpOperations.erosion(("disk", 3), name="erosion/dcross"),
+    ]
+)
 # TODO: put in an args enforcer
 all_args['apply_one_hot_target'] = [
     False,  # For cross entropy loss
@@ -173,12 +180,7 @@ all_args["n_inputs_val"] = [10_000]
 all_args["n_inputs_test"] = [10_000]
 
 # TRAINING ARGS
-all_args['learning_rate'] = [
-    1e-1,
-    # 0.001,
-    # 1e-3,
-    # 1e-4,
-]
+all_args['learning_rate'] = 10**UniformSearch(-3, -1)
 
 all_args['loss_data_str'] = [
     # nn.BCELoss(),
@@ -190,8 +192,8 @@ all_args['loss_data_str'] = [
     "BCELoss",
     # "CrossEntropyLoss",
     # "SquaredHingeLoss",
-    # "MSELoss",
-    # "DiceLoss",
+    "MSELoss",
+    "DiceLoss",
     # "MaskedDiceLoss",
     # "NormalizedDiceLoss",
 ]
@@ -199,15 +201,15 @@ all_args['loss_regu'] = [
     # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
     # "linear",
     # "None",
-    # ("RegularizationProjConstant", {}),
+    ("RegularizationProjConstant", {}),
     ("RegularizationProjActivated", {}),
 ]
 all_args["loss_coefs"] = [
     # {"loss_data": 0, "loss_regu": 0.1},
-    {"loss_data": 1, "loss_regu": 0.1},
-    # {"loss_data": 1, "loss_regu": 0.01},
-    # {"loss_data": 1, "loss_regu": 0.001},
-    # {"loss_data": 1, "loss_regu": 0},
+    # {"loss_data": 1, "loss_regu": 0.1},
+    {"loss_data": 1, "loss_regu": 0.01},
+    {"loss_data": 1, "loss_regu": 0.001},
+    {"loss_data": 1, "loss_regu": 0},
 ]
 all_args['optimizer'] = [ 
     optim.Adam,
@@ -228,12 +230,11 @@ all_args['freq_hist'] = [
     "epoch"
 ]
 all_args["freq_update_binary_batch"] = [
-    # 1
-    None
+    1
 ]
 all_args["freq_update_binary_epoch"] = [
-    1,
-    # None,
+    # 1,
+    None,
 ]
 all_args['freq_scalars'] = [2]
 # all_args['max_epochs.trainer'] = [1]
@@ -316,39 +317,57 @@ all_args['channels'] = [
     # [100, 100, 100, 100],
     # [50, 50, ],
 ]
-all_args['closest_selem_method'] = [
-    # ClosestSelemEnum.MIN_DIST
-    # ClosestSelemEnum.MAX_SECOND_DERIVATIVE
-    # ClosestSelemEnum.MIN_DIST_DIST_TO_CST,
-    ClosestSelemEnum.MIN_DIST_ACTIVATED_POSITIVE,
-]
+all_args['closest_selem_method'] = (
+    [
+        # ClosestSelemEnum.MIN_DIST
+        # ClosestSelemEnum.MAX_SECOND_DERIVATIVE
+        ClosestSelemEnum.MIN_DIST_DIST_TO_CST,
+        ClosestSelemEnum.MIN_DIST_ACTIVATED_POSITIVE,
+    ],
+    [
+        1/2, 1/2
+    ]
+)
 
-all_args['bias_optim_mode'] = [
-    # BiseBiasOptimEnum.RAW,
-    BiseBiasOptimEnum.POSITIVE,
-    # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
-    # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
-]
+all_args['bias_optim_mode'] = (
+    [
+        # BiseBiasOptimEnum.RAW,
+        BiseBiasOptimEnum.POSITIVE,
+        BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
+        BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+    ],
+    [1/3, 1/3, 1/3]
+)
+
+
 all_args['bias_optim_args'] = [
     {"offset": 0}
 ]
-all_args['weights_optim_mode'] = [
-    BiseWeightsOptimEnum.THRESHOLDED,
-    # BiseWeightsOptimEnum.ELLIPSE_ROOT,
-    # BiseWeightsOptimEnum.NORMALIZED
-]
+all_args['weights_optim_mode'] = (
+    [
+        BiseWeightsOptimEnum.THRESHOLDED,
+        # BiseWeightsOptimEnum.ELLIPSE_ROOT,
+        BiseWeightsOptimEnum.NORMALIZED
+    ],
+    [1/2, 1/2]
+)
 
-all_args['threshold_mode'] = [
-    {
-        # "weight": 'identity',
-        "weight": 'softplus',
-        "activation": 'tanh',
-        # "activation": 'tanh',
-        # "activation": 'sigmoid',
-    },
-]
+
+all_args['threshold_mode'] = (
+    [
+        {
+            "weight": 'softplus',
+            "activation": 'tanh',
+        },
+        {
+            "weight": 'softplus',
+            "activation": 'sigmoid',
+        },
+    ]
+)
+
+
 all_args['weights_optim_args'] = [
-    # {"constant_P": True}
     {"constant_P": True, "factor": 1}
 ]
 
@@ -380,10 +399,6 @@ all_args['activation_P'] = [0]
 all_args['constant_activation_P'] = [False]
 all_args['force_lui_identity'] = [False]
 all_args['constant_P_lui'] = [False]
-# all_args['early_stopping'] = [[
-#             obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
-#             obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
-# ]]
 
 
 

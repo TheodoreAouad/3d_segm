@@ -36,14 +36,14 @@ selems = []
 
 for op in [
     # 'disk',
-    # "hstick",
-    "dcross",
+    "hstick",
+    # "dcross",
     # "bsquare",
     # "bdiamond",
     # "bcomplex",
     # "scross"
 ]:
-    size = 7
+    size = 5
     if op == "disk":
         size = size // 2
 

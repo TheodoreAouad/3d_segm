@@ -1,8 +1,10 @@
-from typing import Dict
+from typing import Any, Dict
 from os.path import join
 import pathlib
 
 import numpy as np
+import pytorch_lightning as pl
+from pytorch_lightning.utilities.types import STEP_OUTPUT
 
 from general.nn.observables import Observable
 from deep_morpho.models import BiSEBase
@@ -12,20 +14,39 @@ from deep_morpho.models import NotBinaryNN
 
 class ActivatednessObservable(Observable):
 
-    def __init__(self, freq=1, layers=None, layer_name="layers", *args, **kwargs):
+    def __init__(self, freq={"batch": 1, "epoch": 1}, layers=None, layer_name="layers", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.last = {}
         self.freq = freq
-        self.freq_idx = 0
+        self.freq_idx = {"batch": 0, "epoch": 0}
         self.layers = layers
         self.layer_name = layer_name
 
     def on_train_epoch_end(self, trainer, pl_module):
-        if self.freq is None or self.freq_idx % self.freq != 0:
-            self.freq_idx += 1
+        if self.freq["epoch"] is None or self.freq_idx["epoch"] % self.freq["epoch"] != 0:
+            self.freq_idx["epoch"] += 1
             return
-        self.freq_idx += 1
+        self.freq_idx["epoch"] += 1
 
+        self.log_tb(trainer, pl_module, batch_or_epoch="epoch", step=trainer.current_epoch)
+
+    def on_train_batch_end_with_preds(
+        self,
+        trainer,
+        pl_module,
+        outputs: STEP_OUTPUT,
+        batch: Any,
+        batch_idx: int,
+        preds: Any,
+    ):
+        if self.freq["batch"] is None or self.freq_idx["batch"] % self.freq["batch"] != 0:
+            self.freq_idx["batch"] += 1
+            return
+        self.freq_idx["batch"] += 1
+
+        self.log_tb(trainer, pl_module, batch_or_epoch="batch", step=trainer.global_step)
+
+    def log_tb(self, trainer, pl_module, batch_or_epoch: str, step: int):
         layers = self._get_layers(pl_module)
 
 
@@ -65,7 +86,7 @@ class ActivatednessObservable(Observable):
             })
 
             for key, value in self.last[layer_idx].items():
-                trainer.logger.experiment.add_scalar(f"activatedness_details/{key}/layer_{layer_idx}", value, trainer.current_epoch)
+                trainer.logger.experiment.add_scalar(f"activatedness_details/{batch_or_epoch}/{key}/layer_{layer_idx}", value, step)
                 # pl_module.log(f"activatedness/layer_{layer_idx}/{key}", value,)
 
 
@@ -77,8 +98,7 @@ class ActivatednessObservable(Observable):
         })
 
         for key, value in self.last["all"].items():
-            trainer.logger.experiment.add_scalar(f"activatedness/all/{key}", value, trainer.current_epoch)
-            # pl_module.log(f"activatedness/all/{key}", value,)
+            trainer.logger.experiment.add_scalar(f"activatedness/all/{batch_or_epoch}/{key}", value, step)
 
 
     def save(self, save_path: str):
@@ -115,20 +135,40 @@ class ActivatednessObservable(Observable):
 
 class ClosestDistObservable(Observable):
 
-    def __init__(self, freq=1, layers=None, layer_name="layers", *args, **kwargs):
+    def __init__(self, freq={"epoch": 1, "batch": 1}, layers=None, layer_name="layers", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.last = {}
         self.freq = freq
-        self.freq_idx = 0
+        self.freq_idx = {"epoch": 0, "batch": 0}
         self.layers = layers
         self.layer_name = layer_name
 
     def on_train_epoch_end(self, trainer, pl_module):
-        if self.freq is None or self.freq_idx % self.freq != 0:
-            self.freq_idx += 1
+        if self.freq["epoch"] is None or self.freq_idx["epoch"] % self.freq["epoch"] != 0:
+            self.freq_idx["epoch"] += 1
             return
-        self.freq_idx += 1
+        self.freq_idx["epoch"] += 1
 
+        self.log_tb(trainer, pl_module, batch_or_epoch="epoch", step=trainer.current_epoch)
+
+    def on_train_batch_end_with_preds(
+        self,
+        trainer,
+        pl_module,
+        outputs: STEP_OUTPUT,
+        batch: Any,
+        batch_idx: int,
+        preds: Any,
+    ):
+        if self.freq["batch"] is None or self.freq_idx["batch"] % self.freq["batch"] != 0:
+            self.freq_idx["batch"] += 1
+            return
+        self.freq_idx["batch"] += 1
+
+        self.log_tb(trainer, pl_module, batch_or_epoch="batch", step=trainer.global_step)
+
+
+    def log_tb(self, trainer, pl_module, batch_or_epoch: str, step: int):
         layers = self._get_layers(pl_module)
 
 
@@ -163,11 +203,11 @@ class ClosestDistObservable(Observable):
             for key, value in self.last[layer_idx].items():
                 if key == "closest_dist":
                     continue
-                trainer.logger.experiment.add_scalar(f"closest_details/{key}/layer_{layer_idx}", value, trainer.current_epoch)
+                trainer.logger.experiment.add_scalar(f"closest_details/{batch_or_epoch}/{key}/layer_{layer_idx}", value, trainer.current_epoch)
                 # pl_module.log(f"closest/layer_{layer_idx}/{key}", value,)
 
             if len(self.last[layer_idx]["closest_dist"]) > 0:
-                trainer.logger.experiment.add_histogram(f"closest_details/closest_dist/layer_{layer_idx}", self.last[layer_idx]["closest_dist"], trainer.current_epoch)
+                trainer.logger.experiment.add_histogram(f"closest_details/{batch_or_epoch}/closest_dist/layer_{layer_idx}", self.last[layer_idx]["closest_dist"], trainer.current_epoch)
 
             for key, value in self.last["all"].items():
                 self.last["all"][key] += value
@@ -181,11 +221,11 @@ class ClosestDistObservable(Observable):
         for key, value in self.last["all"].items():
             if key == "closest_dist":
                 continue
-            trainer.logger.experiment.add_scalar(f"closest/all/{key}", value, trainer.current_epoch)
+            trainer.logger.experiment.add_scalar(f"closest/all/{batch_or_epoch}/{key}", value, trainer.current_epoch)
             # pl_module.log(f"activatedness/all/{key}", value,)
 
         if len(self.last["all"]["closest_dist"]) > 0:
-            trainer.logger.experiment.add_histogram(f"closest/all/closest_dist", self.last["all"]["closest_dist"], trainer.current_epoch)
+            trainer.logger.experiment.add_histogram(f"closest/all/{batch_or_epoch}/closest_dist", self.last["all"]["closest_dist"], trainer.current_epoch)
 
     def save(self, save_path: str):
         final_dir = join(save_path, self.__class__.__name__)

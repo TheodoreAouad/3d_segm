@@ -64,13 +64,21 @@ def default_load_observables_fn(experiment: "ExperimentBase", ) -> Tuple:
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         # "ConvergenceBinary": obs.ConvergenceBinary(freq=args['freq_imgs']),
 
-        obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+        # obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
         # "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss_batch'], mode="min"),
         # "BatchEarlyStoppingBinaryDice": obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
         # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
         obs.EpochReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
         obs.CheckLearningRate(freq=2 * args['freq_scalars']),
     ]
+
+    if 'early_stopping' in experiment.args:
+        observables += experiment.args['early_stopping']
+    else:
+        observables += [
+            obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+        ]
+
 
     model_checkpoint_obs = ModelCheckpoint(
         monitor="metrics_epoch_mean/per_batch_step/loss_val",
@@ -141,13 +149,20 @@ def default_binary_load_observables_fn(experiment: "ExperimentBase", ) -> Tuple:
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         # "ConvergenceBinary": obs.ConvergenceBinary(freq=args['freq_imgs']),
 
-        obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+        # obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
         # "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss_batch'], mode="min"),
         # "BatchEarlyStoppingBinaryDice": obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
         # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
         obs.EpochReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
         obs.CheckLearningRate(freq=2 * args['freq_scalars']),
     ]
+
+    if 'early_stopping' in experiment.args:
+        observables += experiment.args['early_stopping']
+    else:
+        observables += [
+            obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+        ]
 
     model_checkpoint_obs = ModelCheckpoint(
         monitor="metrics_epoch_mean/per_batch_step/loss_val",
@@ -204,8 +219,8 @@ def load_observables_bimonn_morpho_binary(experiment):
         obs.ConvergenceMetrics(metrics, freq=args['freq_scalars']),
 
         obs.UpdateBinary(freq_batch=args["freq_update_binary_batch"], freq_epoch=args["freq_update_binary_epoch"]),
-        obs.ActivatednessObservable(freq=args["freq_update_binary_epoch"]),
-        obs.ClosestDistObservable(freq=args["freq_update_binary_epoch"]),
+        obs.ActivatednessObservable(freq={"epoch": args["freq_update_binary_epoch"], "batch": args["freq_update_binary_batch"]}),
+        obs.ClosestDistObservable(freq={"epoch": args["freq_update_binary_epoch"], "batch": args["freq_update_binary_batch"]}),
         obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),
@@ -221,14 +236,25 @@ def load_observables_bimonn_morpho_binary(experiment):
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         # "ConvergenceBinary": obs.ConvergenceBinary(freq=args['freq_imgs']),
 
-        obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
-        # "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss_batch'], mode="min"),
-        # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
-        obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
         obs.EpochReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
         obs.CheckLearningRate(freq=2 * args['freq_scalars']),
+
+        # obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+        # "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss_batch'], mode="min"),
+        # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
+        # obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
     ]
 
+    if 'early_stopping' in experiment.args:
+        observables += experiment.args['early_stopping']
+    else:
+        observables += [
+            obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+            obs.CombineEarlyStopping(name="dice_and_ativated", early_stoppers=[
+                obs.BatchActivatedEarlyStopping(patience=0),
+                obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
+            ], decision_rule="and")
+        ]
 
     model_checkpoint_obs = ModelCheckpoint(
         monitor="metrics_epoch_mean/per_batch_step/loss_val",
@@ -302,14 +328,20 @@ def load_observables_morpho_binary(experiment):
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         # "ConvergenceBinary": obs.ConvergenceBinary(freq=args['freq_imgs']),
 
-        obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+        obs.EpochReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
+        obs.CheckLearningRate(freq=2 * args['freq_scalars']),
+        # obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
         # "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss_batch'], mode="min"),
         # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
         # obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
-        obs.EpochReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
-        obs.CheckLearningRate(freq=2 * args['freq_scalars']),
     ]
 
+    if 'early_stopping' in experiment.args:
+        observables += experiment.args['early_stopping']
+    else:
+        observables += [
+            obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+        ]
 
     model_checkpoint_obs = ModelCheckpoint(
         monitor="metrics_epoch_mean/per_batch_step/loss_val",
@@ -385,13 +417,20 @@ def load_observables_ste_morpho_binary(experiment):
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         # "ConvergenceBinary": obs.ConvergenceBinary(freq=args['freq_imgs']),
 
-        obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+        obs.EpochReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
+        obs.CheckLearningRate(freq=2 * args['freq_scalars']),
+        # obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
         # "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss_batch'], mode="min"),
         # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
         # obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
-        obs.EpochReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
-        obs.CheckLearningRate(freq=2 * args['freq_scalars']),
     ]
+
+    if 'early_stopping' in experiment.args:
+        observables += experiment.args['early_stopping']
+    else:
+        observables += [
+            obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+        ]
 
 
     model_checkpoint_obs = ModelCheckpoint(
@@ -469,13 +508,23 @@ def load_observables_bimonn_morpho_grayscale(experiment):
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         # "ConvergenceBinary": obs.ConvergenceBinary(freq=args['freq_imgs']),
 
-        obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
-        # "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss_batch'], mode="min"),
-        # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
-        obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
         obs.EpochReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
         obs.CheckLearningRate(freq=2 * args['freq_scalars']),
+        # obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+        # # "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss_batch'], mode="min"),
+        # # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
+        # obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
     ]
+
+    if 'early_stopping' in experiment.args:
+        observables += experiment.args['early_stopping']
+    else:
+        observables += [
+            obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+            # "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss_batch'], mode="min"),
+            # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
+            obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
+        ]
 
     model_checkpoint_obs = ModelCheckpoint(
         monitor="metrics_epoch_mean/per_batch_step/loss_val",
@@ -547,13 +596,20 @@ def load_observables_classification_bimonn(experiment):
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         # "ConvergenceBinary": obs.ConvergenceBinary(freq=args['freq_imgs']),
 
-        obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+        # obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
         # "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss_batch'], mode="min"),
         # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
         # obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
         obs.EpochReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
         obs.CheckLearningRate(freq=2 * args['freq_scalars']),
     ]
+
+    if 'early_stopping' in experiment.args:
+        observables += experiment.args['early_stopping']
+    else:
+        observables += [
+            obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+        ]
 
     model_checkpoint_obs = ModelCheckpoint(
         monitor="metrics_epoch_mean/per_batch_step/loss_val",
@@ -627,13 +683,20 @@ def load_observables_classification_channel_bimonn(experiment):
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         # "ConvergenceBinary": obs.ConvergenceBinary(freq=args['freq_imgs']),
 
-        obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+        # obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
         # "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss_batch'], mode="min"),
         # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
         # obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
         obs.EpochReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
         obs.CheckLearningRate(freq=2 * args['freq_scalars']),
     ]
+
+    if 'early_stopping' in experiment.args:
+        observables += experiment.args['early_stopping']
+    else:
+        observables += [
+            obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+        ]
 
     model_checkpoint_obs = ModelCheckpoint(
         monitor="metrics_epoch_mean/per_batch_step/loss_val",

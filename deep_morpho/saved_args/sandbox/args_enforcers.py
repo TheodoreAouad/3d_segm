@@ -57,6 +57,12 @@ class ArgsEnforcersCurrent(ArgsEnforcer):
             # elif "black_tophat" in experiment.args['morp_operation'].name:
             #     experiment.args['random_gen_args']['p_invert'] = 0
 
+            if isinstance(experiment.args['loss_regu'], tuple) and experiment.args['loss_regu'][0] == "RegularizationProjActivated":
+                experiment.args['closest_selem_method'] = ClosestSelemEnum.MIN_DIST_ACTIVATED_POSITIVE
+
+            elif isinstance(experiment.args['loss_regu'], tuple) and experiment.args['loss_regu'][0] == "RegularizationProjConstant":
+                experiment.args['closest_selem_method'] = ClosestSelemEnum.MIN_DIST_DIST_TO_CST
+
             if experiment.args["freq_imgs"] == "epoch":
                 experiment.args["freq_imgs"] = experiment.args["n_steps"]
 
@@ -119,6 +125,8 @@ class ArgsEnforcersCurrent(ArgsEnforcer):
                 assert "gray" in experiment.args['morp_operation'].name
             elif experiment.args['dataset'] in ["mnist", "diskorectdataset", "inverted_mnist"]:
                 assert "gray" not in experiment.args['morp_operation'].name
+
+            experiment.args["log_every_n_steps.trainer"] = experiment.args["freq_scalars"]
 
         self.enforcers.append(enforce_fn)
 

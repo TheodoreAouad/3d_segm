@@ -21,3 +21,4 @@ from .activation_histogram import *
 from .update_binary import *
 from .binary_mode_activatedness import *
 from .plot_ste_weights import *
+from .combine_early_stopping import *

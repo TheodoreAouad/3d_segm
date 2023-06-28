@@ -79,8 +79,23 @@ class BiSELUIExtender:
         return self._learned_selem
 
     @property
+    def learned_operation(self):
+        if self.force_identity:
+            return np.array([1])
+        # if self._learned_operation is None:
+        #     return None
+        return self._learned_operation
+
+
+    @property
     def learned_set(self):
         return self.learned_selem[..., 0, 0]
+
+    @property
+    def is_activated(self):
+        if self.force_identity:
+            return np.ones(self.weight.shape[0], dtype=bool)
+        return self._is_activated
 
 
 class LUI(BiSELUIExtender, BiSEBase):
@@ -99,7 +114,7 @@ class LUI(BiSELUIExtender, BiSEBase):
         self.force_identity = force_identity or (in_channels == out_channels == groups)
         if self.force_identity:
             bias_optim_mode = BiseBiasOptimEnum.RAW
-        
+
         for key in ["do_mask_output", "padding", "kernel_size"]:
             if key in kwargs:
                 del kwargs[key]

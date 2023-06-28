@@ -59,6 +59,7 @@ class RandomParser(GridParser):
     """
     def __init__(
         self,
+        n_tries: int,
         selector: Dict[
             str,  # Name of the argument
             Union[
@@ -71,6 +72,10 @@ class RandomParser(GridParser):
     ):
         super().__init__(*args, **kwargs)
         self.selector = selector
+        self.n_tries = n_tries
+
+    def __len__(self):
+        return self.n_tries
 
     def get_args(self, arg_idx: int = None) -> Parser:
         args = {}
@@ -95,7 +100,8 @@ class RandomParser(GridParser):
             Any: Value of the argument.
         """
         if arg_name not in self.selector:
-            return np.random.choice(self[arg_name])
+            return self[arg_name][np.random.choice(range(len(self[arg_name])))]
+            # return np.random.choice(self[arg_name])
 
         arg = self.selector[arg_name]
 
@@ -103,9 +109,9 @@ class RandomParser(GridParser):
             return arg()
 
         if isinstance(arg, list):
-            return np.random.choice(arg)
+            return arg[np.random.choice(range(len(arg)))]
 
         if isinstance(arg, tuple):
-            return np.random.choice(arg[0], p=arg[1])
+            return arg[0][np.random.choice(range(len(arg[0])), p=arg[1])]
 
         raise ValueError(f"Unknown type for {arg_name}.")

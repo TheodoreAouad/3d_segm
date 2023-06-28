@@ -15,10 +15,10 @@ print(path_args_module)
 args_module = import_module(path_args_module)
 all_args = args_module.all_args
 
-print(type(all_args.multi_args[0]["max_epochs"]))
+print(type(all_args["max_epochs"][0]))
 
 all_experiments = MultiExperiment(
-    multi_args=all_args.multi_args,
+    multi_args=all_args,
     dest_dir="deep_morpho/results/results_tensorboards",
     # stop_on_error=False,
     stop_on_error=True,
@@ -28,7 +28,7 @@ all_experiments = MultiExperiment(
 
 all_experiments.setup()
 
-with Task("Generating experiments"):
-    all_experiments.generate_experiments()
+# with Task("Generating experiments"):
+#     all_experiments.generate_experiments()
 
 all_experiments.run_experiments()

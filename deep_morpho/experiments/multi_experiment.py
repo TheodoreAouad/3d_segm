@@ -202,7 +202,7 @@ class MultiExperiment(ExperimentMethods):
         bugged = []
 
         exp_done = 0
-        for arg_idx in enumerate(self.n_experiments):
+        for arg_idx in range(self.n_experiments):
             args = self.setup_args(arg_idx)
             experiment = self.setup_experiment(args, dest_dir=self.log_dir, )
             self.log_console('==================')
