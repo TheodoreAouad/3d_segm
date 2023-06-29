@@ -31,7 +31,8 @@ all_args['n_try'] = [0]
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
     # "debug",
-    "Bimonn_exp_80/sandbox/1_/"
+    # "Bimonn_exp_80/sandbox/1_/"
+    "Bimonn_exp_81/sandbox/0_/"
     # "Bimonn_exp_80/sandbox/dilation_proj_activated/"
     # "Bimonn_exp_79/sandbox/1_/"
     # "Bimonn_exp_78/bnn/"
@@ -204,10 +205,10 @@ all_args['loss_regu'] = [
 ]
 all_args["loss_coefs"] = [
     # {"loss_data": 0, "loss_regu": 0.1},
-    {"loss_data": 1, "loss_regu": 0.1},
-    # {"loss_data": 1, "loss_regu": 0.01},
+    # {"loss_data": 1, "loss_regu": 0.1},
+    {"loss_data": 1, "loss_regu": 0.01},
     # {"loss_data": 1, "loss_regu": 0.001},
-    # {"loss_data": 1, "loss_regu": 0},
+    {"loss_data": 1, "loss_regu": 0},
 ]
 all_args['optimizer'] = [ 
     optim.Adam,
@@ -220,22 +221,22 @@ all_args['num_workers'] = [
     # 0,
 ]
 all_args['freq_imgs'] = [
-    # 5,
-    "epoch"
+    1,
+    # "epoch"
 ]
 all_args['freq_hist'] = [
-    # 5,
-    "epoch"
+    1,
+    # "epoch"
 ]
 all_args["freq_update_binary_batch"] = [
-    # 1
-    None
+    1
+    # None
 ]
 all_args["freq_update_binary_epoch"] = [
-    1,
-    # None,
+    # 1,
+    None,
 ]
-all_args['freq_scalars'] = [2]
+all_args['freq_scalars'] = [1]
 # all_args['max_epochs.trainer'] = [1]
 all_args['max_epochs.trainer'] = [200]
 
