@@ -281,12 +281,62 @@ class BiseClosestMinDistOnCst(BiseClosestSelemHandler):
         W = weights[chans]
         bias = bias[chans]
         if return_np_array:
-            W = weights.cpu().detach().numpy()
+            W = W.cpu().detach().numpy()
             bias = bias.cpu().detach().numpy()
 
         proj = ProjectionConstantSet(W.reshape(W.shape[0], -1), bias).compute(verbose=verbose)
         S, final_operation, final_dist = proj.S, proj.final_operation, proj.final_dist
         S = S.reshape(W.shape)
+        return S, final_operation, final_dist
+
+    def __call__(self, *args, **kwargs) -> Tuple[float, np.ndarray, str]:
+        return self.find_closest_selem_and_operation(
+            weights=self.bise_module.weights, bias=self.bise_module.bias,
+            *args, **kwargs
+        )
+
+
+class BiseClosestMinDistOnCstApproxBase(BiseClosestSelemHandler):
+    """ Implement the approximation methods introduced in Li et al. 2016 https://arxiv.org/pdf/1605.04711.pdf
+    Ternary Weight Networks
+    """
+    def approximation_threshold(self, weights: np.ndarray) -> np.array:
+        pass
+
+    def find_closest_selem_and_operation(
+        self, weights, bias, chans=None, v1=0, v2=1, verbose: bool = True,
+    ):
+        if chans is None:
+            chans = range(self.bise_module.out_channels)
+
+        weights = weights[chans].cpu().detach().numpy()
+        bias = bias[chans].cpu().detach().numpy()
+
+        W = weights.reshape(weights.shape[0], -1)
+
+        wsum = W.sum(1)
+        final_operation = np.empty(W.shape[0], dtype=str)
+
+        if isinstance(W, torch.Tensor):
+            dilation_idx = np.array(wsum.cpu().detach().numpy() / 2 >= -bias.cpu().detach().numpy())
+        else:
+            dilation_idx = np.array(wsum / 2 >= -bias)
+
+        if dilation_idx.any():
+            final_operation[dilation_idx] = self.bise_module.operation_code["dilation"]
+        if (~dilation_idx).any():
+            final_operation[~dilation_idx] = self.bise_module.operation_code["erosion"]
+
+        final_dist_bias = np.abs(-bias - wsum)
+
+        deltas = self.approximation_threshold(W)
+        S = W >= deltas[:, None]
+
+        final_dist_selem = ProjectionConstantSet.distance_fn_selem(W, deltas * S)
+
+        final_dist = final_dist_selem + final_dist_bias
+
+        S = S.reshape(weights.shape)
         return S, final_operation, final_dist
 
     def __call__(self, *args, **kwargs) -> Tuple[float, np.ndarray, str]:

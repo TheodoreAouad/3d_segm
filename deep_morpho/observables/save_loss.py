@@ -28,6 +28,9 @@ class SaveLoss(Observable):
         self.freq_idx += 1
         if self.freq_idx % self.freq == 0:
             loss_dict = {k: v for k, v in outputs.items() if 'loss' in k}
+            loss_dict.update({
+                f"{k}_grad": v.grad.item() for k, v in loss_dict.items() if v.grad is not None
+            })
             trainer.logger.experiment.add_scalars(
                 "loss/train", loss_dict, trainer.global_step
             )

@@ -20,11 +20,15 @@ class LossHandler:
         loss: Union[Callable, Tuple[Callable, Dict], Dict[str, Union[Callable, Tuple[Callable, Dict]]]],
         # reduce_loss_fn: Callable = lambda x: reduce(lambda a, b: a + b, x),
         coefs: Dict[str, float] = None,
+        do_compute: Dict[str, bool] = None,
         # pl_module: "pl.LightningModule" = None,
     ):
         self.loss_args = loss
         self.loss = self.instantiate(loss)
         self.coefs = self.configure_coefs(coefs)
+        if do_compute is None:
+            do_compute = {k: True for k in self.loss.keys()}
+        self.do_compute = do_compute
         # self.pl_module = pl_module
 
     def configure_coefs(self, coefs: Dict[str, float] = None) -> Dict[str, float]:
@@ -44,11 +48,11 @@ class LossHandler:
     def instantiate(self, loss):
         """Instantiates the loss if needed. Avoids the key "loss" to be in the loss dict.
         Ex:
-        >>> loss = self.fix_loss_keys({"loss": nn.MSELoss()})
+        >>> loss = self.instantiate({"loss": nn.MSELoss()})
         {"loss_0": nn.MSELoss()}
-        >>> loss = self.fix_loss_keys({"loss": {"mse": nn.MSELoss(), "regu": (MyReguLoss, {"lambda_": lambda_})}})
+        >>> loss = self.instantiate({"loss": {"mse": nn.MSELoss(), "regu": (MyReguLoss, {"lambda_": lambda_})}})
         {"loss_0": {"mse": nn.MSELoss(), "regu": (MyReguLoss, {"lambda_": lambda_})}}
-        >>> loss = self.fix_loss_keys({"loss": nn.MSELoss(), "loss_0": nn.CrossEntropyLoss()})
+        >>> loss = self.instantiate({"loss": nn.MSELoss(), "loss_0": nn.CrossEntropyLoss()})
         {"loss_1": nn.MSELoss(), "loss_0": nn.CrossEntropyLoss()}
         """
         if isinstance(loss, dict):
@@ -63,6 +67,7 @@ class LossHandler:
 
             return {k: self.instantiate(v) for (k, v) in loss.items()}
 
+        # Ensure that any extra argument can be given without errors
         if isinstance(loss, tuple):
             return extend_signature_and_forward(loss[0](model=self.model, **loss[1]))
 
@@ -91,6 +96,8 @@ class LossHandler:
         if isinstance(self.loss, dict):
             total_loss = 0
             for key, loss_fn in self.loss.items():
+                if self.do_compute is not None and not self.do_compute[key]:
+                    continue
                 values[key] = loss_fn(ypred, ytrue, *args, **kwargs)
                 total_loss += self.coefs[key] * values[key]
 
@@ -100,17 +107,18 @@ class LossHandler:
         else:
             values["loss"] = self.loss(ypred, ytrue, *args, **kwargs)
 
-        grad_values = {}
+        # grad_values = {}
         for key, value in values.items():
-            if key == "loss":
-                continue
+            # if key == "loss":
+            #     continue
 
             if value.requires_grad:
                 value.retain_grad()  # see graph of each loss term
-                grad_values[f'{key}_grad'] = value.grad
-                values[key] = values[key].detach()
+            # if value.requires_grad:
+            #     grad_values[f'{key}_grad'] = value.grad
+            #     values[key] = values[key].detach()
 
-        values['grads'] = grad_values
+        # values['grads'] = grad_values
 
         return values
 

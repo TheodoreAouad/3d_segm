@@ -95,6 +95,9 @@ class ExperimentBase(ExperimentMethods):
             self.model_checkpoint_obs,
                                         ) = self.load_observables_fn(self)
 
+        if "observables" in self.args:
+            self.observables += self.args["observables"]
+
     def train(self):
         self.trainer.fit(self.model, self.trainloader, self.valloader)
 

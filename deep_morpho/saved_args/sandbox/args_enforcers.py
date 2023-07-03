@@ -8,8 +8,9 @@ from deep_morpho.initializer import InitBimonnEnum, InitBiseEnum
 from deep_morpho.loss import (
     MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization,
     MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss, BCENormalizedLoss, DiceLoss, NormalizedDiceLoss,
-    RegularizationProjConstant, RegularizationProjActivated
+    RegularizationProjConstant, RegularizationProjActivated, 
 )
+from deep_morpho.observables import (DelayLossBatchStep)
 
 from general.nn.loss import LossHandler
 
@@ -68,6 +69,10 @@ class ArgsEnforcersCurrent(ArgsEnforcer):
 
             if experiment.args["freq_hist"] == "epoch":
                 experiment.args["freq_hist"] = experiment.args["n_steps"]
+
+            experiment.args["observables"] += [
+                DelayLossBatchStep(delay_steps=experiment.args["loss_regu_delay"], keys=["loss_regu"]),
+            ]
 
             experiment.args['patience_loss'] = experiment.args[f"patience_loss_{experiment.args['early_stopping_on']}"]
             experiment.args['patience_reduce_lr'] = max(int(experiment.args["patience_loss"] * experiment.args['patience_reduce_lr']) - 1, 1)

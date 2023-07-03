@@ -30,9 +30,9 @@ all_args['n_try'] = [0]
 
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
-    # "debug",
+    "debug",
     # "Bimonn_exp_80/sandbox/1_/"
-    "Bimonn_exp_81/sandbox/0_/"
+    # "Bimonn_exp_81/sandbox/0_/"
     # "Bimonn_exp_80/sandbox/dilation_proj_activated/"
     # "Bimonn_exp_79/sandbox/1_/"
     # "Bimonn_exp_78/bnn/"
@@ -205,11 +205,12 @@ all_args['loss_regu'] = [
 ]
 all_args["loss_coefs"] = [
     # {"loss_data": 0, "loss_regu": 0.1},
-    # {"loss_data": 1, "loss_regu": 0.1},
-    {"loss_data": 1, "loss_regu": 0.01},
+    {"loss_data": 1, "loss_regu": 0.1},
+    # {"loss_data": 1, "loss_regu": 0.01},
     # {"loss_data": 1, "loss_regu": 0.001},
-    {"loss_data": 1, "loss_regu": 0},
+    # {"loss_data": 1, "loss_regu": 0},
 ]
+all_args["loss_regu_delay"] = [30]
 all_args['optimizer'] = [ 
     optim.Adam,
     # optim.SGD
@@ -385,7 +386,7 @@ all_args['constant_P_lui'] = [False]
 #             obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
 #             obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
 # ]]
-
+all_args['observables'] = [[]]
 
 
 if all_args['dataset'] in [[k] for k in ['axspa_roi', "sticks_noised", "classif_mnist"]]:
