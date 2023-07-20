@@ -238,11 +238,11 @@ class BiSELBase(BinaryNN):
     def weights(self) -> torch.Tensor:
         return self.weight
 
-    def get_weight_lui(self, chin: int, chout: int):
-        return self.luis.weight[chout, chin, ...]
+    def get_weight_lui(self, chout: int):
+        return self.luis.weight[chout, ...]
 
-    def get_coef_lui(self, chin: int, chout: int):
-        return self.luis.coefs[chout, chin, ...]
+    def get_coef_lui(self, chout: int):
+        return self.luis.coefs[chout, ...]
 
     @property
     def coef(self):

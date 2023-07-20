@@ -11,6 +11,7 @@ from ..binarization.projection_constant_set import ProjectionConstantSet
 
 
 # TODO: handle erosion
+# TODO: add case 1 of bise proj
 class DifferentiableProjectionActivated:
     """ Applies projection, and returns a loss with a gradient.
     Weights and bias are such that the conv is of the form $I * weights - bias$.
@@ -79,6 +80,8 @@ class DifferentiableProjectionActivated:
                     best_S = S
                     best_operation = operation
                     best_proj = proj
+                if proj.value == 0:
+                    return best_S, best_operation, best_proj
 
         return best_S, best_operation, best_proj
 
@@ -88,6 +91,9 @@ class DifferentiableProjectionActivated:
 
     def __call__(self, *args, **kwargs) -> torch.Tensor:
         S, operation, proj = self.find_best_S()
+        if proj.value == 0:
+            return 0
+
         self.proj = proj
         self.operation = operation
         self.S = S
@@ -111,8 +117,8 @@ class DifferentiableProjectionActivated:
         bias = self.bias.cpu().detach().numpy()
         S = S.cpu().detach().numpy()
 
-        # if operation == "erosion":
-        #     bias = W.sum() - B
+        if operation == "erosion":
+            bias = W.sum() - bias
 
         # W = W.flatten()
         # S = S.flatten()
@@ -187,9 +193,9 @@ class DifferentiableProjectionActivated:
 
 
 class RegularizationProjActivated(nn.Module):
-    """ Adds a regularization loss to encourage the bimonn to be morphological.
-    For a structuring element $S$, $A(S) = \{\theta \cdot S | \theta > 0\}$. We compute
-    $$ \min_S d(A(S), (W, B)) $$.
+    r""" Adds a regularization loss to encourage the bimonn to be morphological.
+    For a structuring element $S$ and a morphological operator $\psi$, $A(S, \psi)$ is the space of activated weights 
+    and biases. We compute $$ \min_S d(A(S), (W, B)) $$.
     """
     def __init__(self, model: nn.Module = None, bise_modules: List[BiSEBase] = None):
         super().__init__()

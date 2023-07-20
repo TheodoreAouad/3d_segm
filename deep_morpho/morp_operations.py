@@ -601,6 +601,19 @@ class ParallelMorpOperations:
 
         return res
 
+    def get_selem(self, layer_idx: int, chan_input: int, chan_output: int) -> np.ndarray:
+        return self.selems[layer_idx][chan_output][chan_input]
+
+    def get_selem_name(self, layer_idx: int, chan_input: int, chan_output: int) -> str:
+        return self.selem_names[layer_idx][chan_output][chan_input]
+
+    def get_selem_args(self, layer_idx: int, chan_input: int, chan_output: int) -> Any:
+        return self.selem_args[layer_idx][chan_output][chan_input]
+
+    def get_operation_name(self, layer_idx: int, chan_input: int, chan_output: int) -> Callable:
+        return self.operation_names[layer_idx][chan_output][chan_input]
+
+
 
 class ParallelMorpOperationsGrayTopHats(ParallelMorpOperations):
 

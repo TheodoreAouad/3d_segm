@@ -46,6 +46,8 @@ class SaveLoss(Observable):
     def save(self, save_path: str):
         final_dir = join(save_path, self.__class__.__name__)
         pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
-        save_json({k: str(v.item()) for (k, v) in self.last_loss.items()}, join(final_dir, "last_loss.json"))
+        save_json({
+            k: str(v) if isinstance(v, float) else str(v.item()) for (k, v) in self.last_loss.items()
+        }, join(final_dir, "last_loss.json"))
 
         return self.last_loss

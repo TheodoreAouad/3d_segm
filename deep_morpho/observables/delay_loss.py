@@ -37,4 +37,4 @@ class DelayLossBatchStep(Observable):
 
             for key in self.keys:
                 pl_module.loss.do_compute[key] = True
-                pl_module.loss.loss_coefs[key] = self.loss_coefs[key]
+                pl_module.loss.coefs[key] = self.loss_coefs[key]

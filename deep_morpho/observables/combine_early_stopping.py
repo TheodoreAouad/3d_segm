@@ -49,5 +49,8 @@ class CombineEarlyStopping(EarlyStoppingBase):
         reason_str = f"{self.decision_rule_str}:\n" + "\n".join([f"{reason}: {stop}" for reason, stop in zip(reason_strs, should_stops)])
         return should_stop, reason_str, reason_codes
 
+    def on_train_batch_end(self, trainer, pl_module, *args, **kwargs) -> None:
+        return self.perform_early_stopping(trainer, pl_module)
+
     def on_validation_end(self, trainer, pl_module) -> None:
         return self.perform_early_stopping(trainer, pl_module)

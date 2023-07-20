@@ -98,8 +98,9 @@ class ProjectionConstantSet:
         if (~dilation_idx).any():
             self.final_operation[~dilation_idx] = self.operation_code["erosion"]
 
-        self.final_dist_bias = module_.abs(-bias - wsum)
-        self.final_dist = self.final_dist_weight + self.final_dist_bias
+        # self.final_dist_bias = module_.abs(-bias - wsum)
+        # self.final_dist = self.final_dist_weight + self.final_dist_bias
+        self.final_dist = self.final_dist_weight  # TODO: take bias into account
 
         return self
 

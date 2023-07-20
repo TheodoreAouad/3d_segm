@@ -2,9 +2,11 @@ from typing import Tuple
 import os
 from os.path import join
 import re
+import pathlib
 
 from tqdm import tqdm
 import numpy as np
+import matplotlib.pyplot as plt
 import torch
 from torch.utils.data.dataset import Dataset
 from torch.utils.data.dataloader import DataLoader
@@ -18,6 +20,9 @@ from .datamodule_base import DataModule
 #         MultiRectDatasetGenerator(random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device, n_inputs=n_inputs, ),
 #         batch_size=batch_size,  **kwargs
 #     )
+
+# DEBUG
+N_DISKO = 0
 
 
 class DiskorectDataset(DataModule, Dataset):
@@ -41,6 +46,13 @@ class DiskorectDataset(DataModule, Dataset):
         self.do_symetric_output = do_symetric_output
         self.data = {}
         self.rng = np.random.default_rng(seed)
+
+        # DEBUG
+        self.nb_inp = 0
+        global N_DISKO
+        self.n_disko = N_DISKO
+        N_DISKO += 1
+
 
 
     def __getitem__(self, idx):
@@ -66,6 +78,11 @@ class DiskorectDataset(DataModule, Dataset):
 
         input_ = input_.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)
         target = target.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)
+
+        # DEBUG
+        pathlib.Path(f"todelete/{self.n_disko}/input_{self.nb_inp}.png").parent.mkdir(parents=True, exist_ok=True)
+        plt.imsave(f"todelete/{self.n_disko}/input_{self.nb_inp}.png", input_.squeeze().cpu().numpy())
+        self.nb_inp += 1
 
         if self.do_symetric_output:
             return 2 * input_ - 1, 2 * target - 1

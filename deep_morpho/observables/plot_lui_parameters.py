@@ -71,7 +71,7 @@ class PlotLUIParametersBiSEL(ObservableLayersChans):
         chan_input,
         chan_output,
     ):
-        coef = layer.get_coef_lui(chin=chan_input, chout=chan_output)
+        coef = layer.get_coef_lui(chout=chan_output)[chan_input]
 
         trainer.logger.experiment.add_scalars(
             f'params/lui_coefs/layer_{layer_idx}_chout_{chan_output}',

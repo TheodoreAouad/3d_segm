@@ -190,6 +190,7 @@ class BiseClosestActivationSpaceIteratedPositive(BiseClosestSelemWithDistanceAgg
         self._distance_fn = partial(self.solve)
 
     def solve(self, weights: np.ndarray, bias: np.ndarray, operation: str, S: np.ndarray, v1: float, v2: float) -> float:
+        bias = -bias
         if operation == "erosion":
             bias = weights.sum() - bias
         # print("banana")
@@ -200,14 +201,15 @@ class BiseClosestActivationSpaceIteratedPositive(BiseClosestSelemWithDistanceAgg
         Wvar = cp.Variable(weights.shape)
         bvar = cp.Variable(1)
 
-        if operation == "dilation":
-            constraints = self.dilation_constraints(Wvar, bvar, S)
-        elif operation == "erosion":
-            constraints = self.erosion_constraints(Wvar, bvar, S)
-        else:
-            raise ValueError("operation must be dilation or erosion")
+        constraints = self.dilation_constraints(Wvar, bvar, S)
+        # if operation == "dilation":
+        #     constraints = self.dilation_constraints(Wvar, bvar, S)
+        # elif operation == "erosion":
+        #     constraints = self.erosion_constraints(Wvar, bvar, S)
+        # else:
+        #     raise ValueError("operation must be dilation or erosion")
 
-        objective = cp.Minimize(1/2 * cp.sum_squares(Wvar - weights) + 1/2 * cp.sum_squares(bvar + bias))
+        objective = cp.Minimize(1/2 * cp.sum_squares(Wvar - weights) + 1/2 * cp.sum_squares(bvar - bias))
         prob = cp.Problem(objective, constraints)
         prob.solve()
 

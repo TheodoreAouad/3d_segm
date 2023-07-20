@@ -1,7 +1,7 @@
 import pathlib
 from os.path import join
 
-from typing import Any
+from typing import Any, List
 
 from pytorch_lightning.utilities.types import STEP_OUTPUT
 import pytorch_lightning as pl
@@ -11,11 +11,14 @@ from torch.utils.tensorboard.summary import custom_scalars
 import matplotlib.pyplot as plt
 import numpy as np
 
+from ..morp_operations import ParallelMorpOperations
 from .observable_layers import ObservableLayers, ObservableLayersChans
+from ..models import BiSEBase, BiSELBase
+from ..binarization.projection_activated import IterativeProjectionPositive
+from ..binarization.projection_constant_set import ProjectionConstantSet
 from general.nn.observables import Observable
 from general.utils import save_json
 
-from ..models import BiSEBase
 
 
 operation_code_inverse = {v: k for k, v in BiSEBase.operation_code.items()}
@@ -378,3 +381,190 @@ class ShowClosestSelemBinary(ObservableLayersChans):
         saved.append(self.last_elts)
 
         return saved
+
+
+# class DistToSelem(ObservableLayersChans):
+
+#     def __init__(self, target_morp_operation: ParallelMorpOperations, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         self.target_morp_operation = target_morp_operation
+
+#     def on_train_batch_end_with_preds_layers_chans(
+#         self,
+#         trainer: 'pl.Trainer',
+#         pl_module: 'pl.LightningModule',
+#         outputs: "STEP_OUTPUT",
+#         batch: "Any",
+#         batch_idx: int,
+#         preds,
+#         layer: "nn.Module",
+#         layer_idx: int,
+#         chan_input: int,
+#         chan_output: int,
+#     ):
+#         selem = self.target_morp_operation.get_selem(layer_idx=layer_idx, chan_input=chan_input, chan_output=chan_output)
+#         operation = self.target_morp_operation.get_operation_name(layer_idx=layer_idx, chan_input=chan_input, chan_output=chan_output)
+#         weight = layer.get_weight_bise(chin=chan_input, chout=chan_output).detach().cpu().numpy()
+#         bias = layer.get_bias_bise(chin=chan_input, chout=chan_output).detach().cpu().numpy()
+
+#         dist = IterativeProjectionPositive(Wini=weight, bini=-bias, S=selem, operation=operation)
+
+#             # layer.bises[chan_input].find_closest_selem_and_operation_chan(chan_output)
+#             # selem = layer.bises[chan_input].closest_selem[chan_output]
+#             # distance = layer.bises[chan_input].closest_selem_dist[chan_output]
+#             # operation = layer.bises[chan_input].closest_operation[chan_output]
+
+#             selem = layer.get_closest_selem_bise(chin=chan_input, chout=chan_output)
+#             distance = layer.get_closest_selem_dist_bise(chin=chan_input, chout=chan_output)
+#             operation = layer.get_closest_operation_bise(chin=chan_input, chout=chan_output)
+
+#             operation = operation_code_inverse[operation]
+
+#             # selem, operation, distance = layer.bises[chan_input].find_closest_selem_and_operation_chan(chan_output, v1=0, v2=1)
+
+#         trainer.logger.experiment.add_scalar(f"comparative/closest_binary_dist/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}", distance, trainer.global_step)
+
+#         fig = self.selem_fig(selem, f"{operation} dist {distance:.2e}")
+#         trainer.logger.experiment.add_figure(f"closest_selem/binary/layer_{layer_idx}_chin_{chan_input}_chout_{chan_output}", fig, trainer.global_step)
+#         self.last_elts[str((layer_idx, chan_input, chan_output))] = {"operation": operation, "distance": str(distance)}
+#         self.last_selems[(layer_idx, chan_input, chan_output)] = selem
+
+
+class DistToMorpOperation(Observable):
+
+    def __init__(self, target_morp_operation: ParallelMorpOperations, freq={"batch": 1, "epoch": 1}, layers=None, layer_name="layers", *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # self.last = {}
+        self.target_morp_operation = target_morp_operation
+        self.last_luis = {}
+        self.last_bises = {}
+        self.freq = freq
+        self.freq_idx = {"batch": 0, "epoch": 0}
+        self.layers = layers
+        self.layer_name = layer_name
+
+    def on_train_epoch_end(self, trainer, pl_module):
+        if self.freq["epoch"] is None or self.freq_idx["epoch"] % self.freq["epoch"] != 0:
+            self.freq_idx["epoch"] += 1
+            return
+        self.freq_idx["epoch"] += 1
+
+        self.log_tb(trainer, pl_module, batch_or_epoch="epoch", step=trainer.current_epoch)
+
+    def on_train_batch_end_with_preds(
+        self,
+        trainer,
+        pl_module,
+        outputs: STEP_OUTPUT,
+        batch: Any,
+        batch_idx: int,
+        preds: Any,
+    ):
+        if self.freq["batch"] is None or self.freq_idx["batch"] % self.freq["batch"] != 0:
+            self.freq_idx["batch"] += 1
+            return
+        self.freq_idx["batch"] += 1
+
+        self.log_tb(trainer, pl_module, batch_or_epoch="batch", step=trainer.global_step)
+
+    def log_tb(self, trainer, pl_module, batch_or_epoch: str, step: int):
+        layers = self._get_layers(pl_module)
+        ui_arrays = self.target_morp_operation.ui_arrays
+
+        self.last_bises = {}
+        self.last_luis = {}
+
+        for layer_idx, layer in enumerate(layers):
+            if not isinstance(layer, BiSELBase):
+                continue
+
+            for chout in range(layer.out_channels):
+                for chin in range(layer.in_channels):
+                    selem = self.target_morp_operation.get_selem(layer_idx=layer_idx, chan_input=chin, chan_output=chout).astype(bool)
+                    operation = self.target_morp_operation.get_operation_name(layer_idx=layer_idx, chan_input=chin, chan_output=chout)
+                    weight = layer.get_weight_bise(chin=chin, chout=chout).detach().cpu().numpy()
+                    bias = layer.get_bias_bise(chin=chin, chout=chout).detach().cpu().numpy()
+
+                    dist_activated = IterativeProjectionPositive(Wini=weight, bini=-bias, S=selem, operation=operation).solve().value
+                    dict_constant = ProjectionConstantSet.distance_fn_selem(weights=weight.reshape(-1)[None, :], S=selem.reshape(-1)[None, :])[0]
+
+                    self.last_bises[(layer_idx, chout, chin)] = {"activated": dist_activated, "constant": dict_constant}
+
+                    trainer.logger.experiment.add_scalars(
+                        f"dist_proj/{batch_or_epoch}/bise_layer_{layer_idx}_chout_{chout}_chin_{chin}",
+                        self.last_bises[(layer_idx, chout, chin)],
+                        step
+                    )
+
+
+                operation, selem = ui_arrays[layer_idx][chout]
+                selem = selem.astype(bool)
+                weight = layer.get_coef_lui(chout=chout).detach().cpu().numpy()
+                bias = layer.bias_lui[chout].detach().cpu().numpy()
+
+                dist_activated = IterativeProjectionPositive(Wini=weight, bini=-bias, S=selem, operation=operation).solve().value
+                dict_constant = ProjectionConstantSet.distance_fn_selem(weights=weight.reshape(-1)[None, :], S=selem.reshape(-1)[None, :])[0]
+
+                self.last_luis[(layer_idx, chout)] = {"activated": dist_activated, "constant": dict_constant}
+                trainer.logger.experiment.add_scalars(
+                    f"dist_proj/{batch_or_epoch}/lui_layer_{layer_idx}_chout_{chout}",
+                    self.last_luis[(layer_idx, chout)],
+                    step
+                )
+
+        # self.last.update(self.last_bises)
+        # self.last.update(self.last_luis)
+
+        trainer.logger.experiment.add_histogram(
+            f"dist_proj_to_activation/{batch_or_epoch}/bise",
+            np.array([v["activated"] for v in self.last_bises.values()]),
+            step
+        )
+
+        trainer.logger.experiment.add_histogram(
+            f"dist_proj_to_activation/{batch_or_epoch}/lui",
+            np.array([v["activated"] for v in self.last_luis.values()]),
+            step
+        )
+
+    def save(self, save_path: str):
+        final_dir = join(save_path, self.__class__.__name__)
+        pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
+        # dict_str = {}
+        # for k1, v1 in self.last.items():
+        #     dict_str[f"{k1}"] = {}
+        #     for k2, v2 in v1.items():
+        #         dict_str[f"{k1}"][f"{k2}"] = str(v2)
+        last_bises_str = {}
+        for k1, v1 in self.last_bises.items():
+            last_bises_str[f"{k1}"] = v1
+        
+        last_luis_str = {}
+        for k1, v1 in self.last_luis.items():
+            last_luis_str[f"{k1}"] = v1
+
+        save_json(last_bises_str, join(final_dir, "dist_proj_bise.json"))
+        save_json(last_luis_str, join(final_dir, "dist_proj_lui.json"))
+        return self
+
+
+    def save_hparams(self) -> dict:
+        res = {}
+        res["dist_proj_bise_activated"] = np.mean([v["activated"] for v in self.last_bises.values()])
+        res["dist_proj_bise_constant"] = np.mean([v["constant"] for v in self.last_bises.values()])
+        res["dist_proj_lui_activated"] = np.mean([v["activated"] for v in self.last_luis.values()])
+        res["dist_proj_lui_constant"] = np.mean([v["constant"] for v in self.last_luis.values()])
+
+        return res
+
+
+    def _get_layers(self, pl_module):
+
+        if self.layers is not None:
+            return self.layers
+
+        if hasattr(pl_module.model, self.layer_name):
+            return getattr(pl_module.model, self.layer_name)
+
+
+        raise NotImplementedError('Cannot automatically select layers for model. Give them manually.')

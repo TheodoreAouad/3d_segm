@@ -50,7 +50,8 @@ all_args['experiment_name'] = [
 
 all_args["model"] = [
     ##### MORPHO ####
-    "BiMoNN",
+    # "BiMoNN",
+    "BimonnIdentity",
 
     ##### CLASSIFIERS #####
     # "BiMoNNClassifierMaxPoolNotBinary",
@@ -153,7 +154,7 @@ all_args['channel_classif_args'] = [
 all_args['sticks_noised_angles'] = [
     [0, 45, 90]
 ]
-all_args['sticks_noised_args'] = [
+all_args['sticks_noised_aFrgs'] = [
     {
         "size": (70, 70),
         "n_shapes": 30,
@@ -167,7 +168,8 @@ all_args['sticks_noised_args'] = [
 ########################
 
 
-all_args['n_steps'] = [100]  # for Diskorect
+# all_args['n_steps'] = [100]  # for Diskorect
+all_args['n_steps'] = [3]  # for Diskorect  # DEBUG
 all_args['nb_batch_indep'] = [0]
 all_args["n_inputs_train"] = [50_000]
 all_args["n_inputs_val"] = [10_000]
@@ -175,7 +177,7 @@ all_args["n_inputs_test"] = [10_000]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-1,
+    1e-3,
     # 0.001,
     # 1e-3,
     # 1e-4,
@@ -188,11 +190,11 @@ all_args['loss_data_str'] = [
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
-    "BCELoss",
+    # "BCELoss",
     # "CrossEntropyLoss",
     # "SquaredHingeLoss",
     # "MSELoss",
-    # "DiceLoss",
+    "DiceLoss",
     # "MaskedDiceLoss",
     # "NormalizedDiceLoss",
 ]
@@ -200,26 +202,27 @@ all_args['loss_regu'] = [
     # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
     # "linear",
     # "None",
-    # ("RegularizationProjConstant", {}),
-    ("RegularizationProjActivated", {}),
+    ("RegularizationProjConstant", {}),
+    # ("RegularizationProjActivated", {}),
 ]
 all_args["loss_coefs"] = [
     # {"loss_data": 0, "loss_regu": 0.1},
+    # {"loss_data": 1, "loss_regu": 0.1},
     {"loss_data": 1, "loss_regu": 0.1},
     # {"loss_data": 1, "loss_regu": 0.01},
     # {"loss_data": 1, "loss_regu": 0.001},
-    # {"loss_data": 1, "loss_regu": 0},
 ]
-all_args["loss_regu_delay"] = [30]
-all_args['optimizer'] = [ 
+all_args["loss_regu_delay"] = [5000]
+all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
 all_args['optimizer_args'] = [{}]
-all_args['batch_size'] = [64]
+all_args['batch_size'] = [10]  # DEBUG
+# all_args['batch_size'] = [64]
 all_args['num_workers'] = [
-    20,
-    # 0,
+    # 20,
+    0,  # DEBUG
 ]
 all_args['freq_imgs'] = [
     1,
@@ -230,16 +233,16 @@ all_args['freq_hist'] = [
     # "epoch"
 ]
 all_args["freq_update_binary_batch"] = [
-    1
-    # None
+    # 1
+    None
 ]
 all_args["freq_update_binary_epoch"] = [
     # 1,
     None,
 ]
-all_args['freq_scalars'] = [1]
-# all_args['max_epochs.trainer'] = [1]
-all_args['max_epochs.trainer'] = [200]
+all_args['freq_scalars'] = [2]
+all_args['max_epochs.trainer'] = [3]  # DEBUG
+# all_args['max_epochs.trainer'] = [200]
 
 all_args['patience_loss_batch'] = [2100]
 all_args['patience_loss_epoch'] = [15]
@@ -321,8 +324,8 @@ all_args['channels'] = [
 all_args['closest_selem_method'] = [
     # ClosestSelemEnum.MIN_DIST
     # ClosestSelemEnum.MAX_SECOND_DERIVATIVE
-    # ClosestSelemEnum.MIN_DIST_DIST_TO_CST,
-    ClosestSelemEnum.MIN_DIST_ACTIVATED_POSITIVE,
+    ClosestSelemEnum.MIN_DIST_DIST_TO_CST,
+    # ClosestSelemEnum.MIN_DIST_ACTIVATED_POSITIVE,
 ]
 
 all_args['bias_optim_mode'] = [

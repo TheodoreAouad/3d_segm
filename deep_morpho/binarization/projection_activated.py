@@ -19,9 +19,9 @@ class IterativeProjectionBase:
         self.Wvar = cp.Variable(self.Wini.shape)
         self.bvar = cp.Variable(1)
 
-        if self.operation == "dilation":
+        if self.operation in ["dilation", "union"]:
             self.constraints = self.dilation_constraints(self.Wvar, self.bvar, self.S)
-        elif self.operation == "erosion":
+        elif self.operation in ["erosion", "intersection"]:
             self.constraints = self.erosion_constraints(self.Wvar, self.bvar, self.S)
         else:
             raise ValueError("operation must be dilation or erosion")

@@ -9,7 +9,7 @@ from ..binarization.projection_constant_set import ProjectionConstantSet
 
 
 class RegularizationProjConstant(nn.Module):
-    """ Adds a regularization loss to encourage the bimonn to be morphological.
+    r""" Adds a regularization loss to encourage the bimonn to be morphological.
     For a structuring element $S$, $A(S) = \{\theta \cdot S | \theta > 0\}$. We compute
     $$ \min_S d(A(S), (W, B)) $$.
     """

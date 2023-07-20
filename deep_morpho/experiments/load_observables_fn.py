@@ -217,6 +217,10 @@ def load_observables_bimonn_morpho_binary(experiment):
         # "ExplosiveWeightGradientWatcher": obs.ExplosiveWeightGradientWatcher(freq=1, threshold=0.5),
         obs.PlotGradientBise(freq=args['freq_imgs']),
         obs.ConvergenceMetrics(metrics, freq=args['freq_scalars']),
+        obs.DistToMorpOperation(
+            freq={"batch": 20, "epoch": None},
+            target_morp_operation=args['morp_operation'],
+        ),
 
         obs.UpdateBinary(freq_batch=args["freq_update_binary_batch"], freq_epoch=args["freq_update_binary_epoch"]),
         obs.ActivatednessObservable(freq={"epoch": args["freq_update_binary_epoch"], "batch": args["freq_update_binary_batch"]}),
