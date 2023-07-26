@@ -670,8 +670,8 @@ def load_observables_classification_channel_bimonn(experiment):
         obs.ConvergenceMetrics(metrics, freq=args['freq_scalars']),
 
         obs.UpdateBinary(freq_batch=args["freq_update_binary_batch"], freq_epoch=args["freq_update_binary_epoch"]),
-        obs.ActivatednessObservable(freq=args["freq_update_binary_epoch"]),
-        obs.ClosestDistObservable(freq=args["freq_update_binary_epoch"]),
+        obs.ActivatednessObservable(freq={"epoch": args["freq_update_binary_epoch"], "batch": args["freq_update_binary_batch"]}),
+        obs.ClosestDistObservable(freq={"epoch": args["freq_update_binary_epoch"], "batch": args["freq_update_binary_batch"]}),
         # obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),

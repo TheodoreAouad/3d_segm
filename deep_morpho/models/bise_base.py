@@ -314,9 +314,10 @@ class BiSEBase(BinaryNN):
         lb, ub = self.bias_bounds_erosion_vectorized(weights=weights, S=S, v1=v1, v2=v2)
         return (lb < -bias) & (-bias < ub)
 
-    def is_dilation_by(self, weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> bool:
+    @classmethod
+    def is_dilation_by(cls, weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> bool:
         assert np.isin(np.unique(S), [0, 1]).all(), "S must be binary matrix"
-        lb, ub = self.bias_bounds_dilation(weights=weights, S=S, v1=v1, v2=v2)
+        lb, ub = cls.bias_bounds_dilation(weights=weights, S=S, v1=v1, v2=v2)
         return lb < -bias < ub
 
     def is_dilation_by_vectorized(self, weights: torch.Tensor, bias: torch.Tensor, S: np.ndarray, v1: float = 0, v2: float = 1) -> bool:

@@ -1,8 +1,14 @@
-import pydicom
-from pydicom import tag
+import torch
+from torch.utils.data import DataLoader, Dataset
 
-file = "/hdd/aouadt/projets/data challenge sfr 2023/data/IGR/NLASSAU_01_BENIN"
 
-dcm = pydicom.read_file(file)
+class MyDataset(Dataset):
+    def __getitem__(self, idx):
+        return torch.ones(1)
 
-dcm[tag.Tag(0x7FE0, 0x0010)]
+    def __len__(self):
+        return 5
+
+
+loader = DataLoader(MyDataset(), num_workers=2)
+next(iter(loader))

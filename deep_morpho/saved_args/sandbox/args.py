@@ -30,8 +30,8 @@ all_args['n_try'] = [0]
 
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
-    "debug",
-    # "Bimonn_exp_80/sandbox/1_/"
+    # "debug",
+    "Bimonn_exp_81/sandbox/positive_weights/"
     # "Bimonn_exp_81/sandbox/0_/"
     # "Bimonn_exp_80/sandbox/dilation_proj_activated/"
     # "Bimonn_exp_79/sandbox/1_/"
@@ -51,14 +51,14 @@ all_args['experiment_name'] = [
 all_args["model"] = [
     ##### MORPHO ####
     # "BiMoNN",
-    "BimonnIdentity",
+    # "BimonnIdentity",  # DEBUG
 
     ##### CLASSIFIERS #####
     # "BiMoNNClassifierMaxPoolNotBinary",
     # "BiMoNNClassifierMaxPool",
     # "BiMoNNClassifierLastLinear",
     # "BimonnDense",
-    # "BimonnDenseNotBinary",
+    "BimonnDenseNotBinary",
     # "BiMoNNClassifierLastLinearNotBinary",
     # "BimonnBiselDenseNotBinary",
     # "ConvNetLastLinear",
@@ -77,7 +77,7 @@ all_args["model"] = [
 
 all_args['dataset'] = [
     ##### MORPHO ####
-    'diskorectdataset',
+    # 'diskorectdataset',
     # 'mnistmorphodataset',
     # "noistidataset",
     # 'mnistgrayscaledataset',
@@ -87,7 +87,7 @@ all_args['dataset'] = [
 
     ##### CLASSIFICATION #####
     # 'mnistclassifdataset',
-    # 'mnistclassifchanneldataset',
+    'mnistclassifchanneldataset',
 
     # 'cifar10dataset',
     # 'cifar100dataset',
@@ -103,8 +103,8 @@ all_args['morp_operation'] = morp_operations
 
 # TODO: put in an args enforcer
 all_args['apply_one_hot_target'] = [
-    False,  # For cross entropy loss
-    # True,
+    # False,  # For cross entropy loss
+    True,
 ]
 
 all_args['preprocessing'] = [  # for axspa roi
@@ -145,7 +145,7 @@ all_args['channel_classif_args'] = [
     {
         "levelset_handler_mode": LevelsetValuesEqualIndex,
         # "levelset_handler_args": {"n_values": 10},
-        "levelset_handler_args": {"n_values": 10},
+        "levelset_handler_args": {"n_values": 1},
     }
 ]
 
@@ -168,8 +168,8 @@ all_args['sticks_noised_aFrgs'] = [
 ########################
 
 
-# all_args['n_steps'] = [100]  # for Diskorect
-all_args['n_steps'] = [3]  # for Diskorect  # DEBUG
+all_args['n_steps'] = [100]  # for Diskorect
+# all_args['n_steps'] = [3]  # for Diskorect  # DEBUG
 all_args['nb_batch_indep'] = [0]
 all_args["n_inputs_train"] = [50_000]
 all_args["n_inputs_val"] = [10_000]
@@ -190,46 +190,49 @@ all_args['loss_data_str'] = [
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
-    # "BCELoss",
+    "BCELoss",
     # "CrossEntropyLoss",
     # "SquaredHingeLoss",
     # "MSELoss",
-    "DiceLoss",
+    # "DiceLoss",
     # "MaskedDiceLoss",
     # "NormalizedDiceLoss",
 ]
 all_args['loss_regu'] = [
     # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
     # "linear",
-    # "None",
-    ("RegularizationProjConstant", {}),
+    "None",
+    # ("RegularizationProjConstant", {}),
     # ("RegularizationProjActivated", {}),
 ]
 all_args["loss_coefs"] = [
-    # {"loss_data": 0, "loss_regu": 0.1},
+    {"loss_data": 1, "loss_regu": 0},
     # {"loss_data": 1, "loss_regu": 0.1},
-    {"loss_data": 1, "loss_regu": 0.1},
+    # {"loss_data": 1, "loss_regu": 0.1},
     # {"loss_data": 1, "loss_regu": 0.01},
     # {"loss_data": 1, "loss_regu": 0.001},
 ]
-all_args["loss_regu_delay"] = [5000]
+all_args["loss_regu_delay"] = [1000]
 all_args['optimizer'] = [
     optim.Adam,
     # optim.SGD
 ]
 all_args['optimizer_args'] = [{}]
-all_args['batch_size'] = [10]  # DEBUG
-# all_args['batch_size'] = [64]
+# all_args['batch_size'] = [5]  # DEBUG
+all_args['batch_size'] = [64]
 all_args['num_workers'] = [
     # 20,
-    0,  # DEBUG
+    5
+    # 0
 ]
 all_args['freq_imgs'] = [
-    1,
+    # 1,
+    int(50000/64) + 1,
     # "epoch"
 ]
 all_args['freq_hist'] = [
-    1,
+    # 1,
+    int(50000/64) + 1,
     # "epoch"
 ]
 all_args["freq_update_binary_batch"] = [
@@ -241,8 +244,8 @@ all_args["freq_update_binary_epoch"] = [
     None,
 ]
 all_args['freq_scalars'] = [2]
-all_args['max_epochs.trainer'] = [3]  # DEBUG
-# all_args['max_epochs.trainer'] = [200]
+# all_args['max_epochs.trainer'] = [3]  # DEBUG
+all_args['max_epochs.trainer'] = [200]
 
 all_args['patience_loss_batch'] = [2100]
 all_args['patience_loss_epoch'] = [15]
@@ -292,7 +295,8 @@ all_args['kernel_size'] = [
     "adapt",
 ]
 all_args['channels'] = [
-    'adapt',
+    # 'adapt',
+    [4096],
     # [1, 3, 3, 1],
     # [1, 3, 1],
     # [1, 10, 1],

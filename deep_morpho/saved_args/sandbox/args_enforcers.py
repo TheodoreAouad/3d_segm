@@ -58,6 +58,10 @@ class ArgsEnforcersCurrent(ArgsEnforcer):
             # elif "black_tophat" in experiment.args['morp_operation'].name:
             #     experiment.args['random_gen_args']['p_invert'] = 0
 
+            if experiment.args['threshold_mode']["weight"] == "identity":
+                experiment.args["bias_optim_mode"] = BiseBiasOptimEnum.RAW
+
+
             if isinstance(experiment.args['loss_regu'], tuple) and experiment.args['loss_regu'][0] == "RegularizationProjActivated":
                 experiment.args['closest_selem_method'] = ClosestSelemEnum.MIN_DIST_ACTIVATED_POSITIVE
 

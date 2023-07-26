@@ -11,6 +11,7 @@ import torch
 from torch.utils.data.dataset import Dataset
 from torch.utils.data.dataloader import DataLoader
 
+from deep_morpho.dataloaders.custom_loaders import DataLoaderEpochTracker
 from deep_morpho.morp_operations import ParallelMorpOperations
 from general.utils import load_json, log_console
 from .datamodule_base import DataModule
@@ -22,10 +23,13 @@ from .datamodule_base import DataModule
 #     )
 
 # DEBUG
-N_DISKO = 0
+# N_DISKO = 0
 
 
 class DiskorectDataset(DataModule, Dataset):
+    """ Random Generation behavior: generate a new input at each call of __getitem__. If num_workers=0, each epoch is independent
+    and outputs a new input. If num_workers>0, each epoch is the same and outputs the same inputs.
+    """
     def __init__(
             self,
             random_gen_fn,
@@ -45,15 +49,36 @@ class DiskorectDataset(DataModule, Dataset):
         self.max_generation_nb = max_generation_nb
         self.do_symetric_output = do_symetric_output
         self.data = {}
-        self.rng = np.random.default_rng(seed)
+        self.seed = seed
+        # self.rng = np.random.default_rng(seed)
+        # print(seed)
+        self.rng = None
+        self.epoch = None
 
         # DEBUG
-        self.nb_inp = 0
-        global N_DISKO
-        self.n_disko = N_DISKO
-        N_DISKO += 1
+        # self.nb_inp = 0
+        # global N_DISKO
+        # self.n_disko = N_DISKO
+        # N_DISKO += 1
+        # print(f"Reset. N_DISKO = {N_DISKO}, self.n_disko = {self.n_disko}, self.nb_inp = {self.nb_inp}")
 
 
+    def get_rng(self):
+        if self.rng is None:
+            seed = self.seed if self.seed is not None else np.random.randint(0, 2 ** 32 - 1)
+
+            # Different RNG for each worker and epoch. new_seed = seed * 2 ** epoch * 3 ** worker_id, ensuring that
+            # each couple (worker, epoch) has a different seed.
+            if self.epoch is not None:
+                seed *= 2 ** self.epoch
+
+            info = torch.utils.data.get_worker_info()
+            if info is not None:
+                seed *= 3 ** info.id
+
+            self.rng = np.random.default_rng(seed)
+
+        return self.rng
 
     def __getitem__(self, idx):
         if self.max_generation_nb == 0:
@@ -67,6 +92,12 @@ class DiskorectDataset(DataModule, Dataset):
         return self.data[idx]
 
     def generate_input_target(self):
+        # # DEBUG
+        # with open("todelete/worker_id.txt", "a") as f:
+        #     info = torch.utils.data.get_worker_info()
+        #     f.write(f"{info.id}\n")
+
+        self.rng = self.get_rng()
         input_ = self.random_gen_fn(rng_float=self.rng.random, rng_int=self.rng.integers, **self.random_gen_args,)
         target = self.morp_fn(input_)
 
@@ -80,9 +111,10 @@ class DiskorectDataset(DataModule, Dataset):
         target = target.permute(2, 0, 1)  # From numpy format (W, L, H) to torch format (H, W, L)
 
         # DEBUG
-        pathlib.Path(f"todelete/{self.n_disko}/input_{self.nb_inp}.png").parent.mkdir(parents=True, exist_ok=True)
-        plt.imsave(f"todelete/{self.n_disko}/input_{self.nb_inp}.png", input_.squeeze().cpu().numpy())
-        self.nb_inp += 1
+        # pathlib.Path(f"todelete/{self.n_disko}/input_{self.nb_inp}.png").parent.mkdir(parents=True, exist_ok=True)
+        # plt.imsave(f"todelete/{self.n_disko}/input_{self.nb_inp}.png", input_.squeeze().cpu().numpy())
+        # self.nb_inp += 1
+        # print(f"todelete/{self.n_disko}/input_{self.nb_inp}.png")
 
         if self.do_symetric_output:
             return 2 * input_ - 1, 2 * target - 1
@@ -98,11 +130,17 @@ class DiskorectDataset(DataModule, Dataset):
         n_inputs: int = "all",
         num_workers: int = 0,
         shuffle: bool = False,
+        track_epoch: bool = True,
         **kwargs
     ):
+        if track_epoch:
+            loader = DataLoaderEpochTracker
+        else:
+            loader = DataLoader
+
         if n_inputs == 0:
-            return DataLoader([])
-        return DataLoader(
+            return loader([])
+        return loader(
             cls(n_inputs=n_inputs, **kwargs), batch_size=batch_size, num_workers=num_workers, shuffle=shuffle, )
 
     @classmethod

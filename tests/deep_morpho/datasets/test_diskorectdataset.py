@@ -1,4 +1,5 @@
-from black import generate_comments
+import numpy as np
+
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
 from deep_morpho.datasets.diskorect_dataset import DiskorectDataset
 from deep_morpho.morp_operations import ParallelMorpOperations
@@ -16,7 +17,7 @@ class TestInputOutputGeneratorDataset:
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
             morp_operation=morp_operation,
-            len_dataset=10
+            n_inputs=10
         )
 
         batchs1 = []
@@ -30,7 +31,7 @@ class TestInputOutputGeneratorDataset:
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
             morp_operation=morp_operation,
-            len_dataset=10
+            n_inputs=10
         )
 
         batchs2 = []
@@ -44,7 +45,7 @@ class TestInputOutputGeneratorDataset:
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
             morp_operation=morp_operation,
-            len_dataset=10
+            n_inputs=10
         )
 
         batchs3 = []
@@ -67,7 +68,7 @@ class TestInputOutputGeneratorDataset:
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
             morp_operation=morp_operation,
-            len_dataset=10
+            n_inputs=10
         )
 
         batchs1 = []
@@ -80,7 +81,7 @@ class TestInputOutputGeneratorDataset:
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
             morp_operation=morp_operation,
-            len_dataset=10
+            n_inputs=10
         )
 
         batchs2 = []
@@ -93,7 +94,7 @@ class TestInputOutputGeneratorDataset:
             random_gen_fn=get_random_diskorect_channels,
             random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
             morp_operation=morp_operation,
-            len_dataset=10
+            n_inputs=10
         )
 
 
@@ -217,5 +218,27 @@ class TestInputOutputGeneratorDataset:
 
         inp1, tar1 = next(iter(dataloader))
         inp2, tar2 = next(iter(dataloader))
+
+        assert (inp1 - inp2).abs().sum() != 0
+
+    @staticmethod
+    def test_two_batch_randomness_multi_workers():
+        morp_operation = ParallelMorpOperations.erosion(('disk', 3))
+        dataloader = DiskorectDataset.get_loader(
+            random_gen_fn=get_random_diskorect_channels,
+            random_gen_args={'size': (50, 50), 'n_shapes': 20, 'max_shape': (20, 20), 'p_invert': 0.5, 'n_holes': 10, 'max_shape_holes': (10, 10), 'noise_proba': 0.02},
+            morp_operation=morp_operation,
+            n_inputs=256 * 10,
+            batch_size=2,
+            max_generation_nb=0,
+            num_workers=1,
+            seed=np.random.randint(0, 2 ** 32 - 1),
+            track_epoch=True,
+        )
+
+        inp1, tar1 = next(iter(dataloader))
+        # print(dataloader.dataset.epoch)
+        inp2, tar2 = next(iter(dataloader))
+        # print(dataloader.dataset.epoch)
 
         assert (inp1 - inp2).abs().sum() != 0
