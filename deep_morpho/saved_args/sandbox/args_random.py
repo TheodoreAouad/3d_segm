@@ -201,17 +201,22 @@ all_args['loss_data_str'] = [
 all_args['loss_regu'] = [
     # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
     # "linear",
-    "None",
-    # ("RegularizationProjConstant", {}),
+    # "None",
+    ("RegularizationProjConstant", {}),
     # ("RegularizationProjActivated", {}),
 ]
-all_args["loss_regu_delay"] = [1000]
+all_args["loss_regu_delay"] = [
+    0,
+    1000,
+    5000,
+    10000,
+]
 all_args["loss_coefs"] = [
     # {"loss_data": 0, "loss_regu": 0.1},
     # {"loss_data": 1, "loss_regu": 0.1},
-    # {"loss_data": 1, "loss_regu": 0.01},
-    # {"loss_data": 1, "loss_regu": 0.001},
-    {"loss_data": 1, "loss_regu": 0},
+    {"loss_data": 1, "loss_regu": 0.01},
+    {"loss_data": 1, "loss_regu": 0.001},
+    # {"loss_data": 1, "loss_regu": 0.1},
 ]
 all_args['optimizer'] = [
     optim.Adam,
@@ -244,7 +249,7 @@ all_args['freq_scalars'] = [50]
 all_args['max_epochs.trainer'] = [200]
 
 all_args['patience_loss_batch'] = [2100]
-all_args['patience_loss_epoch'] = [15]
+all_args['patience_loss_epoch'] = [10]
 all_args['patience_reduce_lr'] = [1/5]
 all_args['early_stopping_on'] = [
     # 'batch',

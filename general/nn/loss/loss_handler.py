@@ -26,10 +26,19 @@ class LossHandler:
         self.loss_args = loss
         self.loss = self.instantiate(loss)
         self.coefs = self.configure_coefs(coefs)
-        if do_compute is None:
-            do_compute = {k: True for k in self.loss.keys()}
-        self.do_compute = do_compute
+        self._do_compute = do_compute
+        # if do_compute is None:
+        #     do_compute = {k: True for k in self.loss.keys()}
+        # self.do_compute = do_compute
         # self.pl_module = pl_module
+
+    @property
+    def do_compute(self):
+        if self._do_compute is not None:
+            return self._do_compute
+
+        return {k: v != 0 for k, v in self.coefs.items()}
+
 
     def configure_coefs(self, coefs: Dict[str, float] = None) -> Dict[str, float]:
         """Configures the coefficients of the losses.
