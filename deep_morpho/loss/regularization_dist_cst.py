@@ -13,10 +13,11 @@ class RegularizationProjConstant(nn.Module):
     For a structuring element $S$, $A(S) = \{\theta \cdot S | \theta > 0\}$. We compute
     $$ \min_S d(A(S), (W, B)) $$.
     """
-    def __init__(self, model: nn.Module = None, bise_modules: List[BiSEBase] = None):
+    def __init__(self, model: nn.Module = None, bise_modules: List[BiSEBase] = None, mode: str = "exact"):
         super().__init__()
         self.model = model
         self.bise_modules = bise_modules
+        self.mode = mode
 
     def forward(self, *args, pl_module=None, **kwargs) -> torch.Tensor:
         if self.model is None:
@@ -33,52 +34,17 @@ class RegularizationProjConstant(nn.Module):
         if self.bise_modules is None:
             self.bise_modules = [m for m in self.model.modules() if isinstance(m, BiSEBase)]
 
-        self.bise_closest_handlers = [BiseClosestMinDistOnCst(bise) for bise in self.bise_modules]
+        self.bise_closest_handlers = [BiseClosestMinDistOnCst(bise_module=bise, mode=self.mode) for bise in self.bise_modules]
         return self
 
 
-# DEPRECATED: the cat does not share memory, the gradient are not passed correctly. See how to define the projectors
-#  at each iteration without being too slow.
-# class RegularizationProjConstantVectorized(nn.Module):
-#     """ Adds a regularization loss to encourage the bimonn to be morphological.
+# class RegularizationProjConstantApproxUniform(nn.Module):
+#     r""" Based on Ternary Weight Networks (https://arxiv.org/pdf/1605.04711.pdf).
 #     For a structuring element $S$, $A(S) = \{\theta \cdot S | \theta > 0\}$. We compute
-#     $$ \min_S d(A(S), (W, B)) $$.
+#     an approximation of $$ \min_S d(A(S), (W, B)) $$. If $W$ are uniform between [0, alpha], then
+#     the best threshold is alpha / 3.
 #     """
-#     def __init__(self, model: nn.Module = None):
+#     def __init__(self, model: nn.Module = None, bise_modules: List[BiSEBase] = None):
 #         super().__init__()
 #         self.model = model
-#         self.weights_dict: Dict[int, torch.Tensor] = dict()
-#         self.bias_dict: Dict[int, torch.Tensor] = dict()
-#         self.projectors: List[ProjectionConstantSet] = []
-
-#     def forward(self, *args, pl_module=None, **kwargs) -> torch.Tensor:
-#         if self.model is None:
-#             self.set_model(pl_module.model)
-
-#         loss = 0
-#         for proj in self.projectors:
-#             proj.compute(verbose=False)
-#             loss += proj.final_dist.sum()
-#         return loss
-
-#     def set_model(self, model: nn.Module):
-#         self.model = model
-#         for bise_module in self.model.modules():
-#             if not isinstance(bise_module, BiSEBase):
-#                 continue
-#             W = bise_module.weights.reshape(bise_module.weights.shape[0], -1)
-#             dim = W.shape[1]
-#             self.weights_dict[dim] = self.weights_dict.get(dim, []) + [W]
-#             self.bias_dict[dim] = self.bias_dict.get(dim, []) + [bise_module.bias]
-
-#         self.projectors = [ProjectionConstantSet(
-#             weights=torch.cat(self.weights_dict[dim], axis=0), bias=torch.cat(self.bias_dict[dim], axis=0)
-#         ) for dim in self.weights_dict.keys()]
-
-#         # self.bise_closest_handlers = [BiseClosestMinDistOnCst(bise) for bise in self.bise_modules]
-#         return self
-
-
-# class RegularizationProjConstant(RegularizationProjConstantOld):
-# # class RegularizationProjConstant(RegularizationProjConstantNew):
-#     pass
+#         self.bise_modules = bise_modules

@@ -49,26 +49,17 @@ class ProjectionConstantSet:
         return (module_.cumsum(w_values, axis=1) / arange).argmax(1)
 
 
-    def compute(self, verbose: bool = True,) -> "ProjectionConstantSet":
-        r"""Computes the projection onto constant set for each weight and bias.
+    def find_best_S(self, weights: Union[np.ndarray, torch.tensor], module_: ModuleType = np, verbose: bool = False) -> Union[np.ndarray, torch.tensor]:
+        r"""Gives the arg maximum of the distance function $\frac{\sum_{k \in S}{W_k}}{\sqrt{card{S}}} = \frac{\sum_{k = 1}^j{w_k}}{\sqrt{j}}$
+        with $w_k$ the sorted values in descending order of the weights $W$.
 
         Args:
-            weights (Union[np.ndarray, torch.tensor]): (nb_weight, n_params_per_weight)
-            bias (Union[np.ndarray, torch.tensor]): (nb_weight)
-            verbose (bool, optional): Shows progress bar. Defaults to True.
+            w_values (np.ndarray): (n_chout, prod(kernel_size))
 
         Returns:
-            Union[np.ndarray, torch.tensor]: (nb_weight, n_params_per_weight) the closest constants et
-            Union[np.ndarray, torch.tensor]: (nb_weight) the closest operation (erosion or dilation)
-            Union[np.ndarray, torch.tensor]: (nb_weight) the distance to the closest activated space of constant set
+            array (n_chout): the index of the best value, for each channel.
         """
-        W = self.weights
-        bias = self.bias
-        if isinstance(W, torch.Tensor):
-            module_ = torch
-
-        else:
-            module_ = np
+        W = weights
 
         w_values = module_.zeros_like(W)
 
@@ -81,9 +72,103 @@ class ProjectionConstantSet:
             w_values[chout_idx, :len(w_value_tmp)] = w_value_tmp  # We assume that W don't repeat values. TODO: handle case with repeated values. Hint: add micro noise?
 
         best_idx = self.find_best_index(w_values, module_=module_)
-        self.S = (W >= w_values[module_.arange(w_values.shape[0]), best_idx, None])
+        return (W >= w_values[module_.arange(w_values.shape[0]), best_idx, None])
+
+
+    def find_approximate_uniform_S(self, weights: Union[np.ndarray, torch.tensor], module_: ModuleType = np, verbose: bool = False) -> Union[np.ndarray, torch.tensor]:
+        """ Based on Ternary Weight Networks: https://arxiv.org/pdf/1605.04711.pdf
+        """
+        W = weights
+
+        best_thresh = W.mean(1) * 2/3
+        return W >= best_thresh[:, None]
+
+
+    def find_approximate_normal_S(self, weights: Union[np.ndarray, torch.tensor], module_: ModuleType = np, verbose: bool = False) -> Union[np.ndarray, torch.tensor]:
+        """ Based on Ternary Weight Networks: https://arxiv.org/pdf/1605.04711.pdf
+        """
+        W = weights
+
+        best_thresh = W.mean(1) * 3/4
+        return W >= best_thresh[:, None]
+
+
+    def compute_dist_weights(self, verbose: bool = True, mode="exact") -> float:
+        assert mode in ["exact", "uniform", "normal"], f"mode should be in ['exact', 'approximate'], not {mode}"
+        W = self.weights
+        if isinstance(W, torch.Tensor):
+            module_ = torch
+
+        else:
+            module_ = np
+
+        # w_values = module_.zeros_like(W)
+
+        # iterate = range(W.shape[0])
+        # if verbose:
+        #     iterate = tqdm(iterate, leave=False, desc="Approximate binarization")
+
+        # for chout_idx, _ in enumerate(iterate):
+        #     w_value_tmp = self.flip(module_.unique(W[chout_idx]))
+        #     w_values[chout_idx, :len(w_value_tmp)] = w_value_tmp  # We assume that W don't repeat values. TODO: handle case with repeated values. Hint: add micro noise?
+
+        # best_idx = self.find_best_index(w_values, module_=module_)
+        # self.S = (W >= w_values[module_.arange(w_values.shape[0]), best_idx, None])
+
+        if mode == "exact":
+            self.S = self.find_best_S(self.weights, module_=module_, verbose=verbose)
+        elif mode == "uniform":
+            self.S = self.find_approximate_uniform_S(self.weights, module_=module_, verbose=verbose)
+        elif mode == "normal":
+            self.S = self.find_approximate_normal_S(self.weights, module_=module_, verbose=verbose)
 
         self.final_dist_weight = self.distance_fn_selem(weights=W, S=self.S, module_=module_)
+        return self.final_dist_weight
+
+    def compute(self, verbose: bool = True, mode="exact") -> "ProjectionConstantSet":
+        r"""Computes the projection onto constant set for each weight and bias.
+
+        Args:
+            weights (Union[np.ndarray, torch.tensor]): (nb_weight, n_params_per_weight) list of 1D weights
+            bias (Union[np.ndarray, torch.tensor]): (nb_weight)
+            verbose (bool, optional): Shows progress bar. Defaults to True.
+
+        Returns:
+            Union[np.ndarray, torch.tensor]: (nb_weight, n_params_per_weight) the closest constants et
+            Union[np.ndarray, torch.tensor]: (nb_weight) the closest operation (erosion or dilation)
+            Union[np.ndarray, torch.tensor]: (nb_weight) the distance to the closest activated space of constant set
+        """
+        # assert mode in ["exact", "uniform", "normal"], f"mode should be in ['exact', 'approximate'], not {mode}"
+        W = self.weights
+        bias = self.bias
+        # if isinstance(W, torch.Tensor):
+        #     module_ = torch
+
+        # else:
+        #     module_ = np
+
+        # # w_values = module_.zeros_like(W)
+
+        # # iterate = range(W.shape[0])
+        # # if verbose:
+        # #     iterate = tqdm(iterate, leave=False, desc="Approximate binarization")
+
+        # # for chout_idx, _ in enumerate(iterate):
+        # #     w_value_tmp = self.flip(module_.unique(W[chout_idx]))
+        # #     w_values[chout_idx, :len(w_value_tmp)] = w_value_tmp  # We assume that W don't repeat values. TODO: handle case with repeated values. Hint: add micro noise?
+
+        # # best_idx = self.find_best_index(w_values, module_=module_)
+        # # self.S = (W >= w_values[module_.arange(w_values.shape[0]), best_idx, None])
+
+        # if mode == "exact":
+        #     self.S = self.find_best_S(self.weights, module_=np, verbose=verbose)
+        # elif mode == "uniform":
+        #     self.S = self.find_approximate_uniform_S(self.weights, module_=np, verbose=verbose)
+        # elif mode == "normal":
+        #     self.S = self.find_approximate_normal_S(self.weights, module_=np, verbose=verbose)
+
+        # self.final_dist_weight = self.distance_fn_selem(weights=W, S=self.S, module_=module_)
+        self.final_dist_weight = self.compute_dist_weights(verbose=verbose, mode=mode)
 
         wsum = W.sum(1)
         self.final_operation = np.empty(W.shape[0], dtype=str)

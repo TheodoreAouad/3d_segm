@@ -202,12 +202,14 @@ all_args['loss_regu'] = [
     # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
     # "linear",
     # "None",
-    ("RegularizationProjConstant", {}),
+    # ("RegularizationProjConstant", {"mode": "exact"}),
+    # ("RegularizationProjConstant", {"mode": "uniform"}),
+    ("RegularizationProjConstant", {"mode": "normal"}),
     # ("RegularizationProjActivated", {}),
 ]
 all_args["loss_coefs"] = [
     # {"loss_data": 1, "loss_regu": 0},
-    {"loss_data": 1, "loss_regu": 0.1},
+    {"loss_data": 1, "loss_regu": 100000},
     # {"loss_data": 1, "loss_regu": 0.1},
     # {"loss_data": 1, "loss_regu": 0.01},
     # {"loss_data": 1, "loss_regu": 0.001},
@@ -248,8 +250,10 @@ all_args['freq_scalars'] = [2]
 all_args['max_epochs.trainer'] = [200]
 
 all_args['patience_loss_batch'] = [2100]
-all_args['patience_loss_epoch'] = [15]
-all_args['patience_reduce_lr'] = [1/5]
+# all_args['patience_loss_epoch'] = [15]
+all_args['patience_loss_epoch'] = [1]  # DEBUG
+# all_args['patience_reduce_lr'] = [1/5]
+all_args['patience_reduce_lr'] = [5]  # DEBUG
 all_args['early_stopping_on'] = [
     # 'batch',
     'epoch'

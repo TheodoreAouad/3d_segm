@@ -272,6 +272,10 @@ class BiseClosestMinDistOnCstOld(BiseClosestSelemWithDistanceAgg):
 
 
 class BiseClosestMinDistOnCst(BiseClosestSelemHandler):
+    def __init__(self, mode: str = "exact", *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        assert mode in ["exact", "uniform", "normal"]
+        self.mode = mode
 
     # TODO: handle differently the return_np_array to handle both cases: the observable and the loss
     def find_closest_selem_and_operation(
@@ -286,7 +290,7 @@ class BiseClosestMinDistOnCst(BiseClosestSelemHandler):
             W = W.cpu().detach().numpy()
             bias = bias.cpu().detach().numpy()
 
-        proj = ProjectionConstantSet(W.reshape(W.shape[0], -1), bias).compute(verbose=verbose)
+        proj = ProjectionConstantSet(W.reshape(W.shape[0], -1), bias).compute(verbose=verbose, mode=self.mode)
         S, final_operation, final_dist = proj.S, proj.final_operation, proj.final_dist
         S = S.reshape(W.shape)
         return S, final_operation, final_dist

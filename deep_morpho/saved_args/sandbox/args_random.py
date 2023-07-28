@@ -202,14 +202,18 @@ all_args['loss_regu'] = [
     # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
     # "linear",
     # "None",
-    ("RegularizationProjConstant", {}),
+    # ("RegularizationProjConstant", {"mode": "exact"}),
+    ("RegularizationProjConstant", {"mode": "uniform"}),
+    ("RegularizationProjConstant", {"mode": "normal"}),
     # ("RegularizationProjActivated", {}),
 ]
 all_args["loss_regu_delay"] = [
-    0,
-    1000,
-    5000,
+    # 0,
+    # 1000,
+    # 5000,
     10000,
+    15000,
+    20000,
 ]
 all_args["loss_coefs"] = [
     # {"loss_data": 0, "loss_regu": 0.1},
@@ -360,10 +364,10 @@ all_args['threshold_mode'] = [
         "weight": 'softplus',
         "activation": 'tanh',
     },
-    {
-        "weight": 'identity',
-        "activation": 'tanh',
-    },
+    # {
+    #     "weight": 'identity',
+    #     "activation": 'tanh',
+    # },
     # {
     #     "weight": 'softplus',
     #     "activation": 'sigmoid',

@@ -1,5 +1,7 @@
 from typing import List
+import torch
 import pytorch_lightning as pl
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping as LightningEarlyStopping
 
 from general.nn.observables import Observable
 from general.nn.loss import LossHandler
@@ -30,11 +32,22 @@ class DelayLossBatchStep(Observable):
         if trainer.global_step < self.delay_steps:
             return
 
-        if not self._done:
-            self._done = True
-            if not isinstance(pl_module.loss, LossHandler):
-                return
+        if self._done:
+            return
 
-            for key in self.keys:
-                pl_module.loss.do_compute[key] = True
-                pl_module.loss.coefs[key] = self.loss_coefs[key]
+        self._done = True
+        if not isinstance(pl_module.loss, LossHandler):
+            return
+
+        for key in self.keys:
+            pl_module.loss.do_compute[key] = True
+            pl_module.loss.coefs[key] = self.loss_coefs[key]
+
+
+        self.reset_early_stopping(trainer)
+
+    def reset_early_stopping(self, trainer):
+        for callback in trainer.callbacks:
+            if isinstance(callback, LightningEarlyStopping):
+                callback.best_score = torch.tensor(torch.inf)
+                callback.wait_count = 0
