@@ -20,7 +20,8 @@ def extract_last_value_from_tb(path_tb_file: str) -> float:
         path_tb_file,
         size_guidance={event_accumulator.SCALARS: 0},
     )
-    _absorb_print = ea.Reload()
+    # _absorb_print = ea.Reload()
+    ea.Reload()
     if len(ea.Tags()['scalars']) == 0:
         return None
     return ea.Scalars(ea.Tags()['scalars'][0])[-1].value
@@ -454,6 +455,30 @@ class DisplayResults:
 
         return res
 
+    @staticmethod
+    def update_results_ActivatednessObservable(path):
+        res = {}
+
+
+        obs_path = join(path, "activatedness.json")
+
+        if not os.path.exists(obs_path):
+            return res
+
+        activated_dict = load_json(obs_path)
+
+        for key, value in activated_dict["all"].items():
+            res[key] = float(value)
+
+        # for reason_folder in os.listdir(tb_path):
+        #     res['stopping_reason'] = load_json(join(tb_path, reason_folder, "results.json"))['stopping_reason']
+        #     if res['stopping_reason'] != "None":
+        #         if "." in res['stopping_reason']:
+        #             res['stopping_reason'] = res['stopping_reason'].split(".")[-1]
+        #         break
+
+        return res
+
     @classmethod
     def get_results_from_tensorboard(cls, tb_path: str, load_long_args: bool = True,):
         res = {
@@ -503,6 +528,7 @@ class DisplayResults:
             "ConvergenceMetrics",
             "ShowSelemBinary",
             "BatchEarlyStopping",
+            "ActivatednessObservable",
         ]:
             if not load_long_args and obs_name in long_args:
                 continue

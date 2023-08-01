@@ -1,14 +1,18 @@
-import torch
-from torch.utils.data import DataLoader, Dataset
+import re
 
+args_path = "deep_morpho/results/results_tensorboards/Bimonn_exp_80/sandbox/positive_weights/0_/5/mnistclassifchannel/BimonnDenseNotBinary/version_0/args.yaml"
 
-class MyDataset(Dataset):
-    def __getitem__(self, idx):
-        return torch.ones(1)
+with open(args_path, "r") as f:
+    input_text = f.read()
 
-    def __len__(self):
-        return 5
+# pattern = r'threshold_mode\.net:(.*?)(?=^\s*\w+\.)'
+# pattern = r'threshold_mode\.net:\s*\n\s*activation:\s*(.*?)\s*\n'
+# pattern = r'threshold_mode\.net:\s*\n\s*weight:\s*(.*?)\s*\n'
+# pattern = r'loss_coefs:.*?loss_data:(\s*(.*?)\s*(?:\n|$))'
+pattern = r'loss_coefs:.*?loss_regu:(\s*(.*?)\s*(?:\n|$))'
+matches = re.findall(pattern, input_text, re.DOTALL)
 
-
-loader = DataLoader(MyDataset(), num_workers=2)
-next(iter(loader))
+print(matches)
+# if matches:
+#     output = matches.group(1).strip()
+#     print(output)
