@@ -32,7 +32,8 @@ all_args['n_try'] = [0]
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
     # "debug",
-    "Bimonn_exp_80/sandbox/positive_weights/0_/"
+    "Bimonn_exp_80/sandbox/dual_weights/0_/"
+    # "Bimonn_exp_80/sandbox/positive_weights/0_/"
     # "Bimonn_exp_80/sandbox/random/0_/"
     # "Bimonn_exp_80/sandbox/dilation_proj_activated/"
     # "Bimonn_exp_79/sandbox/1_/"
@@ -351,9 +352,9 @@ all_args['bias_optim_args'] = [
     {"offset": 0}
 ]
 all_args['weights_optim_mode'] = [
-    BiseWeightsOptimEnum.THRESHOLDED,
+    # BiseWeightsOptimEnum.THRESHOLDED,
     # BiseWeightsOptimEnum.ELLIPSE_ROOT,
-    # BiseWeightsOptimEnum.NORMALIZED
+    BiseWeightsOptimEnum.NORMALIZED
 ]
 
 
