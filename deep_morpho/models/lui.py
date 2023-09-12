@@ -81,7 +81,7 @@ class BiSELUIExtender:
     @property
     def learned_operation(self):
         if self.force_identity:
-            return np.array([1])
+            return np.ones(self.groups)
         # if self._learned_operation is None:
         #     return None
         return self._learned_operation

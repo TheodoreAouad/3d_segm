@@ -50,7 +50,7 @@ all_args['experiment_name'] = [
 
 all_args["model"] = [
     ##### MORPHO ####
-    # "BiMoNN",
+    "BiMoNN",
     # "BimonnIdentity",  # DEBUG
 
     ##### CLASSIFIERS #####
@@ -58,7 +58,7 @@ all_args["model"] = [
     # "BiMoNNClassifierMaxPool",
     # "BiMoNNClassifierLastLinear",
     # "BimonnDense",
-    "BimonnDenseNotBinary",
+    # "BimonnDenseNotBinary",
     # "BiMoNNClassifierLastLinearNotBinary",
     # "BimonnBiselDenseNotBinary",
     # "ConvNetLastLinear",
@@ -79,7 +79,7 @@ all_args['dataset'] = [
     ##### MORPHO ####
     # 'diskorectdataset',
     # 'mnistmorphodataset',
-    # "noistidataset",
+    "noistidataset",
     # 'mnistgrayscaledataset',
     # 'fashionmnistgrayscaledataset',
     # 'axsparoidataset',
@@ -87,7 +87,7 @@ all_args['dataset'] = [
 
     ##### CLASSIFICATION #####
     # 'mnistclassifdataset',
-    'mnistclassifchanneldataset',
+    # 'mnistclassifchanneldataset',
 
     # 'cifar10dataset',
     # 'cifar100dataset',
@@ -154,7 +154,7 @@ all_args['channel_classif_args'] = [
 all_args['sticks_noised_angles'] = [
     [0, 45, 90]
 ]
-all_args['sticks_noised_aFrgs'] = [
+all_args['sticks_noised_args'] = [
     {
         "size": (70, 70),
         "n_shapes": 30,
@@ -299,8 +299,8 @@ all_args['kernel_size'] = [
     "adapt",
 ]
 all_args['channels'] = [
-    # 'adapt',
-    [4096],
+    'adapt',
+    # [4096],
     # [1, 3, 3, 1],
     # [1, 3, 1],
     # [1, 10, 1],
