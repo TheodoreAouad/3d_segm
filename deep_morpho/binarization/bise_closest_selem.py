@@ -162,7 +162,8 @@ class BiseClosestSelemWithDistanceAgg(BiseClosestSelemHandler):
         # for chan in chans:
         #     self.find_closest_selem_and_operation_chan(chan)
 
-        closest_selems = np.zeros((len(chans), *self.bise_module.kernel_size), dtype=bool)
+        closest_selems = np.zeros(self.bise_module.weight.shape, dtype=bool)
+        # closest_selems = np.zeros((len(chans), *self.bise_module.kernel_size), dtype=bool)
         closest_operations = np.zeros(len(chans), dtype=str)
         closest_dists = np.zeros(len(chans))
 

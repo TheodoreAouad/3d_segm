@@ -463,6 +463,8 @@ class BiSEBase(BinaryNN):
         Returns:
             array (n_chan, *kernel_size) bool, array(n_chan) int, array(n_chan) int: the selem, the operation code and the distance to the closest selem
         """
+        if chans is None:
+            chans = range(self.weight.shape[0])
         (
             self._closest_selem[chans],
             self._closest_operation[chans],
