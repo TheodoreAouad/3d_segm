@@ -59,6 +59,9 @@ class ExperimentBase(ExperimentMethods):
         self.trainloader, self.valloader, self.testloader = None, None, None
         self.input_sample = None
 
+        self.model = None
+        self.dataset = None
+
 
         self.metric_float_obs = None
         self.metric_binary_obs = None
@@ -81,7 +84,8 @@ class ExperimentBase(ExperimentMethods):
         return join(self.args["dataset"].replace("dataset", ""), self.args["model"])
 
     def load_model(self) -> GenericLightningModel:
-        self.model = self.load_model_fn(self)
+        if self.model is None:
+            self.model = self.load_model_fn(self)
 
     def load_datamodule(self) -> DataModule:
         self.trainloader, self.valloader, self.testloader = self.load_datamodule_fn(self)
@@ -164,7 +168,7 @@ class ExperimentBase(ExperimentMethods):
 
         self.args["gpus.trainer"] = 1 if self.device == torch.device("cuda") else 0
 
-        self.args["seed"] = set_seed(self.args['batch_seed'])
+        self.args["seed"] = set_seed(self.args.get('batch_seed', None))
         self.log_console(f"Seed: {self.args['seed']}")
 
         self.enforce_args()

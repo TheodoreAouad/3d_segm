@@ -30,7 +30,8 @@ all_args['n_try'] = [0]
 
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
-    "debug",
+    # "debug",
+    "test"
     # "Bimonn_exp_81/sandbox/positive_weights/"
     # "Bimonn_exp_81/sandbox/0_/"
     # "Bimonn_exp_80/sandbox/dilation_proj_activated/"
@@ -77,9 +78,9 @@ all_args["model"] = [
 
 all_args['dataset'] = [
     ##### MORPHO ####
-    # 'diskorectdataset',
+    'diskorectdataset',
     # 'mnistmorphodataset',
-    "noistidataset",
+    # "noistidataset",
     # 'mnistgrayscaledataset',
     # 'fashionmnistgrayscaledataset',
     # 'axsparoidataset',
@@ -177,7 +178,8 @@ all_args["n_inputs_test"] = [10_000]
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
-    1e-3,
+    # 1e-3,
+    1e-1,
     # 0.001,
     # 1e-3,
     # 1e-4,
@@ -201,15 +203,15 @@ all_args['loss_data_str'] = [
 all_args['loss_regu'] = [
     # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
     # "linear",
-    # "None",
+    "None",
     # ("RegularizationProjConstant", {"mode": "exact"}),
     # ("RegularizationProjConstant", {"mode": "uniform"}),
-    ("RegularizationProjConstant", {"mode": "normal"}),
+    # ("RegularizationProjConstant", {"mode": "normal"}),
     # ("RegularizationProjActivated", {}),
 ]
 all_args["loss_coefs"] = [
     # {"loss_data": 1, "loss_regu": 0},
-    {"loss_data": 1, "loss_regu": 100000},
+    {"loss_data": 1, "loss_regu": 1000},
     # {"loss_data": 1, "loss_regu": 0.1},
     # {"loss_data": 1, "loss_regu": 0.01},
     # {"loss_data": 1, "loss_regu": 0.001},
@@ -242,8 +244,8 @@ all_args["freq_update_binary_batch"] = [
     None
 ]
 all_args["freq_update_binary_epoch"] = [
-    # 1,
-    None,
+    1,
+    # None,
 ]
 all_args['freq_scalars'] = [2]
 # all_args['max_epochs.trainer'] = [3]  # DEBUG
@@ -337,8 +339,8 @@ all_args['closest_selem_method'] = [
 ]
 
 all_args['bias_optim_mode'] = [
-    # BiseBiasOptimEnum.RAW,
-    BiseBiasOptimEnum.POSITIVE,
+    BiseBiasOptimEnum.RAW,
+    # BiseBiasOptimEnum.POSITIVE,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
     # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
 ]

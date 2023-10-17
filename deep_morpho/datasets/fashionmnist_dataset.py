@@ -4,7 +4,7 @@ from torchvision.datasets import FashionMNIST
 from torch.utils.data.dataloader import DataLoader
 
 from deep_morpho.morp_operations import ParallelMorpOperations
-from deep_morpho.datasets.collate_fn_gray import collate_fn_gray_scale
+from deep_morpho.datasets.collate_fn_gray import collate_fn_gray_scale_same_dim
 from .mnist_base_dataset import MnistGrayScaleBaseDataset
 
 with open('deep_morpho/datasets/root_fashionmnist_dir.txt', 'r') as f:
@@ -50,7 +50,7 @@ class FashionMnistGrayScaleDataset(MnistGrayScaleBaseDataset, FashionMNIST):
                 morp_operation=morp_operation, n_inputs=n_inputs, first_idx=first_idx,
                 train=train, preprocessing=preprocessing, size=size,
                 do_symetric_output=do_symetric_output, n_gray_scale_values=n_gray_scale_values,
-            ), batch_size=batch_size, collate_fn=collate_fn_gray_scale, **kwargs)
+            ), batch_size=batch_size, collate_fn=collate_fn_gray_scale_same_dim, **kwargs)
 
     @staticmethod
     def get_train_val_test_loader(n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):

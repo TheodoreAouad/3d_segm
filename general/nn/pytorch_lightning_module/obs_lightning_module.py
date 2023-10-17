@@ -165,7 +165,10 @@ class NetLightning(ObsLightningModule):
     def compute_loss_value(self, ypred, ytrue):
         """Outputs the 1d loss value for the given example.
         """
-        return self.compute_loss(ypred, ytrue, do_log=False)["loss"].item()
+        loss = self.compute_loss(ypred, ytrue, do_log=False)
+        if isinstance(loss, dict):
+            return loss["loss"].item()
+        return loss.item()
 
     def compute_loss(self, ypred, ytrue, state="", do_log=True):
         """Computes total loss for each component of the loss.

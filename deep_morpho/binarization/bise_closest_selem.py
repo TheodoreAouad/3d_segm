@@ -39,15 +39,15 @@ def distance_agg_max_second_derivative(self, selems: np.ndarray, dists: np.ndarr
     return selems[idx_min], dists[idx_min]
 
 
-def distance_to_bounds_base(bound_fn, weights: "torch.Tensor", bias: "torch.Tensor", S: np.ndarray, v1: float = 0, v2: float = 1) -> float:
+def distance_to_bounds_base(bound_fn, weights: "torch.Tensor", bias: "torch.Tensor", S: np.ndarray, delta: float = 1/2) -> float:
     assert np.isin(np.unique(S), [0, 1]).all(), "S must be binary matrix"
-    lb, ub = bound_fn(weights=weights, S=S, v1=v1, v2=v2)
+    lb, ub = bound_fn(weights=weights, S=S, delta=delta)
     dist_lb = lb + bias  # if dist_lb < 0 : lower bound respected
     dist_ub = -bias - ub  # if dist_ub < 0 : upper bound respected
     return max(dist_lb, dist_ub, 0)
 
 
-def distance_fn_to_bounds(self, weights: "torch.Tensor", bias: "torch.Tensor", operation: str, S: np.ndarray, v1: float, v2: float) -> float:
+def distance_fn_to_bounds(self, weights: "torch.Tensor", bias: "torch.Tensor", operation: str, S: np.ndarray, delta: float = 1/2) -> float:
     if operation == "dilation":
         bound_fn = self.bise_module.bias_bounds_dilation
     elif operation == "erosion":
@@ -55,16 +55,16 @@ def distance_fn_to_bounds(self, weights: "torch.Tensor", bias: "torch.Tensor", o
     else:
         raise SyntaxError("operation must be either 'dilation' or 'erosion'.")
 
-    return distance_to_bounds_base(bound_fn, weights=weights, bias=bias, S=S, v1=v1, v2=v2)
+    return distance_to_bounds_base(bound_fn, weights=weights, bias=bias, S=S, delta=delta)
 
 
-def distance_between_bounds_base(bound_fn, weights: "torch.Tensor", bias: "torch.Tensor", S: np.ndarray, v1: float = 0, v2: float = 1) -> float:
+def distance_between_bounds_base(bound_fn, weights: "torch.Tensor", bias: "torch.Tensor", S: np.ndarray, delta: float = 1/2) -> float:
     assert np.isin(np.unique(S), [0, 1]).all(), "S must be binary matrix"
-    lb, ub = bound_fn(weights=weights, S=S, v1=v1, v2=v2)
+    lb, ub = bound_fn(weights=weights, S=S, delta=delta)
     return lb - ub
 
 
-def distance_fn_between_bounds(self, weights: "torch.Tensor", bias: "torch.Tensor", operation: str, S: np.ndarray, v1: float, v2: float) -> float:
+def distance_fn_between_bounds(self, weights: "torch.Tensor", bias: "torch.Tensor", operation: str, S: np.ndarray, delta: float = 1/2) -> float:
     if operation == "dilation":
         bound_fn = self.bise_module.bias_bounds_dilation
     elif operation == "erosion":
@@ -72,7 +72,7 @@ def distance_fn_between_bounds(self, weights: "torch.Tensor", bias: "torch.Tenso
     else:
         raise SyntaxError("operation must be either 'dilation' or 'erosion'.")
 
-    return distance_between_bounds_base(bound_fn, weights=weights, bias=bias, S=S, v1=v1, v2=v2)
+    return distance_between_bounds_base(bound_fn, weights=weights, bias=bias, S=S, delta=delta)
 
 
 class BiseClosestSelemHandler(ExperimentMethods):
@@ -117,7 +117,7 @@ class BiseClosestSelemWithDistanceAgg(BiseClosestSelemHandler):
         return self._distance_agg_fn
 
     def compute_selem_dist_for_operation_chan(
-        self, weights, bias, operation: str, chout: int = 0, v1: float = 0, v2: float = 1
+        self, weights, bias, operation: str, chout: int = 0, delta: float = 1/2,
     ):
         weights = weights[chout]
         # weight_values = weights.unique().detach().cpu().numpy()
@@ -129,21 +129,21 @@ class BiseClosestSelemWithDistanceAgg(BiseClosestSelemHandler):
         for value_idx, value in enumerate(weight_values):
             selem = (weights >= value)
             # selem = (weights >= value).cpu().detach().numpy()
-            dists[value_idx] = self.distance_fn(weights=weights, bias=bias, operation=operation, S=selem, v1=v1, v2=v2)
+            dists[value_idx] = self.distance_fn(weights=weights, bias=bias, operation=operation, S=selem, delta=delta)
             selems.append(selem)
 
         return selems, dists
 
 
     def find_closest_selem_and_operation_chan(
-        self, weights, bias, chout=0, v1=0, v2=1
+        self, weights, bias, chout=0, delta: float = 1/2,
     ):
         final_dist = np.infty
         weights = weights.detach().cpu().numpy()
         bias = bias.detach().cpu().numpy()
         for operation in ['dilation', 'erosion']:
             selems, dists = self.compute_selem_dist_for_operation_chan(
-                weights=weights, bias=bias, chout=chout, operation=operation, v1=v1, v2=v2
+                weights=weights, bias=bias, chout=chout, operation=operation, delta=delta
             )
             new_selem, new_dist = self.distance_agg_fn(selems=selems, dists=dists)
             if new_dist < final_dist:
@@ -153,7 +153,7 @@ class BiseClosestSelemWithDistanceAgg(BiseClosestSelemHandler):
 
         return final_selem, final_operation, final_dist
 
-    def __call__(self, chans: List[int] = None, v1: float = 0, v2: float = 1, verbose: bool = True,) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def __call__(self, chans: List[int] = None, delta: float = 1/2, verbose: bool = True,) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if chans is None:
             chans = range(self.bise_module.out_channels)
         if verbose:
@@ -169,7 +169,7 @@ class BiseClosestSelemWithDistanceAgg(BiseClosestSelemHandler):
 
         for chout_idx, chout in enumerate(chans):
             selem, op, dist = self.find_closest_selem_and_operation_chan(
-                weights=self.bise_module.weights, bias=self.bise_module.bias, chout=chout, v1=v1, v2=v2
+                weights=self.bise_module.weights, bias=self.bise_module.bias, chout=chout, delta=delta
             )
             closest_selems[chout_idx] = selem.astype(bool)
             closest_operations[chout_idx] = self.bise_module.operation_code[op]
@@ -190,7 +190,7 @@ class BiseClosestActivationSpaceIteratedPositive(BiseClosestSelemWithDistanceAgg
         super().__init__(distance_agg_fn=distance_agg_min, *args, **kwargs)
         self._distance_fn = partial(self.solve)
 
-    def solve(self, weights: np.ndarray, bias: np.ndarray, operation: str, S: np.ndarray, v1: float, v2: float) -> float:
+    def solve(self, weights: np.ndarray, bias: np.ndarray, operation: str, S: np.ndarray, delta: float = 1/2) -> float:
         bias = -bias
         if operation == "erosion":
             bias = weights.sum() - bias
@@ -236,18 +236,18 @@ class BiseClosestMinDistOnCstOld(BiseClosestSelemWithDistanceAgg):
         self.distance_fn_bias = partial(distance_fn_between_bounds, self=self)
 
     @staticmethod
-    def distance_fn_selem(self, weights: "torch.Tensor", bias: "torch.Tensor", operation: str, S: np.ndarray, v1: float, v2: float) -> float:
+    def distance_fn_selem(self, weights: "torch.Tensor", bias: "torch.Tensor", operation: str, S: np.ndarray, delta: float = 1/2) -> float:
         W = weights.cpu().detach().numpy()
         return (W ** 2).sum() - 1 / S.sum() * (W[S].sum()) ** 2
 
     def find_closest_selem_and_operation_chan(
-        self, weights, bias, chout=0, v1=0, v2=1
+        self, weights, bias, chout=0, delta: float = 1/2
     ):
         final_dist_selem = np.infty
         final_dist_bias = np.infty
 
         selems, dists = self.compute_selem_dist_for_operation_chan(
-            weights=weights, bias=bias, chout=chout, operation=None, v1=v1, v2=v2
+            weights=weights, bias=bias, chout=chout, operation=None, delta=delta
         )
         new_selem, new_dist = self.distance_agg_fn(selems=selems, dists=dists)
         if new_dist < final_dist_selem:
@@ -280,7 +280,7 @@ class BiseClosestMinDistOnCst(BiseClosestSelemHandler):
 
     # TODO: handle differently the return_np_array to handle both cases: the observable and the loss
     def find_closest_selem_and_operation(
-        self, weights, bias, chans=None, v1=0, v2=1, verbose: bool = True, return_np_array: bool = True,
+        self, weights, bias, chans=None, delta: float = 1/2, verbose: bool = True, return_np_array: bool = True,
     ):
         if chans is None:
             chans = range(self.bise_module.out_channels)
@@ -311,7 +311,7 @@ class BiseClosestMinDistOnCstApproxBase(BiseClosestSelemHandler):
         pass
 
     def find_closest_selem_and_operation(
-        self, weights, bias, chans=None, v1=0, v2=1, verbose: bool = True,
+        self, weights, bias, chans=None, delta: float = 1/2, verbose: bool = True,
     ):
         if chans is None:
             chans = range(self.bise_module.out_channels)

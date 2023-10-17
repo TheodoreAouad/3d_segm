@@ -1,3 +1,5 @@
+from typing import Union
+
 from abc import ABC
 import torch.nn as nn
 
@@ -9,21 +11,30 @@ class BinaryNN(nn.Module, ExperimentMethods, ABC):
     def __init__(self):
         super().__init__()
         self.binary_mode = False
+        self.binary_partial_mode = False
 
-    def binary(self, mode: bool = True, *args, **kwargs):
+    def binary(self, mode: Union[bool, str] = True, *args, **kwargs):
         r"""Sets the module in binary mode.
 
         Args:
             mode (bool): whether to set binary mode (``True``) or evaluation
-                         mode (``False``). Default: ``True``.
+                         mode (``False``). Default: ``True``. If "partial", then 
+                         partial mode.
 
         Returns:
             Module: self
         """
-        self.binary_mode = mode
+        if mode == "partial":
+            self.binary_partial_mode = True
+            self.binary_mode = False
+        else:
+            self.binary_mode = mode
+            self.binary_partial_mode = False
+
         for module in self.children():
             if isinstance(module, BinaryNN):
                 module.binary(mode, *args, **kwargs)
+
         return self
 
     def forward_save(self, x):

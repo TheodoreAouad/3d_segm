@@ -1,4 +1,5 @@
 from enum import Enum, auto
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -36,16 +37,29 @@ class ThresholdLayer(nn.Module):
         if constant_P:
             self.P_.requires_grad = False
 
-    def forward(self, x, binary_mode=None):
+    def forward(self, x, binary_mode=None, channels=None):
+        """
+        Args:
+            x: input
+            binary_mode (bool): if True, return a binary output
+            channels (list-like of bool): if not None, only apply the threshold on the given True channels
+        """
+        if channels is None:
+            P_ = self.P_
+        else:
+            x = x[:, channels, ...]
+            P_ = self.P_[channels]
+
+
         if binary_mode is None:
             binary_mode = self.binary_mode
 
         if binary_mode:
             return x > 0
 
-        return self.apply_threshold(x, self.P_, self.bias)
+        return self.apply_threshold(x, P_, self.bias)
 
-    def apply_threshold(self, x, P_, bias):
+    def apply_threshold(self, x, P_, bias,):
         return self.threshold_fn(
             (x + bias) * P_.view(*([1 for _ in range(self.axis_channels)] + [len(P_)] + [1 for _ in range(self.axis_channels, x.ndim - 1)]))
         )

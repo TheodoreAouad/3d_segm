@@ -28,3 +28,4 @@ def reshape_input(fn):
 class DenseLUI(LUI):
     _forward = reshape_input(LUI._forward)
     forward_binary = reshape_input(LUI.forward_binary)
+    forward_partial_binary = reshape_input(LUI.forward_partial_binary)

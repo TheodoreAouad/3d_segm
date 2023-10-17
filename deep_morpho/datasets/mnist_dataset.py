@@ -10,7 +10,7 @@ import torch
 
 from deep_morpho.morp_operations import ParallelMorpOperations
 from deep_morpho.tensor_with_attributes import TensorGray
-from deep_morpho.datasets.collate_fn_gray import collate_fn_gray_scale
+from deep_morpho.datasets.collate_fn_gray import collate_fn_gray_scale_same_dim
 from .mnist_base_dataset import MnistBaseDataset, MnistGrayScaleBaseDataset
 from .select_indexes_dataset import SelectIndexesDataset
 from .gray_to_channels_dataset import GrayToChannelDatasetBase, LevelsetValuesEqualIndex, LevelsetValuesHandler

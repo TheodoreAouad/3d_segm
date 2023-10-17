@@ -632,13 +632,20 @@ def load_observables_classification_channel_bimonn(experiment):
 
 
     metric_float_obs = CalculateAndLogMetrics(
-        metrics=metrics,
+        metrics=metrics.copy(),
         keep_preds_for_epoch=False,
         freq={'train': args['freq_scalars'], 'val': 1, "test": 1},
     )
 
     metric_binary_obs = obs.BinaryModeMetricClassifChannel(
-        metrics=metrics,
+        metrics=metrics.copy(),
+        freq={"train": args['freq_scalars'], "val": 1, "test": 1},
+        plot_freq={"train": args['freq_imgs'], "val": args["n_inputs.val"] // args['batch_size'], "test": args['freq_imgs']},
+        dataset=experiment.trainloader.dataset,
+    )
+
+    metric_binary_partial_obs = obs.BinaryPartialModeMetricClassifChannel(
+        metrics=metrics.copy(),
         freq={"train": args['freq_scalars'], "val": 1, "test": 1},
         plot_freq={"train": args['freq_imgs'], "val": args["n_inputs.val"] // args['batch_size'], "test": args['freq_imgs']},
         dataset=experiment.trainloader.dataset,
@@ -684,6 +691,7 @@ def load_observables_classification_channel_bimonn(experiment):
         # obs.ShowClosestSelemBinary(freq=args['freq_imgs']),
         # "ShowLUISetBinary": obs.ShowLUISetBinary(freq=args['freq_imgs']),
         metric_binary_obs,
+        metric_binary_partial_obs,
         # "ConvergenceAlmostBinary": obs.ConvergenceAlmostBinary(freq=100),
         # "ConvergenceBinary": obs.ConvergenceBinary(freq=args['freq_imgs']),
 

@@ -7,6 +7,7 @@ import numpy as np
 from torch.utils.data.dataloader import DataLoader
 
 from deep_morpho.gray_scale import level_sets_from_gray, gray_from_level_sets, undersample
+from deep_morpho.datasets.collate_fn_gray import collate_fn_gray_scale
 from deep_morpho.tensor_with_attributes import TensorGray
 from .select_indexes_dataset import SelectIndexesDataset
 
@@ -194,7 +195,7 @@ class GrayToChannelDatasetBase(SelectIndexesDataset):
                 n_inputs=n_inputs, first_idx=first_idx, indexes=indexes,
                 train=train, preprocessing=preprocessing, do_symetric_output=do_symetric_output,
                 levelset_handler_mode=levelset_handler_mode, levelset_handler_args=levelset_handler_args,
-            ), batch_size=batch_size, num_workers=num_workers, shuffle=shuffle, )
+            ), batch_size=batch_size, num_workers=num_workers, shuffle=shuffle, collate_fn=collate_fn_gray_scale)
 
     # @classmethod
     # def get_train_val_test_loader(cls, n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
