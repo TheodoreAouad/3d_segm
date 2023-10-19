@@ -29,6 +29,9 @@ class ActivatednessObservable(Observable):
         self.freq_idx["epoch"] += 1
 
         self.log_tb(trainer, pl_module, batch_or_epoch="epoch", step=trainer.current_epoch)
+    
+    def on_test_epoch_end(self, trainer, pl_module):
+        self.log_tb(trainer, pl_module, batch_or_epoch="epoch", step=trainer.current_epoch)
 
     def on_train_batch_end_with_preds(
         self,

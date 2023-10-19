@@ -1,146 +1,190 @@
-from importlib import reload
-import random
-from functools import reduce, partial
-from os.path import join
-from time import time
 import os
-import copy
+from os.path import join
+from pathlib import Path
+import re
 
-from tqdm.notebook import tqdm
 import pandas as pd
-import cv2
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-import torch
 import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data.dataloader import DataLoader
-import pytorch_lightning as pl
-import skimage.morphology as morp
-from pytorch_lightning import Trainer
-from pytorch_lightning.loggers import TensorBoardLogger
-from PIL import Image, ImageDraw
-import torchviz
-# from deep_morpho.datasets.mnist_dataset import MnistClassifDataset
-# from deep_morpho.models import LightningBiMoNNClassifier, BiSE, COBiSE, BiSEC, COBiSEC
+from tqdm import tqdm
 
-
-import deep_morpho.models.softplus as sfp
-import general.array_morphology as arm
-import general.structuring_elements as selm
-from general.nn.loss import DiceLoss
-import general.nn.pytorch_lightning_module.obs_lightning_module as olm
-
-from deep_morpho.save_results_template.display_results import DisplayResults
-import deep_morpho.binarization.bise_closest_selem as bcs
-import deep_morpho.binarization.projection_constant_set as pcs
-import deep_morpho.binarization.projection_activated as pa
-import deep_morpho.binarization as binarization
-
-import deep_morpho.initializer.bise_initializer as bise_init
-import deep_morpho.initializer.bisel_initializer as bisel_init
-import deep_morpho.initializer.bimonn_initializer as bimonn_init
-import deep_morpho.initializer as inits
-
-import deep_morpho.loss as dmloss
-import deep_morpho.threshold_fn as threshold_fn
-import deep_morpho.morp_operations as morpop
-import deep_morpho.models.threshold_layer as threshold_layer
-import deep_morpho.models.weights_layer as weights_layer
-import deep_morpho.models.complementation_layer as complementation_layer
-import deep_morpho.models.pconv as pconv
-import deep_morpho.models.lightning_pconv as lpconv
-import deep_morpho.models.bise_base as bise_base
-import deep_morpho.models.bise as bise
-import deep_morpho.models.lui as lui
-import deep_morpho.models.bisel as bisel
-import deep_morpho.models.dilation_sum_layer as dis
-import deep_morpho.models.bimonn as bimonn
 import deep_morpho.models as models
-import deep_morpho.models.lightning_bise as lbise
-import deep_morpho.models.lightning_bimonn as lbimonn
-import deep_morpho.datasets.generate_forms1 as gfo
-import deep_morpho.datasets.generate_forms2 as gfo2
-import deep_morpho.datasets.generate_forms3 as gfo3
-import deep_morpho.datasets.axspa_roi_dataset as axd
-import deep_morpho.datasets.diskorect_dataset as mrda
-import deep_morpho.datasets.mnist_dataset as mnist_dataset
-import deep_morpho.observables.plot_parameters as obs_weights
-import deep_morpho.observables.plot_pred as obs_pred
-import deep_morpho.observables.weight_histogram as weight_histogram
 import deep_morpho.observables as obs
-import general.nn.viz.plot_histogram as phist
-import general.nn.viz.element_image as eltimage
-import general.nn.viz.element_histogram as elthistogram
-import deep_morpho.viz.element_bise as eltbise
-import deep_morpho.viz.morp_operations_viz as mov
-import deep_morpho.viz.elt_generator_bimonn as eltgenbi
-import deep_morpho.viz.elt_generator_bimonn_forward_save as eltgenbifor
-import deep_morpho.viz.elt_generator_bimonn_histogram as eltgenbihist
-import deep_morpho.viz.bimonn_viz as bimonn_viz
-import deep_morpho.loss.regularization_dist_cst as rdc
-import deep_morpho.loss.regularization_dist_activated as rda
+from deep_morpho.experiments.experiment_classification import ExperimentClassificationChannel
+from deep_morpho.experiments.enforcers import ArgsClassifChannel, ArgsMnist
+from deep_morpho.experiments.parser import Parser
+from deep_morpho.datasets.gray_to_channels_dataset import LevelsetValuesEqualIndex
+from deep_morpho.save_results_template.display_results import DisplayResults
 
 
-# def reload_modules():
-#     for modl in [olm, bcs, binarization, bise_init, bisel_init, bimonn_init, inits, sfp, arm, dmloss, selm, threshold_fn, morpop,
-#                  threshold_layer, weights_layer, complementation_layer, pconv, lpconv, bise_base, bise, lui, bisel,
-#                  dis, bimonn, models, lbise, lbimonn, gfo, gfo2, gfo3, axd,
-#                  mrda, mnist_dataset, obs_weights, obs_pred, obs,
-#                 weight_histogram, phist, eltimage, elthistogram, eltbise, mov, eltgenbi, eltgenbifor, eltgenbihist, bimonn_viz]:
-#         reload(modl)
-        
-# reload_modules()
 
-device = 'cpu'
-if torch.cuda.is_available():
-    device = 'cuda'
-print(device)
-
-# reload_modules()
-# tb_path = ("deep_morpho/results/DGMM_2022/sandbox/1/axspa_roi/version_7")
-# tb_path = "/hdd/aouadt/these/projets/3d_segm/deep_morpho/results/results_tensorboards/Bimonn_exp_56/sandbox/2/softplus/diskorect/opening/disk/version_1"
-# tb_path = "deep_morpho/results/results_tensorboards/Bimonn_exp_81/sandbox/0_/2/diskorect/bimonn/closing/hstick/version_0"
-# tb_path = "/hdd/aouadt/these/projets/Bimonn_LBQNN2023/results/results_tensorboards/debug_noisti/10/noisti/bimonn/version_0"
-
-tb_path = "deep_morpho/results/results_tensorboards/Bimonn_exp_80/sandbox/positive_weights/0_/5/mnistclassifchannel/BimonnDenseNotBinary/version_77"
-# tb_path = "deep_morpho/results/results_tensorboards/Bimonn_exp_80/sandbox/positive_weights/0_/5/mnistclassifchannel/BimonnDenseNotBinary/version_37"
-# tb_path = "deep_morpho/results/results_tensorboards/Bimonn_exp_80/ruche/positive_weights/0_/3/mnistclassifchannel/BimonnDenseNotBinary/version_5"
-# tb_path = "deep_morpho/results/results_tensorboards/Bimonn_exp_80/sandbox/positive_weights/0_/0/mnistclassifchannel/BimonnDenseNotBinary/version_8"
-
-# tb_path = "deep_morpho/results/results_tensorboards/test/5/mnistclassifchannel/bimonndense/version_0"
-
-# tb_path = "deep_morpho/results/results_tensorboards/test/bisel/softplus/classif_mnist/version_8"
-# tb_path = "deep_morpho/results/results_tensorboards/Bimonn_exp_75/sandbox/0/dual_bisel/softplus/sticks_noised/sticks_noised/version_19"
-# tb_path = "deep_morpho/results/results_tensorboards/Bimonn_exp_71/sandbox/0/bisel/softplus/diskorect/dilation/disk/version_4"
-
-# tb_path = "/hdd/aouadt/these/projets/3d_segm/deep_morpho/results/results_tensorboards/test_refactor_lui/bisel2/softplus/diskorect/dilation/disk/version_0"
+def list_dir_joined(folder: str):
+    return [os.path.join(folder, k) for k in os.listdir(folder)]
 
 
-# df, global_args, changing_args = DisplayResults().get_df_from_tb_paths([tb_path])
+TB_PATHS = []
+
+path_global = Path("deep_morpho/results/results_tensorboards/Bimonn_exp_80/sandbox/positive_weights/0_")
+for exp_nb in ([] +
+    ["0"] +
+    [f"{i}" for i in range(5, 7)] +
+[]):
+    # for version in list_dir_joined(join(path_global, exp_nb, "mnistclassifchannel", "BimonnDenseNotBinary")):
+    for version in (path_global / f"{exp_nb}" / "mnistclassifchannel" / "BimonnDenseNotBinary").iterdir():
+        TB_PATHS.append(str(version))
+
+path_global = Path("deep_morpho/results/results_tensorboards/Bimonn_exp_80/ruche/positive_weights/0_")
+for exp_nb in range(8):
+    # for version in list_dir_joined(join(path_global, str(exp_nb), "mnistclassifchannel", "BimonnDenseNotBinary")):
+    for version in (path_global / f"{exp_nb}" / "mnistclassifchannel" / "BimonnDenseNotBinary").iterdir():
+        TB_PATHS.append(str(version))
 
 
-# tb_path = join(tb_path, 'checkpoints', os.listdir(join(tb_path, 'checkpoints'))[0])
-if os.path.exists(join(tb_path, 'best_weights')):
-    tb_path = join(tb_path, 'best_weights', os.listdir(join(tb_path, 'best_weights'))[0])
-elif os.path.exists(join(tb_path, 'checkpoints')):
-    tb_path = join(tb_path, 'checkpoints', os.listdir(join(tb_path, 'checkpoints'))[0])
+# df, global_args, changing_args = DisplayResults().get_df_from_tb_paths(TB_PATHS)
+# df["test_accuracy"] = df["test_accuracy"].astype(float)
+# df["binary_test_accuracy"] = df["binary_test_accuracy"].astype(float)
+# df["test_error"] = 1 - df["test_accuracy"].astype(float)
+# df["binary_test_error"] = 1 - df["binary_test_accuracy"].astype(float)
+# df["float_params"] = df["float_params"].astype(float)
 
-# bise_base.BiseBiasOptimEnum[df["bias_optim_mode"].iloc[0]]
 
-loss = nn.BCELoss()
-model = models.LightningBiMoNN.load_from_checkpoint(tb_path, loss=loss)
-# model = models.LightningBiMoNNClassifierLastLinearNotBinary.load_from_checkpoint(tb_path, model_args=model_args, loss=None, learning_rate=None, optimizer=None,)
-# model.to(device)
-model.model.binary(True);
-model.model.binary(False);
+# df.loc[pd.isna(df["kwargs_loss_regu"]), "kwargs_loss_regu"] = "None"
+# df.loc[df["loss_regu_str"] == "None", "kwargs_loss_regu"] = "None"
+# df["loss_coef_regu"] = df["loss_coef_regu"].apply(lambda x: x[1])
+# df.loc[df["loss_coef_regu"] == "None", "loss_coef_regu"] = "0"
 
-model.model.to(device)
-img = torch.rand(100, 1, 28, 28)
-img = img.to(device)
-img = img.view(img.shape[0], -1)
+# df.loc[(df["kwargs_loss_regu"] == "None") & (df["loss_regu_str"] == "RegularizationProjConstant"), "kwargs_loss_regu"] = "exact"
 
-lui1 = model.model.layers[0]
+# df["loss_regu_delay"] = df["loss_regu_delay"].astype(int)
 
-otp = lui1.forward_partial_binary(img)
+# for col in ["val_accuracy", "test_accuracy", "binary_val_accuracy", "binary_test_accuracy"]:
+#     df[col] = df[col].astype(float)
+
+
+# df["float_diff_val_test"] = df["val_accuracy"] - df["test_accuracy"]
+# df["binary_diff_val_test"] = df["binary_val_accuracy"] - df["binary_test_accuracy"]
+
+
+def load_args(tb_path):
+    args = Parser()
+    # args["batch_seed"] = 2249939862
+    seed = get_seed(tb_path)
+    args["batch_seed"] = seed
+    args["dataset"] = "mnistclassifchanneldataset"
+    args["model"] = "bimonndensenotbinary"
+    args["batch_size"] = 128
+    args["num_workers"] = 5
+    args["freq_scalars"] = 50
+    args["freq_imgs"] = None
+    args["freq_hist"] = None
+    args["freq_update_binary_batch"] = None
+    args["freq_update_binary_epoch"] = None
+    args["patience_reduce_lr"] = None
+    args["patience_loss"] = None
+    args['channel_classif_args'] = {
+        "levelset_handler_mode": LevelsetValuesEqualIndex,
+        # "levelset_handler_args": {"n_values": 10},
+        "levelset_handler_args": {"n_values": 1},
+    }
+
+    args.parse_args(add_argv=False)
+    return args
+
+
+def load_model(tb_path):
+    if os.path.exists(join(tb_path, 'best_weights')):
+        tb_path = join(tb_path, 'best_weights', os.listdir(join(tb_path, 'best_weights'))[0])
+    elif os.path.exists(join(tb_path, 'checkpoints')):
+        tb_path = join(tb_path, 'checkpoints', os.listdir(join(tb_path, 'checkpoints'))[0])
+
+    # bise_base.BiseBiasOptimEnum[df["bias_optim_mode"].iloc[0]]
+
+    loss = nn.BCELoss()
+    model = models.LightningBiMoNN.load_from_checkpoint(tb_path, loss=loss)
+    model.model.binary(True)
+    model.model.binary("partial")
+    return model
+
+
+def load_mnist_exp(tb_path):
+    args = load_args(tb_path)
+    model = load_model(tb_path)
+
+    exp = ExperimentClassificationChannel(
+        args=args,
+        dest_dir="tmp/",
+        verbose=False
+    )
+    exp.model = model
+    exp.args_enforcers = [ArgsClassifChannel(), ArgsMnist()]
+    exp.setup()
+
+    obs_binary_partial_metrics = obs.BinaryPartialModeMetricClassifChannel(
+        metrics={"accuracy": exp.metric_binary_obs.metrics["accuracy"]},
+        freq={"train": 1, "val": 1, "test": 1},
+        plot_freq={"train": 1, "val": 1, "test": 100000},
+        dataset=exp.trainloader.dataset,
+    )
+    exp.observables.append(obs_binary_partial_metrics)
+    model.observables = exp.observables
+    return exp, obs_binary_partial_metrics
+
+
+def get_seed(tb_path):
+    with open(Path(tb_path) / "args.yaml", "r") as f:
+        return int(parse_yaml_dict_key_line(f.read(), "seed"))
+
+
+def regex_find_or_none(regex: str, st: str, *args, group_nb: int = -1, **kwargs,):
+    exps = re.findall(regex, st, *args, **kwargs)
+    if len(exps) == 0:
+        return None
+    
+    if len(exps) > 1:
+        exps = [exps[0]]
+    # assert len(exps) == 1, exps
+
+    # for multiple parenthesis, we have to select the group. If there is only one group, -1
+    if group_nb == -1:
+        return exps[0]
+    return exps[0][group_nb]
+
+
+def parse_yaml_dict_key_line(yaml_str: str, key: str):
+    return regex_find_or_none(f"( |^|\n){key}: ([^\n]+)\n", yaml_str, group_nb=1)
+
+
+
+
+def evaluate_test(tb_path: str):
+    # model = load_model(tb_path)
+    exp, obs_binary_partial_metrics = load_mnist_exp(tb_path)
+
+    exp.test()
+
+
+    binary_acc = exp.metric_binary_obs.last_value["test"]["accuracy"]
+    float_acc = exp.metric_float_obs.last_value["test"]["accuracy"]
+    binary_partial_acc = obs_binary_partial_metrics.last_value["test"]["accuracy"]
+
+    return (exp, obs_binary_partial_metrics), (binary_acc, float_acc, binary_partial_acc)
+
+
+savepath = Path("deep_morpho/results/exp80_mnist_results_df")
+
+for tb_path in tqdm(TB_PATHS):    
+    exp_id = tb_path.replace("/", "__")
+    if (savepath / exp_id).exists():
+        continue
+    (savepath / exp_id).mkdir(exist_ok=True, parents=True)
+    (exp, obs_binary_partial_metrics), (binary_acc, float_acc, binary_partial_acc) = evaluate_test(tb_path)
+
+    for obs_ in exp.observables:
+        obs_.save(savepath / exp_id)
+
+
+
+
+
+# print("Binary Error:", f"{1 - binary_acc:.4f}")
+# print("Binary Partial Error:", f"{1 - binary_partial_acc:.4f}")
+# print("Float Error:", f"{1 - float_acc:.4f}")

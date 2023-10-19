@@ -38,6 +38,7 @@ class ExperimentBase(ExperimentMethods):
         load_datamodule_fn: Callable = default_load_datamodule_fn,
         load_observables_fn: Callable = default_load_observables_fn,
         args_enforcers: List[ArgsEnforcer] = [],
+        verbose: bool = True,
     ):
         self.args = args
         # self.tb_logger = tb_logger
@@ -46,6 +47,7 @@ class ExperimentBase(ExperimentMethods):
         self.load_datamodule_fn = load_datamodule_fn
         self.load_observables_fn = load_observables_fn
         self.args_enforcers = self.args.get("args_enforcers", []) + args_enforcers
+        self.verbose = verbose
 
         name: str = self.get_experiment_name()
         self.tb_logger = TensorBoardLogger(dest_dir, name=name, default_hp_metric=False)
@@ -114,8 +116,8 @@ class ExperimentBase(ExperimentMethods):
         self.log_console(f"Loading best model from {path_weight}")
         self.model.load_state_dict(torch.load(path_weight)["state_dict"])
 
-    def test(self):
-        self.trainer.test(self.model, self.testloader)
+    def test(self,):
+        self.trainer.test(self.model, self.testloader,)
 
     def save(self):
         metric_dict = {}
@@ -132,13 +134,14 @@ class ExperimentBase(ExperimentMethods):
             observable.save(join(self.log_dir, 'observables'))
 
     def log_console(self, *args, **kwargs):
-        return log_console(*args, **kwargs, logger=self.console_logger)
+        if self.verbose:
+            return log_console(*args, **kwargs, logger=self.console_logger)
 
     def log_tensorboard(self):
-        with Task("Logging model to Tensorboard", self.console_logger):
+        with Task("Logging model to Tensorboard", self.console_logger, verbose=self.verbose):
             self.tb_logger.experiment.add_graph(self.model, self.input_sample[0].unsqueeze(0).to(self.device))
 
-        with Task("Logging hyperparameters to Tensorboard", self.console_logger):
+        with Task("Logging hyperparameters to Tensorboard", self.console_logger, verbose=self.verbose):
             hyperparam_str = ""
             for k, v in self.args.items():
                 hyperparam_str += f"**{k}**: {v}  \n"
@@ -173,15 +176,15 @@ class ExperimentBase(ExperimentMethods):
 
         self.enforce_args()
 
-        with Task("Loading Data", self.console_logger):
+        with Task("Loading Data", self.console_logger, verbose=self.verbose):
             self.load_datamodule()
 
         self.input_sample = next(iter(self.trainloader))[0]
 
-        with Task("Loading Observables", self.console_logger):
+        with Task("Loading Observables", self.console_logger, verbose=self.verbose):
             self.load_observables()
 
-        with Task("Loading Model", self.console_logger):
+        with Task("Loading Model", self.console_logger, verbose=self.verbose):
             self.load_model()
 
         self.log_console(f"Model: {self.model}")
@@ -207,14 +210,14 @@ class ExperimentBase(ExperimentMethods):
         self.log_tensorboard()
 
 
-        with Task("Training", self.console_logger):
+        with Task("Training", self.console_logger, verbose=self.verbose):
             self.train()
 
-        with Task("Loading best weights", self.console_logger):
+        with Task("Loading best weights", self.console_logger, verbose=self.verbose):
             self.load_final_weights()
 
-        with Task("Testing", self.console_logger):
+        with Task("Testing", self.console_logger, verbose=self.verbose):
             self.test()
 
-        with Task("Saving", self.console_logger):
+        with Task("Saving", self.console_logger, verbose=self.verbose):
             self.save()

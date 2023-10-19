@@ -89,7 +89,7 @@ def regex_find_or_none(regex: str, st: str, *args, group_nb: int = -1, **kwargs,
         return None
     
     if len(exps) > 1:
-        warnings.warn(f"More than one match for {regex} in {st}")
+        warnings.warn(f"More than one match for {regex} in {exps}")
         exps = [exps[0]]
     # assert len(exps) == 1, exps
 

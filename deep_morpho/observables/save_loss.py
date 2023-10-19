@@ -13,7 +13,7 @@ class SaveLoss(Observable):
 
     def __init__(self, freq: int = 100, *args, **kwargs):
         super().__init__(freq=freq, *args, **kwargs)
-        self.last_loss = None
+        self.last_loss = {}
 
     def on_train_batch_end(
         self,
