@@ -113,52 +113,33 @@ class NetLightning(ObsLightningModule):
         super().__init__(observables, **kwargs)
         self.model = model
         self.learning_rate = learning_rate
-        # self.loss = self.configure_loss(loss)
 
         self.loss = loss
         self.loss_forward = extend_signature_and_forward(self.loss)
 
         self.optimizer = optimizer
         self.optimizer_args = optimizer_args
-        # self.reduce_loss_fn = reduce_loss_fn
-        # self.save_hyperparameters()
 
-    def forward(self, x):
-        return self.model(x)
-
-    # def configure_loss(self, loss):
-    #     if isinstance(loss, dict):
-    #         return {k: self.configure_loss(v) for (k, v) in loss.items()}
-
-    #     if isinstance(loss, tuple):
-    #         return loss[0](model=self.model, **loss[1])
-
-    #     return loss
+    def forward(self, *args, **kwargs):
+        return self.model(*args, **kwargs)
 
     def configure_optimizers(self):
         return self.optimizer(self.parameters(), lr=self.learning_rate, **self.optimizer_args)
 
     def obs_training_step(self, batch, batch_idx):
-        x, y = batch
-        predictions = self.forward(x)
-
-        outputs = self.compute_loss(state="/training", ypred=predictions, ytrue=y)
-
-        return outputs, predictions
+        return self.general_step(batch, batch_idx, state="/training")
 
     def obs_validation_step(self, batch, batch_idx):
-        x, y = batch
-        predictions = self.forward(x)
-
-        outputs = self.compute_loss(state="/validation", ypred=predictions, ytrue=y)
-
-        return outputs, predictions
+        return self.general_step(batch, batch_idx, state="/validation")
 
     def obs_test_step(self, batch, batch_idx):
+        return self.general_step(batch, batch_idx, state="/test")
+
+    def general_step(self, batch, batch_idx, state="",):
         x, y = batch
         predictions = self.forward(x)
 
-        outputs = self.compute_loss(state="/test", ypred=predictions, ytrue=y)
+        outputs = self.compute_loss(state=state, ypred=predictions, ytrue=y)
 
         return outputs, predictions
 
@@ -184,38 +165,6 @@ class NetLightning(ObsLightningModule):
                 self.log(f"loss{state}", values.item())
 
         return values
-        # values = {}
-        # assert not ypred.isnan().any(), "NaN in prediction"
-        # if isinstance(self.loss, dict):
-        #     for key, loss_fn in self.loss.items():
-        #         values[key] = loss_fn(ypred, ytrue)
-
-        #     if "loss" in self.loss.keys():
-        #         i = 0
-        #         while f"loss_{i}" in self.loss.keys():
-        #             i += 1
-        #         values[f"loss_{i}"] = values["loss"]
-
-        #     values["loss"] = self.reduce_loss_fn(values.values())
-
-        # else:
-        #     values["loss"] = self.loss(ypred, ytrue)
-
-        # grad_values = {}
-        # for key, value in values.items():
-        #     if do_log:
-        #         self.log(f"loss{state}/{key}", value.item())  # put .item() to avoid memory leak
-        #     if key == "loss":
-        #         continue
-
-        #     if value.requires_grad:
-        #         value.retain_grad()  # see graph of each loss term
-        #         grad_values[f'{key}_grad'] = value.grad
-        #         values[key] = values[key].detach()
-
-        # values['grads'] = grad_values
-
-        # return values
 
     @classmethod
     def load_from_checkpoint(cls, path: str, model_kwargs: Dict = {}, *args, **kwargs):

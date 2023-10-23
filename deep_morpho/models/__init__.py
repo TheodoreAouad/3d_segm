@@ -3,7 +3,6 @@ from .bise import *
 from .pconv import *
 from .bimonn import *
 from .dilation_sum_layer import *
-from .lightning_bise import *
 from .lightning_pconv import *
 from .lightning_bimonn import *
 from .lui import *
@@ -19,3 +18,5 @@ from .ste_model import *
 from .lightning_ste_model import *
 from .bimonn_identity import *
 from .lightning_bimonn_identity import *
+from .bimonn_axspa import *
+from .lightning_bimonn_axspa import *

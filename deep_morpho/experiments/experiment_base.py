@@ -137,10 +137,11 @@ class ExperimentBase(ExperimentMethods):
         if self.verbose:
             return log_console(*args, **kwargs, logger=self.console_logger)
 
-    def log_tensorboard(self):
+    def log_tensorboard_graph(self):
         with Task("Logging model to Tensorboard", self.console_logger, verbose=self.verbose):
             self.tb_logger.experiment.add_graph(self.model, self.input_sample[0].unsqueeze(0).to(self.device))
 
+    def log_tensorboard_hyperparameters(self):
         with Task("Logging hyperparameters to Tensorboard", self.console_logger, verbose=self.verbose):
             hyperparam_str = ""
             for k, v in self.args.items():
@@ -207,7 +208,8 @@ class ExperimentBase(ExperimentMethods):
 
         save_yaml(self.args, join(self.log_dir, "args.yaml"))
 
-        self.log_tensorboard()
+        self.log_tensorboard_graph()
+        self.log_tensorboard_hyperparameters()
 
 
         with Task("Training", self.console_logger, verbose=self.verbose):

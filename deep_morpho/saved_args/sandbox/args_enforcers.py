@@ -28,6 +28,7 @@ loss_dict = {
     "BCENormalizedLoss": BCENormalizedLoss,
     'NormalizedDiceLoss': NormalizedDiceLoss,
     "BCELoss": nn.BCELoss,
+    "BCEWithLogitsLoss": nn.BCEWithLogitsLoss,
     "CrossEntropyLoss": nn.CrossEntropyLoss,
     "SquaredHingeLoss": partial(nn.MultiMarginLoss, p=2),
     "RegularizationProjConstant": RegularizationProjConstant,

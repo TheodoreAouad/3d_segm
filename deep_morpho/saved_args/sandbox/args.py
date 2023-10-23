@@ -51,7 +51,7 @@ all_args['experiment_name'] = [
 
 all_args["model"] = [
     ##### MORPHO ####
-    "BiMoNN",
+    # "BiMoNN",
     # "BimonnIdentity",  # DEBUG
 
     ##### CLASSIFIERS #####
@@ -74,11 +74,14 @@ all_args["model"] = [
     # "BNNConv",
     # "MLPBinaryConnectMNIST",
     # "ConvNetBinaryConnectCifar10",
+
+    ###### AXSPA ######
+    "BimonnAxspaFromSegm",
 ]
 
 all_args['dataset'] = [
     ##### MORPHO ####
-    'diskorectdataset',
+    # 'diskorectdataset',
     # 'mnistmorphodataset',
     # "noistidataset",
     # 'mnistgrayscaledataset',
@@ -96,6 +99,9 @@ all_args['dataset'] = [
     # 'mnistclassical',
     # 'cifar10classical',
     # 'cifar100classical',
+
+    ###### AXSPA ######
+    'spalikedataset',
 ]
 
 
@@ -192,7 +198,8 @@ all_args['loss_data_str'] = [
     # "MaskedNormalizedDiceLoss",
     # "MaskedBCELoss",
     # "BCENormalizedLoss",
-    "BCELoss",
+    # "BCELoss",
+    "BCEWithLogitsLoss",
     # "CrossEntropyLoss",
     # "SquaredHingeLoss",
     # "MSELoss",
@@ -298,10 +305,12 @@ all_args['n_atoms'] = [
 
 all_args['kernel_size'] = [
     # 7
-    "adapt",
+    # "adapt",
+    [7, 7, 7]
 ]
 all_args['channels'] = [
-    'adapt',
+    # 'adapt',
+    [7, 7]
     # [4096],
     # [1, 3, 3, 1],
     # [1, 3, 1],

@@ -272,7 +272,7 @@ class SpaLike:
 
     def __init__(
         self,
-        image_size,
+        image_size: tuple = (256, 256),
         proba_lesion: float = 0.5,
         proba_lesion_locations: dict = {
             "sacrum": 0.2,

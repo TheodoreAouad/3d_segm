@@ -27,8 +27,8 @@ class ExperimentMorphoBase(ExperimentBase):
         super()._check_args()
         assert f"morp_operation{self.args.dataset_args_suffix}" in self.args, f"Argument {f'morp_operation{self.args.dataset_args_suffix}'} is not given"
 
-    def log_tensorboard(self):
-        super().log_tensorboard()
+    def log_tensorboard_graph(self):
+        super().log_tensorboard_graph()
 
         with Task("Logging morphological operations to Tensorboard", self.console_logger):
             self._log_morp_operations()

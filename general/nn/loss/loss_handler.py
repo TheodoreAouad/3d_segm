@@ -82,14 +82,6 @@ class LossHandler:
 
         return extend_signature_and_forward(loss)
 
-    # def log_loss(self, values: dict, state: str = "") -> None:
-    #     """
-    #     Args:
-    #         state (str): state of the loss (train, val, test) for the logs
-    #     """
-    #     for key, value in values.items():
-    #         self.log(f"loss{state}/{key}", value.item())  # put .item() to avoid memory leak
-
     def compute_loss(self, ypred, ytrue, *args, **kwargs) -> dict:
         """Computes total loss for each component of the loss.
         Args:
@@ -111,7 +103,6 @@ class LossHandler:
                 total_loss += self.coefs[key] * values[key]
 
             values["loss"] = total_loss
-            # values["loss"] = self.reduce_loss_fn(values.values())
 
         else:
             values["loss"] = self.loss(ypred, ytrue, *args, **kwargs)

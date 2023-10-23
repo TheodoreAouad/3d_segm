@@ -14,7 +14,7 @@ from .experiment_morpho import (
     ExperimentSteMorphoBinary, ExperimentBimonnDiskorect, ExperimentBimonnMorphoGrayScale, ExperimentSteDiskorect,
     ExperimentBimonnNoisti, ExperimentSteNoisti, ExperimentNoisti
 )
-from .experiment_classification import ExperimentClassification, ExperimentClassificationChannel
+from .experiment_classification import ExperimentClassification, ExperimentClassificationChannel, ExperimentSpalike
 from .context import Task
 from .enforcers import (
     ArgsMnist, ArgsCifar, ArgsSymetricBinary
@@ -63,6 +63,10 @@ class MultiExperiment(ExperimentMethods):
         "cifar10dataset",
         "cifar100dataset",
         "mnistclassifchanneldataset",
+    ]
+
+    SPALIKE_DATASET = [
+        "spalikedataset",
     ]
 
 
@@ -133,6 +137,9 @@ class MultiExperiment(ExperimentMethods):
 
         if args["dataset"] in self.MORPHO_BINARY_DATASETS:
             return ExperimentMorphoBinary
+        
+        if args["dataset"] in self.SPALIKE_DATASET:
+            return ExperimentSpalike
 
         return self.experiment_class
 
@@ -166,7 +173,6 @@ class MultiExperiment(ExperimentMethods):
         experiment.args_enforcers += self.infer_args_enforcers(experiment)
         return experiment
 
-
     def infer_args_enforcers(self, experiment) -> List[Dict]:
         args = experiment.args
         args_enforcers = []
@@ -179,18 +185,7 @@ class MultiExperiment(ExperimentMethods):
         if args["dataset"] in self.CIFAR_DATASETS:
             args_enforcers.append(ArgsCifar())
 
-        # if args["dataset"] == "mnistclassifdataset":
-        #     args_enforcers.append(ArgsMnistClassif())
-
-        # if args["dataset"] == "mnistclassifchanneldataset":
-        #     args_enforcers.append(ArgsMnistClassifChannel())
-
         return args_enforcers
-
-    # def generate_experiments(self, **kwargs):
-    #     for args_idx, args in enumerate(self.multi_args):
-    #         experiment = self.setup_experiment(args, dest_dir=self.log_dir, **kwargs)
-    #         self.experiments.append(experiment)
 
     def run_experiments(self):
         start_all = time()

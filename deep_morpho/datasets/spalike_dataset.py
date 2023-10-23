@@ -9,7 +9,7 @@ class SpalikeDataset(GeneratorDataset):
 
     def __init__(
         self,
-        image_size,
+        image_size: tuple = (256, 256),
         proba_lesion: float = 0.2,
         proba_lesion_locations: dict = {
             "sacrum": 0.2,
@@ -61,7 +61,7 @@ class SpalikeDataset(GeneratorDataset):
         value_sacrum = self.spalike.bone_generator._sacrum_segm_value
         segm = torch.tensor(np.stack([segm == value_iliac, segm == value_sacrum])).float()
 
-        input_ = torch.tensor(input_).float()
+        input_ = torch.tensor(input_).float().unsqueeze(0)
         target = torch.tensor(target).float()
 
-        return input_, segm, target
+        return (input_, segm), target
