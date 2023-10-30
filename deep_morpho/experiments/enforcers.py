@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import warnings
+from copy import deepcopy
 
 from torch.nn import CrossEntropyLoss, BCELoss
 
@@ -68,9 +69,9 @@ class ArgsNotMorpho(ArgsEnforcer):
 class ArgsGeneration(ArgsEnforcer):
     def add_enforcer(self):
         def enforce_fn(experiment: "ExperimentBase"):
-            experiment.args["n_inputs.train"] = experiment.args['n_steps'] * experiment.args['batch_size']
-            experiment.args["n_inputs.val"] = experiment.args["batch_size"]
-            experiment.args["n_inputs.test"] = experiment.args["batch_size"]
+            experiment.args["n_inputs.train"] = experiment.args['n_steps_train'] * experiment.args['batch_size']
+            experiment.args["n_inputs.val"] = experiment.args['n_steps_val'] * experiment.args["batch_size"]
+            experiment.args["n_inputs.test"] = experiment.args['n_steps_test'] * experiment.args["batch_size"]
 
         self.enforcers.append(enforce_fn)
 
@@ -171,5 +172,28 @@ class ArgsClassifChannel(ArgsEnforcer):
         def enforce_fn(experiment: "ExperimentBase"):
             experiment.args['levelset_handler_mode'] = experiment.args['channel_classif_args']['levelset_handler_mode']
             experiment.args['levelset_handler_args'] = experiment.args['channel_classif_args']['levelset_handler_args']
+
+        self.enforcers.append(enforce_fn)
+
+
+class ArgsSpalike(ArgsGeneration):
+    def add_enforcer(self):
+        super().add_enforcer()
+
+        def enforce_fn(experiment):
+            # from deep_morpho.models.bimonn_axspa import SpalikeMergedInputModel
+
+            # if experiment.args["dataset"].lower() == "spalikedataset":
+            #     if SpalikeMergedInputModel.is_child(experiment.args["model"]):  # must merge input and segm
+            #         experiment.args["dataset"] = "spalikedatasetmerged"
+            #     else:
+            #         for key in ["segm_mode", "merge_input_segm"]:  # get rid of useless keys
+            #             if key in experiment.args["spalike_args"]:
+            #                 experiment.args["spalike_args"] = deepcopy(experiment.args["spalike_args"])
+            #                 del experiment.args["spalike_args"][key]
+
+            for key, value in experiment.args["spalike_args"].items():
+                experiment.args[key] = value
+
 
         self.enforcers.append(enforce_fn)

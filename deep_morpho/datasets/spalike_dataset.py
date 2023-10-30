@@ -1,3 +1,5 @@
+from enum import Enum
+
 import torch
 import numpy as np
 
@@ -5,7 +7,16 @@ from .generator_dataset import GeneratorDataset
 from .spalike_generator import SpaLike
 
 
-class SpalikeDataset(GeneratorDataset):
+
+class SpalikeSegmEnum(Enum):
+    BonesSeparated = 0
+    BonesOverlapped = 1
+    Roi = 2
+    NoSegm = 3
+
+
+
+class SpalikeDatasetBase(GeneratorDataset):
 
     def __init__(
         self,
@@ -21,7 +32,9 @@ class SpalikeDataset(GeneratorDataset):
         period: tuple = (3, 10),
         offset: tuple = (1, 2),
         min_output_ellipse: int = 0,
-        max_n_blob: int = 5,
+        max_n_blob_sane: int = 5,
+        segm_mode: SpalikeSegmEnum = SpalikeSegmEnum.BonesSeparated,
+        merge_input_segm: bool = False,
         *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
@@ -34,7 +47,12 @@ class SpalikeDataset(GeneratorDataset):
         self.period = period
         self.offset = offset
         self.min_output_ellipse = min_output_ellipse
-        self.max_n_blob = max_n_blob
+        self.max_n_blob_sane = max_n_blob_sane
+        self.segm_mode = segm_mode
+        self.merge_input_segm = merge_input_segm
+
+        if self.merge_input_segm and self.segm_mode == SpalikeSegmEnum.BonesSeparated:
+            self.segm_mode = SpalikeSegmEnum.BonesOverlapped
 
 
     def get_spalike(self):
@@ -48,20 +66,41 @@ class SpalikeDataset(GeneratorDataset):
             period=self.period,
             offset=self.offset,
             min_output_ellipse=self.min_output_ellipse,
-            max_n_blob=self.max_n_blob,
+            max_n_blob_sane=self.max_n_blob_sane,
         )
 
 
     def generate_input_target(self):
         self.spalike = self.get_spalike()
 
-        input_, segm, target = self.spalike.generate_image()
+        input_, target = self.spalike.generate_image()
 
-        value_iliac = self.spalike.bone_generator._iliac_segm_value
-        value_sacrum = self.spalike.bone_generator._sacrum_segm_value
-        segm = torch.tensor(np.stack([segm == value_iliac, segm == value_sacrum])).float()
+        if self.segm_mode == SpalikeSegmEnum.BonesSeparated:
+            segm = torch.tensor(np.stack([self.spalike.iliac_segmentation, self.spalike.sacrum_segmentation])).float()
+        elif self.segm_mode == SpalikeSegmEnum.BonesOverlapped:
+            segm = torch.tensor(self.spalike.iliac_segmentation | self.spalike.sacrum_segmentation).unsqueeze(0).float()
+        elif self.segm_mode == SpalikeSegmEnum.Roi:
+            segm = torch.tensor(self.spalike.roi).unsqueeze(0).float()
+        elif self.segm_mode == SpalikeSegmEnum.NoSegm:
+            segm = torch.tensor(np.ones_like(input_)).float()
 
         input_ = torch.tensor(input_).float().unsqueeze(0)
         target = torch.tensor(target).float()
 
+        if self.merge_input_segm:
+            return input_ * segm, target
+
         return (input_, segm), target
+
+
+class SpalikeDataset(SpalikeDatasetBase):
+    def __init__(self, *args, **kwargs):
+        kwargs["segm_mode"] = SpalikeSegmEnum.BonesSeparated
+        kwargs["merge_input_segm"] = False
+        super().__init__(*args, **kwargs)
+
+
+class SpalikeDatasetMerged(SpalikeDatasetBase):
+    def __init__(self, *args, **kwargs):
+        kwargs["merge_input_segm"] = True
+        super().__init__(*args, **kwargs)

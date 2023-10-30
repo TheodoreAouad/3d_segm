@@ -14,7 +14,9 @@ from .experiment_morpho import (
     ExperimentSteMorphoBinary, ExperimentBimonnDiskorect, ExperimentBimonnMorphoGrayScale, ExperimentSteDiskorect,
     ExperimentBimonnNoisti, ExperimentSteNoisti, ExperimentNoisti
 )
-from .experiment_classification import ExperimentClassification, ExperimentClassificationChannel, ExperimentSpalike
+from .experiment_classification import (
+    ExperimentClassification, ExperimentClassificationChannel, ExperimentSpalike, ExperimentSpalikeMerged
+)
 from .context import Task
 from .enforcers import (
     ArgsMnist, ArgsCifar, ArgsSymetricBinary
@@ -65,9 +67,8 @@ class MultiExperiment(ExperimentMethods):
         "mnistclassifchanneldataset",
     ]
 
-    SPALIKE_DATASET = [
-        "spalikedataset",
-    ]
+    SPALIKE_DATASET = "spalikedataset"
+    SPALIKE_DATASET_MERGED = "spalikedatasetmerged"
 
 
     def __init__(
@@ -137,9 +138,12 @@ class MultiExperiment(ExperimentMethods):
 
         if args["dataset"] in self.MORPHO_BINARY_DATASETS:
             return ExperimentMorphoBinary
-        
-        if args["dataset"] in self.SPALIKE_DATASET:
+
+        if args["dataset"] == self.SPALIKE_DATASET:
             return ExperimentSpalike
+
+        if args["dataset"] == self.SPALIKE_DATASET_MERGED:
+            return ExperimentSpalikeMerged
 
         return self.experiment_class
 

@@ -19,6 +19,7 @@ from deep_morpho.experiments.parser import GridParser
 from .args_morp_ops import morp_operations
 from .args_enforcers import enforcers
 from deep_morpho.datasets.cifar_dataset import transform_default
+from deep_morpho.datasets.spalike_dataset import SpalikeSegmEnum
 
 
 all_args = GridParser()
@@ -33,7 +34,8 @@ all_args['experiment_name'] = [
     # "debug",
     "test"
     # "Bimonn_exp_81/sandbox/positive_weights/"
-    # "Bimonn_exp_81/sandbox/0_/"
+    # "Bimonn_exp_82/sandbox/0_/"
+    # "Bimonn_exp_82/sandbox_merged/0_/"
     # "Bimonn_exp_80/sandbox/dilation_proj_activated/"
     # "Bimonn_exp_79/sandbox/1_/"
     # "Bimonn_exp_78/bnn/"
@@ -76,7 +78,9 @@ all_args["model"] = [
     # "ConvNetBinaryConnectCifar10",
 
     ###### AXSPA ######
-    "BimonnAxspaFromSegm",
+    # "BimonnAxspaFromSegm",
+    "ConvSpalikeMerged",
+    # "ResnetSpalikeMerged",
 ]
 
 all_args['dataset'] = [
@@ -101,7 +105,8 @@ all_args['dataset'] = [
     # 'cifar100classical',
 
     ###### AXSPA ######
-    'spalikedataset',
+    # 'spalikedataset',
+    'spalikedatasetmerged',
 ]
 
 
@@ -157,6 +162,31 @@ all_args['channel_classif_args'] = [
 ]
 
 
+##### SpaLike Args #####
+
+all_args["spalike_args"] = [{
+    "image_size": (256, 256),
+    "proba_lesion": 0.5,
+    "proba_lesion_locations": {
+        "sacrum": 0.4,
+        "iliac": 0.4,
+    },
+    "grid_spacing": (24, 24),
+    "min_ellipse_axes": 13,
+    "max_ellipse_axes": 35,
+    "period": (3, 10),
+    "offset": (1, 2),
+    "min_output_ellipse": 0,
+    "max_n_blob_sane": 5,
+    "segm_mode": (
+        # SpalikeSegmEnum.BonesSeparated
+        # SpalikeSegmEnum.BonesOverlapped
+        SpalikeSegmEnum.Roi
+        # SpalikeSegmEnum.NoSegm
+    ),
+}]
+
+
 ##### Noisti Args #####
 all_args['sticks_noised_angles'] = [
     [0, 45, 90]
@@ -175,18 +205,21 @@ all_args['sticks_noised_args'] = [
 ########################
 
 
-all_args['n_steps'] = [100]  # for Diskorect
-# all_args['n_steps'] = [3]  # for Diskorect  # DEBUG
+all_args['n_steps_train'] = [100]  # for Generation
+all_args['n_steps_val'] = [10]  # for Generation
+all_args['n_steps_test'] = [20]  # for Generation
+
 all_args['nb_batch_indep'] = [0]
-all_args["n_inputs_train"] = [50_000]
-all_args["n_inputs_val"] = [10_000]
-all_args["n_inputs_test"] = [10_000]
+
+all_args["n_inputs_train"] = [50_000]  # for MNIST
+all_args["n_inputs_val"] = [10_000]  # for MNIST
+all_args["n_inputs_test"] = [10_000]  # for MNIST
 
 # TRAINING ARGS
 all_args['learning_rate'] = [
     # 1e-3,
-    1e-1,
-    # 0.001,
+    # 1e-1,
+    0.0001,
     # 1e-3,
     # 1e-4,
 ]
@@ -230,21 +263,21 @@ all_args['optimizer'] = [
 ]
 all_args['optimizer_args'] = [{}]
 # all_args['batch_size'] = [5]  # DEBUG
-all_args['batch_size'] = [64]
+all_args['batch_size'] = [32]
 all_args['num_workers'] = [
-    # 20,
-    5
+    5,
+    # 24
     # 0
 ]
 all_args['freq_imgs'] = [
     # 1,
-    int(50000/64) + 1,
-    # "epoch"
+    # int(50000/64) + 1,
+    "epoch"
 ]
 all_args['freq_hist'] = [
     # 1,
-    int(50000/64) + 1,
-    # "epoch"
+    # int(50000/64) + 1,
+    "epoch"
 ]
 all_args["freq_update_binary_batch"] = [
     # 1
@@ -255,14 +288,14 @@ all_args["freq_update_binary_epoch"] = [
     # None,
 ]
 all_args['freq_scalars'] = [2]
-# all_args['max_epochs.trainer'] = [3]  # DEBUG
-all_args['max_epochs.trainer'] = [200]
+all_args['max_epochs.trainer'] = [3]  # DEBUG
+# all_args['max_epochs.trainer'] = [200]
 
-all_args['patience_loss_batch'] = [2100]
-# all_args['patience_loss_epoch'] = [15]
-all_args['patience_loss_epoch'] = [1]  # DEBUG
-# all_args['patience_reduce_lr'] = [1/5]
-all_args['patience_reduce_lr'] = [5]  # DEBUG
+# all_args['patience_loss_batch'] = [2100]
+all_args['patience_loss_epoch'] = [15]
+# all_args['patience_loss_epoch'] = [1]  # DEBUG
+all_args['patience_reduce_lr'] = [1/5]
+# all_args['patience_reduce_lr'] = [5]  # DEBUG
 all_args['early_stopping_on'] = [
     # 'batch',
     'epoch'
@@ -271,9 +304,9 @@ all_args['early_stopping_on'] = [
 
 # MODEL ARGS
 
-all_args["do_batchnorm"] = [  # For BNNConv
-    True,
-    # False,
+all_args["do_batchnorm"] = [  # For BNNConv, BimonnAxspa
+    # True,
+    False,
 ]
 
 all_args["num_units"] = [  # For MLPBinaryConnectMNIST
@@ -289,7 +322,7 @@ all_args["apply_last_activation"] = [
     # False,
     True,
 ]
-all_args["do_maxpool"] = [
+all_args["do_maxpool"] = [  # For ConvSpalikeMerged
     True,
     # False,
 ]
@@ -303,14 +336,19 @@ all_args['n_atoms'] = [
     'adapt',
 ]
 
+all_args["classif_neurons"] = [  # For ConvSpalikeMerged
+    [],
+    # [512]
+]
 all_args['kernel_size'] = [
-    # 7
+    [7, 3]
     # "adapt",
-    [7, 7, 7]
+    # [7, 7, 7]
 ]
 all_args['channels'] = [
     # 'adapt',
-    [7, 7]
+    [256, 256, ]
+    # [3, 3]
     # [4096],
     # [1, 3, 3, 1],
     # [1, 3, 1],

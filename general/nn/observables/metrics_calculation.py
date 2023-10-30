@@ -68,21 +68,36 @@ class CalculateAndLogMetrics(Observable):
         self.freq_idx['train'] += 1
         if self.freq_idx['train'] % self.freq['train'] == 0:
             inputs, targets = batch
-            self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='train')
+            self._calculate_and_log_metrics(trainer, pl_module, targets, preds, batch_idx=batch_idx, state='train')
 
     def on_validation_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
+        # global GB
         self.freq_idx['val'] += 1
         if self.freq_idx['val'] % self.freq['val'] == 0:
             inputs, targets = batch
-            self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='val')
+            # DEBUG
+            # torch.save(inputs[0], f"todelete/val_{GB}.pt")
+            # plt.imsave(f"todelete/val_{GB}.png", inputs[0][0, 0].cpu().numpy())
+            # GB += 1
+            # pathlib.Path(f"todelete/val_{trainer.current_epoch}").mkdir(exist_ok=True, parents=True)
+            # torch.save(batch, f"todelete/val_{trainer.current_epoch}/batch_{batch_idx}.pt")
+            # torch.save(preds, f"todelete/val_{trainer.current_epoch}/preds_{batch_idx}.pt")
+            # torch.save(pl_module.model.current_output["bimonn"], f"todelete/val_{trainer.current_epoch}/bimonn_{batch_idx}.pt")
+            # torch.save(pl_module.model.current_output["pred"], f"todelete/val_{trainer.current_epoch}/current_preds_{batch_idx}.pt")
+
+            # if batch_idx == 0:
+            #     trainer.save_checkpoint(f"todelete/val_{trainer.current_epoch}/checkpoint.pt")
+            # GB += 1
+
+            self._calculate_and_log_metrics(trainer, pl_module, targets, preds, batch_idx=batch_idx, state='val')
 
     def on_test_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
         self.freq_idx['test'] += 1
         if self.freq_idx['test'] % self.freq['test'] == 0:
             inputs, targets = batch
-            self._calculate_and_log_metrics(trainer, pl_module, targets, preds, state='test')
+            self._calculate_and_log_metrics(trainer, pl_module, targets, preds, batch_idx=batch_idx, state='test')
 
-    def _calculate_and_log_metrics(self, trainer, pl_module, targets, preds, state='train', batch_or_epoch='batch', suffix=""):
+    def _calculate_and_log_metrics(self, trainer, pl_module, targets, preds, state='train', batch_or_epoch='batch', batch_idx: int = 0, suffix=""):
         key = f"{state}{suffix}"
 
         if batch_or_epoch == 'batch':
@@ -92,6 +107,8 @@ class CalculateAndLogMetrics(Observable):
 
             if batch_or_epoch == 'batch':
                 step = trainer.global_step
+                if state in ["val", "test"]:
+                    step += batch_idx
                 self.metrics_sum[state][metric_name] += metric * targets.shape[0]
 
             else:

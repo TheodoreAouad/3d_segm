@@ -4,7 +4,6 @@ from typing import Callable, Dict, Tuple, Union
 from ..extend_signature_and_forward import extend_signature_and_forward
 
 
-
 class LossHandler:
     """ Basic class for handling losses. The losses can be given in multiple ways.
     If a callable is given, loss will be this callable. We can also give a constructor and the arguments.
@@ -27,10 +26,6 @@ class LossHandler:
         self.loss = self.instantiate(loss)
         self.coefs = self.configure_coefs(coefs)
         self._do_compute = do_compute
-        # if do_compute is None:
-        #     do_compute = {k: True for k in self.loss.keys()}
-        # self.do_compute = do_compute
-        # self.pl_module = pl_module
 
     @property
     def do_compute(self):
@@ -38,7 +33,6 @@ class LossHandler:
             return self._do_compute
 
         return {k: v != 0 for k, v in self.coefs.items()}
-
 
     def configure_coefs(self, coefs: Dict[str, float] = None) -> Dict[str, float]:
         """Configures the coefficients of the losses.

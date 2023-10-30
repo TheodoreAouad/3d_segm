@@ -16,4 +16,3 @@ def accuracy(y_true, y_pred):
     y_pred = y_pred.argmax(1)
 
     return (y_true == y_pred).float().mean().item()
-

@@ -1,5 +1,5 @@
 from .generic_lightning_model import GenericLightningModel
-from .bimonn_axspa import BimonnAxspaFromSegm
+from .bimonn_axspa import BimonnAxspaFromSegm, ConvSpalikeMerged, ResnetSpalikeMerged
 
 
 class LightningBimonnAxspaFromSegm(GenericLightningModel):
@@ -42,3 +42,11 @@ class LightningBimonnAxspaFromSegm(GenericLightningModel):
         )
         model.to(experiment.device)
         return model
+
+
+class LightningConvSpalikeMerged(GenericLightningModel):
+    model_class = ConvSpalikeMerged
+
+
+class LightningResnetSpalikeMerged(GenericLightningModel):
+    model_class = ResnetSpalikeMerged

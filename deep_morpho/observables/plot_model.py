@@ -38,11 +38,14 @@ class PlotBimonn(Observable):
 
     def on_train_end(self, trainer, pl_module):
         self.save_figs(trainer, pl_module)
+    
+    def get_model(self, pl_module):
+        return pl_module.model
 
     def save_figs(self, trainer, pl_module):
         for key, do_key in self.do_plot.items():
             if do_key:
-                vizualiser = BimonnVizualiser(pl_module.model, mode=key, update_binaries=self.update_binaries)
+                vizualiser = BimonnVizualiser(self.get_model(pl_module), mode=key, update_binaries=self.update_binaries)
                 fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
                 trainer.logger.experiment.add_figure(f"model/{key}", fig, trainer.global_step)
                 if key in self.last_figs.keys():

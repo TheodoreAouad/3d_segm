@@ -130,3 +130,7 @@ class ExperimentMethods(ABC):
         def enum_to_str(string) -> str:
             return enum[string]
         return enum_to_str
+
+    @classmethod
+    def is_child(cls, name: str) -> bool:
+        return name in cls.listing()

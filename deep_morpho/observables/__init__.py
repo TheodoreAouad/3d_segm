@@ -24,3 +24,4 @@ from .plot_ste_weights import *
 from .combine_early_stopping import *
 from .delay_loss import *
 from .binary_partial_mode_metric import *
+from .observables_bimonn_axspa import *

@@ -55,8 +55,10 @@ class PlotPredsDefault(Observable):
         preds: 'Any',
     ) -> None:
         if self.freq_batch["train"] is not None and self.batch_idx["train"] % self.freq_batch["train"] == 0:
-            self.plot_pred_state(trainer=trainer, pl_module=pl_module, batch=batch, preds=preds, state="batch_train", title="train",
-                step=trainer.global_step)
+            self.plot_pred_state(
+                trainer=trainer, pl_module=pl_module, batch=batch, preds=preds, state="batch_train", title="train",
+                step=trainer.global_step
+            )
         self.batch_idx["train"] += 1
 
     def on_test_batch_end_with_preds(
@@ -69,8 +71,10 @@ class PlotPredsDefault(Observable):
         preds: 'Any',
     ) -> None:
         if self.freq_batch["test"] is not None and self.batch_idx["test"] % self.freq_batch["test"] == 0:
-            self.plot_pred_state(trainer=trainer, pl_module=pl_module, batch=batch, preds=preds, state="batch_test", title="test",
-                step=self.batch_idx["test"])
+            self.plot_pred_state(
+                trainer=trainer, pl_module=pl_module, batch=batch, preds=preds, state="batch_test", title="test",
+                step=self.batch_idx["test"]
+            )
         self.batch_idx["test"] += 1
 
     def plot_pred_state(self, trainer, pl_module, batch, preds, state, title, step):
@@ -113,8 +117,6 @@ class PlotPredsDefault(Observable):
         return self.saved_fig
 
 
-
-
 class PlotPreds(Observable):
 
     def __init__(self, freq: Dict = {"train": 100, "val": 10}, fig_kwargs={}, *args, **kwargs):
@@ -144,7 +146,6 @@ class PlotPreds(Observable):
             self.saved_fig['val'] = fig
 
         self.idx['val'] += 1
-
 
     def on_train_batch_end_with_preds(
             self,

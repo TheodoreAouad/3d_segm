@@ -284,7 +284,7 @@ class SpaLike:
         period: tuple = (3, 10),
         offset: tuple = (1, 2),
         min_output_ellipse: int = 0,
-        max_n_blob: int = 5,
+        max_n_blob_sane: int = 5,
     ):
         self.image_size = image_size
         self.bone_generator = BonesLike()
@@ -301,7 +301,7 @@ class SpaLike:
         self.label = False
         self.proba_lesion = proba_lesion
         self.proba_lesion_locations = proba_lesion_locations
-        self.max_n_blob = max_n_blob
+        self.max_n_blob_sane = max_n_blob_sane
 
         self.blobs = []
 
@@ -332,10 +332,10 @@ class SpaLike:
 
         self.segmentation_lesion = np.zeros(img.shape, dtype=bool)
 
-        n_blob = np.random.randint(1, self.max_n_blob + 1)
+        n_blob = np.random.randint(1, self.max_n_blob_sane + 1)
         if np.random.rand() < self.proba_lesion:
             self.label = True
-            n_blob -= 1
+            # n_blob -= 1
             img, blob = self.draw_blob(img=img, value=self.get_value_blob(), zone_str="roi")
             self.blobs.append(blob)
             self.segmentation_lesion[blob.segmentation] = True
@@ -352,7 +352,7 @@ class SpaLike:
             self.blobs.append(blob)
             self.segmentation_lesion[blob.segmentation] = True
 
-        return img, segm, self.label
+        return img, self.label
 
 
     def draw_blob(self, img: np.ndarray, value: int, zone_str: str, size: Tuple[int, int] = (10, 10), n_try: int = 1):
@@ -374,7 +374,7 @@ class SpaLike:
 
         zone = binary_erosion(zone, blob.segmentation)
         if zone.sum() == 0:
-            return self.draw_blob(img=img, size=(size[0] // 2, size[1] // 2), value=value, zone_str=zone_str, n_try=n_try + 1)
+            return self.draw_blob(img=img, size=(int(size[0] // 1.5), int(size[1] // 1.5)), value=value, zone_str=zone_str, n_try=n_try + 1)
 
         def get_coordinates():
             Xs, Ys = np.where(zone)

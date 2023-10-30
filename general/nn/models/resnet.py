@@ -1,4 +1,5 @@
 """Some code taken from torch source code <https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py>"""
+from typing import Optional, Callable
 
 import torch
 import torch.nn as nn
@@ -27,9 +28,116 @@ model_layers = {
 }
 
 model_blocks = {
+    'resnet10': resnet.BasicBlock,
     'resnet18': resnet.BasicBlock,
     'resnet34': resnet.BasicBlock,
     'resnet50': resnet.Bottleneck,
+}
+
+
+
+class BottleneckNoBatchnorm(nn.Module):
+    # Bottleneck in torchvision places the stride for downsampling at 3x3 convolution(self.conv2)
+    # while original implementation places the stride at the first 1x1 convolution(self.conv1)
+    # according to "Deep residual learning for image recognition"https://arxiv.org/abs/1512.03385.
+    # This variant is also known as ResNet V1.5 and improves accuracy according to
+    # https://ngc.nvidia.com/catalog/model-scripts/nvidia:resnet_50_v1_5_for_pytorch.
+
+    expansion: int = 4
+
+    def __init__(
+        self,
+        inplanes: int,
+        planes: int,
+        stride: int = 1,
+        downsample: Optional[nn.Module] = None,
+        groups: int = 1,
+        base_width: int = 64,
+        dilation: int = 1,
+        norm_layer: Optional[Callable[..., nn.Module]] = None,
+    ) -> None:
+        super().__init__()
+        # if norm_layer is None:
+        #     norm_layer = nn.BatchNorm2d
+        width = int(planes * (base_width / 64.0)) * groups
+        # Both self.conv2 and self.downsample layers downsample the input when stride != 1
+        self.conv1 = resnet.conv1x1(inplanes, width)
+        self.conv2 = resnet.conv3x3(width, width, stride, groups, dilation)
+        self.conv3 = resnet.conv1x1(width, planes * self.expansion)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        identity = x
+
+        out = self.conv1(x)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+
+class BasicBlockNoBatchnorm(nn.Module):
+    expansion: int = 1
+
+    def __init__(
+        self,
+        inplanes: int,
+        planes: int,
+        stride: int = 1,
+        downsample: Optional[nn.Module] = None,
+        groups: int = 1,
+        base_width: int = 64,
+        dilation: int = 1,
+        norm_layer: Optional[Callable[..., nn.Module]] = None,
+    ) -> None:
+        super().__init__()
+        # if norm_layer is None:
+        #     norm_layer = nn.BatchNorm2d
+        if groups != 1 or base_width != 64:
+            raise ValueError("BasicBlock only supports groups=1 and base_width=64")
+        if dilation > 1:
+            raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
+        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        self.conv1 = resnet.conv3x3(inplanes, planes, stride)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = resnet.conv3x3(planes, planes)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        identity = x
+
+        out = self.conv1(x)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+
+model_blocks_no_batchnorm = {
+    'resnet10': BasicBlockNoBatchnorm,
+    'resnet18': BasicBlockNoBatchnorm,
+    'resnet34': BasicBlockNoBatchnorm,
+    'resnet50': BottleneckNoBatchnorm,
 }
 
 
@@ -50,7 +158,7 @@ class ResNet(resnet.ResNet):
         width_per_group=64,
         replace_stride_with_dilation=None,
         norm_layer=None,
-        block=resnet.BasicBlock,
+        block=BasicBlockNoBatchnorm,
         **kwargs
     ):
         super(resnet.ResNet, self).__init__()
@@ -139,7 +247,7 @@ class ResNet_N(ResNet):
         self,
         in_channels=1,
         n_classes=1,
-        use_mask=True,
+        use_mask=False,
         bg_in=-1,
         bg_transit=0,
         pretrained=False,
@@ -148,24 +256,30 @@ class ResNet_N(ResNet):
         planes=[64, 128, 256, 512],
         block=resnet.BasicBlock,
         do_activation=False,
+        do_batchnorm=False,
         **kwargs
     ):
         if type(layers) == str:
             model_name = layers
-            block = model_blocks[layers]
+            block = model_blocks[layers] if do_batchnorm else model_blocks_no_batchnorm[layers]
             layers = model_layers[layers]
         else:
             pretrained = False
+        
+        
+        norm_layer = None if do_batchnorm else lambda x: nn.Identity()
         super().__init__(
             layers=layers,
             planes=planes,
             block=block,
+            norm_layer=norm_layer,
             **kwargs
         )
 
         self.bg_in = bg_in
         self.n_classes = n_classes
         self.in_channels = in_channels
+        self.do_batchnorm = do_batchnorm
 
         # if type(pretrained) == bool and pretrained:
         #     state_dict = load_state_dict_from_url(model_urls[model_name],

@@ -11,6 +11,7 @@ from deep_morpho.loss import (
     RegularizationProjConstant, RegularizationProjActivated, 
 )
 from deep_morpho.observables import (DelayLossBatchStep)
+from deep_morpho.models.bimonn_axspa import SpalikeMergedInputModel
 
 from general.nn.loss import LossHandler
 
@@ -59,6 +60,9 @@ class ArgsEnforcersCurrent(ArgsEnforcer):
             # elif "black_tophat" in experiment.args['morp_operation'].name:
             #     experiment.args['random_gen_args']['p_invert'] = 0
 
+            # if experiment.args["dataset"].lower() == "spalikedataset" and SpalikeMergedInputModel.is_child(experiment.args["model"]):  # must merge input and segm
+            #     experiment.args["dataset"] = "spalikedatasetmerged"
+
             if experiment.args['threshold_mode']["weight"] == "identity":
                 experiment.args["bias_optim_mode"] = BiseBiasOptimEnum.RAW
 
@@ -70,10 +74,10 @@ class ArgsEnforcersCurrent(ArgsEnforcer):
                 experiment.args['closest_selem_method'] = ClosestSelemEnum.MIN_DIST_DIST_TO_CST
 
             if experiment.args["freq_imgs"] == "epoch":
-                experiment.args["freq_imgs"] = experiment.args["n_steps"]
+                experiment.args["freq_imgs"] = experiment.args["n_steps_train"]
 
             if experiment.args["freq_hist"] == "epoch":
-                experiment.args["freq_hist"] = experiment.args["n_steps"]
+                experiment.args["freq_hist"] = experiment.args["n_steps_train"]
 
             if experiment.args["loss_regu_delay"] > 0:
                 experiment.args["observables"] += [
