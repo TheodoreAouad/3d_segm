@@ -134,7 +134,7 @@ class CalculateAndLogMetrics(Observable):
             # trainer.logger.experiment.add_scalars(metric_name, {f'{metric_name}_{state}': metric})
 
     def on_train_epoch_end(
-        self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule', unused: 'Optional' = None
+        self, trainer: 'pl.Trainer', pl_module: 'pl.Lightnin<@gModule', unused: 'Optional' = None
     ):
         if self.keep_preds_for_epoch:
             self._calculate_and_log_metrics(trainer, pl_module, self.all_targets['train'], self.all_preds['train'], state='train', batch_or_epoch='epoch')

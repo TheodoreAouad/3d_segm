@@ -1,5 +1,5 @@
 """Models for AxSpA classification using BiMoNN."""
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from abc import ABC
 
 import torch
@@ -43,14 +43,19 @@ from .binary_nn import BinaryNN
 #             "pred": self.classification(x * bimonn)[..., 0],  # output shape (batch_size,) instead of (batch_size, 1)
 #         }
 
-class BimonnAxspaFromSegm(BinaryNN):
+
+class SpalikeMergedInputModel(BinaryNN, ABC):
+    """Model to classify Spalike dataset with merged input and segmentation."""
+    pass
+
+
+
+class BimonnAxspaClassifier(BinaryNN, ABC):
 
     def __init__(
         self,
         bimonn_channels: List[int],
         bimonn_kernel_size: List[int],
-        classif_layers="resnet10",
-        do_batchnorm=False,
         *args, **kwargs
     ):
         super().__init__()
@@ -64,9 +69,7 @@ class BimonnAxspaFromSegm(BinaryNN):
             *args, **kwargs
         )
 
-        self.classification: nn.Module = ResNet_N(
-            in_channels=1, n_classes=1, layers=classif_layers, do_batchnorm=do_batchnorm,
-        )
+        self.classification: SpalikeMergedInputModel
 
         self.current_output = {
             "segmentation": None,
@@ -77,18 +80,26 @@ class BimonnAxspaFromSegm(BinaryNN):
     def forward(self, input_: Tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
         x, segm = input_
         bimonn = self.bimonn(segm)
-        pred = self.classification(x * bimonn)[..., 0]  # output shape (batch_size,) instead of (batch_size, 1)
+        pred = self.classification(x * bimonn)
         self.current_output = {
             "segmentation": segm,
             "bimonn": bimonn,
             "pred": pred
         }
         return pred
-
-
-class SpalikeMergedInputModel(BinaryNN, ABC):
-    """Model to classify Spalike dataset with merged input and segmentation."""
-    pass
+    
+    @classmethod
+    def default_args(cls) -> Dict[str, dict]:
+        """Return the default arguments of the model, in the format of argparse.ArgumentParser"""
+        res = super().default_args()
+        res.update({
+            k: v for k, v in BiMoNN.default_args().items()
+            if k not in res
+            and k not in [
+                "channels", "kernel_size",
+            ]
+        })
+        return res
 
 
 
@@ -156,55 +167,6 @@ class ConvSpalikeMerged(SpalikeMergedInputModel):
         return x
 
 
-    # def __init__(
-    #     self,
-    #     channels: List[int],
-    #     kernel_size: List[int],
-    #     classif_neurons: List[int] = [],
-    #     activation_fn: nn.Module = nn.ReLU,
-    #     do_maxpool: bool = True,
-    # ):
-    #     super().__init__()
-
-    #     self.channels = [1] + channels
-    #     if not isinstance(kernel_size, list):
-    #         kernel_size = [kernel_size] * len(self.channels)
-    #     self.kernel_size = kernel_size
-    #     self.classif_neurons = [channels[-1]] + classif_neurons
-    #     self.do_maxpool = do_maxpool
-
-    #     for i in range(len(self.channels) - 1):
-    #         setattr(self, f"conv{i}", nn.Conv2d(self.channels[i], self.channels[i + 1], kernel_size[i + 1]))
-    #         setattr(self, f"conv_activation{i}", activation_fn())
-    #         if self.do_maxpool:
-    #             setattr(self, f"maxpool{i}", nn.MaxPool2d(2))
-
-    #     self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-    #     self.flatten = nn.Flatten()
-
-    #     for i in range(len(self.classif_neurons) - 1):
-    #         setattr(self, f"classif{i}", nn.Linear(self.classif_neurons[i], self.classif_neurons[i + 1]))
-    #         setattr(self, f"classif_activation{i}", activation_fn())
-    #     setattr(self, f"classif{i}", nn.Linear(self.classif_neurons[-1], 1))
-
-    # def forward(self, x: Tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
-    #     for i in range(len(self.channels) - 1):
-    #         x = getattr(self, f"conv{i}")(x)
-    #         x = getattr(self, f"conv_activation{i}")(x)
-    #         if self.do_maxpool:
-    #             x = getattr(self, f"maxpool{i}")(x)
-
-    #     x = self.avgpool(x)
-    #     x = self.flatten(x)
-
-    #     for i in range(len(self.classif_neurons) - 1):
-    #         x = getattr(self, f"classif{i}")(x)
-    #         x = getattr(self, f"classif_activation{i}")(x)
-
-    #     x = getattr(self, f"classif{i}")(x)[..., 0]
-
-    #     return x
-
 
 class ResnetSpalikeMerged(SpalikeMergedInputModel):
 
@@ -222,3 +184,44 @@ class ResnetSpalikeMerged(SpalikeMergedInputModel):
     def forward(self, x: Tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
         x = self.classification(x)[..., 0]
         return x
+
+
+class BimonnAxspaResnet(BimonnAxspaClassifier):
+
+    def __init__(
+        self,
+        classif_layers="resnet10",
+        do_batchnorm=False,
+        *args, **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+
+        self.classification: nn.Module = ResnetSpalikeMerged(
+            layers=classif_layers, do_batchnorm=do_batchnorm,
+        )
+
+
+class BimonnAxspaConv(BimonnAxspaClassifier):
+
+    def __init__(
+        self,
+        classif_channels: List[int],
+        classif_kernel_size: List[int],
+        classif_neurons: List[int] = [],
+        do_maxpool: bool = True,
+        *args, **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+
+        self.classif_channels = classif_channels
+        self.classif_kernel_size = classif_kernel_size
+        self.classif_neurons = classif_neurons
+        self.do_maxpool = do_maxpool
+
+        self.classification: nn.Module = ConvSpalikeMerged(
+            channels=self.classif_channels,
+            kernel_size=self.classif_kernel_size,
+            classif_neurons=self.classif_neurons,
+            activation_fn=nn.ReLU,
+            do_maxpool=self.do_maxpool,
+        )

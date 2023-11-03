@@ -1,17 +1,21 @@
 from .generic_lightning_model import GenericLightningModel
-from .bimonn_axspa import BimonnAxspaFromSegm, ConvSpalikeMerged, ResnetSpalikeMerged
+from .bimonn_axspa import BimonnAxspaResnet, ConvSpalikeMerged, ResnetSpalikeMerged, BimonnAxspaConv
 
 
-class LightningBimonnAxspaFromSegm(GenericLightningModel):
-    model_class = BimonnAxspaFromSegm
+class LightningBimonnAxspaResnet(GenericLightningModel):
+    model_class = BimonnAxspaResnet
 
-    # def general_step(self, batch, batch_idx, state="",):
-    #     (x, segm), y = batch
-    #     predictions = self.forward((x, segm))
+    def __init__(self, lr_bimonn, lr_classifier, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.lr_bimonn = lr_bimonn
+        self.lr_classifier = lr_classifier
+        self.learning_rate = lr_bimonn
 
-    #     outputs = self.compute_loss(state=state, ypred=predictions["pred"], ytrue=y)
-
-    #     return outputs, predictions
+    def configure_optimizers(self):
+        return self.optimizer(
+            [{"params": self.model.bimonn.parameters(), "lr": self.lr_bimonn}, {"params": self.model.classification.parameters(), "lr": self.lr_classifier}],
+            lr=self.learning_rate, **self.optimizer_args
+        )
 
     @classmethod
     def get_model_from_experiment(cls, experiment: "ExperimentBase") -> GenericLightningModel:
@@ -29,12 +33,14 @@ class LightningBimonnAxspaFromSegm(GenericLightningModel):
             "bimonn_channels": args["channels"],
             "bimonn_kernel_size": args["kernel_size"],
             "atomic_element": args["atomic_element"].replace('dual_', ''),
-            "lui_kwargs": {"force_identity": args['force_lui_identity']},
+            # "lui_kwargs": {"force_identity": args['force_lui_identity']},
         })
 
         model = cls(
             model_args=model_args,
-            learning_rate=args["learning_rate"],
+            learning_rate=None,
+            lr_bimonn=args["lr_bimonn"],
+            lr_classifier=args["lr_classifier"],
             loss=args["loss"],
             optimizer=args["optimizer"],
             optimizer_args=args["optimizer_args"],
@@ -50,3 +56,7 @@ class LightningConvSpalikeMerged(GenericLightningModel):
 
 class LightningResnetSpalikeMerged(GenericLightningModel):
     model_class = ResnetSpalikeMerged
+
+
+class LightningBimonnAxspaConv(LightningBimonnAxspaResnet):
+    model_class = BimonnAxspaConv

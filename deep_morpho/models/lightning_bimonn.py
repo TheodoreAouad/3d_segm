@@ -25,7 +25,7 @@ class LightningBiMoNN(GenericLightningModel):
         model_args.update({
             "kernel_size": [args['kernel_size'] for _ in range(args['n_atoms'])],
             "atomic_element": args["atomic_element"].replace('dual_', ''),
-            "lui_kwargs": {"force_identity": args['force_lui_identity']},
+            # "lui_kwargs": {"force_identity": args['force_lui_identity']},
         })
 
         model = cls(

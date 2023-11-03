@@ -5,6 +5,8 @@ from typing import Any, Dict
 import matplotlib.pyplot as plt
 import pytorch_lightning as pl
 import torch
+import torch.nn as nn
+from pytorch_lightning.utilities.types import STEP_OUTPUT
 import numpy as np
 
 from general.nn.observables import Observable
@@ -12,6 +14,13 @@ from general.utils import save_json
 from .binary_mode_activatedness import ActivatednessObservable
 from .plot_model import PlotBimonn
 from .binary_mode_metric import BinaryModeMetricBase
+from .observable_layers import ObservableLayersChans
+from .weight_histogram import WeightsHistogramBiSE
+from .plot_lui_parameters import PlotLUIParametersBiSEL
+from .plot_parameters import PlotParametersBiSE
+from .plot_forward import PlotBimonnForward
+
+
 
 
 def prep_segm(cur_segm):
@@ -121,10 +130,12 @@ class PlotPredsBimonnAxspa(Observable):
         axs[0].set_title("Input Img")
 
         axs[1].imshow(pred_segm, cmap="gray", vmin=0, vmax=1)
-        axs[1].set_title("Bimonn Output")
+        axs[1].set_title(f"Bimonn Output. Min: {pred_segm.min():.2e}, Max: {pred_segm.max():.2e}")
 
-        axs[2].imshow(pred_segm * img, cmap="gray")
-        axs[2].set_title("Classif Input")
+        classif_input = pred_segm * img
+
+        axs[2].imshow(classif_input, cmap="gray")
+        axs[2].set_title(f"Classif Input. Min: {classif_input.min():.2e}, Max: {classif_input.max():.2e}")
 
         fig.suptitle(f"Target: {target}, Pred: {pred_label:.2e}")
 
@@ -292,3 +303,30 @@ class BinaryModeMetricBimonnAxspa(BinaryModeMetricBase):
                 dict_str[k1][k2] = str(v2)
         save_json(dict_str, join(final_dir, "metrics.json"))
         return self.last_value
+
+
+
+class ObservableLayersChansBimonnAxspa(ObservableLayersChans):
+
+    def _get_layers(self, pl_module):
+        return pl_module.model.bimonn.layers
+
+
+class WeightsHistogramBiSEBimonnAxspa(ObservableLayersChansBimonnAxspa, WeightsHistogramBiSE):
+    pass
+
+
+class PlotLUIParametersBiSELBimonnAxspa(ObservableLayersChansBimonnAxspa, PlotLUIParametersBiSEL):
+    pass
+
+
+class PlotParametersBiSEBimonnAxspa(ObservableLayersChansBimonnAxspa, PlotParametersBiSE):
+    pass
+
+
+class PlotBimonnForwardBimonnAxspa(PlotBimonnForward):
+    def _get_model(self, pl_module):
+        return pl_module.model.bimonn
+
+    def _get_input(self, pl_module: "pl.LightningModule", batch: "Any"):
+        return batch[0][1][0].unsqueeze(0).to(pl_module.device)

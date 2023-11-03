@@ -63,6 +63,11 @@ class ArgsEnforcersCurrent(ArgsEnforcer):
             # if experiment.args["dataset"].lower() == "spalikedataset" and SpalikeMergedInputModel.is_child(experiment.args["model"]):  # must merge input and segm
             #     experiment.args["dataset"] = "spalikedatasetmerged"
 
+            if len(experiment.args["channels"]) == 2:
+                experiment.args["kernel_size"] = 13
+            elif len(experiment.args["channels"]) == 3:
+                experiment.args["kernel_size"] = 7
+
             if experiment.args['threshold_mode']["weight"] == "identity":
                 experiment.args["bias_optim_mode"] = BiseBiasOptimEnum.RAW
 

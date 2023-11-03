@@ -35,6 +35,9 @@ class SpalikeDatasetBase(GeneratorDataset):
         max_n_blob_sane: int = 5,
         segm_mode: SpalikeSegmEnum = SpalikeSegmEnum.BonesSeparated,
         merge_input_segm: bool = False,
+        normalize: bool = True,
+        iliac_dil_coef: float = 2,
+        sacrum_dil_coef: float = 2,
         *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
@@ -50,6 +53,9 @@ class SpalikeDatasetBase(GeneratorDataset):
         self.max_n_blob_sane = max_n_blob_sane
         self.segm_mode = segm_mode
         self.merge_input_segm = merge_input_segm
+        self.normalize = normalize
+        self.iliac_dil_coef = iliac_dil_coef
+        self.sacrum_dil_coef = sacrum_dil_coef
 
         if self.merge_input_segm and self.segm_mode == SpalikeSegmEnum.BonesSeparated:
             self.segm_mode = SpalikeSegmEnum.BonesOverlapped
@@ -67,6 +73,8 @@ class SpalikeDatasetBase(GeneratorDataset):
             offset=self.offset,
             min_output_ellipse=self.min_output_ellipse,
             max_n_blob_sane=self.max_n_blob_sane,
+            iliac_dil_coef=self.iliac_dil_coef,
+            sacrum_dil_coef=self.sacrum_dil_coef,
         )
 
 
@@ -86,6 +94,9 @@ class SpalikeDatasetBase(GeneratorDataset):
 
         input_ = torch.tensor(input_).float().unsqueeze(0)
         target = torch.tensor(target).float()
+
+        if self.normalize:
+            input_ = (input_ - 120) / 68  # mean and std of the dataset. std computed by mean of stds for batch of size 100.
 
         if self.merge_input_segm:
             return input_ * segm, target

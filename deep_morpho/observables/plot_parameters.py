@@ -115,6 +115,13 @@ class PlotParametersBiSE(ObservableLayersChans):
         super().__init__(*args, **kwargs)
         self.last_params = {}
 
+    def on_train_start(self, trainer, pl_module):
+        layers = self._get_layers(pl_module)
+        for layer_idx, layer in enumerate(layers):
+            self.on_train_batch_end_layers(
+                trainer, pl_module, None, None, None, None, layer, layer_idx
+            )
+
     def on_train_batch_end_layers_chans(
         self,
         trainer: 'pl.Trainer',

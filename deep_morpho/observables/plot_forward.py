@@ -60,21 +60,22 @@ class PlotBimonnForward(Observable):
         batch: "Any",
         title: str,
     ):
-        inpt = batch[0][0].unsqueeze(0).to(pl_module.device)
+        model = self._get_model(pl_module)
+        inpt = self._get_input(pl_module, batch)
         for key, do_key in self.do_plot.items():
             if do_key:
                 if key == "binary":
-                    pl_module.model.binary(True, update_binaries=self.update_binaries)
+                    model.binary(True, update_binaries=self.update_binaries)
                 else:
-                    pl_module.model.binary(False)
+                    model.binary(False)
 
-                vizualiser = BimonnForwardVizualiser(pl_module.model, mode=key, inpt=inpt, update_binaries=self.update_binaries)
+                vizualiser = BimonnForwardVizualiser(model, mode=key, inpt=inpt, update_binaries=self.update_binaries)
                 fig = vizualiser.get_fig(figsize=self.figsize, dpi=self.dpi)
                 trainer.logger.experiment.add_figure(f"{title}/{key}", fig, trainer.global_step)
                 if key in self.last_figs.keys():
                     plt.close(self.last_figs[key])
                 self.last_figs[key] = fig
-        pl_module.model.binary(False)
+        model.binary(False)
 
 
     def save(self, save_path: str):
@@ -89,6 +90,12 @@ class PlotBimonnForward(Observable):
             plt.close(fig)
 
         return self.last_figs
+
+    def _get_model(self, pl_module: "pl.LightningModule"):
+        return pl_module.model
+    
+    def _get_input(self, pl_module: "pl.LightningModule", batch: "Any"):
+        return batch[0][0].unsqueeze(0).to(pl_module.device)
 
 
 class PlotBimonnHistogram(Observable):

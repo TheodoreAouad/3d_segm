@@ -285,6 +285,8 @@ class SpaLike:
         offset: tuple = (1, 2),
         min_output_ellipse: int = 0,
         max_n_blob_sane: int = 5,
+        iliac_dil_coef: float = 2,
+        sacrum_dil_coef: float = 2,
     ):
         self.image_size = image_size
         self.bone_generator = BonesLike()
@@ -302,6 +304,8 @@ class SpaLike:
         self.proba_lesion = proba_lesion
         self.proba_lesion_locations = proba_lesion_locations
         self.max_n_blob_sane = max_n_blob_sane
+        self.iliac_dil_coef = iliac_dil_coef
+        self.sacrum_dil_coef = sacrum_dil_coef
 
         self.blobs = []
 
@@ -326,7 +330,7 @@ class SpaLike:
         img = self.bone_generator.draw(img)
         img = convolve(img, np.ones((3, 3)))
         # fimg = convolve(img.astype(float), np.ones((3, 3)))
-        segm = self.bone_generator.segmentation
+        # segm = self.bone_generator.segmentation
 
         self.roi = self.get_roi(self.iliac_segmentation, self.sacrum_segmentation)
 
@@ -397,10 +401,19 @@ class SpaLike:
 
     def get_roi(self, segm_ili: np.ndarray, segm_sac: np.ndarray):
         (xmin, ymin), (xmax, ymax) = self.bone_generator.iliac_bbox1
-        selem_left = np.zeros((1, 2*(xmax - xmin)))
-        selem_left[0, :xmax - xmin] = 1
-        dil_sac = binary_dilation(segm_sac, selem_left)
-        dil_ili = binary_dilation(segm_ili, selem_left[:, ::-1])
+
+        selem_sac = np.zeros(
+            (1, int(self.sacrum_dil_coef*(xmax - xmin)) + 1)
+        )
+        selem_sac[0, :selem_sac.shape[1] // 2] = 1
+
+        selem_ili = np.zeros(
+            (1, int(self.iliac_dil_coef*(xmax - xmin)) + 1)
+        )
+        selem_ili[0, selem_ili.shape[1] // 2:] = 1
+
+        dil_sac = binary_dilation(segm_sac, selem_sac)
+        dil_ili = binary_dilation(segm_ili, selem_ili)
 
         ili_roi = dil_sac & segm_ili
         ili_roi = binary_dilation(ili_roi, morp.disk(5)) & segm_ili

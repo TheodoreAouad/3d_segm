@@ -408,8 +408,8 @@ def load_observables_bimonn_axspa_spalike(experiment: "ExperimentBase", ) -> Tup
         # "InputAsPredMetric": obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
         # obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': 10000 // args['batch_size']}),
 
-        # "PlotParametersBiSE": obs.PlotParametersBiSE(freq=args['freq_scalars']),
-        # "PlotLUIParametersBiSEL": obs.PlotLUIParametersBiSEL(freq=args['freq_scalars']),
+        obs.PlotParametersBiSEBimonnAxspa(freq=args['freq_scalars']),
+        obs.PlotLUIParametersBiSELBimonnAxspa(freq=args['freq_scalars']),
         # "WeightsHistogramBiSE": obs.WeightsHistogramBiSE(freq=args['freq_imgs']),
         # obs.PlotParametersBiseEllipse(freq=args['freq_scalars']),
         # obs.ActivationPHistogramBimonn(freq={'train': args['freq_hist'], 'val': None}),
@@ -417,10 +417,12 @@ def load_observables_bimonn_axspa_spalike(experiment: "ExperimentBase", ) -> Tup
         # "ExplosiveWeightGradientWatcher": obs.ExplosiveWeightGradientWatcher(freq=1, threshold=0.5),
         # "PlotGradientBise": plot_grad_obs,
         # obs.ConvergenceMetrics(metrics, freq=args['freq_scalars']),
+        obs.WeightsHistogramBiSEBimonnAxspa(freq=args['freq_imgs']),
 
         obs.UpdateBinary(freq_batch=args["freq_update_binary_batch"], freq_epoch=args["freq_update_binary_epoch"]),
         obs.ActivatednessObservableBimonnAxspa(freq={"epoch": args["freq_update_binary_epoch"], "batch": args["freq_update_binary_batch"]}),
         obs.PlotBimonnBimonAxspa(freq=args['freq_imgs'], figsize=(10, 5)),
+        obs.PlotBimonnForwardBimonnAxspa(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         metric_binary_obs,
 
         obs.EpochReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
@@ -471,9 +473,9 @@ def load_observables_bimonn_axspa_spalike_merged(experiment: "ExperimentBase", )
         # "InputAsPredMetric": obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
         # obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': 10000 // args['batch_size']}),
 
-        # "PlotParametersBiSE": obs.PlotParametersBiSE(freq=args['freq_scalars']),
-        # "PlotLUIParametersBiSEL": obs.PlotLUIParametersBiSEL(freq=args['freq_scalars']),
-        # "WeightsHistogramBiSE": obs.WeightsHistogramBiSE(freq=args['freq_imgs']),
+        # obs.PlotParametersBiSEBimonnAxspa(freq=args['freq_scalars']),
+        # obs.PlotLUIParametersBiSELBimonnAxspa(freq=args['freq_scalars']),
+        # obs.WeightsHistogramBiSEBimonnAxspa(freq=args['freq_imgs']),
         # obs.PlotParametersBiseEllipse(freq=args['freq_scalars']),
         # obs.ActivationPHistogramBimonn(freq={'train': args['freq_hist'], 'val': None}),
         # "PlotWeightsBiSE": plot_weights_fn(freq=args['freq_imgs']),

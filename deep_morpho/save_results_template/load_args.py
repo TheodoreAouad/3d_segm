@@ -45,6 +45,7 @@ all_keys_line = [
     "binary_params",
     "float_params",
     "n_values",   # DEBUG: FOR LEVELST HANDLER, TODO: GENERALIZE
+    "normalize.datamodule",
 ]
 bise_keys = ["init_weight_mode", "initializer_method", "initializer_args", "bise_init_method", "closest_selem_method", "closest_selem_distance_fn", "bias_optim_mode"]
 

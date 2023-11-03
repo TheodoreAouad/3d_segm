@@ -47,6 +47,14 @@ class PlotLUIParametersBiSEL(ObservableLayersChans):
     ):
         self.log_lui_chout(trainer, layer, layer_idx, chan_output)
 
+    def on_train_start(self, trainer, pl_module):
+        layers = self._get_layers(pl_module)
+        for layer_idx, layer in enumerate(layers):
+            self.on_train_batch_end_layers(
+                trainer, pl_module, None, None, None, None, layer, layer_idx
+            )
+
+
     def on_train_batch_end_layers_chans(
         self,
         trainer: 'pl.Trainer',
@@ -61,7 +69,6 @@ class PlotLUIParametersBiSEL(ObservableLayersChans):
         chan_output: int
     ):
         self.log_lui_chin_chout(trainer, layer, layer_idx, chan_input, chan_output)
-        # self.log_lui_params(trainer, layer, layer_idx, chan_input + layer.in_channels, chan_output)
 
     def log_lui_chin_chout(
         self,
@@ -100,21 +107,3 @@ class PlotLUIParametersBiSEL(ObservableLayersChans):
             {f'chout_{chan_output}': activation_P_lui},
             trainer.global_step
         )
-
-    ### No need to save all these
-
-    # def on_train_end(self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule') -> None:
-    #     self.last_weights = []
-    #     for layer_idx, layer in enumerate(pl_module.model.layers):
-    #         to_add = {"coefs": layer.weights.detach().cpu(), "bias_lui": layer.bias_lui.detach().cpu(), "activation_P_lui": layer.activation_P_lui.detach().cpu()}
-    #         self.last_weights.append(to_add)
-
-    # def save(self, save_path: str):
-    #     final_dir = join(save_path, self.__class__.__name__)
-    #     pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
-    #     for layer_idx, layer_dict in enumerate(self.last_weights):
-    #         np.save(join(final_dir, f"coefs_{layer_idx}.npy"), layer_dict["coefs"])
-    #         np.save(join(final_dir, f"bias_lui_{layer_idx}.npy"), layer_dict["bias_lui"])
-    #         np.save(join(final_dir, f"activation_P_lui_{layer_idx}.npy"), layer_dict["activation_P_lui"])
-
-    #     return self.last_weights
