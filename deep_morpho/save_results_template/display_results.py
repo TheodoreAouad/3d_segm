@@ -191,11 +191,15 @@ class DisplayResults:
         changing = set(changing_args).difference(["experiment_subname", "name", "n_atoms"])
 
         new_cols = {'dcross': 'dc', 'disk': 'di', 'hstick': 'hs', 'bcomplex': 'bc', 'bdiamond': 'bd', 'bsquare': 'bs', 'scross': 'sc'}
-        df_all = self.df.pivot_table(index=changing, columns=['operation', 'selem'], values=['binary_mode_dice'], aggfunc='mean').rename(columns=new_cols)
+        df_all = self.df.pivot_table(
+            index=changing, columns=['operation', 'selem'], values=['binary_mode_dice'], aggfunc='mean'
+        ).rename(columns=new_cols)
         html_pivot_binary = df_all.style.background_gradient(cmap='RdBu', vmin=0, vmax=1).format('{:.2f}').to_html()
 
 
-        df_all = self.df.pivot_table(index=changing, columns=['operation', 'selem'], values=['dice'], aggfunc='mean').rename(columns=new_cols)
+        df_all = self.df.pivot_table(
+            index=changing, columns=['operation', 'selem'], values=['dice'], aggfunc='mean'
+        ).rename(columns=new_cols)
         html_pivot_real = df_all.style.background_gradient(cmap='RdBu', vmin=0, vmax=1).format('{:.2f}').to_html()
 
         return f'Binary{html_binary}\n\n Real{html_real}\n\n Binary{html_pivot_binary}\n\n Real{html_pivot_real}'
@@ -320,10 +324,12 @@ class DisplayResults:
 
         file_metrics = join(path, "metrics.json")
         if os.path.exists(file_metrics):
-            # res['dice'] = load_json(file_metrics)["dice"]
-            for state, metrics in load_json(file_metrics).items():
-                for metric_name, metric_value in metrics.items():
-                    res[f"binary_{state}_{metric_name}"] = metric_value
+            if "dice" in load_json(file_metrics):  # retrocompatibility
+                res['dice'] = load_json(file_metrics)["dice"]
+            else:
+                for state, metrics in load_json(file_metrics).items():
+                    for metric_name, metric_value in metrics.items():
+                        res[f"binary_{state}_{metric_name}"] = metric_value
 
         return res
 
@@ -333,10 +339,12 @@ class DisplayResults:
 
         file_metrics = join(path, "metrics.json")
         if os.path.exists(file_metrics):
-            # res['dice'] = load_json(file_metrics)["dice"]
-            for state, metrics in load_json(file_metrics).items():
-                for metric_name, metric_value in metrics.items():
-                    res[f"{state}_{metric_name}"] = metric_value
+            if "dice" in load_json(file_metrics):  # retrocompatibility
+                res['dice'] = load_json(file_metrics)["dice"]
+            else:
+                for state, metrics in load_json(file_metrics).items():
+                    for metric_name, metric_value in metrics.items():
+                        res[f"{state}_{metric_name}"] = metric_value
 
         return res
 
