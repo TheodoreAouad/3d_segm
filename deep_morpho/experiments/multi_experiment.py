@@ -29,6 +29,7 @@ from deep_morpho.models import LightningBiMoNN, LightningSTEConv
 class MultiExperiment(ExperimentMethods):
     MORPHO_BINARY_DATASETS = [
         "mnistmorphodataset",
+        "invertedmnistmorphodataset",
         "diskorectdataset",
     ]
 
@@ -44,6 +45,7 @@ class MultiExperiment(ExperimentMethods):
     MNIST_DATASETS = [
         "fashionmnistgrayscaledataset",
         "mnistmorphodataset",
+        "invertedmnistmorphodataset",
         "mnistgrayscaledataset",
         "mnistclassifdataset",
         "mnistclassifchanneldataset",

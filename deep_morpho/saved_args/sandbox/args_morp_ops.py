@@ -10,6 +10,8 @@ else:
     device = 'cpu'
 
 morp_operations = []
+morp_operations_binary = []
+morp_operations_gray = []
 selems = []
 
 # morp_operations.append(ParallelMorpOperations.remove_isolated_points())
@@ -35,23 +37,23 @@ selems = []
 # ))
 
 for op in [
-    # 'disk',
+    'disk',
     # "hstick",
-    "dcross",
+    # "dcross",
     # "bsquare",
     # "bdiamond",
     # "bcomplex",
     # "scross"
 ]:
     size = 7
-    if op == "disk":
-        size = size // 2
+    # if op == "disk":
+    #     size = size // 2
 
-    morp_operations.append(ParallelMorpOperations.dilation((op, size), name=f"dilation/{op}"))
+    # morp_operations.append(ParallelMorpOperations.dilation((op, size), name=f"dilation/{op}"))
     # morp_operations.append(ParallelMorpOperations.erosion((op, size), name=f"erosion/{op}"))
     # morp_operations.append(ParallelMorpOperations.closing((op, size), name=f"closing/{op}"))
     # morp_operations.append(ParallelMorpOperations.opening((op, size), name=f"opening/{op}"))
-    # morp_operations.append(ParallelMorpOperations.white_tophat((op, size), name=f"white_tophat/{op}"))
+    morp_operations.append(ParallelMorpOperations.white_tophat((op, size), name=f"white_tophat/{op}"))
     # morp_operations.append(ParallelMorpOperations.black_tophat((op, size), name=f"black_tophat/{op}"))
 
     # morp_operations.append(ParallelMorpOperations.dilation_gray((op, size), name=f"dilation_gray/{op}"))
@@ -60,3 +62,45 @@ for op in [
     # morp_operations.append(ParallelMorpOperations.opening_gray((op, size), name=f"opening_gray/{op}"))
     # morp_operations.append(ParallelMorpOperationsGrayTopHats.white_tophat_gray((op, size), name=f"white_tophat_gray/{op}"))
     # morp_operations.append(ParallelMorpOperationsGrayTopHats.black_tophat_gray((op, size), name=f"black_tophat_gray/{op}"))
+
+
+# for op in [
+#     'disk',
+#     "hstick",
+#     "dcross",
+#     "bsquare",
+#     "bdiamond",
+#     "bcomplex",
+#     "scross"
+# ]:
+#     size = 7
+#     if op == "disk":
+#         size = size // 2
+
+#     morp_operations_binary.append(ParallelMorpOperations.dilation((op, size), name=f"dilation/{op}"))
+#     morp_operations_binary.append(ParallelMorpOperations.erosion((op, size), name=f"erosion/{op}"))
+#     morp_operations_binary.append(ParallelMorpOperations.closing((op, size), name=f"closing/{op}"))
+#     morp_operations_binary.append(ParallelMorpOperations.opening((op, size), name=f"opening/{op}"))
+#     morp_operations_binary.append(ParallelMorpOperations.white_tophat((op, size), name=f"white_tophat/{op}"))
+#     morp_operations_binary.append(ParallelMorpOperations.black_tophat((op, size), name=f"black_tophat/{op}"))
+
+
+# for op in [
+#     'disk',
+#     "hstick",
+#     "dcross",
+#     "bsquare",
+#     "bdiamond",
+#     "bcomplex",
+#     "scross"
+# ]:
+#     size = 7
+#     if op == "disk":
+#         size = size // 2
+
+#     morp_operations_gray.append(ParallelMorpOperations.dilation_gray((op, size), name=f"dilation_gray/{op}"))
+#     morp_operations_gray.append(ParallelMorpOperations.erosion_gray((op, size), name=f"erosion_gray/{op}"))
+#     morp_operations_gray.append(ParallelMorpOperations.closing_gray((op, size), name=f"closing_gray/{op}"))
+#     morp_operations_gray.append(ParallelMorpOperations.opening_gray((op, size), name=f"opening_gray/{op}"))
+#     morp_operations_gray.append(ParallelMorpOperationsGrayTopHats.white_tophat_gray((op, size), name=f"white_tophat_gray/{op}"))
+#     morp_operations_gray.append(ParallelMorpOperationsGrayTopHats.black_tophat_gray((op, size), name=f"black_tophat_gray/{op}"))

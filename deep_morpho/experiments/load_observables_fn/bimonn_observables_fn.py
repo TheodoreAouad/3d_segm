@@ -27,7 +27,8 @@ def load_observables_bimonn_morpho_binary(experiment):
     metric_binary_obs = obs.BinaryModeMetricMorpho(
         metrics=metrics,
         freq={"train": args['freq_scalars'], "val": 1, "test": 1},
-        plot_freq={"train": args['freq_imgs'], "val": args["n_inputs.val"] // args['batch_size'], "test": args['freq_imgs']},
+        # plot_freq={"train": args['freq_imgs'], "val": args["n_inputs.val"] // args['batch_size'], "test": args['freq_imgs']},
+        plot_freq={"train": args['freq_imgs'], "val": args["freq_imgs_val"], "test": args['freq_imgs']},
     )
 
     observables = [
@@ -39,7 +40,8 @@ def load_observables_bimonn_morpho_binary(experiment):
         obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
         obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs.val"] // args['batch_size']}),
         obs.PlotPreds(
-            freq={'train': args['freq_imgs'], 'val': args["n_inputs.val"] // args['batch_size']},
+            # freq={'train': args['freq_imgs'], 'val': args["n_inputs.val"] // args['batch_size']},
+            freq={'train': args['freq_imgs'], 'val': args["freq_imgs_val"]},
             fig_kwargs={"vmax": 1, "vmin": -1 if args['atomic_element'] == 'sybisel' else 0}
         ),
 
@@ -124,7 +126,8 @@ def load_observables_bimonn_morpho_grayscale(experiment):
     metric_binary_obs = obs.BinaryModeMetricMorpho(
         metrics=metrics,
         freq={"train": args['freq_scalars'], "val": 1, "test": 1},
-        plot_freq={"train": args['freq_imgs'], "val": args["n_inputs.val"] // args['batch_size'], "test": args['freq_imgs']},
+        # plot_freq={"train": args['freq_imgs'], "val": args["n_inputs.val"] // args['batch_size'], "test": args['freq_imgs']},
+        plot_freq={"train": args['freq_imgs'], "val": args["freq_imgs_val"], "test": args['freq_imgs']},
     )
 
     observables = [
@@ -135,11 +138,12 @@ def load_observables_bimonn_morpho_grayscale(experiment):
 
         metric_float_obs,
         obs.InputAsPredMetricGrayScale(metrics_gray_scale, freq=args['freq_scalars']),
-        obs.BinaryModeMetricGrayScale(metrics_gray_scale, freq=args['freq_imgs']),
+        # obs.BinaryModeMetricGrayScale(metrics_gray_scale, freq=args['freq_imgs']),
         # "InputAsPredMetric": obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
         obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': args["n_inputs.val"] // args['batch_size']}),
         obs.PlotPredsGrayscale(
-            freq={'train': args['freq_imgs'], 'val': args["n_inputs.val"] // args['batch_size']},
+            # freq={'train': args['freq_imgs'], 'val': args["n_inputs.val"] // args['batch_size']},
+            freq={'train': args['freq_imgs'], 'val': args["freq_imgs_val"]},
         ),
         obs.PlotParametersBiSE(freq=args['freq_scalars']),
         obs.PlotLUIParametersBiSEL(freq=args['freq_scalars']),
@@ -152,8 +156,8 @@ def load_observables_bimonn_morpho_grayscale(experiment):
         obs.ConvergenceMetrics(metrics, freq=args['freq_scalars']),
 
         obs.UpdateBinary(freq_batch=args["freq_update_binary_batch"], freq_epoch=args["freq_update_binary_epoch"]),
-        obs.ActivatednessObservable(freq=args["freq_update_binary_epoch"]),
-        obs.ClosestDistObservable(freq=args["freq_update_binary_epoch"]),
+        obs.ActivatednessObservable(freq={"batch": None, "epoch": args["freq_update_binary_epoch"]}),
+        obs.ClosestDistObservable(freq={"batch": None, "epoch": args["freq_update_binary_epoch"]}),
         obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),
         # "PlotBimonnHistogram": obs.PlotBimonnHistogram(freq=args['freq_imgs'], do_plot={"float": True, "binary": False}, dpi=600),
@@ -240,7 +244,7 @@ def load_observables_classification_bimonn(experiment):
         obs.ConvergenceMetrics(metrics, freq=args['freq_scalars']),
 
         obs.UpdateBinary(freq_batch=args["freq_update_binary_batch"], freq_epoch=args["freq_update_binary_epoch"]),
-        obs.ActivatednessObservable(freq=args["freq_update_binary_epoch"]),
+        obs.ActivatednessObservable(freq={"batch": None, "epoch": args["freq_update_binary_epoch"]}),
         obs.ClosestDistObservable(freq=args["freq_update_binary_epoch"]),
         # obs.PlotBimonn(freq=args['freq_imgs'], figsize=(10, 5)),
         # "PlotBimonnForward": obs.PlotBimonnForward(freq=args['freq_imgs'], do_plot={"float": True, "binary": True}, dpi=400),

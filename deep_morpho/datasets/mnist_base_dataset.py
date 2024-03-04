@@ -5,6 +5,7 @@ from PIL import Image
 
 import torch
 import numpy as np
+from torch.utils.data.dataloader import DataLoader
 
 from deep_morpho.morp_operations import ParallelMorpOperations
 # from deep_morpho.gray_scale import level_sets_from_gray, gray_from_level_sets
@@ -13,6 +14,7 @@ from .gray_dataset import GrayScaleDataset
 from .select_indexes_dataset import SelectIndexesDataset
 # from general.utils import set_borders_to
 from .datamodule_base import DataModule
+from deep_morpho.datasets.collate_fn_gray import collate_fn_gray_scale_same_dim
 
 
 def resize_image(img: np.ndarray, size: Tuple) -> np.ndarray:
@@ -66,7 +68,7 @@ class MnistBaseDataset(SelectIndexesDataset):
         return input_.float(), target.float()
 
 
-class MnistGrayScaleBaseDataset(GrayScaleDataset):
+class MnistGrayScaleBaseDataset(GrayScaleDataset, SelectIndexesDataset):
 
     def __init__(
         self,
@@ -77,9 +79,11 @@ class MnistGrayScaleBaseDataset(GrayScaleDataset):
         first_idx: int = 0,
         preprocessing=None,
         do_symetric_output: bool = False,
+        indexes=None,
         **kwargs,
     ) -> None:
         GrayScaleDataset.__init__(self, n_gray_scale_values)
+        SelectIndexesDataset.__init__(self, n_inputs=n_inputs, first_idx=first_idx, indexes=indexes, **kwargs)
         self.morp_operation = morp_operation
         self.preprocessing = preprocessing
         self.n_inputs = n_inputs
@@ -128,3 +132,22 @@ class MnistGrayScaleBaseDataset(GrayScaleDataset):
         if self.do_symetric_output:
             return super().gray_from_level_sets((ar > 0).float(), values)
         return super().gray_from_level_sets(ar, values)
+
+    @classmethod
+    def get_loader(
+        cls,
+        batch_size,
+        n_inputs: int = "all",
+        num_workers: int = 0,
+        shuffle: bool = False,
+        **kwargs
+    ):
+        if n_inputs == 0:
+            return DataLoader([])
+        return DataLoader(
+            cls(n_inputs=n_inputs, **kwargs), 
+            batch_size=batch_size,
+            num_workers=num_workers,
+            shuffle=shuffle,
+            collate_fn=collate_fn_gray_scale_same_dim,
+        )

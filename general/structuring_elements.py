@@ -1,5 +1,9 @@
 import numpy as np
-from skimage.morphology import disk
+from skimage.morphology import disk as morp_disk
+
+
+def disk(size: int) -> np.ndarray:
+    return morp_disk(size // 2)
 
 
 def identity(size: int) -> np.ndarray:

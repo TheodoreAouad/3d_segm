@@ -11,11 +11,13 @@ def collate_tensor_fn_accumulate_same_dim(batch):
     elem = batch[0]
     out = None
     if torch.utils.data.get_worker_info() is not None:
+        output_batch = sum([x.size(0) for x in batch])
         # If we're in a background process, concatenate directly into a
         # shared memory tensor to avoid an extra copy
         numel = sum(x.numel() for x in batch)
         storage = elem.storage()._new_shared(numel, device=elem.device)
-        out = elem.new(storage).resize_(len(batch) * elem.size(0), *list(elem.size()[1:]))
+        out = elem.new(storage).resize_(output_batch, *list(elem.size()[1:]))
+        # out = elem.new(storage).resize_(len(batch) * elem.size(0), *list(elem.size()[1:]))
     return torch.cat(batch, 0, out=out)
 
 
@@ -36,9 +38,9 @@ def collate_fn_gray_scale_same_dim(batch: List[Tuple[torch.Tensor, torch.Tensor]
     if hasattr(batch[0][0], "gray_values"):
         all_values = []
 
-    if hasattr(batch[0][0], "indexes"):
-        cur_idx = 0
-        indexes = [0]
+    # if hasattr(batch[0][0], "indexes"):
+    cur_idx = 0
+    indexes = [0]
 
     if hasattr(batch[0][0], "original"):
         original_inputs = []
@@ -53,9 +55,9 @@ def collate_fn_gray_scale_same_dim(batch: List[Tuple[torch.Tensor, torch.Tensor]
         if hasattr(input_tensor, "gray_values"):
             all_values.append(input_tensor.gray_values)
 
-        if hasattr(input_tensor, "indexes"):
-            cur_idx += len(input_tensor.gray_values)
-            indexes.append(cur_idx)
+        # if hasattr(input_tensor, "indexes"):
+        cur_idx += len(input_tensor.gray_values)
+        indexes.append(cur_idx)
 
         if hasattr(input_tensor, "original"):
             original_inputs.append(input_tensor.original)
@@ -67,8 +69,8 @@ def collate_fn_gray_scale_same_dim(batch: List[Tuple[torch.Tensor, torch.Tensor]
         all_values = torch.cat(all_values)
         output[0].gray_values = all_values
 
-    if hasattr(input_tensor, "indexes"):
-        output[0].indexes = indexes
+    # if hasattr(input_tensor, "indexes"):
+    output[0].indexes = indexes
 
     if hasattr(input_tensor, "original"):
         output[0].original = torch.stack(original_inputs)

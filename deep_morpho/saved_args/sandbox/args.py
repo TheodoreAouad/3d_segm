@@ -16,7 +16,7 @@ from deep_morpho.models.bise_base import ClosestSelemEnum, BiseBiasOptimEnum, Bi
 from deep_morpho.models.activations import NormalizedTanh
 from deep_morpho.initializer import InitBimonnEnum, InitBiseEnum
 from deep_morpho.experiments.parser import GridParser
-from .args_morp_ops import morp_operations
+from .args_morp_ops import morp_operations, morp_operations_gray, morp_operations_binary
 from .args_enforcers import enforcers
 from deep_morpho.datasets.cifar_dataset import transform_default
 from deep_morpho.datasets.spalike_dataset import SpalikeSegmEnum
@@ -37,7 +37,9 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_82/sandbox/multi/nosegm"
     # "Bimonn_exp_82/sandbox_merged/0_/"
     # "Bimonn_exp_80/sandbox/dilation_proj_activated/"
-    "Bimonn_exp_82/sandbox/3_/"
+    # "Bimonn_exp_82/sandbox/3_/"
+    "Bimonn_exp_75/debug/0_/"
+    # "Bimonn_exp_75/multi/4/"
     # "Bimonn_exp_78/bnn/"
     # "Bimonn_exp_79/bimonn-equivalent-binaryconnect/",
     # "Bimonn_exp_78/equivalent-params-sota/"
@@ -53,7 +55,7 @@ all_args['experiment_name'] = [
 
 all_args["model"] = [
     ##### MORPHO ####
-    # "BiMoNN",
+    "BiMoNN",
     # "BimonnIdentity",  # DEBUG
 
     ##### CLASSIFIERS #####
@@ -79,7 +81,7 @@ all_args["model"] = [
 
     ###### AXSPA ######
     # "BimonnAxspaResnet",
-    "BimonnAxspaConv",
+    # "BimonnAxspaConv",
     # "ConvSpalikeMerged",
     # "ResnetSpalikeMerged",
 ]
@@ -88,8 +90,9 @@ all_args['dataset'] = [
     ##### MORPHO ####
     # 'diskorectdataset',
     # 'mnistmorphodataset',
+    # 'invertedmnistmorphodataset',
     # "noistidataset",
-    # 'mnistgrayscaledataset',
+    'mnistgrayscaledataset',
     # 'fashionmnistgrayscaledataset',
     # 'axsparoidataset',
     # 'axsparoisimpledataset',
@@ -106,7 +109,7 @@ all_args['dataset'] = [
     # 'cifar100classical',
 
     ###### AXSPA ######
-    'spalikedataset',
+    # 'spalikedataset',
     # 'spalikedatasetmerged',
 ]
 
@@ -220,8 +223,9 @@ if True:  # nb inputs
 if True:  # lr
     all_args['learning_rate'] = [
         # 1e-3,
-        # 1e-1,
-        0.0001,
+        1e-1,
+        # 1e-2,
+        # 0.0001,
         # 1e-3,
         # 1e-4,
     ]
@@ -244,8 +248,8 @@ if True:  # loss and optimizer
         # "MaskedNormalizedDiceLoss",
         # "MaskedBCELoss",
         # "BCENormalizedLoss",
-        # "BCELoss",
-        "BCEWithLogitsLoss",
+        "BCELoss",
+        # "BCEWithLogitsLoss",
         # "CrossEntropyLoss",
         # "SquaredHingeLoss",
         # "MSELoss",
@@ -281,15 +285,15 @@ if True:  # loss and optimizer
 if True:  # batch size, epochs, etc
     all_args['batch_size'] = [32]
     all_args['num_workers'] = [
-        # 5,
-        24
+        3,
+        # 7
         # 0
     ]
-    # all_args['max_epochs.trainer'] = [20]
+    # all_args['max_epochs.trainer'] = [10]
     all_args['max_epochs.trainer'] = [200]
 
 
-    # all_args['patience_loss_batch'] = [2100]
+    all_args['patience_loss_batch'] = [2100]
     all_args['patience_loss_epoch'] = [15]
     # all_args['patience_loss_epoch'] = [1]  # DEBUG
     all_args['patience_reduce_lr'] = [1/5]
@@ -303,12 +307,18 @@ if True:
     all_args['freq_imgs'] = [
         # 1,
         # int(50000/64) + 1,
-        "epoch"
+        # "epoch"
+        2000,
     ]
     all_args['freq_hist'] = [
         # 1,
         # int(50000/64) + 1,
-        "epoch"
+        # "epoch"
+        2000,
+    ]
+    all_args['freq_imgs_val'] = [
+        # "one_per_val",
+        np.infty,
     ]
     all_args["freq_update_binary_batch"] = [
         # 1
@@ -318,7 +328,7 @@ if True:
         1,
         # None,
     ]
-    all_args['freq_scalars'] = [2]
+    all_args['freq_scalars'] = [5]
 
 
 
@@ -367,14 +377,14 @@ all_args["classif_channels"] = [  # For ConvSpalikeMerged
     [128, 256, 512],
 ]
 all_args['kernel_size'] = [
-    11,
+    # 11,
     # [7, 3]
-    # "adapt",
+    "adapt",
     # [7, 7, 7]
 ]
 all_args['channels'] = [
-    # 'adapt',
-    [],
+    'adapt',
+    # [],
     # [2,],
     # [2, 2],
     # [2, 2, 2],
@@ -414,9 +424,9 @@ all_args['activation_P'] = [1]
 
 if True:  # weights and bias handler
     all_args['bias_optim_mode'] = [
-        BiseBiasOptimEnum.RAW,
+        # BiseBiasOptimEnum.RAW,
         # BiseBiasOptimEnum.POSITIVE,
-        # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
+        BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
         # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
     ]
 
@@ -455,7 +465,7 @@ if True:  # init
 
             "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
             "lui_init_method": InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS,
-            "bise_init_args": {"ub": 1e-2, "max_output_value": 0.95, "p_for_init": "auto"},
+            "bise_init_args": {"ub": 1e-4, "max_output_value": 0.95, "p_for_init": "auto"},
 
             # "bise_init_method": InitBiseEnum.ELLIPSE_ROOT,
             # "bise_init_args": {"init_bias_value": 2},

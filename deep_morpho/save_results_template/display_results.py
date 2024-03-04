@@ -308,6 +308,7 @@ class DisplayResults:
 
         return res
 
+    # retrocompatibility
     @staticmethod
     def update_results_BinaryModeMetric(path):
         res = {}
@@ -315,6 +316,21 @@ class DisplayResults:
         file_binary_mode = join(path, "metrics.json")
         if os.path.exists(file_binary_mode):
             res['binary_mode_dice'] = load_json(file_binary_mode)["dice"]
+
+        return res
+    
+    @staticmethod
+    def update_results_BinaryModeMetricMorpho(path):
+        res = {}
+
+        file_metrics = join(path, "metrics.json")
+        if os.path.exists(file_metrics):
+            if "dice" in load_json(file_metrics):  # retrocompatibility
+                res['binary_mode_dice'] = load_json(file_metrics)["dice"]
+            else:
+                for state, metrics in load_json(file_metrics).items():
+                    for metric_name, metric_value in metrics.items():
+                        res[f"binary_mode_{state}_{metric_name}"] = metric_value
 
         return res
 
@@ -325,7 +341,7 @@ class DisplayResults:
         file_metrics = join(path, "metrics.json")
         if os.path.exists(file_metrics):
             if "dice" in load_json(file_metrics):  # retrocompatibility
-                res['dice'] = load_json(file_metrics)["dice"]
+                res['binary_dice'] = load_json(file_metrics)["dice"]
             else:
                 for state, metrics in load_json(file_metrics).items():
                     for metric_name, metric_value in metrics.items():
@@ -532,6 +548,7 @@ class DisplayResults:
             "ConvergenceBinary",
             "InputAsPredMetric",
             "CalculateAndLogMetrics",
+            "BinaryModeMetricMorpho",
             "BinaryModeMetricClassifChannel",
             "ConvergenceMetrics",
             "ShowSelemBinary",
@@ -593,6 +610,10 @@ class DisplayResults:
         df['binary_mode_dice'] = df['binary_mode_dice'].astype(float)
         df['operation'] = df['experiment_subname'].apply(lambda x: pathlib.Path(x).parent.stem if x is not None else None)  # TODO: handle when no operation
         df['selem'] = df['experiment_subname'].apply(lambda x: pathlib.Path(x).stem if x is not None else None)  # TODO: handle when no selem
+        # where df['operation'] is None, a different treatment is needed: df['name'].apply(lambda x: s.split("/")[0])
+        df.loc[df["operation"].isna(), "operation"] = df.loc[df["operation"].isna(), "name"].apply(lambda x: x.split("/")[0])
+        df.loc[df["selem"].isna(), "selem"] = df.loc[df["selem"].isna(), "name"].apply(lambda x: x.split("/")[1])
+
 
         return df
 

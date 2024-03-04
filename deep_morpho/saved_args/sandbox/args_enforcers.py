@@ -62,6 +62,24 @@ class ArgsEnforcersCurrent(ArgsEnforcer):
 
             # if experiment.args["dataset"].lower() == "spalikedataset" and SpalikeMergedInputModel.is_child(experiment.args["model"]):  # must merge input and segm
             #     experiment.args["dataset"] = "spalikedatasetmerged"
+            experiment.args["dataset_type"] = experiment.args["dataset"].replace("dataset", "")
+
+            # if experiment.args["dataset"] == "inverted_mnistmorphodataset":
+            #     experiment.args["dataset"] = "mnistdataset"
+            #     experiment.args["mnist_args"]["invert_input_proba"] = 1
+
+            if (
+                (experiment.args["dataset"] in ['diskorectdataset', 'mnistmorphodataset', "invertedmnistmorphodataset",]) and
+                (experiment.args["atomic_element"] == "bisel")
+            ):
+                experiment.args["batch_size"] = 256
+                experiment.args["num_workers"] = 10
+            
+            if experiment.args["freq_imgs_val"] == "one_per_val":
+                if experiment.args["dataset"] in ['diskorectdataset', 'mnistmorphodataset', 'noistidataset', "invertedmnistmorphodataset"]:
+                    experiment.args["freq_imgs_val"] = experiment.args["n_steps_val"]
+                elif experiment.args["dataset"] in ["mnistgrayscaledataset", "fashionmnistgrayscaledataset",]:
+                    experiment.args["freq_imgs_val"] = experiment.args["n_inputs_val"] // experiment.args["batch_size"]
 
             if len(experiment.args["channels"]) == 2:
                 experiment.args["kernel_size"] = 13

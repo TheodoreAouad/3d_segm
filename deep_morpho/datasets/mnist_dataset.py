@@ -78,19 +78,60 @@ class MnistMorphoDataset(MnistBaseDataset, MNIST):
         return join(self.root, 'processed')
 
 
+class InvertedMnistMorphoDataset(MnistBaseDataset, MNIST):
+
+    def __init__(
+        self,
+        morp_operation: ParallelMorpOperations,
+        n_inputs: int = "all",
+        threshold: float = 30,
+        size=(50, 50),
+        first_idx: int = 0,
+        indexes=None,
+        preprocessing=None,
+        root: str = ROOT_MNIST_DIR,
+        train: bool = True,
+        do_symetric_output: bool = False,
+        **kwargs,
+    ) -> None:
+        mnist_kwargs = {}
+        for key in ["transform", "target_transform", "download"]:
+            if key in kwargs:
+                mnist_kwargs[key] = kwargs[key]
+            
+        MNIST.__init__(self, root, train, **mnist_kwargs)
+        MnistBaseDataset.__init__(
+            self,
+            morp_operation=morp_operation,
+            n_inputs=n_inputs,
+            threshold=threshold,
+            size=size,
+            indexes=indexes,
+            first_idx=first_idx,
+            preprocessing=preprocessing,
+            invert_input_proba=1,
+            do_symetric_output=do_symetric_output,
+        )
+
+    @property
+    def processed_folder(self) -> str:
+        return join(self.root, 'processed')
+
+
 class MnistGrayScaleDataset(MnistGrayScaleBaseDataset, MNIST):
 
     def __init__(
         self,
         morp_operation: ParallelMorpOperations,
         n_inputs: int = "all",
-        n_gray_scale_values: str = "all",
+        n_gray_scale_values: str = 20,
         size=(50, 50),
         first_idx: int = 0,
         preprocessing=None,
         root: str = ROOT_MNIST_DIR,
         train: bool = True,
         do_symetric_output: bool = False,
+        indexes=None,
         **kwargs,
     ) -> None:
         MNIST.__init__(self, root, train, **kwargs)
@@ -103,6 +144,7 @@ class MnistGrayScaleDataset(MnistGrayScaleBaseDataset, MNIST):
             first_idx=first_idx,
             preprocessing=preprocessing,
             do_symetric_output=do_symetric_output,
+            indexes=indexes,
         )
 
     # @classmethod

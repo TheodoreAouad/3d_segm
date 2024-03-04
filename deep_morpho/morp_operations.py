@@ -415,7 +415,7 @@ class ParallelMorpOperations:
     @staticmethod
     def white_tophat(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
         kwargs["name"] = kwargs.get("name", 'white_tophat')
-        identity = ('dilation', ('disk', 0), False)
+        identity = ('dilation', ('identity', ParallelMorpOperations.get_size_from_selem(selem)), False)
         return ParallelMorpOperations(
             operations=[
                 [
@@ -427,12 +427,20 @@ class ParallelMorpOperations:
             **kwargs
         )
 
+    @staticmethod
+    def get_size_from_selem(selem: Union[np.ndarray, Tuple[Union[Callable, str], Any]]):
+        if isinstance(selem, tuple):
+            return selem[1]
+        
+        return max(selem.shape)
 
     @staticmethod
     def black_tophat(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
         kwargs["name"] = kwargs.get("name", 'black_tophat')
-        identity1 = ('dilation', ('disk', 0), False)
-        identity2 = ('dilation', ('disk', 0), True)
+        # identity1 = ('dilation', ('disk', 0), False)
+        # identity2 = ('dilation', ('disk', 0), True)
+        identity1 = ('dilation', ('identity', ParallelMorpOperations.get_size_from_selem(selem)), False)
+        identity2 = ('dilation', ('identity', ParallelMorpOperations.get_size_from_selem(selem)), True)
         return ParallelMorpOperations(
             operations=[
                 [
@@ -631,7 +639,8 @@ class ParallelMorpOperationsGrayTopHats(ParallelMorpOperations):
     @staticmethod
     def white_tophat_gray(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
         kwargs["name"] = kwargs.get("name", 'white_tophat')
-        identity = ('dilation', ('disk', 0), False)
+        # identity = ('dilation', ('disk', 0), False)
+        identity = ('dilation', ('identity', ParallelMorpOperations.get_size_from_selem(selem)), False)
         return ParallelMorpOperationsGrayTopHats(
             operations=[
                 [
@@ -647,8 +656,10 @@ class ParallelMorpOperationsGrayTopHats(ParallelMorpOperations):
     @staticmethod
     def black_tophat_gray(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
         kwargs["name"] = kwargs.get("name", 'black_tophat')
-        identity1 = ('dilation', ('disk', 0), False)
-        identity2 = ('dilation', ('disk', 0), True)
+        # identity1 = ('dilation', ('disk', 0), False)
+        # identity2 = ('dilation', ('disk', 0), True)
+        identity1 = ('dilation', ('identity', ParallelMorpOperations.get_size_from_selem(selem)), False)
+        identity2 = ('dilation', ('identity', ParallelMorpOperations.get_size_from_selem(selem)), True)
         return ParallelMorpOperationsGrayTopHats(
             operations=[
                 [

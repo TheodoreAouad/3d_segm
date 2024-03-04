@@ -11,7 +11,8 @@ all_keys_line = [
     "experiment_name",
     "experiment_subname",
     "name",
-    "dataset_type",
+    "dataset_type",  # retrocompatibility
+    "dataset",
     "dataset_path",
     "n_inputs",
     "learning_rate",
@@ -20,7 +21,8 @@ all_keys_line = [
     "freq_imgs",
     "n_epochs",
     "n_atoms",
-    "atomic_element",
+    "atomic_element",  # retrocompatibility
+    "atomic_element.net",
     "kernel_size",
     "init_weight_mode",
     "activation_P",

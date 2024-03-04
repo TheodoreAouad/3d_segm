@@ -28,3 +28,6 @@ class UpdateBinary(Observable):
         if self.freq_epoch is not None and self.freq_epoch_idx % self.freq_epoch == 0:
             self.apply_update(pl_module)
         self.freq_epoch_idx += 1
+
+    def on_train_end(self, trainer, pl_module):
+        self.apply_update(pl_module)

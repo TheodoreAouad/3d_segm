@@ -17,13 +17,14 @@ class FashionMnistGrayScaleDataset(MnistGrayScaleBaseDataset, FashionMNIST):
         self,
         morp_operation: ParallelMorpOperations,
         n_inputs: int = "all",
-        n_gray_scale_values: str = "all",
+        n_gray_scale_values: str = 20,
         size=(50, 50),
         first_idx: int = 0,
         preprocessing=None,
         root: str = ROOT_FASHIONMNIST_DIR,
         train: bool = True,
         do_symetric_output: bool = False,
+        indexes=None,
         **kwargs,
     ) -> None:
         FashionMNIST.__init__(self, root, train, **kwargs)
@@ -36,28 +37,29 @@ class FashionMnistGrayScaleDataset(MnistGrayScaleBaseDataset, FashionMNIST):
             first_idx=first_idx,
             preprocessing=preprocessing,
             do_symetric_output=do_symetric_output,
+            indexes=indexes,
         )
 
-    @staticmethod
-    def get_loader(
-        batch_size, n_inputs, morp_operation, train, first_idx=0, size=(50, 50),
-        do_symetric_output=False, preprocessing=None, n_gray_scale_values="all",
-    **kwargs):
-        if n_inputs == 0:
-            return DataLoader([])
-        return DataLoader(
-            FashionMnistGrayScaleDataset(
-                morp_operation=morp_operation, n_inputs=n_inputs, first_idx=first_idx,
-                train=train, preprocessing=preprocessing, size=size,
-                do_symetric_output=do_symetric_output, n_gray_scale_values=n_gray_scale_values,
-            ), batch_size=batch_size, collate_fn=collate_fn_gray_scale_same_dim, **kwargs)
+    # @staticmethod
+    # def get_loader(
+    #     batch_size, n_inputs, morp_operation, train, first_idx=0, size=(50, 50),
+    #     do_symetric_output=False, preprocessing=None, n_gray_scale_values="all",
+    # **kwargs):
+    #     if n_inputs == 0:
+    #         return DataLoader([])
+    #     return DataLoader(
+    #         FashionMnistGrayScaleDataset(
+    #             morp_operation=morp_operation, n_inputs=n_inputs, first_idx=first_idx,
+    #             train=train, preprocessing=preprocessing, size=size,
+    #             do_symetric_output=do_symetric_output, n_gray_scale_values=n_gray_scale_values,
+    #         ), batch_size=batch_size, collate_fn=collate_fn_gray_scale_same_dim, **kwargs)
 
-    @staticmethod
-    def get_train_val_test_loader(n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
-        trainloader = FashionMnistGrayScaleDataset.get_loader(first_idx=0, n_inputs=n_inputs_train, train=True, shuffle=True, *args, **kwargs)
-        valloader = FashionMnistGrayScaleDataset.get_loader(first_idx=0, n_inputs=n_inputs_val, train=False, shuffle=False, *args, **kwargs)
-        testloader = FashionMnistGrayScaleDataset.get_loader(first_idx=n_inputs_val, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
-        return trainloader, valloader, testloader
+    # @staticmethod
+    # def get_train_val_test_loader(n_inputs_train, n_inputs_val, n_inputs_test, *args, **kwargs):
+    #     trainloader = FashionMnistGrayScaleDataset.get_loader(first_idx=0, n_inputs=n_inputs_train, train=True, shuffle=True, *args, **kwargs)
+    #     valloader = FashionMnistGrayScaleDataset.get_loader(first_idx=0, n_inputs=n_inputs_val, train=False, shuffle=False, *args, **kwargs)
+    #     testloader = FashionMnistGrayScaleDataset.get_loader(first_idx=n_inputs_val, n_inputs=n_inputs_test, train=False, shuffle=False, *args, **kwargs)
+    #     return trainloader, valloader, testloader
 
 
     @property
