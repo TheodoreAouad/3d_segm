@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=diskorect_erosion_75
-#SBATCH --output=ruche_logs/diskorect_erosion_75.txt
+#SBATCH --output=ruche_logs/75_diskorect_erosion.txt
 #SBATCH --mail-user=theodore.aouad@centralesupelec.fr
 #SBATCH --mail-type=ALL
 #SBATCH --nodes=1

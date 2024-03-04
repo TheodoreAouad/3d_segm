@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=diskorect_opening_75
-#SBATCH --output=ruche_logs/diskorect_opening_75.txt
+#SBATCH --output=ruche_logs/75_diskorect_opening.txt
 #SBATCH --mail-user=theodore.aouad@centralesupelec.fr
 #SBATCH --mail-type=ALL
 #SBATCH --nodes=1

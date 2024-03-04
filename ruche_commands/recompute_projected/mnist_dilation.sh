@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=mnist_dilation_75
-#SBATCH --output=ruche_logs/mnist_dilation_75.txt
+#SBATCH --output=ruche_logs/75_mnist_dilation.txt
 #SBATCH --mail-user=theodore.aouad@centralesupelec.fr
 #SBATCH --mail-type=ALL
 #SBATCH --nodes=1

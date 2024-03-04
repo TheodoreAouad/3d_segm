@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=inverted_mnist_black_tophat_75
-#SBATCH --output=ruche_logs/inverted_mnist_black_tophat_75.txt
+#SBATCH --output=ruche_logs/75_inverted_mnist_black_tophat.txt
 #SBATCH --mail-user=theodore.aouad@centralesupelec.fr
 #SBATCH --mail-type=ALL
 #SBATCH --nodes=1

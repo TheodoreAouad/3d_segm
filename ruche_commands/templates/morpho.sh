@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name={DATASET}_{OPERATION}_75
-#SBATCH --output=ruche_logs/{DATASET}_{OPERATION}_75.txt
+#SBATCH --output=ruche_logs/75_{DATASET}_{OPERATION}.txt
 #SBATCH --mail-user=theodore.aouad@centralesupelec.fr
 #SBATCH --mail-type=ALL
 #SBATCH --nodes=1
