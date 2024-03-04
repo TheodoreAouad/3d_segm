@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name={ATOMIC}_mnist_{MODEL}_76
-#SBATCH --output=ruche_logs/{ATOMIC}_mnist_{MODEL}_76.txt
+#SBATCH --job-name=mnist_opening_75
+#SBATCH --output=ruche_logs/mnist_opening_75.txt
 #SBATCH --mail-user=theodore.aouad@centralesupelec.fr
 #SBATCH --mail-type=ALL
 #SBATCH --nodes=1
