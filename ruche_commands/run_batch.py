@@ -5,33 +5,40 @@ import time
 
 all_paths = []
 
-for atomic in [
-    'bisel',
-    'dual_bisel',
-    # 'sybisel',
-]:
-    for dataset in [
-        # 'diskorect',
-        # 'mnist',
-        # 'inverted_mnist',
-        # 'gray_mnist',
-        # 'fashionmnist',
-        "classif_mnist",
-        "classif_mnist_channel",
-        "cifar10",
-    ]:
-        for operation in [
-            # 'erodila',
-            # 'ope',
-            # 'clo',
-            # 'black_tophat',
-            # 'white_tophat'
-            "maxpool",
-            "linear",
-        ]:
-            file_path = f'ruche_commands/{atomic}/{dataset}_{operation}.sh'
-            if os.path.exists(file_path):
-                all_paths.append(file_path)
+# for atomic in [
+#     'bisel',
+#     'dual_bisel',
+#     # 'sybisel',
+# ]:
+#     for dataset in [
+#         # 'diskorect',
+#         # 'mnist',
+#         # 'inverted_mnist',
+#         # 'gray_mnist',
+#         # 'fashionmnist',
+#         "classif_mnist",
+#         "classif_mnist_channel",
+#         "cifar10",
+#     ]:
+#         for operation in [
+#             # 'erodila',
+#             # 'ope',
+#             # 'clo',
+#             # 'black_tophat',
+#             # 'white_tophat'
+#             "maxpool",
+#             "linear",
+#         ]:
+#             file_path = f'ruche_commands/{atomic}/{dataset}_{operation}.sh'
+#             if os.path.exists(file_path):
+#                 all_paths.append(file_path)
+
+for dataset in ["mnist", "inverted_mnist", "diskorect"]:
+    for operation in ["dilation", "erosion", "opening", "closing", "white_tophat", "black_tophat"]:
+        file_path = f"ruche_commands/recompute_projected/{dataset}_{operation}.sh"
+        if os.path.exists(file_path):
+            all_paths.append(file_path)
+
 
 # for atomic in ['dual_bisel']:
 #     for dataset in ['inverted_mnist']:

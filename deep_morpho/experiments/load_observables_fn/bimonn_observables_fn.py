@@ -188,7 +188,11 @@ def load_observables_bimonn_morpho_grayscale(experiment):
             obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
             # "BatchEarlyStoppingLoss": obs.BatchEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss_batch'], mode="min"),
             # "BatchActivatedEarlyStopping": obs.BatchActivatedEarlyStopping(patience=0),
-            obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
+            # obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
+            obs.CombineEarlyStopping(name="dice_and_ativated", early_stoppers=[
+                obs.BatchActivatedEarlyStopping(patience=0),
+                obs.BatchEarlyStopping(name="binary_dice", monitor="binary_mode/dice_train", stopping_threshold=1, patience=np.infty, mode="max"),
+            ], decision_rule="and")
         ]
 
     model_checkpoint_obs = ModelCheckpoint(
