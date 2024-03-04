@@ -27,7 +27,7 @@ all_args = GridParser()
 # all_args['batch_seed'] = [2249939862]
 all_args['batch_seed'] = [None]
 
-all_args['n_try'] = [0]
+all_args['n_try'] = [0, 1, 2, 3, 4]
 
 all_args['experiment_name'] = [
     # "Bimonn_exp_76/sandbox/bisel-dense/0",
@@ -39,8 +39,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_80/sandbox/dilation_proj_activated/"
     # "Bimonn_exp_82/sandbox/3_/"
     # "Bimonn_exp_75/sandbox/4_/"
-    "Bimonn_exp_75/debug/"
-    # "Bimonn_exp_75/multi/4/"
+    # "Bimonn_exp_75/debug/"
+    "Bimonn_exp_75/multi/recompute_failed/0"
     # "Bimonn_exp_78/bnn/"
     # "Bimonn_exp_79/bimonn-equivalent-binaryconnect/",
     # "Bimonn_exp_78/equivalent-params-sota/"
@@ -286,7 +286,7 @@ if True:  # loss and optimizer
 if True:  # batch size, epochs, etc
     all_args['batch_size'] = [32]
     all_args['num_workers'] = [
-        3,
+        20,
         # 7
         # 0
     ]
@@ -308,14 +308,14 @@ if True:
     all_args['freq_imgs'] = [
         # 1,
         # int(50000/64) + 1,
-        "epoch"
-        # 2000,
+        # "epoch"
+        2000,
     ]
     all_args['freq_hist'] = [
         # 1,
         # int(50000/64) + 1,
-        "epoch"
-        # 2000,
+        # "epoch"
+        2000,
     ]
     all_args['freq_imgs_val'] = [
         # "one_per_val",
@@ -329,7 +329,7 @@ if True:
         1,
         # None,
     ]
-    all_args['freq_scalars'] = [5]
+    all_args['freq_scalars'] = [10]
 
 
 
@@ -528,7 +528,7 @@ if True:  # args script necessity
 #         assert False
 
 if True:  # only keep relevent args
-    good_args_path = "deep_morpho/saved_args/sandbox/args_good.txt"
+    good_args_path = "deep_morpho/saved_args/recompute_failed/args_good_0.txt"
     to_remove = []
     for idx, args in enumerate(all_args.multi_args):
         if not os.path.exists(good_args_path):
@@ -560,6 +560,6 @@ if True:  # only keep relevent args
         del all_args.multi_args[idx]
     
     print(len(all_args.multi_args))
-    assert False
+    # assert False
 
 

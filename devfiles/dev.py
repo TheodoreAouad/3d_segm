@@ -1,18 +1,12 @@
-import subprocess
-from pathlib import Path
+import os
 
+all_paths = []
 
-parent_dir = Path("deep_morpho/saved_args/recompute_projected")
+for dataset in ["mnist", "inverted_mnist", "diskorect"]:
+    for operation in ["dilation", "erosion", "opening", "closing", "white_tophat", "black_tophat"]:
+        file_path = f"ruche_commands/recompute_projected/{dataset}_{operation}.sh"
+        if os.path.exists(file_path):
+            all_paths.append(file_path)
 
-datasets = [
-    "diskorect", 'inverted_mnist', "fashionmnist", "mnist", "mnist_gray"
-]
-
-operations = [
-    "dilation", "erosion", "opening", "closing", "white_tophat", "black_tophat"
-]
-
-for dataset in datasets:
-    for operation in operations:
-        (parent_dir / dataset / operation).mkdir(parents=True, exist_ok=True)
-        print(parent_dir / dataset / operation)
+with open('todelete.txt', "w") as f:
+    print(*all_paths, file=f, sep='\n')
