@@ -1,12 +1,1 @@
-import os
-
-all_paths = []
-
-for dataset in ["mnist", "inverted_mnist", "diskorect"]:
-    for operation in ["dilation", "erosion", "opening", "closing", "white_tophat", "black_tophat"]:
-        file_path = f"ruche_commands/recompute_projected/{dataset}_{operation}.sh"
-        if os.path.exists(file_path):
-            all_paths.append(file_path)
-
-with open('todelete.txt', "w") as f:
-    print(*all_paths, file=f, sep='\n')
+rsync -az -e ssh aouadt@ruche.mesocentre.universite-paris-saclay.fr:/gpfs/workdir/aouadt/3d_segm/deep_morpho/results/results_tensorboards/Bimonn_exp_75/1/13  deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/recompute_projected/ --info=progress2 --remove-source-files
