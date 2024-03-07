@@ -1,0 +1,3 @@
+('invertedmnistmorpho', 'dual_bisel', 'POSITIVE_INTERVAL_PROJECTED', 'MSELoss', '0.01', 'opening', 'scross')
+('invertedmnistmorpho', 'dual_bisel', 'POSITIVE_INTERVAL_PROJECTED', 'MSELoss', '0.01', 'opening', 'bcomplex')
+('invertedmnistmorpho', 'dual_bisel', 'POSITIVE_INTERVAL_PROJECTED', 'DiceLoss', '0.01', 'opening', 'bsquare')

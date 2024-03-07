@@ -1,0 +1,4 @@
+('mnistmorpho', 'dual_bisel', 'POSITIVE_INTERVAL_PROJECTED', 'MSELoss', '0.1', 'opening', 'disk')
+('invertedmnistmorpho', 'dual_bisel', 'POSITIVE_INTERVAL_PROJECTED', 'MSELoss', '0.01', 'opening', 'dcross')
+('mnistmorpho', 'dual_bisel', 'POSITIVE_INTERVAL_PROJECTED', 'DiceLoss', '0.01', 'closing', 'dcross')
+('mnistmorpho', 'dual_bisel', 'POSITIVE_INTERVAL_PROJECTED', 'MSELoss', '0.01', 'closing', 'bdiamond')

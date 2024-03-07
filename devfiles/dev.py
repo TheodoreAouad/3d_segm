@@ -1,1 +1,1 @@
-rsync -az -e ssh aouadt@ruche.mesocentre.universite-paris-saclay.fr:/gpfs/workdir/aouadt/3d_segm/deep_morpho/results/results_tensorboards/Bimonn_exp_75/1/13  deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/recompute_projected/ --info=progress2 --remove-source-files
+rsync -az -e ssh aouadt@ruche.mesocentre.universite-paris-saclay.fr:/gpfs/workdir/aouadt/3d_segm/deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/recompute_failed/0/7  deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/recompute_failed/ --info=progress2 --remove-source-files

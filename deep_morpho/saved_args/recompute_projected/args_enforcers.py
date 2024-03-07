@@ -73,7 +73,7 @@ class ArgsEnforcersCurrent(ArgsEnforcer):
                 (experiment.args["atomic_element"] == "bisel")
             ):
                 experiment.args["batch_size"] = 256
-                experiment.args["num_workers"] = 10
+                # experiment.args["num_workers"] = 10
             
             if experiment.args["freq_imgs_val"] == "one_per_val":
                 if experiment.args["dataset"] in ['diskorectdataset', 'mnistmorphodataset', 'noistidataset', "invertedmnistmorphodataset"]:
