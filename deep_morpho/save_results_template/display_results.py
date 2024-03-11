@@ -363,6 +363,18 @@ class DisplayResults:
                         res[f"{state}_{metric_name}"] = metric_value
 
         return res
+    
+    @staticmethod
+    def update_results_RecomputeMetrics(path):
+        res = {}
+
+        file_metrics = join(path, "metrics.json")
+        if os.path.exists(file_metrics):
+            metrics = load_json(file_metrics)
+            for key, value in metrics.items():
+                res[key] = value
+
+        return res
 
     @staticmethod
     def update_results_ConvergenceMetrics(path):
@@ -548,6 +560,7 @@ class DisplayResults:
             "ConvergenceBinary",
             "InputAsPredMetric",
             "CalculateAndLogMetrics",
+            "RecomputeMetrics",
             "BinaryModeMetricMorpho",
             "BinaryModeMetricClassifChannel",
             "ConvergenceMetrics",

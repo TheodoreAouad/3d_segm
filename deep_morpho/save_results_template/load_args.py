@@ -23,7 +23,8 @@ all_keys_line = [
     "n_atoms",
     "atomic_element",  # retrocompatibility
     "atomic_element.net",
-    "kernel_size",
+    "kernel_size",  # retrocompatibility
+    "kernel_size.net",
     "init_weight_mode",
     "activation_P",
     "constant_activation_P",

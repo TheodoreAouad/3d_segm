@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def dice(y_true, y_pred, threshold=.5, SMOOTH=1e-6,):
     y_true = y_true.squeeze()
     y_pred = y_pred.squeeze()
@@ -36,3 +35,10 @@ def masked_dice(ytrue, ypred, border, *args, **kwargs):
         ytrue = ytrue[..., border[1]:-border[1]]
 
     return dice(ytrue, ypred, *args, **kwargs)
+
+
+def symetric_dice(ytrue, ypred, *args, **kwargs):
+    assert np.isin(ytrue.unique().tolist(), [0, 1]).all()
+    assert ypred.min() >= 0, ypred.max() <= 1
+
+    return 1/2 * (dice(ytrue, ypred, *args, **kwargs) + dice(1 - ytrue, 1 - ypred, *args, **kwargs))
