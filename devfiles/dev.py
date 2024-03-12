@@ -1,17 +1,35 @@
-
-from importlib import import_module
-import pytorch_lightning as pl
-import deep_morpho.models.lightning_bimonn as lbimonn
-from deep_morpho.datasets import DataModule
-
-models_old = import_module("deep_morpho.results.results_tensorboards.Bimonn_exp_75.multi.0.bisel.softplus.diskorect.black_tophat.disk.version_0.code.deep_morpho.models.lightning_bimonn")
-
-path = 'deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/0/bisel/softplus/diskorect/black_tophat/disk/version_0/checkpoints/epoch=0-step=2000.ckpt'
-# load pytorhc lightning model
-model = models_old.LightningBiMoNN.load_from_checkpoint(path)
+import re
+from pathlib import Path
+import deep_morpho.save_results_template.display_results as dr
 
 
-dataset = "diskorectdataset"
+def get_tb_paths_recompute():
+    path_global = Path(
+        "deep_morpho/results/results_tensorboards/Bimonn_exp_75/multi/recompute_projected"
+    )
+    all_paths = []
+    for batch_exp in path_global.iterdir():
+        for dataset in batch_exp.iterdir():
+            if not dataset.is_dir():
+                continue
+            if dataset.name == "code":
+                continue
+            for operation in (dataset / "bimonn").iterdir():
+                for selem in operation.iterdir():
+                    all_paths += sorted([str(p) for p in selem.iterdir()], key=lambda x: int(
+                        re.findall(r'version_(\d+)$', x)[0]
+                    ))
+    return all_paths
 
-dataloader = DataModule.select(dataset).get_loader()
+
+all_paths = get_tb_paths_recompute()
+big_df_recompute, _, _ = dr.DisplayResults().get_df_from_tb_paths(all_paths, show_details=False)
+big_df_recompute["dice"] = big_df_recompute["train_dice"]
+big_df_recompute["binary_mode_dice"] = big_df_recompute["binary_mode_train_dice"]
+big_df_recompute["dataset_type"] = big_df_recompute["dataset"].apply(lambda x: x.replace("morpho", "").replace("inverted", "inverted_").replace("dataset", ""))
+big_df_recompute["atomic_element"] = big_df_recompute["atomic_element.net"]
+
+big_df_recompute["before_recomputed_projected"] = False
+big_df_recompute["after_recomputed_projected"] = True
+
 

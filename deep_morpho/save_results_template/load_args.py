@@ -21,6 +21,7 @@ all_keys_line = [
     "freq_imgs",
     "n_epochs",
     "n_atoms",
+    "n_try",
     "atomic_element",  # retrocompatibility
     "atomic_element.net",
     "kernel_size",  # retrocompatibility

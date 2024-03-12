@@ -375,6 +375,18 @@ class DisplayResults:
                 res[key] = value
 
         return res
+    
+    @staticmethod
+    def update_results_InvertGrayAndBinarizedMnist(path):
+        res = {}
+
+        file_metrics = join(path, "metrics.json")
+        if os.path.exists(file_metrics):
+            metrics = load_json(file_metrics)
+            for key, value in metrics.items():
+                res["switched_" + key] = value
+
+        return res
 
     @staticmethod
     def update_results_ConvergenceMetrics(path):
@@ -552,6 +564,7 @@ class DisplayResults:
         res['tb_path'] = tb_path
         # if os.path.exists(join(tb_path, 'args.yaml')):
         res['args'] = load_args(join(tb_path, 'args.yaml'))
+        assert os.path.exists(join(tb_path, 'args.yaml')), f"{join(tb_path, 'args.yaml')} not found."
 
         for obs_name in [
             "PlotWeightsBiSE",
@@ -561,6 +574,7 @@ class DisplayResults:
             "InputAsPredMetric",
             "CalculateAndLogMetrics",
             "RecomputeMetrics",
+            "InvertGrayAndBinarizedMnist",
             "BinaryModeMetricMorpho",
             "BinaryModeMetricClassifChannel",
             "ConvergenceMetrics",
