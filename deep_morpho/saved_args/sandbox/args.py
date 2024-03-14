@@ -39,7 +39,7 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_80/sandbox/dilation_proj_activated/"
     # "Bimonn_exp_82/sandbox/3_/"
     # "Bimonn_exp_75/sandbox/4_/"
-    "Bimonn_exp_75/debug/"
+    "Bimonn_exp_75/sandbox/5/noisti"
     # "Bimonn_exp_75/multi/4/"
     # "Bimonn_exp_78/bnn/"
     # "Bimonn_exp_79/bimonn-equivalent-binaryconnect/",
@@ -89,10 +89,10 @@ all_args["model"] = [
 
 all_args['dataset'] = [
     ##### MORPHO ####
-    'diskorectdataset',
+    # 'diskorectdataset',
     # 'mnistmorphodataset',
     # 'invertedmnistmorphodataset',
-    # "noistidataset",
+    "noistidataset",
     # 'mnistgrayscaledataset',
     # 'fashionmnistgrayscaledataset',
     # 'axsparoidataset',
@@ -193,7 +193,7 @@ if True:  # SpaLike Args
 
 if True:  # Noisti Args
     all_args['sticks_noised_angles'] = [
-        [0, 45, 90]
+        [0, 90]
     ]
     all_args['sticks_noised_args'] = [
         {
@@ -224,7 +224,7 @@ if True:  # nb inputs
 if True:  # lr
     all_args['learning_rate'] = [
         # 1e-3,
-        1e-1,
+        # 1e-1,
         1e-2,
         # 0.0001,
         # 1e-3,
@@ -249,12 +249,12 @@ if True:  # loss and optimizer
         # "MaskedNormalizedDiceLoss",
         # "MaskedBCELoss",
         # "BCENormalizedLoss",
-        "BCELoss",
+        # "BCELoss",
         # "BCEWithLogitsLoss",
         # "CrossEntropyLoss",
         # "SquaredHingeLoss",
         "MSELoss",
-        "DiceLoss",
+        # "DiceLoss",
         # "MaskedDiceLoss",
         # "NormalizedDiceLoss",
     ]
@@ -284,9 +284,9 @@ if True:  # loss and optimizer
 
 
 if True:  # batch size, epochs, etc
-    all_args['batch_size'] = [32]
+    all_args['batch_size'] = [256]
     all_args['num_workers'] = [
-        3,
+        10,
         # 7
         # 0
     ]
@@ -359,7 +359,7 @@ all_args["do_maxpool"] = [  # For ConvSpalikeMerged
 ]
 
 all_args['atomic_element'] = [
-    "bisel",
+    # "bisel",
     "dual_bisel",
     # "sybisel",
 ]
@@ -380,7 +380,8 @@ all_args["classif_channels"] = [  # For ConvSpalikeMerged
 all_args['kernel_size'] = [
     # 11,
     # [7, 3]
-    "adapt",
+    # "adapt",
+    5
     # [7, 7, 7]
 ]
 all_args['channels'] = [
@@ -425,10 +426,10 @@ all_args['activation_P'] = [1]
 
 if True:  # weights and bias handler
     all_args['bias_optim_mode'] = [
-        BiseBiasOptimEnum.RAW,
+        # BiseBiasOptimEnum.RAW,
         BiseBiasOptimEnum.POSITIVE,
-        BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
-        BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
+        # BiseBiasOptimEnum.POSITIVE_INTERVAL_PROJECTED,
+        # BiseBiasOptimEnum.POSITIVE_INTERVAL_REPARAMETRIZED
     ]
 
     all_args['bias_optim_args'] = [
@@ -527,7 +528,7 @@ if True:  # args script necessity
 #             del all_args[idx]
 #         assert False
 
-if True:  # only keep relevent args
+if False:  # only keep relevent args
     good_args_path = "deep_morpho/saved_args/sandbox/args_good.txt"
     to_remove = []
     for idx, args in enumerate(all_args.multi_args):

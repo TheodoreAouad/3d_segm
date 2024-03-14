@@ -34,8 +34,8 @@ class EltGeneratorErodila(EltGenerator):
             constructor = ElementSymbolErosion
 
         elt.add_element(constructor(
-            xy_coords_mean=xy_coords_mean + np.array([0, selem.shape[1] / 2 + 1]),
-            radius=2,
+            xy_coords_mean=xy_coords_mean + np.array([0, selem.shape[1] / 2 + 2]),
+            radius=3,
             imshow_kwargs=self.op_imshow_kwargs
         ), key="operation")
 
