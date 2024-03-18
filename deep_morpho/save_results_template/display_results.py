@@ -638,8 +638,11 @@ class DisplayResults:
         df['operation'] = df['experiment_subname'].apply(lambda x: pathlib.Path(x).parent.stem if x is not None else None)  # TODO: handle when no operation
         df['selem'] = df['experiment_subname'].apply(lambda x: pathlib.Path(x).stem if x is not None else None)  # TODO: handle when no selem
         # where df['operation'] is None, a different treatment is needed: df['name'].apply(lambda x: s.split("/")[0])
-        df.loc[df["operation"].isna(), "operation"] = df.loc[df["operation"].isna(), "name"].apply(lambda x: x.split("/")[0])
-        df.loc[df["selem"].isna(), "selem"] = df.loc[df["selem"].isna(), "name"].apply(lambda x: x.split("/")[1])
+        try:
+            df.loc[df["operation"].isna(), "operation"] = df.loc[df["operation"].isna(), "name"].apply(lambda x: x.split("/")[0])
+            df.loc[df["selem"].isna(), "selem"] = df.loc[df["selem"].isna(), "name"].apply(lambda x: x.split("/")[1])
+        except AttributeError:
+            pass
 
 
         return df
