@@ -2,19 +2,15 @@ aiohttp
 alive-progress
 chart-studio
 cvxpy
-detectron2 @ git+https://github.com/facebookresearch/detectron2.git@c4fb4ee7100a18dc9ae53598c4afdd620d745d6c
 dicom-anonymizer
 DicomAnonymizer
 efficientnet-pytorch
 flake8
-# Editable install with no version control (grad-cam
--e /hdd/aouadt/projets/pytorch-grad-cam-master
 ipympl
 jupyter
 jupyter-contrib-nbextensions
 jupyterthemes
 k3d
-kaggle
 manim
 mmdnn
 nibabel
