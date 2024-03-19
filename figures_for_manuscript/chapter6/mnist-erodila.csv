@@ -1,0 +1,17 @@
+,,,dice,binary_mode_dice,dice,binary_mode_dice
+atomic_element,,,bisel,bisel,dual_bisel,dual_bisel
+dataset_type,operation,selem,,,,
+mnist,dilation,bcomplex,18,9,0,6
+mnist,dilation,bdiamond,18,9,0,15
+mnist,dilation,bsquare,14,15,0,3
+mnist,dilation,dcross,18,13,3,7
+mnist,dilation,disk,19,9,3,18
+mnist,dilation,hstick,14,18,0,6
+mnist,dilation,scross,18,9,0,2
+mnist,erosion,bcomplex,0,0,0,2
+mnist,erosion,bdiamond,0,0,1,2
+mnist,erosion,bsquare,3,3,0,6
+mnist,erosion,dcross,12,12,2,2
+mnist,erosion,disk,0,0,0,3
+mnist,erosion,hstick,15,18,3,15
+mnist,erosion,scross,5,9,10,7

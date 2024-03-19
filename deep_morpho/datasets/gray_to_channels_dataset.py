@@ -195,6 +195,7 @@ class GrayToChannelDatasetBase(SelectIndexesDataset):
                 n_inputs=n_inputs, first_idx=first_idx, indexes=indexes,
                 train=train, preprocessing=preprocessing, do_symetric_output=do_symetric_output,
                 levelset_handler_mode=levelset_handler_mode, levelset_handler_args=levelset_handler_args,
+                **kwargs
             ), batch_size=batch_size, num_workers=num_workers, shuffle=shuffle, collate_fn=collate_fn_gray_scale)
 
     # @classmethod

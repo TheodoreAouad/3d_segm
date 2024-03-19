@@ -1,0 +1,17 @@
+,,dice,binary_mode_dice,dice,binary_mode_dice
+atomic_element,,bisel,bisel,dual_bisel,dual_bisel
+operation,selem,,,,
+closing,bcomplex,6,6,1,1
+closing,bdiamond,4,2,0,0
+closing,bsquare,17,2,9,0
+closing,dcross,15,15,9,9
+closing,disk,5,2,2,2
+closing,hstick,14,11,18,15
+closing,scross,7,7,0,0
+opening,bcomplex,9,7,3,3
+opening,bdiamond,1,1,1,1
+opening,bsquare,12,0,8,0
+opening,dcross,11,13,7,8
+opening,disk,3,3,2,2
+opening,hstick,8,7,18,16
+opening,scross,4,5,1,1
