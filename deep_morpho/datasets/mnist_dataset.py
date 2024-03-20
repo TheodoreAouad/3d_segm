@@ -271,9 +271,11 @@ class MnistClassifChannelDataset(GrayToChannelDatasetBase, MNIST):
         MNIST.__init__(self, root=root, transform=lambda x: torch.tensor(x), train=train, )
         self.preprocessing = preprocessing
 
+        kwargs["img"] = torch.tensor(choice(self.data).unsqueeze(0))
+
         GrayToChannelDatasetBase.__init__(
             self,
-            img=torch.tensor(choice(self.data).unsqueeze(0)),
+            # img=torch.tensor(choice(self.data).unsqueeze(0)),
             *args, **kwargs
         )
 

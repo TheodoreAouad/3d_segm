@@ -426,14 +426,18 @@ class BiMoNNClassifierMaxPoolBase(BiMoNNClassifier):
         self.bisel_kwargs["kernel_size"] = self.repr_size
         self.bisel_kwargs["padding"] = 0
 
-        self.classification_layer = self.classif_layer_fn(**self.bisel_kwargs)
+        classification_layer = self.classif_layer_fn(**self.bisel_kwargs)
 
         # self.in_channels.append(self.out_channels[-1])
         # self.out_channels.append(n_classes)
         self.kernel_size.append(self.repr_size)
 
-        self.layers.append(self.classification_layer)
+        self.layers.append(classification_layer)
         self.bisels_idx.append(len(self.layers) - 1)
+
+    @property
+    def classification_layer(self):
+        return self.layers[-1]
 
 
 class BiMoNNClassifierMaxPool(BiMoNNClassifierMaxPoolBase):

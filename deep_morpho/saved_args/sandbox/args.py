@@ -37,9 +37,11 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_82/sandbox/multi/nosegm"
     # "Bimonn_exp_82/sandbox_merged/0_/"
     # "Bimonn_exp_80/sandbox/dilation_proj_activated/"
+    # "Bimonn_exp_80/sandbox/2_"
+    "debug"
     # "Bimonn_exp_82/sandbox/3_/"
     # "Bimonn_exp_75/sandbox/4_/"
-    "Bimonn_exp_75/sandbox/5/noisti"
+    # "Bimonn_exp_75/sandbox/5/noisti"
     # "Bimonn_exp_75/multi/4/"
     # "Bimonn_exp_78/bnn/"
     # "Bimonn_exp_79/bimonn-equivalent-binaryconnect/",
@@ -56,11 +58,11 @@ all_args['experiment_name'] = [
 
 all_args["model"] = [
     ##### MORPHO ####
-    "BiMoNN",
+    # "BiMoNN",
     # "BimonnIdentity",  # DEBUG
 
     ##### CLASSIFIERS #####
-    # "BiMoNNClassifierMaxPoolNotBinary",
+    "BiMoNNClassifierMaxPoolNotBinary",
     # "BiMoNNClassifierMaxPool",
     # "BiMoNNClassifierLastLinear",
     # "BimonnDense",
@@ -92,7 +94,7 @@ all_args['dataset'] = [
     # 'diskorectdataset',
     # 'mnistmorphodataset',
     # 'invertedmnistmorphodataset',
-    "noistidataset",
+    # "noistidataset",
     # 'mnistgrayscaledataset',
     # 'fashionmnistgrayscaledataset',
     # 'axsparoidataset',
@@ -100,7 +102,7 @@ all_args['dataset'] = [
 
     ##### CLASSIFICATION #####
     # 'mnistclassifdataset',
-    # 'mnistclassifchanneldataset',
+    'mnistclassifchanneldataset',
 
     # 'cifar10dataset',
     # 'cifar100dataset',
@@ -131,8 +133,8 @@ all_args['preprocessing'] = [  # for axspa roi
 all_args['channel_classif_args'] = [
     {
         "levelset_handler_mode": LevelsetValuesEqualIndex,
-        # "levelset_handler_args": {"n_values": 10},
-        "levelset_handler_args": {"n_values": 1},
+        "levelset_handler_args": {"n_values": 5},
+        # "levelset_handler_args": {"n_values": 1},
     }
 ]
 
@@ -249,11 +251,11 @@ if True:  # loss and optimizer
         # "MaskedNormalizedDiceLoss",
         # "MaskedBCELoss",
         # "BCENormalizedLoss",
-        # "BCELoss",
+        "BCELoss",
         # "BCEWithLogitsLoss",
         # "CrossEntropyLoss",
         # "SquaredHingeLoss",
-        "MSELoss",
+        # "MSELoss",
         # "DiceLoss",
         # "MaskedDiceLoss",
         # "NormalizedDiceLoss",
@@ -261,20 +263,20 @@ if True:  # loss and optimizer
     all_args['loss_regu'] = [
         # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
         # "linear",
-        "None",
+        # "None",
         # ("RegularizationProjConstant", {"mode": "exact"}),
-        # ("RegularizationProjConstant", {"mode": "uniform"}),
+        ("RegularizationProjConstant", {"mode": "uniform"}),
         # ("RegularizationProjConstant", {"mode": "normal"}),
         # ("RegularizationProjActivated", {}),
     ]
     all_args["loss_coefs"] = [
         # {"loss_data": 1, "loss_regu": 0},
-        {"loss_data": 1, "loss_regu": 1000},
+        # {"loss_data": 1, "loss_regu": 1000},
         # {"loss_data": 1, "loss_regu": 0.1},
         # {"loss_data": 1, "loss_regu": 0.01},
-        # {"loss_data": 1, "loss_regu": 0.001},
+        {"loss_data": 1, "loss_regu": 0.001},
     ]
-    all_args["loss_regu_delay"] = [1000]
+    all_args["loss_regu_delay"] = [10]
 
     all_args['optimizer'] = [
         optim.Adam,
@@ -284,7 +286,7 @@ if True:  # loss and optimizer
 
 
 if True:  # batch size, epochs, etc
-    all_args['batch_size'] = [256]
+    all_args['batch_size'] = [32]
     all_args['num_workers'] = [
         10,
         # 7
@@ -307,19 +309,19 @@ if True:  # batch size, epochs, etc
 if True:
     all_args['freq_imgs'] = [
         # 1,
-        # int(50000/64) + 1,
-        "epoch"
+        int(50000/64) + 1,
+        # "epoch"
         # 2000,
     ]
     all_args['freq_hist'] = [
         # 1,
-        # int(50000/64) + 1,
-        "epoch"
+        int(50000/64) + 1,
+        # "epoch"
         # 2000,
     ]
     all_args['freq_imgs_val'] = [
-        # "one_per_val",
-        np.infty,
+        "one_per_val",
+        # np.infty,
     ]
     all_args["freq_update_binary_batch"] = [
         # 1
@@ -359,8 +361,8 @@ all_args["do_maxpool"] = [  # For ConvSpalikeMerged
 ]
 
 all_args['atomic_element'] = [
-    # "bisel",
-    "dual_bisel",
+    "bisel",
+    # "dual_bisel",
     # "sybisel",
 ]
 all_args['n_atoms'] = [
@@ -385,7 +387,7 @@ all_args['kernel_size'] = [
     # [7, 7, 7]
 ]
 all_args['channels'] = [
-    'adapt',
+    # 'adapt',
     # [],
     # [2,],
     # [2, 2],
@@ -401,8 +403,8 @@ all_args['channels'] = [
     # [1, 10, 1],
     # [1000, 1000],
     # [100],
-    # [200, 200],
-    # [200, 200, 200],
+    # [200],
+    [200, 200, 200],
     # [300],
     # [415],  # Nb of channels for fc1 of Laydevant et al. 2021, 3.3M params, 10 level sets
     # [587, 2048, 2048,],  # 10 level sets, Nb of channels for Dense Mnist for BinaryConnect, Courbariaux and Bengio 2015, 10M params, 10 level sets
