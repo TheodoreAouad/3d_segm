@@ -21,10 +21,10 @@ class SpalikeDatasetBase(GeneratorDataset):
     def __init__(
         self,
         image_size: tuple = (256, 256),
-        proba_lesion: float = 0.2,
+        proba_lesion: float = 0.5,
         proba_lesion_locations: dict = {
-            "sacrum": 0.2,
-            "iliac": 0.2,
+            "sacrum": 0.4,
+            "iliac": 0.4,
         },
         grid_spacing: tuple = (24, 24),
         min_ellipse_axes: int = 13,
@@ -36,7 +36,7 @@ class SpalikeDatasetBase(GeneratorDataset):
         segm_mode: SpalikeSegmEnum = SpalikeSegmEnum.BonesSeparated,
         merge_input_segm: bool = False,
         normalize: bool = True,
-        iliac_dil_coef: float = 2,
+        iliac_dil_coef: float = .7,
         sacrum_dil_coef: float = 2,
         *args, **kwargs
     ):

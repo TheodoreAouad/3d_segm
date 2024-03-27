@@ -8,14 +8,17 @@ from general.nn.viz import (
     ElementSymbolErosion, ElementSymbolIntersection, ElementSymbolUnion
 )
 
+RADIUS = 3
+
 
 class EltGeneratorErodila(EltGenerator):
 
-    def __init__(self, model, selem_imshow_kwargs={"cmap": "gray", "interpolation": "nearest"}, op_imshow_kwargs={"color": "k"}):
+    def __init__(self, model, size=None, selem_imshow_kwargs={"cmap": "gray", "interpolation": "nearest"}, op_imshow_kwargs={"color": "k"}):
         super().__init__()
         self.model = model
         self.selem_imshow_kwargs = selem_imshow_kwargs
         self.op_imshow_kwargs = op_imshow_kwargs
+        self.size = size
 
     def generate(self, layer_idx, chin, chout, xy_coords_mean, height):
         selem = self.model.selems[layer_idx][chout][chin]
@@ -26,6 +29,7 @@ class EltGeneratorErodila(EltGenerator):
             selem,
             xy_coords_mean=xy_coords_mean,
             imshow_kwargs=self.selem_imshow_kwargs,
+            size=self.size,
         ), key="selem")
 
         if op_name == "dilation":
@@ -35,7 +39,7 @@ class EltGeneratorErodila(EltGenerator):
 
         elt.add_element(constructor(
             xy_coords_mean=xy_coords_mean + np.array([0, selem.shape[1] / 2 + 2]),
-            radius=3,
+            radius=RADIUS,
             imshow_kwargs=self.op_imshow_kwargs
         ), key="operation")
 

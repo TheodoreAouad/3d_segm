@@ -197,7 +197,7 @@ class BimonnAxspaResnet(BimonnAxspaClassifier):
         super().__init__(*args, **kwargs)
 
         self.classification: nn.Module = ResnetSpalikeMerged(
-            layers=classif_layers, do_batchnorm=do_batchnorm,
+            classif_layers=classif_layers, do_batchnorm=do_batchnorm,
         )
 
 

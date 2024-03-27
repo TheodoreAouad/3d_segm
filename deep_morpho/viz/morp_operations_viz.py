@@ -3,6 +3,11 @@ from .elt_generator_morpop import EltGeneratorAggregation, EltGeneratorErodila, 
 from .elt_generator_init import EltGeneratorInitCircle
 
 
+BISE_SIZE = (
+    None
+    # 11
+)
+
 class MorpOperationsVizualiser(SkeletonMorpViz):
 
     def __init__(self, model, binary_mode=False, **kwargs):
@@ -11,7 +16,7 @@ class MorpOperationsVizualiser(SkeletonMorpViz):
             in_channels=model.in_channels,
             out_channels=model.out_channels,
             elt_generator_init=None,
-            elt_generator_bise=EltGeneratorErodila(model),
+            elt_generator_bise=EltGeneratorErodila(model, size=BISE_SIZE),
             elt_generator_lui=EltGeneratorAggregation(model),  # binary true because it does not hide any info for LUI to be binary
             elt_generator_connections=EltGeneratorConnectorMorpOp(model),
             **kwargs

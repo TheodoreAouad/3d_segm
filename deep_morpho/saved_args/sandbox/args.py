@@ -62,7 +62,7 @@ all_args["model"] = [
     # "BimonnIdentity",  # DEBUG
 
     ##### CLASSIFIERS #####
-    "BiMoNNClassifierMaxPoolNotBinary",
+    # "BiMoNNClassifierMaxPoolNotBinary",
     # "BiMoNNClassifierMaxPool",
     # "BiMoNNClassifierLastLinear",
     # "BimonnDense",
@@ -86,7 +86,7 @@ all_args["model"] = [
     # "BimonnAxspaResnet",
     # "BimonnAxspaConv",
     # "ConvSpalikeMerged",
-    # "ResnetSpalikeMerged",
+    "ResnetSpalikeMerged",
 ]
 
 all_args['dataset'] = [
@@ -112,7 +112,7 @@ all_args['dataset'] = [
     # 'cifar100classical',
 
     ###### AXSPA ######
-    # 'spalikedataset',
+    'spalikedataset',
     # 'spalikedatasetmerged',
 ]
 
@@ -383,7 +383,7 @@ all_args['kernel_size'] = [
     # 11,
     # [7, 3]
     # "adapt",
-    5
+    7
     # [7, 7, 7]
 ]
 all_args['channels'] = [
