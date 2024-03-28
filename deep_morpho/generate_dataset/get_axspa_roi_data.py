@@ -84,4 +84,4 @@ for patient in tqdm(sorted(set(all_patients).intersection(os.listdir(PATH_DATA_S
         }))
 
 all_df = pd.concat(all_df)
-all_df.to_csv(PATH_CSV, index=False)
+# all_df.to_csv(PATH_CSV, index=False)

@@ -12,9 +12,11 @@ from general.nn.dataloaders import dataloader_resolution_from_df
 from .datamodule_base import DataModule
 
 
+DEFAULT_DATA = pd.read_csv("data/deep_morpho/axspa_roi/axspa_roi.csv")
+
 class AxspaROIDataset(DataModule, Dataset):
 
-    def __init__(self, data, preprocessing=transforms.ToTensor(), unique_resolution=True):
+    def __init__(self, data=DEFAULT_DATA, preprocessing=transforms.ToTensor(), unique_resolution=True):
         self.data = data
         if unique_resolution:
             self.keep_only_one_res()
@@ -54,6 +56,33 @@ class AxspaROIDataset(DataModule, Dataset):
             batch_size=batch_size,
             **kwargs
         )
+
+    @classmethod
+    def get_train_val_test_loader_from_experiment(cls, experiment: "ExperimentBase"):
+        args = experiment.args
+
+        n_inputs_train = args[f"n_inputs{args.trainset_args_suffix}"]
+        n_inputs_val = args[f"n_inputs{args.valset_args_suffix}"]
+        n_inputs_test = args[f"n_inputs{args.testset_args_suffix}"]
+
+        train_kwargs, val_kwargs, test_kwargs = cls.get_train_val_test_kwargs_pop_keys(experiment, keys=["data"])
+
+        data = pd.read_csv(args['dataset_path'])
+        max_res = data['resolution'].value_counts(sort=True, ascending=False).index[0]
+        data = data[data['resolution'] == max_res]
+
+        data_train, data_val, data_test = train_val_test_split(
+            data,
+            train_size=n_inputs_train,
+            val_size=n_inputs_val,
+            test_size=n_inputs_test,
+        )
+
+        trainloader = cls.get_loader(data=data_train, **train_kwargs)
+        valloader = cls.get_loader(data=data_val, **val_kwargs)
+        testloader = cls.get_loader(data=data_test, **test_kwargs)
+
+        return trainloader, valloader, testloader
 
     @staticmethod
     def get_train_val_test_loader(data_train, data_val, data_test, *args, **kwargs):
