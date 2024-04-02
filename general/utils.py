@@ -84,6 +84,28 @@ def one_hot_array(ar: np.ndarray, nb_chans: int = "auto", axis: int = -1, backgr
         raise ValueError("axis must be 0 or -1.")
 
 
+def load_yaml(path,):
+
+    loader = yaml.SafeLoader
+    loader.add_implicit_resolver(
+        u'tag:yaml.org,2002:float',
+        re.compile(u'''^(?:
+        [-+]?(?:[0-9][0-9_]*)\\.[0-9_]*(?:[eE][-+]?[0-9]+)?
+        |[-+]?(?:[0-9][0-9_]*)(?:[eE][-+]?[0-9]+)
+        |\\.[0-9_]+(?:[eE][-+][0-9]+)?
+        |[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\\.[0-9_]*
+        |[-+]?\\.(?:inf|Inf|INF)
+        |\\.(?:nan|NaN|NAN))$''', re.X),
+        list(u'-+0123456789.'))
+    with open(path, 'r') as f:
+        try:
+            content = yaml.load(f, Loader=loader)
+        except yaml.YAMLError as exc:
+            print(exc)
+    return content
+
+
+
 def save_json(dic, path, sort_keys=True, indent=4):
     with open(path, 'w') as fp:
         json.dump(dic, fp, sort_keys=sort_keys, indent=indent)
@@ -200,6 +222,52 @@ def dict_cross(dic, copy_dicts=True):
         dicts = list(ParameterGrid(dic))
         return [copy.deepcopy(d) for d in dicts]
     return list(ParameterGrid(dic))
+
+
+
+def center_and_crop(img, mask, size, fill_background=0):
+    """
+    Center and crop an img around the mask.
+
+    Args:
+        img (ndarray): shape (W, L)
+        mask (ndarray): shape (W, L). Array of 0, 1 and 2.
+        size (tuple): Size of the region.
+
+    Returns:
+        ndarray: the img cropped around the mask of size size.
+    """
+    # correct segmentation if it is not 1
+    if len(np.unique(mask)) == 2:
+        mask[mask != 0] = 1
+    assert set(np.unique(mask)).issubset(set([0, 1, 2])), 'mask must have for values only 0, 1, 2. Values: {}'.format(np.unique(mask))
+    x, y = np.where(mask != 0)
+
+    if type(size) == int:
+        size = (size, size)
+    if len(x) == 0:
+        x, y = (img.shape[0] - 1)/2, (img.shape[1] - 1)/2
+    else:
+        x = x.mean()
+        y = y.mean()
+
+    sx = (size[0] - 1) / 2
+    sy = (size[1] - 1) / 2
+
+    res = np.zeros(size) + fill_background
+
+    res_x0 = max(ceil_(sx) - ceil_(x), 0)
+    res_x1 = ceil_(sx) + min(floor_(sx) + 1, floor_(img.shape[0] - x))
+    res_y0 = max(ceil_(sy) - ceil_(y), 0)
+    res_y1 = ceil_(sy) + min(floor_(sy) + 1, floor_(img.shape[1] - y))
+
+
+    res[res_x0:res_x1, res_y0:res_y1] = img[
+        max(ceil_(x) - ceil_(sx), 0): ceil_(x) + floor_(sx) + 1,
+        max(ceil_(y) - ceil_(sy), 0): ceil_(y) + floor_(sy) + 1,
+    ]
+
+    return res
 
 
 def apply_crop(ar: np.ndarray, crop_xs: Tuple, crop_ys: Tuple, crop_zs: Optional[Tuple] = None):

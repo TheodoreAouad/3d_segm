@@ -127,12 +127,18 @@ class NetLightning(ObsLightningModule):
         return self.optimizer(self.parameters(), lr=self.learning_rate, **self.optimizer_args)
 
     def obs_training_step(self, batch, batch_idx):
+        if not self.model.training:
+            self.model.train()
         return self.general_step(batch, batch_idx, state="/training")
 
     def obs_validation_step(self, batch, batch_idx):
+        if self.model.training:
+            self.model.eval()
         return self.general_step(batch, batch_idx, state="/validation")
 
     def obs_test_step(self, batch, batch_idx):
+        if self.model.training:
+            self.model.eval()
         return self.general_step(batch, batch_idx, state="/test")
 
     def general_step(self, batch, batch_idx, state="",):

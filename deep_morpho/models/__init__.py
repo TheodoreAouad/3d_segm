@@ -20,3 +20,4 @@ from .bimonn_identity import *
 from .lightning_bimonn_identity import *
 from .bimonn_axspa import *
 from .lightning_bimonn_axspa import *
+from .lightning_bimonn_desir import *

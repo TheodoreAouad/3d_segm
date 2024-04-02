@@ -8,6 +8,7 @@ import os
 
 from deep_morpho.datasets.generate_forms3 import get_random_diskorect_channels
 from deep_morpho.datasets.gray_to_channels_dataset import LevelsetValuesEqualIndex
+import deep_morpho.preprocessing as prep
 # from deep_morpho.loss import (
 #     MaskedMSELoss, MaskedDiceLoss, MaskedBCELoss, QuadraticBoundRegularization, LinearBoundRegularization,
 #     MaskedBCENormalizedLoss, MaskedNormalizedDiceLoss, BCENormalizedLoss, DiceLoss, NormalizedDiceLoss
@@ -18,8 +19,10 @@ from deep_morpho.initializer import InitBimonnEnum, InitBiseEnum
 from deep_morpho.experiments.parser import GridParser
 from .args_morp_ops import morp_operations, morp_operations_gray, morp_operations_binary
 from .args_enforcers import enforcers
+from general.utils import load_yaml
 from deep_morpho.datasets.cifar_dataset import transform_default
 from deep_morpho.datasets.spalike_dataset import SpalikeSegmEnum
+from deep_morpho.datasets.desir_dataset import CropMethod
 
 
 all_args = GridParser()
@@ -38,8 +41,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_82/sandbox_merged/0_/"
     # "Bimonn_exp_80/sandbox/dilation_proj_activated/"
     # "Bimonn_exp_80/sandbox/2_"
-    "debug"
-    # "Bimonn_exp_82/sandbox/3_/"
+    # "debug"
+    "Bimonn_exp_83/sandbox/3_/"
     # "Bimonn_exp_75/sandbox/4_/"
     # "Bimonn_exp_75/sandbox/5/noisti"
     # "Bimonn_exp_75/multi/4/"
@@ -86,7 +89,8 @@ all_args["model"] = [
     # "BimonnAxspaResnet",
     # "BimonnAxspaConv",
     # "ConvSpalikeMerged",
-    "ResnetSpalikeMerged",
+    # "ResnetSpalikeMerged",
+    "ResnetDesirMerged",
 ]
 
 all_args['dataset'] = [
@@ -102,7 +106,7 @@ all_args['dataset'] = [
 
     ##### CLASSIFICATION #####
     # 'mnistclassifdataset',
-    'mnistclassifchanneldataset',
+    # 'mnistclassifchanneldataset',
 
     # 'cifar10dataset',
     # 'cifar100dataset',
@@ -112,17 +116,21 @@ all_args['dataset'] = [
     # 'cifar100classical',
 
     ###### AXSPA ######
-    'spalikedataset',
+    # 'spalikedataset',
     # 'spalikedatasetmerged',
+    # "desirdataset",
+    # "desirdatasetmerged",
+    # "DesirDatasetRoiChannel",
+    "DesirFromSpondidetectDataset",
 ]
 
 
 # DATA ARGS
 all_args['morp_operation'] = morp_operations
 
-all_args['preprocessing'] = [  # for axspa roi
-    None,
-]
+all_args['preprocessing'] = [None]
+
+
 # all_args['transform.train'] = [
 #     transforms.Compose([
 #         transforms.RandomRotation(degrees=10),
@@ -210,6 +218,50 @@ if True:  # Noisti Args
     ]
 
 
+if True:  # Desir Args
+    all_patients = load_yaml("deep_morpho/saved_args/sandbox/desir_train_test_split.yaml")
+    all_args['train_patients'] = [
+        all_patients['TRAIN']['PREDS'] +
+        all_patients['TRAIN']['TRUE']
+    ]
+    all_args['val_patients'] = [
+        all_patients['VAL']['PREDS'] +
+        all_patients['VAL']['TRUE']
+    ]
+    all_args['test_patients'] = [
+        all_patients['TEST']
+    ]
+
+    all_args['preprocessing_indep'] = [  # for axspa roi
+        None
+    ]
+    all_args['preprocessing_both.train'] = [  # for axspa roi
+        transforms.Compose([
+            # prep.MaskedMinMaxNormChannels(channels=[0, 1]),
+            transforms.ToPILImage(),
+            transforms.RandomRotation(
+                degrees=15,
+            ),
+            prep.ToFloatTensor(),
+        ])
+    ]
+    all_args['preprocessing_both'] = [  # for axspa roi
+        transforms.Compose([
+            # prep.MaskedMinMaxNormChannels(channels=[0, 1]),
+            # transforms.ToPILImage(),
+            # transforms.RandomRotation(
+            #     degrees=15,
+            # ),
+            # prep.ToFloatTensor(),
+        ])
+    ]
+
+    all_args['center_and_crop_method'] = [
+        # CropMethod.NONE,
+        # CropMethod.SEGM,
+        CropMethod.ROI,
+    ]
+
 if True:  # nb inputs
     all_args['n_steps_train'] = [100]  # for Generation
     all_args['n_steps_val'] = [10]  # for Generation
@@ -227,7 +279,8 @@ if True:  # lr
     all_args['learning_rate'] = [
         # 1e-3,
         # 1e-1,
-        1e-2,
+        # 1e-2,
+        7e-6,
         # 0.0001,
         # 1e-3,
         # 1e-4,
@@ -251,8 +304,8 @@ if True:  # loss and optimizer
         # "MaskedNormalizedDiceLoss",
         # "MaskedBCELoss",
         # "BCENormalizedLoss",
-        "BCELoss",
-        # "BCEWithLogitsLoss",
+        # "BCELoss",
+        "BCEWithLogitsLoss",
         # "CrossEntropyLoss",
         # "SquaredHingeLoss",
         # "MSELoss",
@@ -263,9 +316,9 @@ if True:  # loss and optimizer
     all_args['loss_regu'] = [
         # ("quadratic", {"lower_bound": 0, "upper_bound": np.infty, "lambda_": 0.01})
         # "linear",
-        # "None",
+        "None",
         # ("RegularizationProjConstant", {"mode": "exact"}),
-        ("RegularizationProjConstant", {"mode": "uniform"}),
+        # ("RegularizationProjConstant", {"mode": "uniform"}),
         # ("RegularizationProjConstant", {"mode": "normal"}),
         # ("RegularizationProjActivated", {}),
     ]
@@ -282,7 +335,15 @@ if True:  # loss and optimizer
         optim.Adam,
         # optim.SGD
     ]
-    all_args['optimizer_args'] = [{}]
+    all_args['optimizer_args'] = [
+        {
+            # 'lr': 7e-6,
+            # 'lr': 1e-5,
+            # 'betas': [0.9,0.999],
+            # 'eps': 1e-08,
+            'weight_decay': 1e-2
+        }
+    ]
 
 
 if True:  # batch size, epochs, etc
@@ -297,9 +358,9 @@ if True:  # batch size, epochs, etc
 
 
     all_args['patience_loss_batch'] = [2100]
-    all_args['patience_loss_epoch'] = [15]
+    all_args['patience_loss_epoch'] = [60]
     # all_args['patience_loss_epoch'] = [1]  # DEBUG
-    all_args['patience_reduce_lr'] = [1/5]
+    all_args['patience_reduce_lr'] = [1/4]
     # all_args['patience_reduce_lr'] = [5]  # DEBUG
     all_args['early_stopping_on'] = [
         # 'batch',
@@ -338,8 +399,12 @@ if True:
 # MODEL ARGS
 
 all_args["do_batchnorm"] = [  # For BNNConv, BimonnAxspa
-    # True,
-    False,
+    True,
+    # False,
+]
+
+all_args["classif_layers"] = [  # For ResnetDesir
+    "resnet18",
 ]
 
 all_args["num_units"] = [  # For MLPBinaryConnectMNIST

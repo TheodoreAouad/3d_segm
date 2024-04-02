@@ -111,6 +111,10 @@ class CalculateAndLogMetrics(Observable):
                     step += batch_idx
                 self.metrics_sum[state][metric_name] += metric * targets.shape[0]
 
+                if self.keep_preds_for_epoch:
+                    self.all_preds[state] = torch.cat([self.all_preds[state], preds.detach().cpu()])
+                    self.all_targets[state] = torch.cat([self.all_targets[state], targets.detach().cpu()])
+
             else:
                 step = trainer.current_epoch
 

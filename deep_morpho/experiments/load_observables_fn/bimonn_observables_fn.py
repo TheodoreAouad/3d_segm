@@ -5,7 +5,7 @@ from typing import Tuple
 import numpy as np
 
 from general.nn.observables import CalculateAndLogMetrics
-from deep_morpho.metrics import dice, accuracy
+from deep_morpho.metrics import dice, accuracy, matthewscc
 import deep_morpho.observables as obs
 from pytorch_lightning.callbacks import ModelCheckpoint
 
@@ -457,6 +457,64 @@ def load_observables_bimonn_axspa_spalike(experiment: "ExperimentBase", ) -> Tup
 
 
 
+def load_observables_bimonn_desir_merged(experiment: "ExperimentBase", ) -> Tuple:
+    args = experiment.args
+
+    metrics = {
+        'accuracy': lambda y_true, y_pred: accuracy(y_true, y_pred > 0),
+        'mcc': lambda y_true, y_pred: matthewscc(y_pred > 0, y_true),
+    }
+
+    metric_float_obs = CalculateAndLogMetrics(
+        metrics=metrics, keep_preds_for_epoch=True, freq={'train': args['freq_scalars'], 'val': 1, "test": 1},
+    )
+    # metric_binary_obs = None
+
+    observables = [
+        # obs.RandomObservable(freq=args['freq_scalars']),
+        obs.SaveLoss(freq=1),
+        obs.CountInputs(freq=args['freq_scalars']),
+
+        metric_float_obs,
+        obs.PlotPredsBimonnDesirMerged(freq_batch={
+            'train': args['freq_imgs'], 'val': args["n_inputs.val"] // args['batch_size'], "test": args['freq_imgs']
+        },),
+        # "InputAsPredMetric": obs.InputAsPredMetric(metrics, freq=args['freq_scalars']),
+        # obs.ActivationHistogramBimonn(freq={'train': args['freq_hist'], 'val': 10000 // args['batch_size']}),
+
+        # obs.PlotParametersBiSEBimonnAxspa(freq=args['freq_scalars']),
+        # obs.PlotLUIParametersBiSELBimonnAxspa(freq=args['freq_scalars']),
+        # obs.WeightsHistogramBiSEBimonnAxspa(freq=args['freq_imgs']),
+        # obs.PlotParametersBiseEllipse(freq=args['freq_scalars']),
+        # obs.ActivationPHistogramBimonn(freq={'train': args['freq_hist'], 'val': None}),
+        # "PlotWeightsBiSE": plot_weights_fn(freq=args['freq_imgs']),
+        # "ExplosiveWeightGradientWatcher": obs.ExplosiveWeightGradientWatcher(freq=1, threshold=0.5),
+        # "PlotGradientBise": plot_grad_obs,
+        # obs.ConvergenceMetrics(metrics, freq=args['freq_scalars']),
+
+        obs.EpochReduceLrOnPlateau(patience=args['patience_reduce_lr'], on_train=True),
+        obs.CheckLearningRate(freq=2 * args['freq_scalars']),
+    ]
+
+    if 'early_stopping' in experiment.args:
+        observables += experiment.args['early_stopping']
+    else:
+        observables += [
+            obs.EpochValEarlyStopping(name="loss", monitor="loss/train/loss", patience=args['patience_loss'], mode="min"),
+        ]
+
+
+    model_checkpoint_obs = ModelCheckpoint(
+        monitor="metrics_epoch_mean/per_batch_step/loss_val",
+        dirpath=join(experiment.log_dir, "best_weights"),
+        save_weights_only=False,
+        save_last=True
+    )
+    callbacks = [model_checkpoint_obs]
+
+    return observables, callbacks, metric_float_obs, None, model_checkpoint_obs
+
+
 def load_observables_bimonn_axspa_spalike_merged(experiment: "ExperimentBase", ) -> Tuple:
     args = experiment.args
 
@@ -465,7 +523,7 @@ def load_observables_bimonn_axspa_spalike_merged(experiment: "ExperimentBase", )
     }
 
     metric_float_obs = CalculateAndLogMetrics(
-        metrics=metrics, keep_preds_for_epoch=False, freq={'train': args['freq_scalars'], 'val': 1, "test": 1},
+        metrics=metrics, keep_preds_for_epoch=True, freq={'train': args['freq_scalars'], 'val': 1, "test": 1},
     )
     # metric_binary_obs = None
 

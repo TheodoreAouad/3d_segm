@@ -15,7 +15,8 @@ from .experiment_morpho import (
     ExperimentBimonnNoisti, ExperimentSteNoisti, ExperimentNoisti
 )
 from .experiment_classification import (
-    ExperimentClassification, ExperimentClassificationChannel, ExperimentSpalike, ExperimentSpalikeMerged
+    ExperimentClassification, ExperimentClassificationChannel, ExperimentSpalike, ExperimentSpalikeMerged,
+    ExperimentDesirMerged, ExperimentDesirRoiChan
 )
 from .context import Task
 from .enforcers import (
@@ -71,6 +72,9 @@ class MultiExperiment(ExperimentMethods):
 
     SPALIKE_DATASET = "spalikedataset"
     SPALIKE_DATASET_MERGED = "spalikedatasetmerged"
+    DESIR_DATASET_MERGED = "desirdatasetmerged"
+    DESIR_DATASET_ROI_CHANNEL = "desirdatasetroichannel"
+    DESIR_DATSET_FROM_SPONDI = "desirfromspondidetectdataset"
 
 
     def __init__(
@@ -146,6 +150,12 @@ class MultiExperiment(ExperimentMethods):
 
         if args["dataset"] == self.SPALIKE_DATASET_MERGED:
             return ExperimentSpalikeMerged
+
+        if args["dataset"] == self.DESIR_DATASET_MERGED:
+            return ExperimentDesirMerged
+        
+        if args["dataset"] in [self.DESIR_DATASET_ROI_CHANNEL, self.DESIR_DATSET_FROM_SPONDI]:
+            return ExperimentDesirRoiChan
 
         return self.experiment_class
 

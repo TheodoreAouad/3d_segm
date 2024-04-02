@@ -2,13 +2,14 @@ from abc import ABC, abstractmethod
 import warnings
 from copy import deepcopy
 
-from torch.nn import CrossEntropyLoss, BCELoss
+from torch.nn import CrossEntropyLoss, BCELoss, BCEWithLogitsLoss
 
 from deep_morpho.loss import BCENormalizedLoss
 from deep_morpho.datasets import NoistiDataset
 
 from general.utils import recursive_dict_copy
 from general.nn.experiments.experiment_methods import ExperimentMethods
+from general.nn.loss import LossHandler
 
 
 class ArgsEnforcer(ExperimentMethods, ABC):
@@ -194,6 +195,44 @@ class ArgsSpalike(ArgsGeneration):
 
             for key, value in experiment.args["spalike_args"].items():
                 experiment.args[key] = value
+
+
+        self.enforcers.append(enforce_fn)
+
+
+class ArgsDesir(ArgsGeneration):
+    def add_enforcer(self):
+        super().add_enforcer()
+
+        def enforce_fn(experiment):
+            # experiment.args["num_workers"] = 0
+            experiment.args["loss_data_str"] = "BCEWithLogitsLoss" 
+            experiment.args["loss_data"] = BCEWithLogitsLoss()
+            experiment.args["loss"] =  LossHandler(
+                loss={"loss_data": BCEWithLogitsLoss()}, coefs=experiment.args["loss_coefs"]
+            )
+
+
+        self.enforcers.append(enforce_fn)
+
+
+class ArgsDesirRoiChan(ArgsDesir):
+    def add_enforcer(self):
+        super().add_enforcer()
+
+        def enforce_fn(experiment):
+            experiment.args["in_channels"] = 3
+
+
+        self.enforcers.append(enforce_fn)
+
+
+class ArgsDesirMerged(ArgsDesir):
+    def add_enforcer(self):
+        super().add_enforcer()
+
+        def enforce_fn(experiment):
+            experiment.args["in_channels"] = 2
 
 
         self.enforcers.append(enforce_fn)
