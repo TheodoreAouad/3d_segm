@@ -19,7 +19,7 @@ class DesirMergedInputModel(BinaryNN, ABC):
 
 
 
-class BimonnDesirClassifier(BinaryNN, ABC):
+class BimonnDesirClassifierMerged(BinaryNN, ABC):
 
     def __init__(
         self,
@@ -48,11 +48,11 @@ class BimonnDesirClassifier(BinaryNN, ABC):
 
     def forward(self, input_: Tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
         x, segm = input_
-        bimonn = self.bimonn(segm)
-        pred = self.classification(x * bimonn)
+        bimonn_output = self.bimonn(segm)
+        pred = self.classification(x * bimonn_output)
         self.current_output = {
             "segmentation": segm,
-            "bimonn": bimonn,
+            "bimonn": bimonn_output,
             "pred": pred
         }
         return pred
@@ -70,6 +70,19 @@ class BimonnDesirClassifier(BinaryNN, ABC):
         })
         return res
 
+
+class BimonnDesirClassifierChannel(BimonnDesirClassifierMerged):
+    def forward(self, input_: Tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
+        x, segm = input_
+        bimonn_output = self.bimonn(segm)
+        classif_input = torch.cat([x, bimonn_output], dim=1)
+        pred = self.classification(classif_input)
+        self.current_output = {
+            "segmentation": segm,
+            "bimonn": bimonn_output,
+            "pred": pred
+        }
+        return pred
 
 
 class ResidualBlock(nn.Module):
@@ -103,7 +116,7 @@ class ResnetDesirMerged(DesirMergedInputModel):
         return x
 
 
-class BimonnDesirResnet(DesirMergedInputModel):
+class BimonnDesirResnetMerged(BimonnDesirClassifierMerged):
 
     def __init__(
         self,
@@ -114,5 +127,19 @@ class BimonnDesirResnet(DesirMergedInputModel):
         super().__init__(*args, **kwargs)
 
         self.classification: nn.Module = ResnetDesirMerged(
-            classif_layers=classif_layers, do_batchnorm=do_batchnorm,
+            in_channels=2, classif_layers=classif_layers, do_batchnorm=do_batchnorm,
+        )
+
+class BimonnDesirResnetChannel(BimonnDesirClassifierChannel):
+
+    def __init__(
+        self,
+        classif_layers="resnet18",
+        do_batchnorm=False,
+        *args, **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+
+        self.classification: nn.Module = ResnetDesirMerged(
+            in_channels=3, classif_layers=classif_layers, do_batchnorm=do_batchnorm,
         )

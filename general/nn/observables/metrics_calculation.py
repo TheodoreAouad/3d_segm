@@ -71,24 +71,9 @@ class CalculateAndLogMetrics(Observable):
             self._calculate_and_log_metrics(trainer, pl_module, targets, preds, batch_idx=batch_idx, state='train')
 
     def on_validation_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
-        # global GB
         self.freq_idx['val'] += 1
         if self.freq_idx['val'] % self.freq['val'] == 0:
             inputs, targets = batch
-            # DEBUG
-            # torch.save(inputs[0], f"todelete/val_{GB}.pt")
-            # plt.imsave(f"todelete/val_{GB}.png", inputs[0][0, 0].cpu().numpy())
-            # GB += 1
-            # pathlib.Path(f"todelete/val_{trainer.current_epoch}").mkdir(exist_ok=True, parents=True)
-            # torch.save(batch, f"todelete/val_{trainer.current_epoch}/batch_{batch_idx}.pt")
-            # torch.save(preds, f"todelete/val_{trainer.current_epoch}/preds_{batch_idx}.pt")
-            # torch.save(pl_module.model.current_output["bimonn"], f"todelete/val_{trainer.current_epoch}/bimonn_{batch_idx}.pt")
-            # torch.save(pl_module.model.current_output["pred"], f"todelete/val_{trainer.current_epoch}/current_preds_{batch_idx}.pt")
-
-            # if batch_idx == 0:
-            #     trainer.save_checkpoint(f"todelete/val_{trainer.current_epoch}/checkpoint.pt")
-            # GB += 1
-
             self._calculate_and_log_metrics(trainer, pl_module, targets, preds, batch_idx=batch_idx, state='val')
 
     def on_test_batch_end_with_preds(self, trainer, pl_module, outputs, batch, batch_idx, preds):
@@ -102,6 +87,12 @@ class CalculateAndLogMetrics(Observable):
 
         if batch_or_epoch == 'batch':
             self.n_inputs[state] += targets.shape[0]
+
+        if self.keep_preds_for_epoch:
+            self.all_targets[state] = torch.cat([self.all_targets[state], targets.detach().cpu()])
+            self.all_preds[state] = torch.cat([self.all_preds[state], preds.detach().cpu()])
+
+        
         for metric_name in self.metrics:
             metric = self.metrics[metric_name](targets, preds)
 
@@ -110,10 +101,6 @@ class CalculateAndLogMetrics(Observable):
                 if state in ["val", "test"]:
                     step += batch_idx
                 self.metrics_sum[state][metric_name] += metric * targets.shape[0]
-
-                if self.keep_preds_for_epoch:
-                    self.all_preds[state] = torch.cat([self.all_preds[state], preds.detach().cpu()])
-                    self.all_targets[state] = torch.cat([self.all_targets[state], targets.detach().cpu()])
 
             else:
                 step = trainer.current_epoch
@@ -138,7 +125,7 @@ class CalculateAndLogMetrics(Observable):
             # trainer.logger.experiment.add_scalars(metric_name, {f'{metric_name}_{state}': metric})
 
     def on_train_epoch_end(
-        self, trainer: 'pl.Trainer', pl_module: 'pl.Lightnin<@gModule', unused: 'Optional' = None
+        self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule', unused: 'Optional' = None
     ):
         if self.keep_preds_for_epoch:
             self._calculate_and_log_metrics(trainer, pl_module, self.all_targets['train'], self.all_preds['train'], state='train', batch_or_epoch='epoch')

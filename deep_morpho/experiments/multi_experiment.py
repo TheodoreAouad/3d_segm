@@ -16,7 +16,7 @@ from .experiment_morpho import (
 )
 from .experiment_classification import (
     ExperimentClassification, ExperimentClassificationChannel, ExperimentSpalike, ExperimentSpalikeMerged,
-    ExperimentDesirMerged, ExperimentDesirRoiChan
+    ExperimentDesirMerged, ExperimentDesirRoiChan, ExperimentDesirSegmChan, ExperimentDesirHalfsliceSegm
 )
 from .context import Task
 from .enforcers import (
@@ -74,7 +74,12 @@ class MultiExperiment(ExperimentMethods):
     SPALIKE_DATASET_MERGED = "spalikedatasetmerged"
     DESIR_DATASET_MERGED = "desirdatasetmerged"
     DESIR_DATASET_ROI_CHANNEL = "desirdatasetroichannel"
-    DESIR_DATSET_FROM_SPONDI = "desirfromspondidetectdataset"
+    DESIR_DATASET_FROM_SPONDI = "desirfromspondidetectdataset"
+    DESIR_DATASET_HALFSLICE = "desirdatasethalfslice"
+    DESIR_DATASET_MERGED_SEGM = "desirdatasetmergedsegm"
+    DESIR_DATASET_SEGM_CHANNEL = "desirdatasetsegmchannel"
+    DESIR_DATASET_HALFSLICE_SEGM = "desirdatasethalfsliceandsegm"
+    DESIR_DATASET_MERGED_SEGM_CHANNEL = "desirdatasetmergedsegmchannel"
 
 
     def __init__(
@@ -151,11 +156,25 @@ class MultiExperiment(ExperimentMethods):
         if args["dataset"] == self.SPALIKE_DATASET_MERGED:
             return ExperimentSpalikeMerged
 
-        if args["dataset"] == self.DESIR_DATASET_MERGED:
+        if args["dataset"] in [
+            self.DESIR_DATASET_MERGED,
+            self.DESIR_DATASET_HALFSLICE,
+            self.DESIR_DATASET_MERGED_SEGM
+        ]:
             return ExperimentDesirMerged
         
-        if args["dataset"] in [self.DESIR_DATASET_ROI_CHANNEL, self.DESIR_DATSET_FROM_SPONDI]:
+        if args["dataset"] in [
+            self.DESIR_DATASET_ROI_CHANNEL, 
+            self.DESIR_DATASET_FROM_SPONDI,
+            self.DESIR_DATASET_MERGED_SEGM_CHANNEL
+        ]:
             return ExperimentDesirRoiChan
+        
+        if args["dataset"] == self.DESIR_DATASET_SEGM_CHANNEL:
+            return ExperimentDesirSegmChan
+        
+        if args["dataset"] == self.DESIR_DATASET_HALFSLICE_SEGM:
+            return ExperimentDesirHalfsliceSegm
 
         return self.experiment_class
 

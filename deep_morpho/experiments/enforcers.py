@@ -226,6 +226,17 @@ class ArgsDesirRoiChan(ArgsDesir):
 
         self.enforcers.append(enforce_fn)
 
+class ArgsDesirSegmChan(ArgsDesir):
+    def add_enforcer(self):
+        super().add_enforcer()
+
+        def enforce_fn(experiment):
+            experiment.args["in_channels"] = 4
+
+
+        self.enforcers.append(enforce_fn)
+
+
 
 class ArgsDesirMerged(ArgsDesir):
     def add_enforcer(self):

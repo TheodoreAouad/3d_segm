@@ -42,7 +42,7 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_80/sandbox/dilation_proj_activated/"
     # "Bimonn_exp_80/sandbox/2_"
     # "debug"
-    "Bimonn_exp_83/sandbox/3_/"
+    "Bimonn_exp_83/sandbox/7_/"
     # "Bimonn_exp_75/sandbox/4_/"
     # "Bimonn_exp_75/sandbox/5/noisti"
     # "Bimonn_exp_75/multi/4/"
@@ -91,6 +91,8 @@ all_args["model"] = [
     # "ConvSpalikeMerged",
     # "ResnetSpalikeMerged",
     "ResnetDesirMerged",
+    # "BimonnDesirResnetMerged",
+    # "BimonnDesirResnetChannel",
 ]
 
 all_args['dataset'] = [
@@ -121,7 +123,12 @@ all_args['dataset'] = [
     # "desirdataset",
     # "desirdatasetmerged",
     # "DesirDatasetRoiChannel",
-    "DesirFromSpondidetectDataset",
+    # "DesirFromSpondidetectDataset",
+    # "desirdatasethalfslice",
+    # "DesirDatasetMergedSegm",
+    # "DesirDatasetSegmChannel",
+    # "DesirDatasetHalfSliceAndSegm",
+    "DesirDatasetMergedSegmChannel",
 ]
 
 
@@ -225,10 +232,12 @@ if True:  # Desir Args
         all_patients['TRAIN']['TRUE']
     ]
     all_args['val_patients'] = [
+    # all_args['test_patients'] = [  # DEBUG
         all_patients['VAL']['PREDS'] +
         all_patients['VAL']['TRUE']
     ]
     all_args['test_patients'] = [
+    # all_args['val_patients'] = [  # DEBUG
         all_patients['TEST']
     ]
 
@@ -237,7 +246,7 @@ if True:  # Desir Args
     ]
     all_args['preprocessing_both.train'] = [  # for axspa roi
         transforms.Compose([
-            # prep.MaskedMinMaxNormChannels(channels=[0, 1]),
+            prep.MaskedMinMaxNormChannels(channels=[0, 1]),
             transforms.ToPILImage(),
             transforms.RandomRotation(
                 degrees=15,
@@ -247,12 +256,7 @@ if True:  # Desir Args
     ]
     all_args['preprocessing_both'] = [  # for axspa roi
         transforms.Compose([
-            # prep.MaskedMinMaxNormChannels(channels=[0, 1]),
-            # transforms.ToPILImage(),
-            # transforms.RandomRotation(
-            #     degrees=15,
-            # ),
-            # prep.ToFloatTensor(),
+            prep.MaskedMinMaxNormChannels(channels=[0, 1]),
         ])
     ]
 
@@ -286,10 +290,10 @@ if True:  # lr
         # 1e-4,
     ]
     all_args['lr_bimonn'] = [
-        1e-2 / 2,
+        7e-5,
     ]
     all_args['lr_classifier'] = [
-        1e-4
+        7e-6
     ]
 
 if True:  # loss and optimizer
@@ -354,7 +358,7 @@ if True:  # batch size, epochs, etc
         # 0
     ]
     # all_args['max_epochs.trainer'] = [10]
-    all_args['max_epochs.trainer'] = [200]
+    all_args['max_epochs.trainer'] = [50]
 
 
     all_args['patience_loss_batch'] = [2100]
@@ -370,14 +374,16 @@ if True:  # batch size, epochs, etc
 if True:
     all_args['freq_imgs'] = [
         # 1,
-        int(50000/64) + 1,
+        # int(50000/64) + 1,
         # "epoch"
+        100
         # 2000,
     ]
     all_args['freq_hist'] = [
         # 1,
-        int(50000/64) + 1,
+        # int(50000/64) + 1,
         # "epoch"
+        100
         # 2000,
     ]
     all_args['freq_imgs_val'] = [
@@ -448,7 +454,7 @@ all_args['kernel_size'] = [
     # 11,
     # [7, 3]
     # "adapt",
-    7
+    21
     # [7, 7, 7]
 ]
 all_args['channels'] = [
@@ -469,7 +475,8 @@ all_args['channels'] = [
     # [1000, 1000],
     # [100],
     # [200],
-    [200, 200, 200],
+    [2, 2]
+    # [200, 200, 200],
     # [300],
     # [415],  # Nb of channels for fc1 of Laydevant et al. 2021, 3.3M params, 10 level sets
     # [587, 2048, 2048,],  # 10 level sets, Nb of channels for Dense Mnist for BinaryConnect, Courbariaux and Bengio 2015, 10M params, 10 level sets

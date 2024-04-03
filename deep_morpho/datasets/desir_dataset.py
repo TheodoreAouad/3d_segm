@@ -27,7 +27,7 @@ class CropMethod(Enum):
 
 
 
-class DesirDataset(DataModule, Dataset):
+class DesirDatasetBase(DataModule, Dataset):
 
     def __init__(
             self,
@@ -74,16 +74,16 @@ class DesirDataset(DataModule, Dataset):
             for k, v in ars.items():
                 ars[k] = v[:, :v.shape[1]//2:-1] + 0
 
-        
-        if self.center_and_crop_method == CropMethod.SEGM:
+
+        if self.center_and_crop_method.value == CropMethod.SEGM.value:
             mask = ars["segm"] + 0
             for k, v in ars.items():
                 ars[k] = center_and_crop(v, mask, self.cropped_size)
-        elif self.center_and_crop_method == CropMethod.ROI:
+        elif self.center_and_crop_method.value == CropMethod.ROI.value:
             mask = ars["roi"] + 0
             for k, v in ars.items():
                 ars[k] = center_and_crop(v, mask, self.cropped_size)
-    
+
         # assert segm.shape == roi.shape
         # assert roi.shape == segm.shape
         # assert t1_npy.shape == segm.shape
@@ -99,9 +99,9 @@ class DesirDataset(DataModule, Dataset):
         #     t1_npy = t1_npy[:, :segm.shape[1]//2:-1] + 0
         #     stir_npy = stir_npy[:, :segm.shape[1]//2:-1] + 0
         #     segm = segm[:, :segm.shape[1]//2:-1] + 0
-        
+
         # if self.center_and_crop_method == CropMethod.SEGM:
-        #     t1_npy, 
+        #     t1_npy,
 
         # big_array = np.stack([t1_npy, stir_npy, segm, roi,], axis=-1)
         big_array = np.stack([ars["t1_npy"], ars['stir_npy'], ars["segm"], ars["roi"],], axis=-1)
@@ -118,7 +118,12 @@ class DesirDataset(DataModule, Dataset):
 
         tensor_array = torch.tensor(np.stack([t1_tensor, stir_tensor]))
 
-        segm = big_tensor[2].unsqueeze(0)
+        segm_prev = big_tensor[2].unsqueeze(0)
+        segm = segm_prev + 0
+        values = segm.unique(sorted=True)
+        for value_idx, value in enumerate(values):
+            segm[segm_prev == value] = value_idx
+
         roi = big_tensor[3].unsqueeze(0)
         label = torch.tensor(label).float()
 
@@ -155,7 +160,7 @@ class DesirDataset(DataModule, Dataset):
         experiment.log_console(f"Train: {len(df_train['patient_id'].unique())} patients, {len(df_train)} half-slices")
         experiment.log_console(f"Val: {len(df_val['patient_id'].unique())} patients, {len(df_val)} half-slices")
         experiment.log_console(f"Test: {len(df_test['patient_id'].unique())} patients, {len(df_test)} half-slices")
-        experiment.log_console(f"Preprocessing: {args['preprocessing']}")
+        # experiment.log_console(f"Preprocessing: {args['preprocessing']}")
 
         trainloader = cls.get_loader(data_info=df_train, shuffle=True, batch_size=args["batch_size"], num_workers=args["num_workers"], **train_kwargs)
         valloader = cls.get_loader(data_info=df_val, shuffle=False, batch_size=args["batch_size"], num_workers=args["num_workers"], **val_kwargs)
@@ -164,17 +169,65 @@ class DesirDataset(DataModule, Dataset):
         return trainloader, valloader, testloader
 
 
-class DesirDatasetMerged(DesirDataset):
+class DesirDatasetHalfSlice(DesirDatasetBase):
+    def __init__(self, *args, **kwargs):
+        kwargs["center_and_crop_method"] = CropMethod.NONE
+        super().__init__(*args, **kwargs)
+
+    def __getitem__(self, idx: int):
+        (tensor_array, segm, roi), label = super().__getitem__(idx)
+        return tensor_array, label
+
+
+class DesirDatasetHalfSliceAndSegm(DesirDatasetBase):
+    def __init__(self, *args, **kwargs):
+        kwargs["center_and_crop_method"] = CropMethod.SEGM
+        super().__init__(*args, **kwargs)
+
+    def __getitem__(self, idx: int):
+        (tensor_array, segm, roi), label = super().__getitem__(idx)
+        return (tensor_array, torch.cat([segm == 1, segm == 2], axis=0).float()), label
+
+class DesirDatasetMerged(DesirDatasetBase):
     def __getitem__(self, idx: int):
         (tensor_array, segm, roi), label = super().__getitem__(idx)
         return tensor_array * roi, label
 
 
-class DesirDatasetRoiChannel(DesirDataset):
+class DesirDatasetMergedSegm(DesirDatasetBase):
+    def __init__(self, *args, **kwargs):
+        kwargs["center_and_crop_method"] = CropMethod.SEGM
+        super().__init__(*args, **kwargs)
+
+    def __getitem__(self, idx: int):
+        (tensor_array, segm, roi), label = super().__getitem__(idx)
+        return tensor_array * (segm != 0).float(), label
+
+class DesirDatasetMergedSegmChannel(DesirDatasetBase):
+    def __init__(self, *args, **kwargs):
+        kwargs["center_and_crop_method"] = CropMethod.SEGM
+        super().__init__(*args, **kwargs)
+
+    def __getitem__(self, idx: int):
+        (tensor_array, segm, roi), label = super().__getitem__(idx)
+        return torch.cat([tensor_array, (segm != 0).float()]), label
+
+class DesirDatasetRoiChannel(DesirDatasetBase):
     def __getitem__(self, idx: int):
         (tensor_array, segm, roi), label = super().__getitem__(idx)
         return torch.cat([tensor_array, roi]), label
 
+class DesirDatasetSegmChannel(DesirDatasetBase):
+    def __init__(self, *args, **kwargs):
+        kwargs["center_and_crop_method"] = CropMethod.SEGM
+        super().__init__(*args, **kwargs)
+
+    def __getitem__(self, idx: int):
+        (tensor_array, segm, roi), label = super().__getitem__(idx)
+        segm_1 = segm == 1
+        segm_2 = segm == 2
+
+        return torch.cat([tensor_array, segm_1, segm_2]), label
 
 class DesirFromSpondidetectDataset(DataModule, Dataset):
     def __init__(

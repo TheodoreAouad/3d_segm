@@ -236,6 +236,60 @@ class PlotPredsBimonnDesirMerged(PlotPredsBimonnAxspa):
 
         return fig
 
+
+class PlotPredsBimonnDesir(PlotPredsBimonnAxspa):
+
+    def plot_pred_state(self, trainer, pl_module, batch, preds, state, title, step):
+        with torch.no_grad():
+            (imgs, segms), targets = batch
+            # imgs = [k.cpu().detach().numpy().transpose(1, 2, 0) for k in imgs[0]]
+            imgs = imgs[0].cpu().detach().numpy()
+
+            segm = prep_segm(segms[0].cpu().detach().numpy())
+            pred_segm = pl_module.model.current_output["bimonn"][0].cpu().detach().numpy()
+            pred_label = pl_module.model.current_output["pred"][0].item()
+
+            target = targets[0].item()
+            fig = self.plot_pred(
+                imgs=imgs,
+                # *[k.cpu().detach().numpy() for k in [preds, batch[1]]],
+                segm=segm,
+                pred_segm=pred_segm,
+                pred_label=pred_label,
+                target=target,
+                figsize_atom=self.figsize_atom,
+                n_imgs=self.n_imgs,
+            )
+            trainer.logger.experiment.add_figure(f"preds/{state}/input_pred_target", fig, step)
+            self.saved_fig[state] = fig
+
+
+    @staticmethod
+    def plot_pred(imgs, segm, pred_segm, pred_label, target, figsize_atom, n_imgs, ):
+        W, L = figsize_atom
+        n_imgs = imgs.shape[0]
+        fig, axs = plt.subplots(n_imgs + 1, 2, figsize=(n_imgs*W, 2*L))
+
+        for img, ax in zip(imgs, axs[:, 0]):
+            ax.imshow(img, cmap="gray")
+        axs[-1, 0].imshow(segm)
+        axs[-1, 0].set_title("Input Segm")
+        # axs[0].imshow(img, cmap="gray")
+        # axs[0].imshow(np.ma.masked_where(segm == 0, segm), alpha=0.5)
+        # axs[0].set_title("Input Img")
+
+    
+        for img, ax in zip(imgs, axs[:, 1]):
+            classif_input = pred_segm[0] * img
+            ax.imshow(classif_input, cmap="gray")
+            ax.set_title(f"Classif Input. Min: {classif_input.min():.2e}, Max: {classif_input.max():.2e}")
+
+        axs[-1, 1].imshow(pred_segm[0], cmap="gray", vmin=0, vmax=1)
+        axs[-1, 1].set_title(f"Bimonn Output. Min: {pred_segm.min():.2e}, Max: {pred_segm.max():.2e}")
+    
+        fig.suptitle(f"Target: {target}, Pred: {pred_label:.2e}")
+        return fig
+
 class ActivatednessObservableBimonnAxspa(ActivatednessObservable):
     def _get_layers(self, pl_module):
         return pl_module.model.bimonn.layers

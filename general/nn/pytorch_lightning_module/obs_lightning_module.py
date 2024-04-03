@@ -68,8 +68,8 @@ class ObsLightningModule(LightningModule, ExperimentMethods):
 
     def test_epoch_end(self, outputs: EPOCH_OUTPUT):
         self.obs_test_epoch_end(outputs)
-        for obs in self.observables:
-            obs.on_test_epoch_end(self.trainer, self.trainer.lightning_module)
+        # for obs in self.observables:
+        #     obs.on_test_epoch_end(self.trainer, self.trainer.lightning_module)
 
     def obs_training_step(self, batch: Any, batch_idx: int):
         raise NotImplementedError
