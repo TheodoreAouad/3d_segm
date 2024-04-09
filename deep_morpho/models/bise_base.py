@@ -234,7 +234,7 @@ class BiSEBase(BinaryNN):
         if threshold_mode == "identity":
             net.set_param_from_weights(torch.FloatTensor(selem)[None, None, ...])
         else:
-            net.set_param_from_weights((torch.tensor(selem) + 0.01)[None, None, ...])
+            net.set_param_from_weights((torch.FloatTensor(selem) + 0.01)[None, None, ...])
         bias_value = -.5 if operation == "dilation" else -float(selem.sum()) + .5
         net.set_bias(torch.FloatTensor([bias_value]))
 
