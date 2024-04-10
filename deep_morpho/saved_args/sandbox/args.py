@@ -27,8 +27,8 @@ from deep_morpho.datasets.desir_dataset import CropMethod
 
 all_args = GridParser()
 
-# all_args['batch_seed'] = [2249939862]
-all_args['batch_seed'] = [None]
+all_args['batch_seed'] = [2249939862]
+# all_args['batch_seed'] = [None]
 
 all_args['n_try'] = [0]
 
@@ -42,7 +42,8 @@ all_args['experiment_name'] = [
     # "Bimonn_exp_80/sandbox/dilation_proj_activated/"
     # "Bimonn_exp_80/sandbox/2_"
     # "debug"
-    "Bimonn_exp_83/sandbox/7_/"
+    # "Bimonn_exp_83/sandbox/7_/"
+    "Bimonn_exp_84/sandbox/2_/"
     # "Bimonn_exp_75/sandbox/4_/"
     # "Bimonn_exp_75/sandbox/5/noisti"
     # "Bimonn_exp_75/multi/4/"
@@ -61,7 +62,7 @@ all_args['experiment_name'] = [
 
 all_args["model"] = [
     ##### MORPHO ####
-    # "BiMoNN",
+    "BiMoNN",
     # "BimonnIdentity",  # DEBUG
 
     ##### CLASSIFIERS #####
@@ -90,7 +91,7 @@ all_args["model"] = [
     # "BimonnAxspaConv",
     # "ConvSpalikeMerged",
     # "ResnetSpalikeMerged",
-    "ResnetDesirMerged",
+    # "ResnetDesirMerged",
     # "BimonnDesirResnetMerged",
     # "BimonnDesirResnetChannel",
 ]
@@ -105,6 +106,10 @@ all_args['dataset'] = [
     # 'fashionmnistgrayscaledataset',
     # 'axsparoidataset',
     # 'axsparoisimpledataset',
+
+    ###### DUALITY ANALISYS #####
+    'diskorectdataset',
+    # 'mnistmorphodataset',
 
     ##### CLASSIFICATION #####
     # 'mnistclassifdataset',
@@ -128,7 +133,7 @@ all_args['dataset'] = [
     # "DesirDatasetMergedSegm",
     # "DesirDatasetSegmChannel",
     # "DesirDatasetHalfSliceAndSegm",
-    "DesirDatasetMergedSegmChannel",
+    # "DesirDatasetMergedSegmChannel",
 ]
 
 
@@ -170,6 +175,8 @@ if True:  # args diskorect, axsparoi, mnist
     all_args['mnist_args'] = [
         {"threshold": 30, "size": (50, 50), "invert_input_proba": 0,},
     ]
+    all_args["invert_input_proba"] = [0]
+
     all_args['mnist_gray_args'] = [
         {"n_gray_scale_values": 20, "size": (50, 50),}
     ]
@@ -282,9 +289,9 @@ if True:  # nb inputs
 if True:  # lr
     all_args['learning_rate'] = [
         # 1e-3,
-        # 1e-1,
+        1e-1,
         # 1e-2,
-        7e-6,
+        # 7e-6,
         # 0.0001,
         # 1e-3,
         # 1e-4,
@@ -308,8 +315,8 @@ if True:  # loss and optimizer
         # "MaskedNormalizedDiceLoss",
         # "MaskedBCELoss",
         # "BCENormalizedLoss",
-        # "BCELoss",
-        "BCEWithLogitsLoss",
+        "BCELoss",
+        # "BCEWithLogitsLoss",
         # "CrossEntropyLoss",
         # "SquaredHingeLoss",
         # "MSELoss",
@@ -345,20 +352,20 @@ if True:  # loss and optimizer
             # 'lr': 1e-5,
             # 'betas': [0.9,0.999],
             # 'eps': 1e-08,
-            'weight_decay': 1e-2
+            # 'weight_decay': 1e-2
         }
     ]
 
 
 if True:  # batch size, epochs, etc
-    all_args['batch_size'] = [32]
+    all_args['batch_size'] = [256]
     all_args['num_workers'] = [
         10,
         # 7
         # 0
     ]
     # all_args['max_epochs.trainer'] = [10]
-    all_args['max_epochs.trainer'] = [50]
+    all_args['max_epochs.trainer'] = [1]
 
 
     all_args['patience_loss_batch'] = [2100]
@@ -375,15 +382,15 @@ if True:
     all_args['freq_imgs'] = [
         # 1,
         # int(50000/64) + 1,
-        # "epoch"
-        100
+        "epoch"
+        # 100
         # 2000,
     ]
     all_args['freq_hist'] = [
         # 1,
         # int(50000/64) + 1,
-        # "epoch"
-        100
+        "epoch"
+        # 100
         # 2000,
     ]
     all_args['freq_imgs_val'] = [
@@ -453,12 +460,12 @@ all_args["classif_channels"] = [  # For ConvSpalikeMerged
 all_args['kernel_size'] = [
     # 11,
     # [7, 3]
-    # "adapt",
-    21
+    "adapt",
+    # 21
     # [7, 7, 7]
 ]
 all_args['channels'] = [
-    # 'adapt',
+    'adapt',
     # [],
     # [2,],
     # [2, 2],
@@ -475,7 +482,7 @@ all_args['channels'] = [
     # [1000, 1000],
     # [100],
     # [200],
-    [2, 2]
+    # [2, 2]
     # [200, 200, 200],
     # [300],
     # [415],  # Nb of channels for fc1 of Laydevant et al. 2021, 3.3M params, 10 level sets
@@ -496,7 +503,7 @@ all_args['channels'] = [
     # [100, 100, 100, 100],
     # [50, 50, ],
 ]
-all_args['activation_P'] = [1]
+all_args['activation_P'] = [0]
 
 if True:  # weights and bias handler
     all_args['bias_optim_mode'] = [
@@ -541,7 +548,8 @@ if True:  # init
 
             "bise_init_method": InitBiseEnum.CUSTOM_CONSTANT_RANDOM_BIAS,
             "lui_init_method": InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_RANDOM_BIAS,
-            "bise_init_args": {"ub": 1e-4, "max_output_value": 0.95, "p_for_init": "auto"},
+            # "bise_init_args": {"ub": 1e-4, "max_output_value": 0.95, "p_for_init": "auto"},
+            "bise_init_args": {"ub": 0, "max_output_value": 0.95, "p_for_init": "auto"},
 
             # "bise_init_method": InitBiseEnum.ELLIPSE_ROOT,
             # "bise_init_args": {"init_bias_value": 2},

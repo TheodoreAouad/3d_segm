@@ -1,4 +1,5 @@
 from functools import partial
+import warnings
 
 import torch.nn as nn
 
@@ -44,11 +45,13 @@ class ArgsEnforcersCurrent(ArgsEnforcer):
             #     experiment.args["channels"] = [experiment.args["channels"][0], experiment.args["channels"][0]]
 
             # Duality training
-            # warnings.warn('Warning, duality training.')
-            # if "erosion" in experiment.args['morp_operation'].name:
-            #     experiment.args['random_gen_args']['p_invert'] = 1
-            # elif "dilation" in experiment.args['morp_operation'].name:
-            #     experiment.args['random_gen_args']['p_invert'] = 0
+            warnings.warn('Warning, duality training.')
+            if "erosion" in experiment.args['morp_operation'].name:
+                experiment.args['random_gen_args']['p_invert'] = 1
+                experiment.args['invert_input_proba'] = 1
+            elif "dilation" in experiment.args['morp_operation'].name:
+                experiment.args['random_gen_args']['p_invert'] = 0
+                experiment.args['invert_input_proba'] = 0
 
             # elif "closing" in experiment.args['morp_operation'].name:
             #     experiment.args['random_gen_args']['p_invert'] = 1
@@ -116,6 +119,7 @@ class ArgsEnforcersCurrent(ArgsEnforcer):
             if experiment.args['weights_optim_mode'] == BiseWeightsOptimEnum.NORMALIZED:
                 experiment.args['initializer_args'].update({
                     'bise_init_method': InitBiseEnum.CUSTOM_CONSTANT_DUAL_RANDOM_BIAS,
+                    # 'bise_init_method': InitBiseEnum.CUSTOM_CONSTANT_DUAL,
                     'lui_init_method': InitBiseEnum.CUSTOM_CONSTANT_CONSTANT_WEIGHTS_DUAL_RANDOM_BIAS,
                 })
 

@@ -8,6 +8,7 @@ from deep_morpho.initializer.bise_initializer import InitBiseConstantVarianceWei
 from deep_morpho.models import BiSE, InitBiseEnum, BiseBiasOptimEnum
 from deep_morpho.datasets import DiskorectDataset, get_random_diskorect_channels
 from deep_morpho.models.bise_base import BiseWeightsOptimEnum
+from deep_morpho.initializer.bise_initializer import InitDualBiseConstantVarianceWeightsRandomBias
 from deep_morpho.initializer import InitBiseEllipseWeightsRoot
 from general.structuring_elements import disk
 from general.array_morphology import array_erosion, array_dilation
@@ -98,7 +99,8 @@ class TestBiseProperties:
                 kernel_size=(7, 7),
                 threshold_mode={'weight': 'softplus', 'activation': 'tanh'},
                 activation_P=1,
-                initializer=InitDualBiseConstantVarianceWeights(input_mean=.5,),
+                # initializer=InitDualBiseConstantVarianceWeights(input_mean=.5,),
+                initializer=InitDualBiseConstantVarianceWeightsRandomBias(ub=0, max_output_value=0.95, p_for_init="auto"),
                 out_channels=1,
                 bias_optim_mode=bise_optim_mode,
                 bias_optim_args={"offset": 0},
@@ -158,9 +160,11 @@ class TestBiseProperties:
             for name, param in layer.named_parameters():
                 if param.grad is not None:
                     if "bias" in name:
-                        assert ((grads_dil[name] + grads_ero[name]) / grads_dil[name]).abs().mean() < 1e-3
+                        # assert ((grads_dil[name] + grads_ero[name]) / (grads_dil[name] + 1e-6)).abs().mean() < 1e-5
+                        assert torch.allclose(grads_dil[name], -grads_ero[name])
                     else:
-                        assert ((grads_dil[name] - grads_ero[name]) / grads_dil[name]).abs().mean() < 1e-3
+                        # assert ((grads_dil[name] - grads_ero[name]) / (grads_dil[name] + 1e-6)).abs().mean() < 1e-5
+                        assert torch.allclose(grads_dil[name], grads_ero[name])
                     nb_params += 1
             assert nb_params > 0
 
@@ -169,9 +173,6 @@ class TestBiseProperties:
         ]:
             for dual_ops in [(dilation, erosion), (opening, closing)]:
                 test_surrogate(bise_optim_mode, dual_ops)
-
-
-class TestBiSE:
 
     @staticmethod
     def test_bise_init():
