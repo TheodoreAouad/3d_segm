@@ -155,12 +155,6 @@ def log_console(to_print='', *args, level='info', logger=None, **kwargs):
         getattr(logger, level.lower())(to_print)
 
 
-def format_time(s):
-    h = s // (3600)
-    s %= 3600
-    m = s // 60
-    s %= 60
-    return "%02i:%02i:%02i" % (h, m, s)
 
 
 def create_logger(logger_name=None, all_logs_path=None, error_path=None, level="info"):

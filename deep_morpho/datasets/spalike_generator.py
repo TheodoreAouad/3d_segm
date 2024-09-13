@@ -80,10 +80,6 @@ class GridEllipse(Texture):
             for idx_y, center_y in enumerate(Ys):
                 ellipse_color = self.normalize(self.sin_grid(idx_x + 1, idx_y + 1, ))
                 img = self.draw_ellipse(img, center_x, center_y, self.min_ellipse_axes, self.max_ellipse_axes, ellipse_color)
-                # ellipse_axes = (random.randint(self.min_ellipse_axes, self.max_ellipse_axes), random.randint(self.min_ellipse_axes, self.max_ellipse_axes))
-                # angle = random.uniform(0, 360)  # Random rotation angle
-                # # Draw the random ellipse
-                # cv2.ellipse(img, (center_x, center_y), ellipse_axes, angle, 0, 360, ellipse_color, -1)
 
         return img
 
