@@ -11,6 +11,11 @@ class TestParallelMorpOperations:
 
     @staticmethod
     def test_init_one_layer_one_channel_input():
+        """
+        Test for initiating one layer with one channel input.
+
+        Args:
+        """
         morp_operation = ParallelMorpOperations(
             operations=[[[("dilation", ('disk', 3)), 'union']]]
         )
@@ -29,6 +34,11 @@ class TestParallelMorpOperations:
 
     @staticmethod
     def test_init_one_layer_multi_channels_input():
+        """
+        Test for ParallelMorpOperations that initializes one channel with multiple channels.
+
+        Args:
+        """
         ops = ["dilation", "erosion", "dilation"]
         selems = [('disk', 3), ("hstick", 7), ("vstick", 7)]
         do_comp = [True, False, False]
@@ -45,6 +55,11 @@ class TestParallelMorpOperations:
 
     @staticmethod
     def test_callable_one_layer_one_channel():
+        """
+        Tests that a callable that operates on one layer with one channel.
+
+        Args:
+        """
         morp_operation = ParallelMorpOperations(
             operations=[[[("erosion", ('hstick', 3), False), 'intersection']]]
         )
@@ -57,6 +72,11 @@ class TestParallelMorpOperations:
 
     @staticmethod
     def test_callable_one_layer_multi_channels():
+        """
+        Runs a test on a multi - channel mixture of morp operations
+
+        Args:
+        """
         for nb_chan in [2, 4, 9]:
             ops = [random.choice(['dilation', "erosion"]) for _ in range(nb_chan)]
             selems = [("disk", 3) for _ in range(nb_chan)]
@@ -71,6 +91,11 @@ class TestParallelMorpOperations:
 
     @staticmethod
     def test_callable_multi_layers_multi_channels():
+        """
+        Test ParallelMorpOperations for multi layers with multi channels.
+
+        Args:
+        """
 
         for nb_chan in [2, 4, 9]:
             for nb_layer in [2, 4]:
@@ -95,6 +120,11 @@ class TestParallelMorpOperations:
 
     @staticmethod
     def test_erosion():
+        """
+        Test the erosion of a large set of images.
+
+        Args:
+        """
         for selem in [('hstick', 7), ('vstick', 7), ('disk', 3), ('scross', 7), ('dcross', 7), ('square', 7)]:
             morp_operation = ParallelMorpOperations.erosion(selem)
             inpt = np.random.randint(0, 2, (50, 50, 1))
@@ -110,6 +140,11 @@ class TestParallelMorpOperations:
 
     @staticmethod
     def test_dilation():
+        """
+        Test the dilation of a morp operation.
+
+        Args:
+        """
         for selem in [('hstick', 7), ('vstick', 7), ('disk', 3), ('scross', 7), ('dcross', 7), ('square', 7)]:
             morp_operation = ParallelMorpOperations.dilation(selem)
             inpt = np.random.randint(0, 2, (50, 50, 1))
@@ -125,6 +160,11 @@ class TestParallelMorpOperations:
 
     @staticmethod
     def test_opening():
+        """
+        Opening a random set of eros.
+
+        Args:
+        """
         for selem in [('hstick', 7), ('vstick', 7), ('disk', 3), ('scross', 7), ('dcross', 7), ('square', 7)]:
             morp_operation = ParallelMorpOperations.opening(selem)
             inpt = np.random.randint(0, 2, (50, 50, 1))
@@ -139,6 +179,11 @@ class TestParallelMorpOperations:
 
     @staticmethod
     def test_closing():
+        """
+        Closeing test for ParallelMorpOperations. closing
+
+        Args:
+        """
         for selem in [('hstick', 7), ('vstick', 7), ('disk', 3), ('scross', 7), ('dcross', 7), ('square', 7)]:
             morp_operation = ParallelMorpOperations.closing(selem)
             inpt = np.random.randint(0, 2, (50, 50, 1))
@@ -154,6 +199,11 @@ class TestParallelMorpOperations:
 
     @staticmethod
     def test_white_tophat():
+        """
+        Tests white tophat with different selems.
+
+        Args:
+        """
         for selem_arg in [('hstick', 7), ('vstick', 7), ('disk', 3), ('scross', 7), ('dcross', 7), ('square', 7)]:
             morp_operation = ParallelMorpOperations.white_tophat(selem_arg)
             selem = morp_operation._erodila_selem_converter(selem_arg)[0]
@@ -172,6 +222,11 @@ class TestParallelMorpOperations:
 
     @staticmethod
     def test_black_tophat():
+        """
+        Tests black tophat with different selems.
+
+        Args:
+        """
         for selem_arg in [('hstick', 7), ('vstick', 7), ('disk', 3), ('scross', 7), ('dcross', 7), ('square', 7)]:
             morp_operation = ParallelMorpOperations.black_tophat(selem_arg)
             selem = morp_operation._erodila_selem_converter(selem_arg)[0]

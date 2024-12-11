@@ -3,24 +3,48 @@ from skimage.morphology import disk
 
 
 def identity(size: int) -> np.ndarray:
+    """
+    Return a 2D identity matrix of given size.
+
+    Args:
+        size: write your description
+    """
     selem = np.zeros((size, size))
     selem[size//2, size//2] = 1
     return selem
 
 
 def vstick(size: int) -> np.ndarray:
+    """
+    Create a sticky - stick array.
+
+    Args:
+        size: write your description
+    """
     selem = np.zeros((size, size))
     selem[:, size//2] = 1
     return selem
 
 
 def hstick(size: int) -> np.ndarray:
+    """
+    Return a sticky - stick array.
+
+    Args:
+        size: write your description
+    """
     selem = np.zeros((size, size))
     selem[size//2, :] = 1
     return selem
 
 
 def diagonal_cross(size: int) -> np.ndarray:
+    """
+    Cross - diagonal of a matrix.
+
+    Args:
+        size: write your description
+    """
     selem = np.zeros((size, size))
     selem[np.arange(size), size - np.arange(1, size + 1)] = 1
     selem[np.arange(size), np.arange(size)] = 1
@@ -28,6 +52,12 @@ def diagonal_cross(size: int) -> np.ndarray:
 
 
 def straight_cross(size: int) -> np.ndarray:
+    """
+    Return a straight cross - product of size.
+
+    Args:
+        size: write your description
+    """
     selem = np.zeros((size, size))
     selem[size//2, :] = 1
     selem[:, size//2] = 1
@@ -35,6 +65,13 @@ def straight_cross(size: int) -> np.ndarray:
 
 
 def square(size: int, rect_size: int = None) -> np.ndarray:
+    """
+    Return square array of given size and rect_size.
+
+    Args:
+        size: write your description
+        rect_size: write your description
+    """
     if rect_size is None:
         rect_size = size - 2
     selem = np.zeros((size, size))
@@ -43,7 +80,17 @@ def square(size: int, rect_size: int = None) -> np.ndarray:
     return selem
 
 def dcross(*args, **kwargs):
+    """
+    Cross product of diagonal_cross.
+
+    Args:
+    """
     return diagonal_cross(*args, **kwargs)
 
 def scross(*args, **kwargs):
+    """
+    Wrapper for straight_cross.
+
+    Args:
+    """
     return straight_cross(*args, **kwargs)

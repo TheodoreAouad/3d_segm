@@ -19,6 +19,13 @@ from ..models import BiSE, BiSEC, COBiSE, COBiSEC, MaxPlusAtom, BiSEL
 class PlotWeightsBiSE(ObservableLayersChans):
 
     def __init__(self, *args, freq: int = 100, **kwargs):
+        """
+        Initialize the bagit model.
+
+        Args:
+            self: write your description
+            freq: write your description
+        """
         super().__init__(*args, freq=freq, **kwargs)
         self.last_weights = []
 
@@ -35,6 +42,22 @@ class PlotWeightsBiSE(ObservableLayersChans):
         chan_input: int,
         chan_output: int,
     ):
+        """
+        Adds normalization and raw weights to the output figure.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            dataloader_idx: write your description
+            layer: write your description
+            layer_idx: write your description
+            chan_input: write your description
+            chan_output: write your description
+        """
         # if isinstance(layer, (BiSE, COBiSE, BiSEC, COBiSEC)):
         #     trainer.logger.experiment.add_figure(f"weights/Normalized_{layer_idx}", self.get_figure_normalized_weights(
         #         layer._normalized_weight, layer.bias, layer.activation_P), trainer.global_step)
@@ -56,6 +79,14 @@ class PlotWeightsBiSE(ObservableLayersChans):
 
 
     def on_train_end(self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule') -> None:
+        """
+        Add weights to the last training step.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+        """
         for layer_idx, layer in enumerate(pl_module.model.layers):
             to_add = {"weights": layer.weights, "bias_bise": layer.bias_bise, "activation_P_bise": layer.activation_P_bise}
             if isinstance(layer, (BiSE, BiSEC, COBiSE, COBiSEC, BiSEL)):
@@ -63,6 +94,13 @@ class PlotWeightsBiSE(ObservableLayersChans):
             self.last_weights.append(to_add)
 
     def save(self, save_path: str):
+        """
+        Saves the weights to a file.
+
+        Args:
+            self: write your description
+            save_path: write your description
+        """
         final_dir = join(save_path, self.__class__.__name__)
         pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
         for layer_idx, layer_dict in enumerate(self.last_weights):
@@ -81,6 +119,14 @@ class PlotWeightsBiSE(ObservableLayersChans):
 
     @staticmethod
     def get_figure_normalized_weights(weights, bias, activation_P):
+        """
+        Returns a figure with normalized weights.
+
+        Args:
+            weights: write your description
+            bias: write your description
+            activation_P: write your description
+        """
         weights = weights.cpu().detach().squeeze()
         figure = plt.figure(figsize=(8, 8))
         plt.title(f"bias={bias.item()}  act_P={activation_P.item()}")
@@ -99,6 +145,12 @@ class PlotWeightsBiSE(ObservableLayersChans):
 
     @staticmethod
     def get_figure_raw_weights(weights):
+        """
+        Return a figure showing the normalized weights.
+
+        Args:
+            weights: write your description
+        """
         weights = weights.cpu().detach().squeeze()
         weights_normed = max_min_norm(weights)
         figure = plt.figure(figsize=(8, 8))
@@ -120,6 +172,12 @@ class PlotWeightsBiSE(ObservableLayersChans):
 class PlotParametersBiSE(ObservableLayersChans):
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the model.
+
+        Args:
+            self: write your description
+        """
         super().__init__(*args, **kwargs)
         self.last_params = {}
 
@@ -136,6 +194,22 @@ class PlotParametersBiSE(ObservableLayersChans):
         chan_input: int,
         chan_output: int,
     ):
+        """
+        At the end of training the outputs are added to the batch.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            dataloader_idx: write your description
+            layer: write your description
+            layer_idx: write your description
+            chan_input: write your description
+            chan_output: write your description
+        """
         metrics = {}
         last_params = {}
 
@@ -188,6 +262,13 @@ class PlotParametersBiSE(ObservableLayersChans):
         )
 
     def save(self, save_path: str):
+        """
+        Saves the current model parameters to a JSON file.
+
+        Args:
+            self: write your description
+            save_path: write your description
+        """
         final_dir = join(save_path, self.__class__.__name__)
         pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
         save_json({k1: {k2: str(v2) for k2, v2 in v1.items()} for k1, v1 in self.last_params.items()}, join(final_dir, "parameters.json"))

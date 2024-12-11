@@ -10,6 +10,13 @@ from .observable_layers import ObservableLayersChans
 class WeightsHistogramBiSE(ObservableLayersChans):
 
     def __init__(self, *args, freq: int = 100, **kwargs):
+        """
+        Frequency is in milliseconds.
+
+        Args:
+            self: write your description
+            freq: write your description
+        """
         super().__init__(*args, freq=freq, **kwargs)
 
     def on_train_batch_end_layers_chans(
@@ -25,6 +32,22 @@ class WeightsHistogramBiSE(ObservableLayersChans):
         chan_input: int,
         chan_output: int,
     ):
+        """
+        Callback for the end of each layer channel.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            dataloader_idx: write your description
+            layer: write your description
+            layer_idx: write your description
+            chan_input: write your description
+            chan_output: write your description
+        """
         # if isinstance(layer, (BiSE, BiSEC, COBiSEC, COBiSE)):
 
 

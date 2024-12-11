@@ -3,6 +3,12 @@ from typing import Any, Dict
 
 
 def load_args(path: str) -> Dict:
+    """
+    Loads arguments from a yaml file.
+
+    Args:
+        path: write your description
+    """
     all_keys_line = [
         "experiment_name",
         "experiment_subname",
@@ -43,6 +49,14 @@ def load_args(path: str) -> Dict:
 
 
 def regex_find_or_none(regex: str, st: str, group_nb: int = -1):
+    """
+    Finds the first occurrence of a regex in a string or returns None.
+
+    Args:
+        regex: write your description
+        st: write your description
+        group_nb: write your description
+    """
     exps = re.findall(regex, st)
     if len(exps) == 0:
         return None
@@ -55,18 +69,43 @@ def regex_find_or_none(regex: str, st: str, group_nb: int = -1):
 
 
 def parse_yaml_dict_key_line(yaml_str: str, key: str) -> Any:
+    """
+    Finds the first occurrence of a key in a yaml dict.
+
+    Args:
+        yaml_str: write your description
+        key: write your description
+    """
     return regex_find_or_none(f"( |^|\n){key}: ([^\n]+)\n", yaml_str, group_nb=1)
 
 
 def parse_yaml_dict_loss(yaml_str: str) -> Any:
+    """
+    Parses a yaml string and returns the first match.
+
+    Args:
+        yaml_str: write your description
+    """
     return regex_find_or_none(r"\n?loss[^\n]+\.(\w+)\n", yaml_str)
 
 
 def parse_yaml_dict_optimizer(yaml_str: str) -> Any:
+    """
+    Parse yaml string with optimization.
+
+    Args:
+        yaml_str: write your description
+    """
     return regex_find_or_none(r"\n?optimizer[^\n]+\.(\w+)[ \n]", yaml_str)
 
 
 def parse_yaml_dict_operations(yaml_str: str) -> Any:
+    """
+    Parse a YAML string of operations into a list of operations.
+
+    Args:
+        yaml_str: write your description
+    """
     idx0 = yaml_str.find('operations')
     if idx0 == -1:
         return None

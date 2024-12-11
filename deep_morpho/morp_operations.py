@@ -23,6 +23,26 @@ class SequentialMorpOperations:
         return_numpy_array: bool = False,
         name: str = None,
     ):
+        """
+        Initialize the operator.
+
+        Args:
+            self: write your description
+            operations: write your description
+            List: write your description
+            selems: write your description
+            List: write your description
+            Union: write your description
+            np: write your description
+            ndarray: write your description
+            Tuple: write your description
+            Union: write your description
+            Callable: write your description
+            Any: write your description
+            device: write your description
+            return_numpy_array: write your description
+            name: write your description
+        """
         self.operations = [op.lower() for op in operations]
         self._selems_original = selems
         self.selems = self._init_selems(selems)
@@ -34,6 +54,13 @@ class SequentialMorpOperations:
 
 
     def _init_selems(self, selems):
+        """
+        Initialize the selems list.
+
+        Args:
+            self: write your description
+            selems: write your description
+        """
         res = []
 
         self._selem_fn = []
@@ -62,6 +89,13 @@ class SequentialMorpOperations:
 
 
     def morp_fn(self, ar):
+        """
+        Return the morp function for the specified AR.
+
+        Args:
+            self: write your description
+            ar: write your description
+        """
         res = ar + 0
         for op, selem in zip(self.operations, self.selems):
             res = self.str_to_fn[op](ar=res, selem=selem, device=self.device, return_numpy_array=self.return_numpy_array)
@@ -70,13 +104,32 @@ class SequentialMorpOperations:
 
 
     def __call__(self, ar):
+        """
+        Call the morp_fn with the ar.
+
+        Args:
+            self: write your description
+            ar: write your description
+        """
         return self.morp_fn(ar)
 
 
     def __len__(self):
+        """
+        Return the number of elements in the SArray.
+
+        Args:
+            self: write your description
+        """
         return len(self.selems)
 
     def __repr__(self):
+        """
+        Return a string representation of the molecule.
+
+        Args:
+            self: write your description
+        """
         # ops = ""
         # for op, selem in zip(self.operations, self.selems):
         #     ops += f"{op}{selem.shape}) "
@@ -86,6 +139,12 @@ class SequentialMorpOperations:
 
 
     def get_saved_key(self):
+        """
+        Return the key to store the saved state of the SArray.
+
+        Args:
+            self: write your description
+        """
         return (
             '=>'.join(self.operations) +
             ' -- ' +
@@ -112,6 +171,28 @@ class ParallelMorpOperations:
         return_numpy_array: bool = False,
         name: str = None,
     ):
+        """
+        Initialize the internal state of the object.
+
+        Args:
+            self: write your description
+            operations: write your description
+            List: write your description
+            List: write your description
+            List: write your description
+            Union: write your description
+            Tuple: write your description
+            Union: write your description
+            Callable: write your description
+            Union: write your description
+            Callable: write your description
+            Tuple: write your description
+            int: write your description
+            Callable: write your description
+            device: write your description
+            return_numpy_array: write your description
+            name: write your description
+        """
         self.operations_original = operations
         self.device = device
         self.return_numpy_array = return_numpy_array
@@ -239,6 +320,13 @@ class ParallelMorpOperations:
 
 
     def convert_ops(self, all_op_str):
+        """
+        Convert a string of operations into the appropriate operations and layers.
+
+        Args:
+            self: write your description
+            all_op_str: write your description
+        """
         alls = {key: [] for key in ["op_fn", "op_names", "selem_names", "selem_args", "selems", "do_complementation"]}
         layers = {key: [] for key in ["op_fn", "op_names", "selem_names", "selem_args", "selems", "do_complementation"]}
         chans = {key: [] for key in ["op_fn", "op_names", "selem_names", "selem_args", "selems", "do_complementation"]}
@@ -304,6 +392,14 @@ class ParallelMorpOperations:
         return alls
 
     def apply_layer(self, layer, x):
+        """
+        Apply a layer of morps to a vector x
+
+        Args:
+            self: write your description
+            layer: write your description
+            x: write your description
+        """
         next_x = torch.zeros(x.shape[:-1] + (len(layer),))
         for chan_idx, chan in enumerate(layer):
             morps, ui = chan[:-1], chan[-1]
@@ -313,6 +409,13 @@ class ParallelMorpOperations:
         return next_x
 
     def apply_ops(self, ar):
+        """
+        Apply all the operations on ar.
+
+        Args:
+            self: write your description
+            ar: write your description
+        """
         x = ar + 0
         for layer in self.operations:
             # next_x = torch.zeros(x.shape[:-1] + (len(layer),))
@@ -328,12 +431,31 @@ class ParallelMorpOperations:
         return x
 
     def __call__(self, ar):
+        """
+        Apply the operation to an array and return the result.
+
+        Args:
+            self: write your description
+            ar: write your description
+        """
         return self.apply_ops(ar)
 
     def __len__(self):
+        """
+        Return the number of elements in the SArray.
+
+        Args:
+            self: write your description
+        """
         return len(self.selems)
 
     def __repr__(self):
+        """
+        Representation of the Selem.
+
+        Args:
+            self: write your description
+        """
         repr_ = f'{self.__class__.__name__}(in_channels={self.in_channels[0]}, out_channels={self.out_channels[-1]})'
         for layer_idx in range(len(self.operation_names)):
             layer = self.operation_names[layer_idx]
@@ -357,6 +479,12 @@ class ParallelMorpOperations:
 
 
     def get_saved_key(self):
+        """
+        Return the key to store the saved state of the SArray.
+
+        Args:
+            self: write your description
+        """
         return (
             '=>'.join(self.operations) +
             ' -- ' +
@@ -366,6 +494,12 @@ class ParallelMorpOperations:
 
     @staticmethod
     def erosion(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        """
+         erosion operator.
+
+        Args:
+            selem: write your description
+        """
         return ParallelMorpOperations(
             name='erosion',
             operations=[[[('erosion', selem, False), 'union']]],
@@ -375,6 +509,12 @@ class ParallelMorpOperations:
 
     @staticmethod
     def dilation(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        """
+        Decorator for performing dilation on a sequence.
+
+        Args:
+            selem: write your description
+        """
         return ParallelMorpOperations(
             name='dilation',
             operations=[[[('dilation', selem, False), 'union']]],
@@ -384,6 +524,12 @@ class ParallelMorpOperations:
 
     @staticmethod
     def opening(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        """
+        Open a single molecule.
+
+        Args:
+            selem: write your description
+        """
         return ParallelMorpOperations(
             name='opening',
             operations=[
@@ -396,6 +542,12 @@ class ParallelMorpOperations:
 
     @staticmethod
     def closing(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        """
+        Create a parallel closing morp.
+
+        Args:
+            selem: write your description
+        """
         return ParallelMorpOperations(
             name='closing',
             operations=[
@@ -408,6 +560,12 @@ class ParallelMorpOperations:
 
     @staticmethod
     def white_tophat(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        """
+        White tophat clustering.
+
+        Args:
+            selem: write your description
+        """
         identity = ('dilation', ('disk', 0), False)
         return ParallelMorpOperations(
             name='white_tophat',
@@ -422,6 +580,12 @@ class ParallelMorpOperations:
 
     @staticmethod
     def black_tophat(selem: Union[Callable, np.ndarray, Tuple[Union[Callable, str], Any]], *args, **kwargs):
+        """
+        Black tophat algorithm for generating a scatter plot.
+
+        Args:
+            selem: write your description
+        """
         identity1 = ('dilation', ('disk', 0), False)
         identity2 = ('dilation', ('disk', 0), True)
         return ParallelMorpOperations(
@@ -437,6 +601,12 @@ class ParallelMorpOperations:
 
     @property
     def ui_arrays(self):
+        """
+        The arrays of the ui output for each channel.
+
+        Args:
+            self: write your description
+        """
         ui_ars = []
         for layer in self.operations_original:
             layer_ars = []
@@ -477,6 +647,12 @@ class ParallelMorpOperations:
 
 
     def plot_selem_arrays(self, *args, **kwargs):
+        """
+        Plot the selem arrays in each layer.
+
+        Args:
+            self: write your description
+        """
         all_figs = {}
         for layer_idx, layer in enumerate(self.selems):
             for chan_output, selems in enumerate(layer):

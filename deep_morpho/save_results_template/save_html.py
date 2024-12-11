@@ -15,6 +15,11 @@ from general.utils import load_json
 
 
 def html_template():
+    """
+    Return the template as HTML.
+
+    Args:
+    """
     return """
     <!DOCTYPE html>
     <html>
@@ -36,6 +41,12 @@ def html_template():
 
 
 def get_results_from_tensorboard(tb_path: str):
+    """
+    Loads the results from the tensorboard.
+
+    Args:
+        tb_path: write your description
+    """
     res = {
         "args": [None],
         "tb_path": None,
@@ -116,6 +127,14 @@ def get_results_from_tensorboard(tb_path: str):
 
 
 def write_html_from_dict_deep_morpho(results_dict: List[Dict], save_path: str, title: str = "",):
+    """
+    Writes html file from results_dict with deep - morpho.
+
+    Args:
+        results_dict: write your description
+        save_path: write your description
+        title: write your description
+    """
     html = html_template()
 
     tb_paths = [res["tb_path"] for res in results_dict]
@@ -161,5 +180,13 @@ def write_html_from_dict_deep_morpho(results_dict: List[Dict], save_path: str, t
 
 
 def write_html_deep_morpho(tb_paths: List[str], save_path: str, title: str = ""):
+    """
+    Writes HTML from the tensorboards in tb_paths using the deep morpho syntax.
+
+    Args:
+        tb_paths: write your description
+        save_path: write your description
+        title: write your description
+    """
     results_dict = [get_results_from_tensorboard(tb_path) for tb_path in tb_paths]
     return write_html_from_dict_deep_morpho(results_dict, save_path, title)

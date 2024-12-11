@@ -22,6 +22,18 @@ class PlotLUIParameters(Observable):
         batch_idx: int,
         preds: "Any",
     ) -> None:
+        """
+        Runs on the end of each batch of the training.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            preds: write your description
+        """
         for output_chan in range(pl_module.model.chan_outputs):
             metrics_chan = {}
             for input_chan in range(pl_module.model.chan_inputs):
@@ -46,6 +58,22 @@ class PlotLUIParametersBiSEL(ObservableLayersChans):
         chan_input: int,
         chan_output: int
     ):
+        """
+        Logs the parameters of the layers at the end of training batch.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            dataloader_idx: write your description
+            layer: write your description
+            layer_idx: write your description
+            chan_input: write your description
+            chan_output: write your description
+        """
         self.log_lui_params(trainer, layer, layer_idx, chan_input, chan_output)
         self.log_lui_params(trainer, layer, layer_idx, chan_input + layer.in_channels, chan_output)
 
@@ -57,6 +85,17 @@ class PlotLUIParametersBiSEL(ObservableLayersChans):
         chan_input,
         chan_output,
     ):
+        """
+        Log the parameters of the LOU network.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            layer: write your description
+            layer_idx: write your description
+            chan_input: write your description
+            chan_output: write your description
+        """
         trainer.logger.experiment.add_scalars(
             f'params/lui_coefs/layer_{layer_idx}_chout_{chan_output}',
             {f"chin_{chan_input}": layer.coefs[chan_output, chan_input]},
@@ -77,12 +116,27 @@ class PlotLUIParametersBiSEL(ObservableLayersChans):
 
 
     def on_train_end(self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule') -> None:
+        """
+        Detach weights and activations from layers after training.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+        """
         self.last_weights = []
         for layer_idx, layer in enumerate(pl_module.model.layers):
             to_add = {"coefs": layer.weights.detach().cpu(), "bias_lui": layer.bias_lui.detach().cpu(), "activation_P_lui": layer.activation_P_lui.detach().cpu()}
             self.last_weights.append(to_add)
 
     def save(self, save_path: str):
+        """
+        Saves the last_weights dictionary to a file.
+
+        Args:
+            self: write your description
+            save_path: write your description
+        """
         final_dir = join(save_path, self.__class__.__name__)
         pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)
         for layer_idx, layer_dict in enumerate(self.last_weights):

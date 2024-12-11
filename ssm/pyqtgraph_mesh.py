@@ -38,6 +38,13 @@ def plot_mesh(
 class PlotMesh:
 
     def __init__(self, title=''):
+        """
+        Creates the widget and shows it.
+
+        Args:
+            self: write your description
+            title: write your description
+        """
         self.app = QtGui.QApplication.instance()
         if self.app is None:
             self.app = QtGui.QApplication([])
@@ -49,12 +56,27 @@ class PlotMesh:
         self.point_clouds = []
 
     def add_mesh(self, *args, **kwargs):
+        """
+        Add a mesh item to the scene.
+
+        Args:
+            self: write your description
+        """
         mesh = gl.GLMeshItem(*args, **kwargs)
 
         self.w.addItem(mesh)
         self.meshes.append(mesh)
 
     def add_point_cloud(self, points, size_point=20, point_color=[0, 1, 0, 1]):
+        """
+        Add a point cloud to the plot.
+
+        Args:
+            self: write your description
+            points: write your description
+            size_point: write your description
+            point_color: write your description
+        """
         for coords in points:
             mesh = gl.MeshData.sphere(size_point, size_point)
             colors = np.array([point_color for _ in range(len(mesh.vertexes()))])
@@ -68,16 +90,43 @@ class PlotMesh:
         self.point_clouds.append(points)
 
     def show(self):
+        """
+        Show the main window.
+
+        Args:
+            self: write your description
+        """
         if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
             QtGui.QApplication.instance().exec_()
 
     def centroid_mesh(self, idx):
+        """
+        Return the centroid of the mesh at the given index.
+
+        Args:
+            self: write your description
+            idx: write your description
+        """
         return self.meshes[idx].vertexes.mean(0)
 
     def centroid_point_cloud(self, idx):
+        """
+        Point cloud of the centroid.
+
+        Args:
+            self: write your description
+            idx: write your description
+        """
         return self.point_clouds[idx].vertexes.mean(0)
 
     def centroid_all_meshes(self, idx):
+        """
+        Calculate the centroid of all meshes.
+
+        Args:
+            self: write your description
+            idx: write your description
+        """
         centroid = np.zeros((len(self.meshes), 3))
         for idx in range(len(self.meshes)):
             centroid[idx] = self.centroid_mesh(idx)

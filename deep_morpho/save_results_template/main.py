@@ -4,6 +4,12 @@ import webbrowser
 
 
 def list_dir_joined(folder: str):
+    """
+    Returns a list of paths to all files in the given folder.
+
+    Args:
+        folder: write your description
+    """
     return [os.path.join(folder, k) for k in os.listdir(folder)]
 
 

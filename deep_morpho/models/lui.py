@@ -17,6 +17,18 @@ class LUI(nn.Module):
         constant_P: bool = False,
         init_mode: str = "normal",
     ):
+        """
+        Initialize the layer
+
+        Args:
+            self: write your description
+            threshold_mode: write your description
+            chan_inputs: write your description
+            chan_outputs: write your description
+            P_: write your description
+            constant_P: write your description
+            init_mode: write your description
+        """
         super().__init__()
 
         self.threshold_mode = threshold_mode
@@ -35,11 +47,24 @@ class LUI(nn.Module):
                 self.init_normal_bias(mean=0, std=1)
 
     def forward(self, x):
+        """
+        Forward pass of the threshold layer
+
+        Args:
+            self: write your description
+            x: write your description
+        """
         # return self.threshold_layer(self.linear(x.permute(0, 2, 3, 1))).permute(0, 3, 1, 2)
         return self.threshold_layer(F.linear(x.permute(0, 2, 3, 1), self.positive_weight, self.bias)).permute(0, 3, 1, 2)
 
     @property
     def bias(self):
+        """
+        The bias of the linear system.
+
+        Args:
+            self: write your description
+        """
         return self.linear.bias
 
     @property
@@ -53,48 +78,135 @@ class LUI(nn.Module):
 
     @property
     def coefs(self):
+        """
+        The coefficients of the positive weighted Poisson distribution.
+
+        Args:
+            self: write your description
+        """
         return self.positive_weight
 
     @property
     def positive_weight(self):
+        """
+        Returns the positive weight of the layer.
+
+        Args:
+            self: write your description
+        """
         return self.softplus_layer(self.weight)
 
     @property
     def weights(self):
+        """
+        Weights of the node.
+
+        Args:
+            self: write your description
+        """
         return self.weight
 
     def set_weights(self, new_weights: torch.Tensor) -> torch.Tensor:
+        """
+        Set new weights on the linear weight
+
+        Args:
+            self: write your description
+            new_weights: write your description
+            torch: write your description
+            Tensor: write your description
+        """
         assert self.weight.shape == new_weights.shape, f"Weights must be of same shape {self.weight.shape}"
         self.linear.weight.data = new_weights
         return new_weights
 
     def set_bias(self, new_bias: torch.Tensor) -> torch.Tensor:
+        """
+        Set the bias tensor to a new value.
+
+        Args:
+            self: write your description
+            new_bias: write your description
+            torch: write your description
+            Tensor: write your description
+        """
         assert self.bias.shape == new_bias.shape
         self.linear.bias.data = new_bias
         return new_bias
 
     def init_normal_coefs(self, mean, std):
+        """
+        Initialize weights with a random normal coefficients
+
+        Args:
+            self: write your description
+            mean: write your description
+            std: write your description
+        """
         new_weights = torch.randn(self.linear.weight.shape) * std + mean
         self.set_weights(new_weights)
         return new_weights
 
     def init_normal_bias(self, mean, std):
+        """
+        Initialize bias for normal distribution with given mean and std
+
+        Args:
+            self: write your description
+            mean: write your description
+            std: write your description
+        """
         new_bias = -self.softplus_layer(torch.randn(self.linear.bias.shape) * std + mean)
         self.set_bias(new_bias)
         return new_bias
 
     def init_coefs(self):
+        """
+        Initialize the coefficients of the linear model.
+
+        Args:
+            self: write your description
+        """
         self.linear.weight.fill_(1)
 
     def init_bias(self):
+        """
+        Initialize the bias for the linear optimizer.
+
+        Args:
+            self: write your description
+        """
         self.linear.bias.fill_(-.5)
 
     @property
     def activation_P(self):
+        """
+        The activation function P_
+
+        Args:
+            self: write your description
+        """
         return self.threshold_layer.P_
 
     @staticmethod
     def bias_bounds_intersection(betas: torch.Tensor, C: np.ndarray, v1: np.ndarray, v2: np.ndarray) -> bool:
+        """
+        Computes the bias bounds intersection of betas with the given states.
+
+        Args:
+            betas: write your description
+            torch: write your description
+            Tensor: write your description
+            C: write your description
+            np: write your description
+            ndarray: write your description
+            v1: write your description
+            np: write your description
+            ndarray: write your description
+            v2: write your description
+            np: write your description
+            ndarray: write your description
+        """
         LUI.check_dims_bounds_params(betas, C, v1, v2)
         C = C.astype(bool)
         betas = betas.squeeze().cpu().detach().numpy()
@@ -102,6 +214,23 @@ class LUI(nn.Module):
 
     @staticmethod
     def bias_bounds_union(betas: torch.Tensor, C: np.ndarray, v1: np.ndarray, v2: np.ndarray) -> bool:
+        """
+        Compute bias bounds and union of betas with respect to C.
+
+        Args:
+            betas: write your description
+            torch: write your description
+            Tensor: write your description
+            C: write your description
+            np: write your description
+            ndarray: write your description
+            v1: write your description
+            np: write your description
+            ndarray: write your description
+            v2: write your description
+            np: write your description
+            ndarray: write your description
+        """
         LUI.check_dims_bounds_params(betas, C, v1, v2)
         C = C.astype(bool)
         betas = betas.squeeze().cpu().detach().numpy()
@@ -109,6 +238,20 @@ class LUI(nn.Module):
 
     @staticmethod
     def init_v1_v2(betas: np.ndarray, v1: np.ndarray, v2: np.ndarray):
+        """
+        Initializes v1 and v2 if they are None.
+
+        Args:
+            betas: write your description
+            np: write your description
+            ndarray: write your description
+            v1: write your description
+            np: write your description
+            ndarray: write your description
+            v2: write your description
+            np: write your description
+            ndarray: write your description
+        """
         if v1 is None:
             v1 = np.zeros(betas.shape[0])
         if v2 is None:
@@ -117,6 +260,26 @@ class LUI(nn.Module):
 
     @staticmethod
     def is_union_by(betas: torch.Tensor, bias: torch.Tensor, C: np.ndarray, v1: np.ndarray = None, v2: np.ndarray = None):
+        """
+        Check whether the union of betas and C is constrained by the given bias.
+
+        Args:
+            betas: write your description
+            torch: write your description
+            Tensor: write your description
+            bias: write your description
+            torch: write your description
+            Tensor: write your description
+            C: write your description
+            np: write your description
+            ndarray: write your description
+            v1: write your description
+            np: write your description
+            ndarray: write your description
+            v2: write your description
+            np: write your description
+            ndarray: write your description
+        """
         assert np.isin(np.unique(C), [0, 1]).all(), "C must be binary matrix"
         v1, v2 = LUI.init_v1_v2(betas, v1, v2)
         lb, ub = LUI.bias_bounds_union(betas, C, v1, v2)
@@ -124,6 +287,26 @@ class LUI(nn.Module):
 
     @staticmethod
     def is_intersection_by(betas: torch.Tensor, bias: torch.Tensor, C: np.ndarray, v1: np.ndarray = None, v2: np.ndarray = None):
+        """
+        Determines whether the intersection of betas with C is constrained by the given bias.
+
+        Args:
+            betas: write your description
+            torch: write your description
+            Tensor: write your description
+            bias: write your description
+            torch: write your description
+            Tensor: write your description
+            C: write your description
+            np: write your description
+            ndarray: write your description
+            v1: write your description
+            np: write your description
+            ndarray: write your description
+            v2: write your description
+            np: write your description
+            ndarray: write your description
+        """
         assert np.isin(np.unique(C), [0, 1]).all(), "C must be binary matrix"
         v1, v2 = LUI.init_v1_v2(betas, v1, v2)
         lb, ub = LUI.bias_bounds_intersection(betas, C, v1, v2)
@@ -131,6 +314,23 @@ class LUI(nn.Module):
 
     @staticmethod
     def check_dims_bounds_params(betas: torch.Tensor, C: np.ndarray, v1: np.ndarray, v2: np.ndarray) -> None:
+        """
+        Checks that the dimensions of the betas are within the bounds of the matrices C and v1
+
+        Args:
+            betas: write your description
+            torch: write your description
+            Tensor: write your description
+            C: write your description
+            np: write your description
+            ndarray: write your description
+            v1: write your description
+            np: write your description
+            ndarray: write your description
+            v2: write your description
+            np: write your description
+            ndarray: write your description
+        """
         assert len(C) == len(betas), f"The set C must have be of shape (len(betas)), but len(betas)={len(betas)} and len(C) = {len(C)}"
         assert len(v1) == len(v2), f"The almost binary bounds must be of shame shape. len(v1) = {len(v1)} , len(v2) = {len(v2)}"
         assert len(betas) == len(v1), f"You must give one almost binary bound per beta. len(betas) = {len(betas)} , len(v1) = {len(v1)}"
@@ -181,6 +381,16 @@ class LUI(nn.Module):
 
     @staticmethod
     def from_set(C: np.ndarray, operation: str, threshold_mode: str = "tanh", **kwargs):
+        """
+        Creates a LUI network from a set of C values.
+
+        Args:
+            C: write your description
+            np: write your description
+            ndarray: write your description
+            operation: write your description
+            threshold_mode: write your description
+        """
         net = LUI(chan_inputs=len(C), chan_outputs=1, threshold_mode=threshold_mode, **kwargs)
         assert set(np.unique(C)).issubset([0, 1])
         net.set_weights(torch.tensor(C)[None, :])

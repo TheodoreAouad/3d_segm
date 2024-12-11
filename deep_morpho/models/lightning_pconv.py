@@ -16,6 +16,20 @@ class LightningPConv2d(NetLightning):
         optimizer_args: Dict = {},
         observables: [List["Observable"]] = [],
     ):
+        """
+        Explicitly save the hyperparameters of the model.
+
+        Args:
+            self: write your description
+            model_args: write your description
+            learning_rate: write your description
+            loss: write your description
+            optimizer: write your description
+            output_dir: write your description
+            optimizer_args: write your description
+            observables: write your description
+            List: write your description
+        """
         super().__init__(
             model=PConv2d(**model_args),
             learning_rate=learning_rate,

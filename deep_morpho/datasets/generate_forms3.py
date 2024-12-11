@@ -8,33 +8,87 @@ from general.numba_utils import numba_randint, numba_rand, numba_rand_shape_2d
 
 @njit
 def numba_straight_rect(width, height):
+    """
+    A straight line of a rectangle in numba.
+
+    Args:
+        width: write your description
+        height: write your description
+    """
     return np.array([(0, 0), (width, 0), (width, height), (0, height), (0, 0)])
 
 
 @njit
 def numba_rotation_matrix(theta):
+    """
+    Generates a rotation matrix for a numba system.
+
+    Args:
+        theta: write your description
+    """
     return np.array([[np.cos(theta), -np.sin(theta)],
                      [np.sin(theta), np.cos(theta)]])
 
 
 @njit
 def numba_transform_rect(rect: np.ndarray, R: np.ndarray, offset: np.ndarray):
+    """
+    Transform a rectangle with a matrix R using the numba library.
+
+    Args:
+        rect: write your description
+        np: write your description
+        ndarray: write your description
+        R: write your description
+        np: write your description
+        ndarray: write your description
+        offset: write your description
+        np: write your description
+        ndarray: write your description
+    """
     return np.dot(rect, R) + offset
 
 
 @njit
 def numba_correspondance(ar: np.ndarray) -> np.ndarray:
+    """
+    Correlation matrix for numba.
+
+    Args:
+        ar: write your description
+        np: write your description
+        ndarray: write your description
+    """
     return 1 - ar
 
 
 @njit
 def numba_invert_proba(ar: np.ndarray, p_invert: float) -> np.ndarray:
+    """
+    Inverts the probabilities of ar.
+
+    Args:
+        ar: write your description
+        np: write your description
+        ndarray: write your description
+        p_invert: write your description
+    """
     if numba_rand() < p_invert:
         return numba_correspondance(ar)
     return ar
 
 
 def get_rect(x, y, width, height, angle):
+    """
+    Get a rectangle from the x y width height and angle.
+
+    Args:
+        x: write your description
+        y: write your description
+        width: write your description
+        height: write your description
+        angle: write your description
+    """
     rect = numba_straight_rect(width, height)
     theta = (np.pi / 180.0) * angle
     R = numba_rotation_matrix(theta)
@@ -54,10 +108,27 @@ def get_rect(x, y, width, height, angle):
 
 
 def draw_poly(draw, poly, fill_value=1):
+    """
+    Draws a polygon.
+
+    Args:
+        draw: write your description
+        poly: write your description
+        fill_value: write your description
+    """
     draw.polygon([tuple(p) for p in poly], fill=fill_value)
 
 
 def draw_ellipse(draw, center, radius, fill_value=1):
+    """
+    Draws an ellipse with the given center and radius.
+
+    Args:
+        draw: write your description
+        center: write your description
+        radius: write your description
+        fill_value: write your description
+    """
     bbox = (center[0] - radius[0], center[1] - radius[1], center[0] + radius[0], center[1] + radius[1])
     draw.ellipse(bbox, fill=fill_value)
 
@@ -66,11 +137,31 @@ def get_random_rotated_diskorect(
     size: Tuple, n_shapes: int = 30, max_shape: Tuple[int] = (15, 15), p_invert: float = 0.5,
         border=(4, 4), n_holes: int = 15, max_shape_holes: Tuple[int] = (5, 5), noise_proba=0.05, **kwargs
 ):
+    """
+    Generate a diskorect with randomly rotated diskorect.
+
+    Args:
+        size: write your description
+        n_shapes: write your description
+        max_shape: write your description
+        p_invert: write your description
+        border: write your description
+        n_holes: write your description
+        max_shape_holes: write your description
+        noise_proba: write your description
+    """
     diskorect = np.zeros(size)
     img = Image.fromarray(diskorect)
     draw = ImageDraw.Draw(img)
 
     def draw_shape(max_shape, fill_value):
+        """
+        Draw a shape.
+
+        Args:
+            max_shape: write your description
+            fill_value: write your description
+        """
         x = numba_randint(0, size[0] - 2)
         y = numba_randint(0, size[0] - 2)
 

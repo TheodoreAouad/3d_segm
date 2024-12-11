@@ -5,6 +5,18 @@ import numpy as np
 
 
 def draw_disk(ar: np.ndarray, center: np.ndarray, radius: float) -> np.ndarray:
+    """
+    Draw a disk centered at the given center and radius.
+
+    Args:
+        ar: write your description
+        np: write your description
+        ndarray: write your description
+        center: write your description
+        np: write your description
+        ndarray: write your description
+        radius: write your description
+    """
     XX, YY = np.meshgrid(np.arange(ar.shape[0]), np.arange(ar.shape[1]))
     idxes = np.sqrt((XX - center[0])**2 + (YY - center[1])**2) - radius
     ar[idxes < 0] = 1
@@ -14,6 +26,16 @@ def draw_disk(ar: np.ndarray, center: np.ndarray, radius: float) -> np.ndarray:
 def get_random_diskorect(
     size: Tuple, n_shapes: int = 30, max_shape: Tuple[int] = (15, 15), borders: Tuple[float] = (.1, .9), p_invert: float = 0.5,
 ) -> np.ndarray:
+    """
+    Generate a disk orect with randomly generated size.
+
+    Args:
+        size: write your description
+        n_shapes: write your description
+        max_shape: write your description
+        borders: write your description
+        p_invert: write your description
+    """
 
     diskorect = np.zeros(size)
     min_x, min_y = int(size[0] * borders[0]), int(size[1] * borders[0])

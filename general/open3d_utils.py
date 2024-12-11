@@ -6,6 +6,12 @@ import numpy as np
 
 
 def numpy_to_o3d_pcd(points: "np.ndarray", **kwargs) -> o3d.geometry.PointCloud:
+    """
+    Convert numpy points to o3d. geometry. PointCloud.
+
+    Args:
+        points: write your description
+    """
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(points)
     for attr, value in kwargs.items():
@@ -16,6 +22,13 @@ def numpy_to_o3d_pcd(points: "np.ndarray", **kwargs) -> o3d.geometry.PointCloud:
 
 
 def get_o3d_pcd_colored(points: "np.ndarray", color: Union[List, str] = 'g', **kwargs):
+    """
+    Returns an O3D PD object with the given points colored according to the given color
+
+    Args:
+        points: write your description
+        color: write your description
+    """
     cur_pcd = numpy_to_o3d_pcd(points, **kwargs)
 
     if color is not None:
@@ -32,6 +45,11 @@ def get_o3d_pcd_colored(points: "np.ndarray", color: Union[List, str] = 'g', **k
 
 
 def numpy_to_o3d_mesh(**kwargs) -> o3d.geometry.TriangleMesh:
+    """
+    Convert numpy attributes to an o3d mesh.
+
+    Args:
+    """
     msh = o3d.geometry.TriangleMesh()
     # msh.vertices = o3d.utility.Vector3dVector(verts)
     # msh.triangles = o3d.utility.Vector3iVector(faces)
@@ -57,6 +75,16 @@ def plot_mesh(vertices: "np.ndarray", triangles: "np.ndarray", draw_fn: Callable
 
 
 def ball_pivoting_mesh(pcd: o3d.geometry.PointCloud, scalar: float = 3) -> o3d.geometry.TriangleMesh:
+    """
+    Return a mesh representing the ball pivoting around the given point cloud.
+
+    Args:
+        pcd: write your description
+        o3d: write your description
+        geometry: write your description
+        PointCloud: write your description
+        scalar: write your description
+    """
     distances = pcd.compute_nearest_neighbor_distance()
     avg_dist = np.mean(distances)
     radius = scalar * avg_dist

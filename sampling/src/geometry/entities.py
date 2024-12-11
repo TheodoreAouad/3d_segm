@@ -8,17 +8,55 @@ from sampling.src.geometry.utils import get_rotation_matrix, get_pos_point_on_se
 class Line:
 
     def __init__(self, vecdir: np.ndarray, intersept: np.ndarray):
+        """
+        Initialize the internal representation of the vector direction and intersept.
+
+        Args:
+            self: write your description
+            vecdir: write your description
+            np: write your description
+            ndarray: write your description
+            intersept: write your description
+            np: write your description
+            ndarray: write your description
+        """
 
         self.vecdir = vecdir / np.linalg.norm(vecdir)
         self.intersept = intersept
 
     def is_inside(self, u: np.ndarray):
+        """
+        Checks if the vector u is inside the intersept.
+
+        Args:
+            self: write your description
+            u: write your description
+            np: write your description
+            ndarray: write your description
+        """
         return (np.cross(self.vecdir - self.intersept, u) == 0).all()
 
     def get_coords(self, t: float):
+        """
+        Returns the coordinates at time t.
+
+        Args:
+            self: write your description
+            t: write your description
+        """
         return self.vecdir * t + self.intersept
 
     def plot_on_ax(self, ax, t1: float, t2: float, c: str = 'r', **kwargs):
+        """
+        Plot the line between t1 and t2.
+
+        Args:
+            self: write your description
+            ax: write your description
+            t1: write your description
+            t2: write your description
+            c: write your description
+        """
 
         x1 = self.get_coords(t1)
         x2 = self.get_coords(t2)
@@ -50,9 +88,24 @@ class Plane:
 
 
     def __repr__(self):
+        """
+        Representation of the Curve.
+
+        Args:
+            self: write your description
+        """
         return 'Plane equation: {}x + {}y + {}z = {}'.format(*np.round(self.vecn, 3), np.round(self.intersept, 3))
 
     def is_inside(self, u: np.ndarray):
+        """
+        Check if a vector u is inside this line segment.
+
+        Args:
+            self: write your description
+            u: write your description
+            np: write your description
+            ndarray: write your description
+        """
         if not isinstance(u, Line):
             return u @ self.vecn == self.intersept
 
@@ -62,9 +115,23 @@ class Plane:
 
 
     def is_line_orthogonal(self, line: Line):
+        """
+        Checks whether the given line is orthogonal to this line
+
+        Args:
+            self: write your description
+            line: write your description
+        """
         return (np.cross(self.vecn, line.vecdir) == 0).all()
 
     def is_line_parallel(self, line: Line):
+        """
+        Returns True if the given line is parallel to this line.
+
+        Args:
+            self: write your description
+            line: write your description
+        """
         return self.vecn @ line.vecdir == 0
 
     def intersept_line(self, line: Line):
@@ -189,11 +256,29 @@ class Plane:
 class Cube:
 
     def __init__(self, planes_inf: List[Plane], planes_sup: List[Plane],):
+        """
+        Initialize the list of planes.
+
+        Args:
+            self: write your description
+            planes_inf: write your description
+            planes_sup: write your description
+        """
 
         self.planes_inf = planes_inf
         self.planes_sup = planes_sup
 
     def is_inside(self, u: np.ndarray, error: float = 1e-6):
+        """
+        Checks if the given vector is inside any of the superplanes.
+
+        Args:
+            self: write your description
+            u: write your description
+            np: write your description
+            ndarray: write your description
+            error: write your description
+        """
 
         for plane in self.planes_inf:
             if plane.vecn @ u < plane.intersept - error:
@@ -204,6 +289,13 @@ class Cube:
         return True
 
     def intersept_line(self, line: Line):
+        """
+        Intersept the given line.
+
+        Args:
+            self: write your description
+            line: write your description
+        """
         x1, x2 = None, None
         for plane in self.planes_sup:
             if plane.is_line_parallel(line):
@@ -230,6 +322,19 @@ class Cube:
 class StraightCube(Cube):
 
     def __init__(self, size: Tuple = (1, 1, 1), norms: Tuple = (1, 1, 1), displacement: np.ndarray = np.zeros(3)):
+        """
+        Initialize the basis vectors for the convex hull.
+
+        Args:
+            self: write your description
+            size: write your description
+            norms: write your description
+            displacement: write your description
+            np: write your description
+            ndarray: write your description
+            np: write your description
+            zeros: write your description
+        """
         super().__init__([], [])
         self.dim = len(size)
         assert self.dim == 3
@@ -251,18 +356,45 @@ class StraightCube(Cube):
 
     @property
     def centroid(self):
+        """
+        The centroid of the center of the ellipse.
+
+        Args:
+            self: write your description
+        """
         return self.size / 2 + self.displacement
 
 
     def faces(self, idx: int):
+        """
+        Returns the faces of the plane with the given index.
+
+        Args:
+            self: write your description
+            idx: write your description
+        """
         return self.planes_inf[2 - idx], self.planes_sup[2 - idx]
 
     def get_face_center(self, idx: int):
+        """
+        Get center of face for given index.
+
+        Args:
+            self: write your description
+            idx: write your description
+        """
         idx = idx % 3
         center = (self.basis[(idx+2)%self.dim]*self.size[(idx+2) % self.dim] + self.basis[(idx+1) % self.dim]*self.size[(idx+1) % self.dim]) / 2
         return center
 
     def get_face_size(self, idx: int):
+        """
+        Get the size of the face for the given index
+
+        Args:
+            self: write your description
+            idx: write your description
+        """
         idx = idx % 3
         if idx == 0:
             return self.size[1], self.size[2]
@@ -272,6 +404,13 @@ class StraightCube(Cube):
             return self.size[0], self.size[1]
 
     def intersept_line(self, line: Line):
+        """
+        Find the first and second line that encloses this line.
+
+        Args:
+            self: write your description
+            line: write your description
+        """
         for i in range(len(self.size)):
             plane1, plane2 = self.faces(i)
             if plane1.is_line_parallel(line):
@@ -308,6 +447,19 @@ class StraightCube(Cube):
         plane: Plane,
         size: Optional[Union[Tuple, np.ndarray]] = None,
     ):
+        """
+        Samples from the center of a plane and returns the samples Xs Ys and SliceLocation
+
+        Args:
+            self: write your description
+            position: write your description
+            n: write your description
+            plane: write your description
+            size: write your description
+            Optional: write your description
+            np: write your description
+            ndarray: write your description
+        """
 
         if size is None:
             size = np.sqrt(self.size[1]**2 + self.size[2]**2) + np.zeros(2)
@@ -324,11 +476,27 @@ class StraightCube(Cube):
 
 
     def get_pixelspacing_direction(self, vecdir: np.ndarray):
+        """
+        Get the pixelspacing direction of a direction vector.
+
+        Args:
+            self: write your description
+            vecdir: write your description
+            np: write your description
+            ndarray: write your description
+        """
         vecn = vecdir / np.linalg.norm(vecdir)
         return np.linalg.norm(vecn * self.norms)
 
 
     def sample_cube(self, n: Union[Tuple, int]):
+        """
+        Sample cube faces and return samples.
+
+        Args:
+            self: write your description
+            n: write your description
+        """
         samples = []
         for i in range(len(self.size)):
             face1, face2 = self.faces(i)
@@ -342,6 +510,14 @@ class StraightCube(Cube):
 
 
     def plot_on_ax(self, ax, c: str = 'blue', **kwargs):
+        """
+        Plot the mesh on an axis.
+
+        Args:
+            self: write your description
+            ax: write your description
+            c: write your description
+        """
         for i in range(len(self.size)):
             face1, face2 = self.faces(i)
             size = self.get_face_size(i)
@@ -359,6 +535,22 @@ class StraightCube(Cube):
         size: Optional[Union[Tuple, np.ndarray]] = None,
         **kwargs,
     ):
+        """
+        Plot the center of the current mesh on a matplotlib Axes
+
+        Args:
+            self: write your description
+            ax: write your description
+            plane: write your description
+            color_cube: write your description
+            color_plane: write your description
+            size: write your description
+            Optional: write your description
+            Union: write your description
+            Tuple: write your description
+            np: write your description
+            ndarray: write your description
+        """
 
         if size is None:
             size = np.sqrt(self.size[1]**2 + self.size[2]**2) + np.zeros(2)
@@ -376,6 +568,23 @@ class StraightCube(Cube):
         color_plane: str = 'red',
         size: Optional[Union[np.ndarray, Tuple]] = None
     ):
+        """
+        Plot the position of a plane on an axis.
+
+        Args:
+            self: write your description
+            ax: write your description
+            position: write your description
+            plane: write your description
+            color_cube: write your description
+            color_plane: write your description
+            size: write your description
+            Optional: write your description
+            Union: write your description
+            np: write your description
+            ndarray: write your description
+            Tuple: write your description
+        """
 
         if size is None:
             size = np.sqrt(self.size[1]**2 + self.size[2]**2) + np.zeros(2)

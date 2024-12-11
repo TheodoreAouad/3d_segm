@@ -12,6 +12,13 @@ from general.nn.observables import Observable
 class PlotPreds(Observable):
 
     def __init__(self, freq: int = 100, *args, **kwargs):
+        """
+        Initialize the filter.
+
+        Args:
+            self: write your description
+            freq: write your description
+        """
         super().__init__(*args, **kwargs)
         self.freq = freq
         self.idx = 0
@@ -27,6 +34,18 @@ class PlotPreds(Observable):
             batch_idx: int,
             preds: 'Any',
     ) -> None:
+        """
+        Run on training batch end with preds.
+
+        Args:
+            self: write your description
+            trainer: write your description
+            pl_module: write your description
+            outputs: write your description
+            batch: write your description
+            batch_idx: write your description
+            preds: write your description
+        """
         if self.idx % self.freq == 0:
             # img, target = batch[0][0], batch[1][0].unsqueeze(0)
             # # print(preds)
@@ -50,6 +69,14 @@ class PlotPreds(Observable):
 
     @staticmethod
     def plot_three(img, pred, target):
+        """
+        Plots three images in one plot.
+
+        Args:
+            img: write your description
+            pred: write your description
+            target: write your description
+        """
         ncols = max(img.shape[0], pred.shape[0])
         fig, axs = plt.subplots(3, ncols, figsize=(4 * ncols, 4 * 3), squeeze=False)
 
@@ -69,6 +96,14 @@ class PlotPreds(Observable):
 
     @staticmethod
     def plot_channels(img, pred, target):
+        """
+        Plots the channels of the input image.
+
+        Args:
+            img: write your description
+            pred: write your description
+            target: write your description
+        """
         ncols = max(img.shape[-1], 2)
         fig, axs = plt.subplots(2, ncols, figsize=(ncols*7, 2*7))
 
@@ -85,6 +120,13 @@ class PlotPreds(Observable):
         return fig
 
     def save(self, save_path: str):
+        """
+        Saves the figure to a file.
+
+        Args:
+            self: write your description
+            save_path: write your description
+        """
         if self.saved_fig is not None:
             final_dir = join(save_path, self.__class__.__name__)
             pathlib.Path(final_dir).mkdir(exist_ok=True, parents=True)

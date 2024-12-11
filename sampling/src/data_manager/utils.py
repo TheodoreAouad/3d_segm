@@ -50,10 +50,26 @@ def get_volume_from_mri(mri, axis_to_stack=0):
 
 
 def get_nib_atlas(parent=all_paths["atlas_nibs"], patient="hoang"):
+    """
+    Load a NIB atlas file.
+
+    Args:
+        parent: write your description
+        all_paths: write your description
+        patient: write your description
+    """
     return nib.load(join(parent, patient, f"3D{patient}-sacrum.nii"))
 
 
 def get_segm_atlas(parent=all_paths["atlas_nibs"], patient="hoang"):
+    """
+    Get the segm_atlas file for a patient
+
+    Args:
+        parent: write your description
+        all_paths: write your description
+        patient: write your description
+    """
     sacrum = nib.load(join(parent, patient, f"3D{patient}-sacrum.nii")).get_fdata()
     iliaque = nib.load(join(parent, patient, f"3D{patient}-iliaque.nii")).get_fdata()
 
@@ -65,4 +81,12 @@ def get_segm_atlas(parent=all_paths["atlas_nibs"], patient="hoang"):
 #     return  nib.load(join(parent, patient, f"3D{patient}-sacrum.nii"))
 
 def get_vol_atlas(parent=all_paths["atlas_nibs"], patient="hoang"):
+    """
+    Loads the vol_atlas file for a patient
+
+    Args:
+        parent: write your description
+        all_paths: write your description
+        patient: write your description
+    """
     return nib.load(join(parent, patient, f"3D{patient}.nii")).get_fdata()

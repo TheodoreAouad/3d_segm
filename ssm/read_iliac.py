@@ -12,6 +12,15 @@ def get_iliac_segmentations(
     left_name: str = "Segmentation-iliac-left.nii",
     right_name: str = "Segmentation-iliac-right.nii",
 ) -> Dict:
+    """
+    Get all the iliac segmentations in a folder.
+
+    Args:
+        path_folder: write your description
+        regex_filename: write your description
+        left_name: write your description
+        right_name: write your description
+    """
 
     all_patients = [f for f in os.listdir(path_folder) if re.match(regex_filename, f)]
     all_segm = {}

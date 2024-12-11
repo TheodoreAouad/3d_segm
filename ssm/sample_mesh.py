@@ -7,6 +7,17 @@ from .dijkstra import Graph, dijkstra
 
 
 def create_mesh_graph(verts: np.ndarray, faces: np.ndarray) -> Graph:
+    """
+    Creates a mesh graph from a list of vertices and faces.
+
+    Args:
+        verts: write your description
+        np: write your description
+        ndarray: write your description
+        faces: write your description
+        np: write your description
+        ndarray: write your description
+    """
     gmesh = Graph()
     for tri in faces:
         for i in range(2):
@@ -22,6 +33,20 @@ def create_mesh_graph(verts: np.ndarray, faces: np.ndarray) -> Graph:
 def dijkstra_sampling(
     n_points: int, gmesh: Graph = None, verts: np.ndarray = None, faces: np.ndarray = None, verbose=True
 ) -> (np.ndarray, np.ndarray, np.ndarray):
+    """
+    Performs the Dijkstra algorithm on the given mesh and returns the maximum ar_dist
+
+    Args:
+        n_points: write your description
+        gmesh: write your description
+        verts: write your description
+        np: write your description
+        ndarray: write your description
+        faces: write your description
+        np: write your description
+        ndarray: write your description
+        verbose: write your description
+    """
 
     if gmesh is None:
         gmesh = create_mesh_graph(verts, faces)

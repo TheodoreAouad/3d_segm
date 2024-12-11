@@ -27,6 +27,17 @@ class InputOutputGeneratorDataset(Dataset):
             device: str = "cpu",
             len_dataset: int = 1000,
     ):
+        """
+        Initialize the generator and arguments.
+
+        Args:
+            self: write your description
+            random_gen_fn: write your description
+            random_gen_args: write your description
+            morp_operation: write your description
+            device: write your description
+            len_dataset: write your description
+        """
         self.random_gen_fn = random_gen_fn
         self.random_gen_args = random_gen_args
         self.device = device
@@ -35,6 +46,13 @@ class InputOutputGeneratorDataset(Dataset):
 
 
     def __getitem__(self, idx):
+        """
+        Returns a random input and target tensor indexed by the given index.
+
+        Args:
+            self: write your description
+            idx: write your description
+        """
         input_ = self.random_gen_fn(**self.random_gen_args)
         target = self.morp_fn(input_).float()
         input_ = torch.tensor(input_).float()
@@ -48,10 +66,27 @@ class InputOutputGeneratorDataset(Dataset):
         return input_, target
 
     def __len__(self):
+        """
+        Return the number of data points in the dataset.
+
+        Args:
+            self: write your description
+        """
         return self.len_dataset
 
     @staticmethod
     def get_loader(batch_size, n_inputs, random_gen_fn, random_gen_args, morp_operation, device='cpu', **kwargs):
+        """
+        Create a loader for the given dataset.
+
+        Args:
+            batch_size: write your description
+            n_inputs: write your description
+            random_gen_fn: write your description
+            random_gen_args: write your description
+            morp_operation: write your description
+            device: write your description
+        """
         return DataLoader(
             InputOutputGeneratorDataset(random_gen_fn, random_gen_args, morp_operation=morp_operation, device=device, len_dataset=n_inputs, ),
             batch_size=batch_size, **kwargs
@@ -68,6 +103,18 @@ class MultiRectDataset(Dataset):
             n_inputs: int = None,
             logger=None,
     ):
+        """
+        Loads the input files and the targets files.
+
+        Args:
+            self: write your description
+            inputs_path: write your description
+            targets_path: write your description
+            do_load_in_ram: write your description
+            verbose: write your description
+            n_inputs: write your description
+            logger: write your description
+        """
         self.inputs_path = inputs_path
         self.targets_path = targets_path
         self.do_load_in_ram = do_load_in_ram
@@ -91,11 +138,25 @@ class MultiRectDataset(Dataset):
 
 
     def get_verbose_iterator(self, iterator):
+        """
+        Returns iterator that will print verbose information if verbose is enabled.
+
+        Args:
+            self: write your description
+            iterator: write your description
+        """
         if self.verbose:
             return tqdm(iterator)
         return iterator
 
     def __getitem__(self, idx):
+        """
+        Returns the input and target at the specified index.
+
+        Args:
+            self: write your description
+            idx: write your description
+        """
         if self.do_load_in_ram:
             input_, target = self.all_inputs[idx], self.all_targets[idx]
         else:
@@ -107,10 +168,27 @@ class MultiRectDataset(Dataset):
         return input_, target
 
     def __len__(self):
+        """
+        Return the length of the input data.
+
+        Args:
+            self: write your description
+        """
         return len(self.all_inputs_name)
 
     @staticmethod
     def get_loader(batch_size, dataset_path, do_load_in_ram, morp_operation, logger=None, n_inputs=None, **kwargs):
+        """
+        Load a multi - rect dataset.
+
+        Args:
+            batch_size: write your description
+            dataset_path: write your description
+            do_load_in_ram: write your description
+            morp_operation: write your description
+            logger: write your description
+            n_inputs: write your description
+        """
         inputs_path = join(dataset_path, 'images')
         metadata = load_json(join(dataset_path, 'metadata.json'))
         targets_path = metadata["seqs"][morp_operation.get_saved_key()]['path_target']
